@@ -77,18 +77,4 @@ window.siteConfig = {
             atlanticWinds: "https://www.nhc.noaa.gov/storm_graphics/AT01/AL012023_PROB34_F120_1280x1024.jpg"
         }
     },
-
-    // Map configuration
-    map: {
-        // Default center coordinates for Eastern NC
-        center: [35.6, -76.5],
-        defaultZoom: 9,
-        minZoom: 7,
-        maxZoom: 11,
-        // Leaflet tile layer
-        tileLayer: {
-            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }
-    }
 };

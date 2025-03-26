@@ -11,100 +11,6 @@ import { updateTropicalOutlook, checkActiveSystemsStatus, updateTropicalAlertBan
 let weatherMap;
 let weatherMarkers = [];
 
-/**
- * Initialize the map with base tiles and settings
- * @returns {Object} Leaflet map instance
- */
-function initMap() {
-    // Get map configuration
-    const mapConfig = window.siteConfig.map;
-
-    // Determine zoom level based on viewport width
-    let responsiveZoom = mapConfig.defaultZoom;
-
-    // Get current viewport width
-    const viewportWidth = window.innerWidth;
-
-    // Adjust zoom based on screen size with fractional values
-    if (viewportWidth < 576) {
-        // Mobile phones
-        responsiveZoom = mapConfig.defaultZoom - 1;
-    } else if (viewportWidth < 992) {
-        // Tablets
-        responsiveZoom = mapConfig.defaultZoom - .8;
-    } else {
-        // Desktops and larger screens
-        responsiveZoom = mapConfig.defaultZoom;
-    }
-
-    // Create map centered on Eastern North Carolina
-    const map = L.map('weather-map', {
-        center: mapConfig.center,
-        zoom: responsiveZoom,
-        minZoom: mapConfig.minZoom,
-        maxZoom: mapConfig.maxZoom,
-        zoomControl: true
-    });
-
-    // Add a different base map - change this URL to use a different map style
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        ext: 'png'
-
-    }).addTo(map);
-
-    return map;
-}
-
-/**
- * Create a custom weather marker for the map
- * @param {Object} map - Leaflet map instance
- * @param {Object} countyData - County information
- * @param {Object} weatherData - Weather information
- * @returns {Object} Leaflet marker instance
- */
-function createWeatherMarker(map, countyData, weatherData) {
-    // Create a custom icon for the weather marker
-    const weatherIcon = L.divIcon({
-        className: 'weather-marker',
-        html: `<div class="marker-temp">${weatherData.temp}°</div>
-               <!-- <div class="marker-name">${countyData.city}</div>-->`,
-        iconSize: [60, 40]
-    });
-
-    // Create marker
-    const marker = L.marker([countyData.lat, countyData.lon], {
-        icon: weatherIcon
-    }).addTo(map);
-
-    // Add popup with more information
-    const popupContent = `
-    <div class="county-popup">
-        <h3>${countyData.city}, ${countyData.name} County</h3>
-        <div class="popup-temp">${weatherData.temp}°</div>
-        <div class="popup-condition">${weatherData.condition}</div>
-        <div class="popup-details">
-            <p><strong>Humidity:</strong> ${weatherData.humidity}%</p>
-            <p><strong>Wind:</strong> ${weatherData.wind}</p>
-        </div>
-        <div class="popup-station">${weatherData.stationName}</div>
-        <a href="${countyData.url}" class="popup-link">View Details</a>
-    </div>
-`;
-
-    marker.bindPopup(popupContent);
-
-    // Add click handler to navigate to county page
-    marker.on('click', function () {
-        marker.openPopup();
-    });
-
-    return marker;
-}
-
-
 
 /**
  * Set up event handlers for interactive elements
@@ -192,10 +98,6 @@ async function loadCountyWeatherData() {
             // Fetch weather data
             const weatherData = await fetchCurrentWeather(county.lat, county.lon);
 
-            // Create map marker for desktop view
-            const marker = createWeatherMarker(weatherMap, county, weatherData);
-            weatherMarkers.push(marker);
-
             // Create county card for mobile view
             if (cardsContainer) {
                 const cardHtml = createCountyCard(county, weatherData);
@@ -242,9 +144,6 @@ window.addEventListener('resize', function () {
  * Main function to initialize the index page
  */
 async function initIndexPage() {
-    // Initialize map for large screens
-    weatherMap = initMap();
-
     // Load weather data for all counties
     await loadCountyWeatherData();
 
