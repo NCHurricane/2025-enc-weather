@@ -1,0 +1,113 @@
+﻿Hazard / Weather Event,Priority,Color Sample,Color Name,RGB Color,Hex Code
+Definitions can be found at this link ,,,,,
+Tsunami Warning,1,,Tomato,253 99 71,FD6347
+Tornado Warning,2,,Red,255 0 0,FF0000
+Extreme Wind Warning,3,,Darkorange,255 140 0,FF8C00
+Severe Thunderstorm Warning,4,,Orange,255 165 0,FFA500
+Flash Flood Warning,5,,Darkred,139 0 0,8B0000
+Flash Flood Statement,6,,Darkred,139 0 0,8B0000
+Severe Weather Statement,7,,Aqua,0 255 255,00FFFF
+Shelter In Place Warning,8,,Salmon,250 128 114,FA8072
+Evacuation Immediate,9,,Chartreuse,127 255 0,7FFF00
+Civil Danger Warning,10,,Lightpink,255 182 193,FFB6C1
+Nuclear Power Plant Warning,11,,Indigo,75 0 130,4B0082
+Radiological Hazard Warning,12,,Indigo,75 0 130,4B0082
+Hazardous Materials Warning,13,,Indigo,75 0 130,4B0082
+Fire Warning,14,,Sienna,160 82 45,A0522D
+Civil Emergency Message,15,,Lightpink,255 182 193,FFB6C1
+Law Enforcement Warning,16,,Silver,192 192 192,C0C0C0
+Storm Surge Warning,17,,Darkpurple,181 36 247,B524F7
+Hurricane Force Wind Warning,18,,Westernred,205 92 92,CD5C5C
+Hurricane Warning,19,,Crimson,220 20 60,DC143C
+Typhoon Warning,20,,Crimson,220 20 60,DC143C
+Special Marine Warning,21,,Orange,255 165 0,FFA500
+Blizzard Warning,22,,Orangered,255 69 0,FF4500
+Snow Squall Warning,23,,Mediumvioletred,199 21 133,C71585
+Ice Storm Warning,24,,Darkmagenta,139 0 139,8B008B
+Heavy Freezing Spray Warning,25,,Deepskyblue,0 191 255,00BFFF
+Winter Storm Warning,26,,Hotpink,255 105 180,FF69B4
+Lake Effect Snow Warning,27,,Darkcyan,0 139 139,008B8B
+Dust Storm Warning,28,,Bisque,255 228 196,FFE4C4
+Blowing Dust Warning,29,,Bisque,255 228 196,FFE4C4
+High Wind Warning,30,,Goldenrod,218 165 32,DAA520
+Tropical Storm Warning,31,,Firebrick,178 34 34,B22222
+Storm Warning,32,,Darkviolet,148 0 211,9400D3
+Tsunami Advisory,33,,Chocolate,210 105 30,D2691E
+Tsunami Watch,34,,Fushsia,255 0 255,FF00FF
+Avalanche Warning,35,,Dodgerblue,30 144 255,1E90FF
+Earthquake Warning,36,,Saddlebrown,139 69 19,8B4513
+Volcano Warning,37,,darkslategray,47 79 79,2F4F4F
+Ashfall Warning,38,,Darkgray,169 169 169,A9A9A9
+Flood Warning,39,,Lime,0 255 0,00FF00
+Coastal Flood Warning,40,,Forestgreen,34 139 34,228B22
+Lakeshore Flood Warning,41,,Forestgreen,34 139 34,228B22
+Ashfall Advisory,42,,Dimgray,105 105 105,696969
+High Surf Warning,43,,Forestgreen,34 139 34,228B22
+Extreme Heat Warning,44,,Mediumvioletred,199 21 133,C71585
+Tornado Watch,45,,Yellow,255 255 0,FFFF00
+Severe Thunderstorm Watch,46,,Palevioletred,219 112 147,DB7093
+Flash Flood Watch,47,,Seagreen,46 139 87,2E8B57
+Gale Warning,48,,Plum,221 160 221,DDA0DD
+Flood Statement,49,,Lime,0 255 0,00FF00
+Extreme Cold Warning,50,,Blue,0 0 255,0000FF
+Freeze Warning,51,,Darkslateblue,72 61 139,483D8B
+Red Flag Warning,52,,Deeppink,255 20 147,FF1493
+Storm Surge Watch,53,,Lightpurple,219 127 247,DB7FF7
+Hurricane Watch,54,,Magenta,255 0 255,FF00FF
+Hurricane Force Wind Watch,55,,Darkorchid,153 50 204,9932CC
+Typhoon Watch,56,,Magenta,255 0 255,FF00FF
+Tropical Storm Watch,57,,Lightcoral,240 128 128,F08080
+Storm Watch,58,,Moccasin,255 228 181,FFE4B5
+Tropical Cyclone Local Statement,59,,Moccasin,255 228 181,FFE4B5
+Winter Weather Advisory,60,,Mediumslateblue,123 104 238,7B68EE
+Avalanche Advisory,61,,Peru,205 133 63,CD853F
+Cold Weather Advisory,62,,Paleturquoise,175 238 238,AFEEEE
+Heat Advisory,63,,Coral,255 127 80,FF7F50
+Flood Advisory,64,,Springgreen,0 255 127,00FF7F
+Coastal Flood Advisory,65,,Lawngreen,124 252 0,7CFC00
+Lakeshore Flood Advisory,66,,Lawngreen,124 252 0,7CFC00
+High Surf Advisory,67,,Mediumorchid,186 85 211,BA55D3
+Dense Fog Advisory,68,,Slategray,112 128 144,708090
+Dense Smoke Advisory,69,,Khaki,240 230 140,F0E68C
+Small Craft Advisory,70,,Thistle,216 191 216,D8BFD8
+Brisk Wind Advisory,71,,Thistle,216 191 216,D8BFD8
+Hazardous Seas Warning,72,,Thistle,216 191 216,D8BFD8
+Dust Advisory,73,,Darkkhaki,189 183 107,BDB76B
+Blowing Dust Advisory,74,,Darkkhaki,189 183 107,BDB76B
+Lake Wind Advisory,75,,Tan,210 180 140,D2B48C
+Wind Advisory,76,,Tan,210 180 140,D2B48C
+Frost Advisory,77,,Cornflowerblue,100 149 237,6495ED
+Freezing Fog Advisory,78,,Teal,0 128 128,8080
+Freezing Spray Advisory,79,,Deepskyblue,0 191 255,00BFFF
+Low Water Advisory,80,,Brown,165 42 42,A52A2A
+Local Area Emergency,81,,Silver,192 192 192,C0C0C0
+Winter Storm Watch,82,,Steelblue,70 130 180,4682B4
+Rip Current Statement,83,,Turquoise,64 224 208,40E0D0
+Beach Hazards Statement,84,,Turquoise,64 224 208,40E0D0
+Gale Watch,85,,Pink,255 192 203,FFC0CB
+Avalanche Watch,86,,Sandybrown,244 164 96,F4A460
+Hazardous Seas Watch,87,,Darkslateblue,72 61 139,483D8B
+Heavy Freezing Spray Watch,88,,Rosybrown,188 143 143,BC8F8F
+Flood Watch,89,,Seagreen,46 139 87,2E8B57
+Coastal Flood Watch,90,,Mediumaquamarine,102 205 170,66CDAA
+Lakeshore Flood Watch,91,,Mediumaquamarine,102 205 170,66CDAA
+High Wind Watch,92,,Darkgoldenrod,184 134 11,B8860B
+Extreme Heat Watch,93,,Maroon,128 0 0,800000
+Extreme Cold Watch,94,,CadetBlue,95 158 160,5F9EA0
+Freeze Watch,95,,Cyan,0 255 255,00FFFF
+Fire Weather Watch,96,,Navajowhite,255 222 173,FFDEAD
+Extreme Fire Danger,97,,Darksalmon,233 150 122,E9967A
+911 Telephone Outage,98,,Silver,192 192 192,C0C0C0
+Coastal Flood Statement,99,,Olivedrab,107 142 35,6B8E23
+Lakeshore Flood Statement,100,,Olivedrab,107 142 35,6B8E23
+Special Weather Statement,101,,Moccasin,255 228 181,FFE4B5
+Marine Weather Statement,102,,Peachpuff,255 239 213,FFDAB9
+Air Quality Alert,103,,Gray,128 128 128,808080
+Air Stagnation Advisory,104,,Gray,128 128 128,808080
+Hazardous Weather Outlook,105,,Palegoldenrod,238 232 170,EEE8AA
+Hydrologic Outlook,106,,Lightgreen,144 238 144,90EE90
+Short Term Forecast,107,,Palegreen,152 251 152,98FB98
+Administrative Message,108,,Silver,192 192 192,C0C0C0
+Test,109,,Azure,240 255 255,F0FFFF
+Child Abduction Emergency,110,,Transparent,255 255 255,FFFFFF
+Blue Alert,111,,Transparent,255 255 255,FFFFFF
