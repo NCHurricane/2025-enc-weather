@@ -56,8 +56,18 @@
                   <h2 id="current-conditions-heading">Current Conditions</h2>
                </div>
 
-               <!-- Map for all screens -->
                <div class="current-content">
+                  <!-- Replace the Leaflet map with our SVG -->
+                  <div class="enc-map-container">
+                     <svg
+                        id="enc-map"
+                        viewBox="0 0 800 500"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <!-- County paths will be added here -->
+                     </svg>
+                  </div>
+
+                  <!-- Keep your existing refresh button -->
                   <div
                      class="refresh-container"
                      style="text-align: right; margin-top: 10px">
