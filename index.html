@@ -57,17 +57,12 @@
                </div>
 
                <div class="current-content">
-                  <!-- Replace the Leaflet map with our SVG -->
-                  <div class="enc-map-container">
-                     <svg
-                        id="enc-map"
-                        viewBox="0 0 800 500"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <!-- County paths will be added here -->
-                     </svg>
-                  </div>
+                  <!-- Replace the Leaflet map with our SVG map -->
+                  <div
+                     id="nc-county-map"
+                     class="county-map-container"
+                     aria-label="Interactive weather map of Eastern North Carolina counties"></div>
 
-                  <!-- Keep your existing refresh button -->
                   <div
                      class="refresh-container"
                      style="text-align: right; margin-top: 10px">
@@ -186,6 +181,8 @@
       </footer>
 
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://unpkg.com/topojson-client@3"></script>
+      <script src="https://d3js.org/d3.v7.min.js"></script>
 
       <!-- Configuration Script - Updated to use siteConfig.js -->
       <script src="js/siteConfig.js?v=3.24.2"></script>

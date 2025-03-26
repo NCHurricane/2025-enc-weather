@@ -59,6 +59,65 @@
     font-weight: 500;
 }
 
+/* County map container */
+.county-map-container {
+    height: 450px;
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin: 0;
+    box-shadow: var(--shadow-standard);
+    background-color: rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Weather markers */
+.weather-marker text {
+    transition: transform 0.2s ease;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.weather-marker:hover text {
+    transform: scale(1.2);
+}
+
+/* County paths */
+.counties path {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.counties path:hover {
+    opacity: 0.8;
+}
+
+/* County tooltip */
+.county-tooltip rect {
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .county-map-container {
+        height: 350px;
+    }
+
+    .weather-marker text {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .county-map-container {
+        height: 300px;
+    }
+
+    .weather-marker text {
+        font-size: 12px;
+    }
+}
+
 /* ------------------------ */
 /* Tropical weather section */
 /* ------------------------ */
