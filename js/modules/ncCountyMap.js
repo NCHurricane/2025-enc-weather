@@ -91,6 +91,7 @@ export class NCCountyMap {
         }
     }
 
+
     // Draw the county map
     drawMap() {
         if (!this.countyData) return false;
@@ -139,32 +140,100 @@ export class NCCountyMap {
     }
 
     // Set up projection and path generator
+    // setupProjection() {
+    //     if (window.d3) {
+    //         // If D3 is available, use its projection capabilities
+    //         this.projection = d3.geoMercator()
+    //             .fitSize([this.width, this.height], topojson.feature(this.countyData, this.countyData.objects.North_Carolina));
+
+    //         this.path = d3.geoPath().projection(this.projection);
+    //     } else {
+    //         // Simplified version without D3
+    //         // Get the bounding box of all counties
+    //         const features = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
+    //         const bounds = this.getBoundingBox(features);
+
+    //         // Create a simple scaling function for the coordinates
+    //         const xScale = this.width / (bounds.maxX - bounds.minX);
+    //         const yScale = this.height / (bounds.maxY - bounds.minY);
+
+    //         // Create a simple path generator
+    //         this.path = feature => {
+    //             let pathData = '';
+
+    //             if (feature.geometry.type === 'Polygon') {
+    //                 feature.geometry.coordinates.forEach(ring => {
+    //                     ring.forEach((coord, i) => {
+    //                         const x = (coord[0] - bounds.minX) * xScale;
+    //                         const y = (coord[1] - bounds.minY) * yScale;
+    //                         pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
+    //                     });
+    //                     pathData += 'Z';
+    //                 });
+    //             } else if (feature.geometry.type === 'MultiPolygon') {
+    //                 feature.geometry.coordinates.forEach(polygon => {
+    //                     polygon.forEach(ring => {
+    //                         ring.forEach((coord, i) => {
+    //                             const x = (coord[0] - bounds.minX) * xScale;
+    //                             const y = (coord[1] - bounds.minY) * yScale;
+    //                             pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
+    //                         });
+    //                         pathData += 'Z';
+    //                     });
+    //                 });
+    //             }
+
+    //             return pathData;
+    //         };
+    //     }
+    // }
+
+    // Set up projection and path generator
     setupProjection() {
         if (window.d3) {
-            // If D3 is available, use its projection capabilities
+            // Create a GeoJSON feature that represents just Eastern NC
+            const easternNC = {
+                type: "Feature",
+                properties: {},
+                geometry: {
+                    type: "Polygon",
+                    // These coordinates form a bounding box around Eastern NC
+                    coordinates: [[
+                        [-79.0, 34.8],  // Southwest corner
+                        [-75.4, 34.8],  // Southeast corner
+                        [-75.4, 36.5],  // Northeast corner
+                        [-79.0, 36.5],  // Northwest corner
+                        [-79.0, 34.8]   // Close the polygon
+                    ]]
+                }
+            };
+
+            // Use D3's fitSize to zoom to this region
             this.projection = d3.geoMercator()
-                .fitSize([this.width, this.height], topojson.feature(this.countyData, this.countyData.objects.North_Carolina));
+                .fitSize([this.width, this.height], easternNC);
 
             this.path = d3.geoPath().projection(this.projection);
         } else {
-            // Simplified version without D3
-            // Get the bounding box of all counties
-            const features = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
-            const bounds = this.getBoundingBox(features);
+            // For non-D3 version, just change the bounds
+            // Eastern NC approximate bounds
+            const easternMinLon = -79.0;
+            const easternMaxLon = -75.4;
+            const easternMinLat = 34.8;
+            const easternMaxLat = 36.5;
 
-            // Create a simple scaling function for the coordinates
-            const xScale = this.width / (bounds.maxX - bounds.minX);
-            const yScale = this.height / (bounds.maxY - bounds.minY);
-
-            // Create a simple path generator
+            // Create a simple path generator using these bounds
             this.path = feature => {
                 let pathData = '';
+
+                // Transform the coordinates based on Eastern NC bounds
+                const xScale = this.width / (easternMaxLon - easternMinLon);
+                const yScale = this.height / (easternMaxLat - easternMinLat);
 
                 if (feature.geometry.type === 'Polygon') {
                     feature.geometry.coordinates.forEach(ring => {
                         ring.forEach((coord, i) => {
-                            const x = (coord[0] - bounds.minX) * xScale;
-                            const y = (coord[1] - bounds.minY) * yScale;
+                            const x = (coord[0] - easternMinLon) * xScale;
+                            const y = this.height - (coord[1] - easternMinLat) * yScale; // Flip Y axis
                             pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
                         });
                         pathData += 'Z';
@@ -173,8 +242,8 @@ export class NCCountyMap {
                     feature.geometry.coordinates.forEach(polygon => {
                         polygon.forEach(ring => {
                             ring.forEach((coord, i) => {
-                                const x = (coord[0] - bounds.minX) * xScale;
-                                const y = (coord[1] - bounds.minY) * yScale;
+                                const x = (coord[0] - easternMinLon) * xScale;
+                                const y = this.height - (coord[1] - easternMinLat) * yScale; // Flip Y axis
                                 pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
                             });
                             pathData += 'Z';

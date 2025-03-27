@@ -63,6 +63,8 @@ function updateData() {
     }
 }
 
+
+
 function setupEventHandlers() {
     const refreshButton = document.getElementById('global-refresh');
     if (refreshButton) {

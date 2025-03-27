@@ -6,6 +6,7 @@
 import { safeSetHTML, safeSetText, createElement } from './modules/utils.js';
 import { fetchCurrentWeather, getWeatherIcon } from './modules/weatherData.js';
 import { updateTropicalOutlook, checkActiveSystemsStatus, updateTropicalAlertBanner } from './modules/tropical.js';
+import { initCountyMap } from './modules/ncCountyMap.js';
 
 // Global variables
 let weatherMap;
@@ -154,6 +155,7 @@ async function initIndexPage() {
     setupEventHandlers();
 }
 
+
 /**
  * Set up event handlers for interactive elements
  */
@@ -235,25 +237,29 @@ async function loadCountyWeatherData() {
 window.addEventListener('resize', function () {
     // Recalculate zoom based on new viewport size
     const viewportWidth = window.innerWidth;
-    const mapConfig = window.siteConfig.map;
-    let newZoom;
+    // const mapConfig = window.siteConfig.map;
+    // let newZoom;
 
-    if (viewportWidth < 600) {
-        // Mobile phones
-        newZoom = mapConfig.defaultZoom - 1;
-    } else if (viewportWidth < 992) {
-        // Tablets
-        newZoom = mapConfig.defaultZoom - .8;
-    } else {
-        // Desktops and larger screens
-        newZoom = mapConfig.defaultZoom;
-    }
+    // if (viewportWidth < 600) {
+    //     // Mobile phones
+    //     newZoom = mapConfig.defaultZoom - 1;
+    // } else if (viewportWidth < 992) {
+    //     // Tablets
+    //     newZoom = mapConfig.defaultZoom - .8;
+    // } else {
+    //     // Desktops and larger screens
+    //     newZoom = mapConfig.defaultZoom;
+    // }
 
-    // Update map zoom if it exists
-    if (weatherMap) {
-        weatherMap.setZoom(newZoom);
-    }
+    // // Update map zoom if it exists
+    // if (weatherMap) {
+    //     weatherMap.setZoom(newZoom);
+    // }
 });
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initIndexPage);
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the county map
+    initCountyMap();
+});
