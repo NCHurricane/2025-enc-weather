@@ -1,5 +1,5 @@
 // currentConditions.js
-import { safeSetText, safeSetHTML, degreesToCardinal } from './utils.js';
+import { safeSetText, safeSetHTML, degreesToCardinal, celsiusToFahrenheit, metersToMiles } from './utils.js';
 
 // Track the observation time from the API
 let observationTime = null;
@@ -120,25 +120,20 @@ export function updateDOMWithObservation(properties, stationName) {
 }
 
 function setWeatherBackground(properties) {
-    // Get county name from window variable or default to 'county_map'
-    const countyName = window.countyName || 'county_map';
-
-    // Check if icon URL is available in the API response
-    let iconUrl = properties.icon ? properties.icon : `../../../images/county/${countyName}.png`;
-
-    // Update resolution if needed
+    // Only set a background if we have an icon from the API
     if (properties.icon) {
-        iconUrl = iconUrl.replace(/\?size=\w+/, '?size=large');
-    }
+        // Update resolution if needed
+        let iconUrl = properties.icon.replace(/\?size=\w+/, '?size=large');
 
-    // Set background image for weather card
-    const weatherBgElement = document.getElementById('weather-background');
-    if (weatherBgElement) {
-        weatherBgElement.classList.add('weather-bg');
+        // Set background image for weather card
+        const weatherBgElement = document.getElementById('weather-background');
+        if (weatherBgElement) {
+            weatherBgElement.classList.add('weather-bg');
 
-        // Use a linear-gradient to create an overlay that controls opacity
-        weatherBgElement.style.backgroundImage =
-            `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url(${iconUrl})`;
+            // Use a linear-gradient to create an overlay that controls opacity
+            weatherBgElement.style.backgroundImage =
+                `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url(${iconUrl})`;
+        }
     }
 
     // Hide any existing weather icon div (if present)
