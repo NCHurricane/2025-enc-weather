@@ -121,12 +121,10 @@ export function updateDOMWithObservation(properties, stationName) {
 
 function setWeatherBackground(properties) {
     // Get county name from window variable or default to 'county_map'
-    const config = window.weatherConfig || {};
-    const location = config.location || {};
-    const countyName = location.countyName || 'county_map';
+    const countyName = window.countyName || 'county_map';
 
     // Check if icon URL is available in the API response
-    let iconUrl = properties.icon ? properties.icon : `images/county/${countyName}.png`;
+    let iconUrl = properties.icon ? properties.icon : `../../../images/county/${countyName}.png`;
 
     // Update resolution if needed
     if (properties.icon) {
@@ -149,6 +147,7 @@ function setWeatherBackground(properties) {
         weatherIconDiv.style.display = 'none';
     }
 }
+
 
 // Function to update the time since last observation
 function updateLastUpdateTimestamp() {
