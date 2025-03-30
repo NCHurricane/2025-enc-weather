@@ -61,24 +61,33 @@
                </div>
 
                <div class="current-content">
-                  <!-- Replace the Leaflet map with our SVG map -->
-                  <div
-                     id="nc-county-map"
-                     class="county-map-container"
-                     aria-label="Interactive weather map of Eastern North Carolina counties"></div>
+                  <!-- Add this SVG container -->
+                  <div class="current-content">
+                     <!-- Single map container -->
+                     <div class="enc-map-container">
+                        <svg
+                           id="enc-map"
+                           width="100%"
+                           height="100%"
+                           viewBox="0 0 800 600"
+                           preserveAspectRatio="xMidYMid meet">
+                           <!-- SVG content will be added by JavaScript -->
+                        </svg>
+                     </div>
 
-                  <div
-                     class="refresh-container"
-                     style="text-align: right; margin-top: 10px">
-                     <button
-                        id="global-refresh"
-                        class="global-refresh-btn"
-                        title="Refresh All Data"
-                        aria-label="Refresh weather data">
-                        <i
-                           class="fa-solid fa-rotate-right"
-                           aria-hidden="true"></i>
-                     </button>
+                     <div
+                        class="refresh-container"
+                        style="text-align: right; margin-top: 10px">
+                        <button
+                           id="global-refresh"
+                           class="global-refresh-btn"
+                           title="Refresh All Data"
+                           aria-label="Refresh weather data">
+                           <i
+                              class="fa-solid fa-rotate-right"
+                              aria-hidden="true"></i>
+                        </button>
+                     </div>
                   </div>
                </div>
             </div>

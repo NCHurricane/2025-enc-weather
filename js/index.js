@@ -24,47 +24,137 @@ const countyCoordinates = {
 };
 
 // Replace initMap with createSVGMap
+// function createSVGMap() {
+//     const svgElement = document.getElementById('enc-map');
+//     if (!svgElement) return null;
+
+//     // Add county paths based on your county data
+//     const counties = window.siteConfig.counties;
+
+//     counties.forEach(county => {
+//         // Create a basic rectangular shape for each county
+//         const countyName = county.name.toLowerCase();
+//         const coords = countyCoordinates[countyName];
+
+//         if (coords) {
+//             // Create a simple rectangle for the county (placeholder)
+//             const countyPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+//             // Simple rectangle around the coordinate
+//             const width = 70;
+//             const height = 50;
+//             const x = coords.x - width / 2;
+//             const y = coords.y - height / 2;
+
+//             countyPath.setAttribute('d', `M ${x},${y} h ${width} v ${height} h -${width} z`);
+//             countyPath.setAttribute('id', countyName);
+//             countyPath.setAttribute('class', 'county');
+//             countyPath.setAttribute('data-url', coords.url);
+
+//             // Add click event to navigate to county page
+//             countyPath.addEventListener('click', () => {
+//                 window.location.href = coords.url;
+//             });
+
+//             svgElement.appendChild(countyPath);
+
+//             // Add county name
+//             const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+//             nameLabel.setAttribute('x', coords.x);
+//             nameLabel.setAttribute('y', coords.y + 30); // Below the temperature
+//             nameLabel.setAttribute('class', 'county-label');
+//             nameLabel.textContent = county.name;
+//             svgElement.appendChild(nameLabel);
+//         }
+//     });
+
+//     return svgElement;
+// }
+
 function createSVGMap() {
     const svgElement = document.getElementById('enc-map');
-    if (!svgElement) return null;
+    if (!svgElement) {
+        console.error('SVG element not found!');
+        return null;
+    }
+
+    // Clear any existing content
+    while (svgElement.firstChild) {
+        svgElement.removeChild(svgElement.firstChild);
+    }
+
+    // Create background
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '800');
+    background.setAttribute('height', '600');
+    background.setAttribute('fill', '#262626');
+    svgElement.appendChild(background);
+
+    // Draw North Carolina outline (optional)
+    const ncOutline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    ncOutline.setAttribute('d', 'M100,300 Q400,200 700,300 Q400,400 100,300 Z'); // Simple curved shape
+    ncOutline.setAttribute('fill', 'none');
+    ncOutline.setAttribute('stroke', '#555555');
+    ncOutline.setAttribute('stroke-width', '2');
+    svgElement.appendChild(ncOutline);
 
     // Add county paths based on your county data
     const counties = window.siteConfig.counties;
 
     counties.forEach(county => {
-        // Create a basic rectangular shape for each county
         const countyName = county.name.toLowerCase();
         const coords = countyCoordinates[countyName];
 
         if (coords) {
-            // Create a simple rectangle for the county (placeholder)
+            // Create a visible county shape
+            const countyGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            countyGroup.setAttribute('id', `county-group-${countyName}`);
+            countyGroup.setAttribute('data-url', coords.url);
+
+            // Create county shape (hexagon instead of rectangle for variety)
             const countyPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const width = 80;
+            const height = 60;
+            const x = coords.x;
+            const y = coords.y;
 
-            // Simple rectangle around the coordinate
-            const width = 70;
-            const height = 50;
-            const x = coords.x - width / 2;
-            const y = coords.y - height / 2;
+            // Create hexagon path
+            const hexPath = `
+                M ${x},${y - height / 2}
+                L ${x + width / 3},${y - height / 4}
+                L ${x + width / 3},${y + height / 4}
+                L ${x},${y + height / 2}
+                L ${x - width / 3},${y + height / 4}
+                L ${x - width / 3},${y - height / 4}
+                Z
+            `;
 
-            countyPath.setAttribute('d', `M ${x},${y} h ${width} v ${height} h -${width} z`);
-            countyPath.setAttribute('id', countyName);
+            countyPath.setAttribute('d', hexPath);
+            countyPath.setAttribute('fill', '#0077cc');
+            countyPath.setAttribute('stroke', '#ffffff');
+            countyPath.setAttribute('stroke-width', '2');
             countyPath.setAttribute('class', 'county');
-            countyPath.setAttribute('data-url', coords.url);
-
-            // Add click event to navigate to county page
-            countyPath.addEventListener('click', () => {
-                window.location.href = coords.url;
-            });
-
-            svgElement.appendChild(countyPath);
+            countyGroup.appendChild(countyPath);
 
             // Add county name
             const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             nameLabel.setAttribute('x', coords.x);
-            nameLabel.setAttribute('y', coords.y + 30); // Below the temperature
+            nameLabel.setAttribute('y', coords.y + 40); // Below the temp
+            nameLabel.setAttribute('fill', 'white');
+            nameLabel.setAttribute('text-anchor', 'middle');
             nameLabel.setAttribute('class', 'county-label');
             nameLabel.textContent = county.name;
-            svgElement.appendChild(nameLabel);
+            countyGroup.appendChild(nameLabel);
+
+            // Add click event to the group
+            countyGroup.addEventListener('click', () => {
+                window.location.href = coords.url;
+            });
+
+            // Add county group to SVG
+            svgElement.appendChild(countyGroup);
+
+            console.log(`Added county: ${countyName} at ${coords.x},${coords.y}`);
         }
     });
 
@@ -74,10 +164,13 @@ function createSVGMap() {
 // Function to update the SVG map with temperature data
 function updateSVGTemperatures() {
     const svg = document.getElementById('enc-map');
-    if (!svg) return;
+    if (!svg) {
+        console.error("SVG element not found");
+        return;
+    }
 
     // Clear any existing temperature markers
-    const existingMarkers = document.querySelectorAll('.temp-marker');
+    const existingMarkers = svg.querySelectorAll('.temp-marker');
     existingMarkers.forEach(marker => marker.remove());
 
     // For each county in the config, update the temp
@@ -95,9 +188,13 @@ function updateSVGTemperatures() {
                 tempMarker.setAttribute('x', coords.x);
                 tempMarker.setAttribute('y', coords.y);
                 tempMarker.setAttribute('class', 'temp-marker');
+                tempMarker.setAttribute('text-anchor', 'middle');
+                tempMarker.setAttribute('dominant-baseline', 'middle');
                 tempMarker.textContent = `${weatherData.temp}°`;
 
                 svg.appendChild(tempMarker);
+
+                console.log(`Added temperature ${weatherData.temp}° for ${county.name}`);
             }
         } catch (error) {
             console.error(`Error updating temperature for ${county.name}:`, error);
@@ -258,8 +355,22 @@ window.addEventListener('resize', function () {
 });
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initIndexPage);
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize the county map
-    initCountyMap();
+    // Initialize our SVG map
+    createSVGMap();
+
+    // Load weather data and update temperatures
+    updateSVGTemperatures();
+
+    // Setup other components
+    updateTropicalOutlook();
+    checkActiveSystemsStatus().then(hasActiveSystems => {
+        updateTropicalAlertBanner(hasActiveSystems);
+    });
+
+    // Set up event handlers
+    setupEventHandlers();
+
+    // Debug - log the SVG element
+    console.log("SVG Element:", document.getElementById('enc-map'));
 });
