@@ -16,6 +16,10 @@
 
       <link rel="stylesheet" href="css/styles.css?v=3.24.2" />
       <link rel="stylesheet" href="css/index.css?v=3.24.2" />
+
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://unpkg.com/topojson-client@3"></script>
+      <script src="https://d3js.org/d3.v7.min.js"></script>
    </head>
 
    <body>
@@ -57,11 +61,10 @@
                </div>
 
                <div class="current-content">
-                  <!-- Replace the Leaflet map with our SVG map -->
-                  <div
-                     id="nc-county-map"
-                     class="county-map-container"
-                     aria-label="Interactive weather map of Eastern North Carolina counties"></div>
+                  <!-- Replace the SVG container with the county map container -->
+                  <div id="nc-county-map" class="county-map-container">
+                     <!-- Map will be dynamically inserted here -->
+                  </div>
 
                   <div
                      class="refresh-container"
@@ -91,7 +94,6 @@
                </div>
 
                <div class="tropical-content">
-                  <!-- This will be dynamically updated based on whether it's hurricane season -->
                   <div id="tropical-outlook">
                      <!-- Content will be dynamically added by JavaScript -->
                   </div>
@@ -99,7 +101,7 @@
                   <p class="tropical-disclaimer">
                      Data courtesy of the National Hurricane Center. For
                      official information, visit
-                     <a
+                     
                         href="https://www.nhc.noaa.gov/"
                         target="_blank"
                         rel="noopener"
@@ -115,48 +117,14 @@
       <footer class="footer">
          <div class="footer-content">
             <div class="social-media">
-               <a
+               <!-- Social media links -->
+               
                   href="https://bsky.app/profile/nchurricane.com"
                   target="_blank"
                   title="Bluesky">
                   <i class="fa-brands fa-bluesky" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://twitter.com/chuckcopelandwx"
-                  target="_blank"
-                  title="X">
-                  <i class="fab fa-x-twitter" aria-hidden="true"></i>
-               </a>
-               <a
-                  href="https://www.youtube.com/@nchurricane"
-                  target="_blank"
-                  title="YouTube">
-                  <i class="fab fa-youtube" aria-hidden="true"></i>
-               </a>
-               <a
-                  href="https://www.instagram.com/chuck_copeland_wx/"
-                  target="_blank"
-                  title="Instagram">
-                  <i class="fab fa-instagram" aria-hidden="true"></i>
-               </a>
-               <a
-                  href="https://www.threads.net/@chuck_copeland_wx"
-                  target="_blank"
-                  title="Threads">
-                  <i class="fab fa-threads" aria-hidden="true"></i>
-               </a>
-               <a
-                  href="https://www.facebook.com/chuckcopelandwx/"
-                  target="_blank"
-                  title="Facebook">
-                  <i class="fab fa-facebook" aria-hidden="true"></i>
-               </a>
-               <a
-                  href="https://www.tiktok.com/@chuck_copeland_wx"
-                  target="_blank"
-                  title="TikTok">
-                  <i class="fab fa-tiktok" aria-hidden="true"></i>
-               </a>
+               <!-- Other social media links -->
             </div>
             <p class="disclaimer">
                NCHurricane.com is for informative purposes only. Do not use the
@@ -180,11 +148,7 @@
          </div>
       </footer>
 
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="https://unpkg.com/topojson-client@3"></script>
-      <script src="https://d3js.org/d3.v7.min.js"></script>
-
-      <!-- Configuration Script - Updated to use siteConfig.js -->
+      <!-- Configuration Script -->
       <script src="js/siteConfig.js?v=3.24.2"></script>
 
       <!-- Main Application Script -->

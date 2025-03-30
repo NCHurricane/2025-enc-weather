@@ -2,26 +2,22 @@
 import { fetchCurrentWeather, getWeatherIcon } from './weatherData.js';
 import { safeSetHTML, createElement } from './utils.js';
 
-// We'll need to include the topojson-client library
-// Add this to your HTML: <script src="https://unpkg.com/topojson-client@3"></script>
-// Or import it if using a bundler: import * as topojson from 'topojson-client';
-
 export class NCCountyMap {
     constructor(containerId, options = {}) {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
         this.width = options.width || 800;
-        this.height = options.height || 600;
+        this.height = options.height || 450;
         this.countyData = null;
         this.weatherData = {};
         this.svg = null;
         this.projection = null;
         this.path = null;
         this.options = {
-            defaultFill: '#f0f0f0',
-            highlightFill: '#ffc107',
-            strokeColor: '#fff',
-            strokeWidth: 1,
+            defaultFill: '#0077cc',
+            highlightFill: '#1e88e5',
+            strokeColor: '#ffffff',
+            strokeWidth: 2,
             ...options
         };
 
@@ -41,12 +37,18 @@ export class NCCountyMap {
         try {
             // Create SVG element with responsive viewBox
             this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            this.svg.setAttribute('viewBox', '0 0 800 600');
+            this.svg.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
             this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             this.svg.style.width = '100%';
-            this.svg.style.height = 'auto';
-            this.svg.style.display = 'block';
+            this.svg.style.height = '100%'; // Make sure height is 100%
             this.container.appendChild(this.svg);
+
+            // Add background rect
+            const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            background.setAttribute('width', this.width);
+            background.setAttribute('height', this.height);
+            background.setAttribute('fill', '#262626');
+            this.svg.appendChild(background);
 
             // Add loading indicator
             const loadingText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -54,7 +56,7 @@ export class NCCountyMap {
             loadingText.setAttribute('y', '50%');
             loadingText.setAttribute('text-anchor', 'middle');
             loadingText.setAttribute('dominant-baseline', 'middle');
-            loadingText.setAttribute('fill', '#333');
+            loadingText.setAttribute('fill', '#ffffff');
             loadingText.textContent = 'Loading map...';
             this.svg.appendChild(loadingText);
 
@@ -78,12 +80,27 @@ export class NCCountyMap {
     }
 
     // Load TopoJSON county data
+    // async loadCountyData() {
+    //     try {
+    //         const response = await fetch('js/data/NC-county-topo.json');
+    //         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+    //         this.countyData = await response.json();
+    //         return true;
+    //     } catch (error) {
+    //         console.error('Error loading county data:', error);
+    //         return false;
+    //     }
+    // }
+
+    // Load GeoJSON county data
     async loadCountyData() {
         try {
-            const response = await fetch('js/data/NC-county-topo.json');
+            const response = await fetch('js/data/NC-county-topo.geojson'); // Update filename if needed
             if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
             this.countyData = await response.json();
+            console.log("Loaded GeoJSON data:", this.countyData.type);
             return true;
         } catch (error) {
             console.error('Error loading county data:', error);
@@ -92,33 +109,186 @@ export class NCCountyMap {
     }
 
     // Draw the county map
+    // drawMap() {
+    //     if (!this.countyData) return false;
+
+    //     try {
+    //         // Set up D3 projection (focusing on Eastern NC)
+    //         this.setupProjection();
+
+    //         // Create counties group
+    //         const countyGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    //         countyGroup.setAttribute('class', 'counties');
+    //         this.svg.appendChild(countyGroup);
+
+    //         // Get counties from TopoJSON
+    //         const counties = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
+
+    //         // Filter counties to only those in our target set
+    //         const targetCountyFeatures = counties.features.filter(feature =>
+    //             this.targetCounties.has(feature.properties.name.toLowerCase())
+    //         );
+
+    //         // Draw each county
+    //         targetCountyFeatures.forEach(county => {
+    //             const countyName = county.properties.name.toLowerCase();
+
+    //             // Create path element
+    //             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    //             path.setAttribute('d', this.path(county));
+    //             path.setAttribute('id', `county-${countyName}`);
+    //             path.setAttribute('data-name', countyName);
+    //             path.setAttribute('fill', this.options.defaultFill);
+    //             path.setAttribute('stroke', this.options.strokeColor);
+    //             path.setAttribute('stroke-width', this.options.strokeWidth);
+
+    //             // Add event listeners
+    //             path.addEventListener('mouseover', () => this.handleCountyHover(county, path));
+    //             path.addEventListener('mouseout', () => this.handleCountyOut(county, path));
+    //             path.addEventListener('click', () => this.handleCountyClick(county));
+
+    //             // Add to the group
+    //             countyGroup.appendChild(path);
+
+    //             // Add county label
+    //             const centroid = this.findCentroid(county);
+    //             const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    //             label.setAttribute('x', centroid.x);
+    //             label.setAttribute('y', centroid.y + 40); // Position below where temp will be
+    //             label.setAttribute('text-anchor', 'middle');
+    //             label.setAttribute('fill', 'white');
+    //             label.setAttribute('font-size', '12px');
+    //             label.setAttribute('class', 'county-label');
+    //             label.textContent = county.properties.name;
+    //             countyGroup.appendChild(label);
+    //         });
+
+    //         return true;
+    //     } catch (error) {
+    //         console.error('Error drawing map:', error);
+    //         return false;
+    //     }
+    // }
+
+    // drawMap() {
+    //     if (!this.countyData) return false;
+
+    //     try {
+    //         // Set up D3 projection (focusing on Eastern NC)
+    //         this.setupProjection();
+
+    //         // Create counties group
+    //         const countyGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    //         countyGroup.setAttribute('class', 'counties');
+    //         this.svg.appendChild(countyGroup);
+
+    //         // Determine the correct object name in the TopoJSON file
+    //         const objectNames = Object.keys(this.countyData.objects || {});
+    //         if (objectNames.length === 0) {
+    //             console.error("No objects found in TopoJSON data");
+    //             return false;
+    //         }
+
+    //         // Use the first object (could be "counties", "nc", etc.)
+    //         const objectName = objectNames[0];
+    //         console.log(`Found TopoJSON object: ${objectName}`);
+
+    //         // Get counties from TopoJSON
+    //         const counties = topojson.feature(this.countyData, this.countyData.objects[objectName]);
+
+    //         // Filter counties to only those in our target set
+    //         const targetCountyFeatures = counties.features.filter(feature =>
+    //             this.targetCounties.has((feature.properties.name || "").toLowerCase())
+    //         );
+
+    //         // Draw each county
+    //         targetCountyFeatures.forEach(county => {
+    //             const countyName = (county.properties.name || "").toLowerCase();
+
+    //             // Create path element
+    //             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    //             path.setAttribute('d', this.path(county));
+    //             path.setAttribute('id', `county-${countyName}`);
+    //             path.setAttribute('data-name', countyName);
+    //             path.setAttribute('fill', this.options.defaultFill);
+    //             path.setAttribute('stroke', this.options.strokeColor);
+    //             path.setAttribute('stroke-width', this.options.strokeWidth);
+
+    //             // Add event listeners
+    //             path.addEventListener('mouseover', () => this.handleCountyHover(county, path));
+    //             path.addEventListener('mouseout', () => this.handleCountyOut(county, path));
+    //             path.addEventListener('click', () => this.handleCountyClick(county));
+
+    //             // Add to the group
+    //             countyGroup.appendChild(path);
+
+    //             // Add county label
+    //             const centroid = this.findCentroid(county);
+    //             const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    //             label.setAttribute('x', centroid.x);
+    //             label.setAttribute('y', centroid.y + 40); // Position below where temp will be
+    //             label.setAttribute('text-anchor', 'middle');
+    //             label.setAttribute('fill', 'white');
+    //             label.setAttribute('font-size', '12px');
+    //             label.setAttribute('class', 'county-label');
+    //             label.textContent = county.properties.name;
+    //             countyGroup.appendChild(label);
+    //         });
+
+    //         return true;
+    //     } catch (error) {
+    //         console.error('Error drawing map:', error);
+    //         return false;
+    //     }
+    // }
+
     drawMap() {
         if (!this.countyData) return false;
 
         try {
-            // Set up D3 projection (or use a basic transformation if D3 is not available)
-            // This is a simplified version - with D3 you'd use d3.geoMercator() or similar
+            // Set up D3 projection (focusing on Eastern NC)
             this.setupProjection();
 
-            // Create counties
-            const counties = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
-
-            // Group for all counties
+            // Create counties group
             const countyGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             countyGroup.setAttribute('class', 'counties');
             this.svg.appendChild(countyGroup);
 
-            // Add each county as a path
-            counties.features.forEach(county => {
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                const countyName = county.properties.name.toLowerCase();
+            // Filter counties to only those in our target set
+            const targetCountyFeatures = this.countyData.features.filter(feature => {
+                // Check various possible property names for county name
+                const countyName = (
+                    feature.properties.name ||
+                    feature.properties.NAME ||
+                    feature.properties.County ||
+                    feature.properties.COUNTY ||
+                    ""
+                ).toLowerCase();
 
-                // Set attributes
+                // Remove "County" suffix if present
+                const cleanName = countyName.replace(/\s+county$/, "");
+
+                return this.targetCounties.has(cleanName);
+            });
+
+            console.log(`Found ${targetCountyFeatures.length} target counties`);
+
+            // Draw each county
+            targetCountyFeatures.forEach(county => {
+                // Get county name from properties
+                const countyProps = county.properties;
+                const rawName = countyProps.name || countyProps.NAME ||
+                    countyProps.County || countyProps.COUNTY || "";
+                const countyName = rawName.toLowerCase().replace(/\s+county$/, "");
+
+                console.log(`Drawing county: ${rawName} (${countyName})`);
+
+                // Create path element
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute('d', this.path(county));
                 path.setAttribute('id', `county-${countyName}`);
                 path.setAttribute('data-name', countyName);
-                path.setAttribute('fill', this.targetCounties.has(countyName) ?
-                    this.options.highlightFill : this.options.defaultFill);
+                path.setAttribute('fill', this.options.defaultFill);
                 path.setAttribute('stroke', this.options.strokeColor);
                 path.setAttribute('stroke-width', this.options.strokeWidth);
 
@@ -129,6 +299,18 @@ export class NCCountyMap {
 
                 // Add to the group
                 countyGroup.appendChild(path);
+
+                // Add county label
+                const centroid = this.findCentroid(county);
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', centroid.x);
+                label.setAttribute('y', centroid.y + 40); // Position below where temp will be
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('fill', 'white');
+                label.setAttribute('font-size', '12px');
+                label.setAttribute('class', 'county-label');
+                label.textContent = rawName;
+                countyGroup.appendChild(label);
             });
 
             return true;
@@ -138,93 +320,290 @@ export class NCCountyMap {
         }
     }
 
-    // Set up projection and path generator
+    // Set up projection focused on Eastern NC
+    // setupProjection() {
+    //     if (window.d3) {
+    //         // Get all target counties as a single feature collection
+    //         const counties = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
+    //         const targetCountyFeatures = counties.features.filter(feature =>
+    //             this.targetCounties.has(feature.properties.name.toLowerCase())
+    //         );
+
+    //         // Create a feature collection with just our target counties
+    //         const targetCounties = {
+    //             type: "FeatureCollection",
+    //             features: targetCountyFeatures
+    //         };
+
+    //         // Create a projection that fits exactly these counties
+    //         this.projection = d3.geoMercator()
+    //             .fitSize([this.width * 0.9, this.height * 0.9], targetCounties);
+
+    //         // Add padding around the counties
+    //         const [x, y] = this.projection.translate();
+    //         this.projection.translate([x, y + this.height * 0.05]);
+
+    //         // Create a path generator using this projection
+    //         this.path = d3.geoPath().projection(this.projection);
+    //     } else {
+    //         // Fallback if D3 is not available
+    //         console.warn("D3 not available, using simplified projection");
+    //         this.createSimplifiedProjection();
+    //     }
+    // }
+
+    // Set up projection focused on Eastern NC
+    // setupProjection() {
+    //     if (window.d3) {
+    //         // Define a custom area for Eastern NC with slightly adjusted bounds
+    //         const easternNC = {
+    //             type: "Feature",
+    //             properties: {},
+    //             geometry: {
+    //                 type: "Polygon",
+    //                 coordinates: [[
+    //                     [-78.5, 34.8],  // Southwest corner
+    //                     [-75.2, 34.8],  // Southeast corner (adjusted for higher resolution)
+    //                     [-75.2, 36.5],  // Northeast corner (adjusted for higher resolution)
+    //                     [-78.5, 36.5],  // Northwest corner
+    //                     [-78.5, 34.8]   // Close the polygon
+    //                 ]]
+    //             }
+    //         };
+
+    //         // Create a projection focused on Eastern NC
+    //         this.projection = d3.geoMercator()
+    //             .fitSize([this.width, this.height], easternNC);
+
+    //         // Create a path generator using this projection
+    //         this.path = d3.geoPath().projection(this.projection);
+    //     } else {
+    //         // Fallback if D3 is not available
+    //         this.createSimplifiedProjection();
+    //     }
+    // }
+
+    // setupProjection() {
+    //     if (window.d3) {
+    //         // Determine the correct object name in the TopoJSON file
+    //         const objectNames = Object.keys(this.countyData.objects || {});
+    //         if (objectNames.length === 0) {
+    //             console.error("No objects found in TopoJSON data");
+    //             return false;
+    //         }
+
+    //         // Use the first object
+    //         const objectName = objectNames[0];
+
+    //         // Get all target counties as a single feature collection
+    //         const counties = topojson.feature(this.countyData, this.countyData.objects[objectName]);
+    //         const targetCountyFeatures = counties.features.filter(feature =>
+    //             this.targetCounties.has((feature.properties.name || "").toLowerCase())
+    //         );
+
+    //         // Create a feature collection with just our target counties
+    //         const targetCounties = {
+    //             type: "FeatureCollection",
+    //             features: targetCountyFeatures
+    //         };
+
+    //         // Create a projection that fits exactly these counties
+    //         this.projection = d3.geoMercator()
+    //             .fitSize([this.width * 0.9, this.height * 0.8], targetCounties);
+
+    //         // Add padding around the counties
+    //         const [x, y] = this.projection.translate();
+    //         this.projection.translate([x, y + this.height * 0.05]);
+
+    //         // Create a path generator using this projection
+    //         this.path = d3.geoPath().projection(this.projection);
+    //     } else {
+    //         // Fallback if D3 is not available
+    //         this.createSimplifiedProjection();
+    //     }
+    // }
+
     setupProjection() {
         if (window.d3) {
-            // If D3 is available, use its projection capabilities
-            this.projection = d3.geoMercator()
-                .fitSize([this.width, this.height], topojson.feature(this.countyData, this.countyData.objects.North_Carolina));
+            // Filter to just our target counties
+            const targetCountyFeatures = this.countyData.features.filter(feature => {
+                const countyName = (
+                    feature.properties.name ||
+                    feature.properties.NAME ||
+                    feature.properties.County ||
+                    feature.properties.COUNTY ||
+                    ""
+                ).toLowerCase().replace(/\s+county$/, "");
 
+                return this.targetCounties.has(countyName);
+            });
+
+            // Create a feature collection with just our target counties
+            const targetCounties = {
+                type: "FeatureCollection",
+                features: targetCountyFeatures
+            };
+
+            // Create a projection that fits exactly these counties
+            this.projection = d3.geoMercator()
+                .fitSize([this.width * 0.9, this.height * 0.8], targetCounties);
+
+            // Add padding around the counties
+            const [x, y] = this.projection.translate();
+            this.projection.translate([x, y + this.height * 0.05]);
+
+            // Create a path generator using this projection
             this.path = d3.geoPath().projection(this.projection);
         } else {
-            // Simplified version without D3
-            // Get the bounding box of all counties
-            const features = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
-            const bounds = this.getBoundingBox(features);
-
-            // Create a simple scaling function for the coordinates
-            const xScale = this.width / (bounds.maxX - bounds.minX);
-            const yScale = this.height / (bounds.maxY - bounds.minY);
-
-            // Create a simple path generator
-            this.path = feature => {
-                let pathData = '';
-
-                if (feature.geometry.type === 'Polygon') {
-                    feature.geometry.coordinates.forEach(ring => {
-                        ring.forEach((coord, i) => {
-                            const x = (coord[0] - bounds.minX) * xScale;
-                            const y = (coord[1] - bounds.minY) * yScale;
-                            pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
-                        });
-                        pathData += 'Z';
-                    });
-                } else if (feature.geometry.type === 'MultiPolygon') {
-                    feature.geometry.coordinates.forEach(polygon => {
-                        polygon.forEach(ring => {
-                            ring.forEach((coord, i) => {
-                                const x = (coord[0] - bounds.minX) * xScale;
-                                const y = (coord[1] - bounds.minY) * yScale;
-                                pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
-                            });
-                            pathData += 'Z';
-                        });
-                    });
-                }
-
-                return pathData;
-            };
+            // Fallback if D3 is not available
+            this.createSimplifiedProjection();
         }
     }
 
-    // Get bounding box for features (simplified version)
-    getBoundingBox(features) {
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
+    // Create simplified projection without D3
+    createSimplifiedProjection() {
+        // Eastern NC approximate bounds
+        const easternMinLon = -78.5;
+        const easternMaxLon = -75.4;
+        const easternMinLat = 34.8;
+        const easternMaxLat = 36.5;
 
-        features.features.forEach(feature => {
+        // Create simple path generator
+        this.path = feature => {
+            let pathData = '';
+
+            // Scale for converting coordinates
+            const xScale = this.width / (easternMaxLon - easternMinLon);
+            const yScale = this.height / (easternMaxLat - easternMinLat);
+
+            // Convert coordinates to path data
             if (feature.geometry.type === 'Polygon') {
                 feature.geometry.coordinates.forEach(ring => {
-                    ring.forEach(coord => {
-                        minX = Math.min(minX, coord[0]);
-                        minY = Math.min(minY, coord[1]);
-                        maxX = Math.max(maxX, coord[0]);
-                        maxY = Math.max(maxY, coord[1]);
+                    ring.forEach((coord, i) => {
+                        const x = (coord[0] - easternMinLon) * xScale;
+                        const y = this.height - (coord[1] - easternMinLat) * yScale; // Flip Y axis
+                        pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
                     });
+                    pathData += 'Z';
                 });
             } else if (feature.geometry.type === 'MultiPolygon') {
                 feature.geometry.coordinates.forEach(polygon => {
                     polygon.forEach(ring => {
-                        ring.forEach(coord => {
-                            minX = Math.min(minX, coord[0]);
-                            minY = Math.min(minY, coord[1]);
-                            maxX = Math.max(maxX, coord[0]);
-                            maxY = Math.max(maxY, coord[1]);
+                        ring.forEach((coord, i) => {
+                            const x = (coord[0] - easternMinLon) * xScale;
+                            const y = this.height - (coord[1] - easternMinLat) * yScale;
+                            pathData += (i === 0 ? 'M' : 'L') + x + ',' + y;
                         });
+                        pathData += 'Z';
                     });
                 });
             }
-        });
 
-        return { minX, minY, maxX, maxY };
+            return pathData;
+        };
     }
 
-    // Event Handlers
+    // Find the centroid of a county
+    // findCentroid(county) {
+    //     if (window.d3) {
+    //         // Use D3's centroid calculation
+    //         const centroidCoords = d3.geoCentroid(county);
+    //         return {
+    //             x: this.projection(centroidCoords)[0],
+    //             y: this.projection(centroidCoords)[1]
+    //         };
+    //     } else {
+    //         // Calculate a simple average of all coordinates
+    //         let totalX = 0;
+    //         let totalY = 0;
+    //         let pointCount = 0;
+
+    //         // Helper function to process each coordinate ring
+    //         const processRing = (ring) => {
+    //             ring.forEach(coord => {
+    //                 // Eastern NC approximate bounds
+    //                 const easternMinLon = -78.5;
+    //                 const easternMaxLon = -75.4;
+    //                 const easternMinLat = 34.8;
+    //                 const easternMaxLat = 36.5;
+
+    //                 // Calculate position
+    //                 const xScale = this.width / (easternMaxLon - easternMinLon);
+    //                 const yScale = this.height / (easternMaxLat - easternMinLat);
+
+    //                 const x = (coord[0] - easternMinLon) * xScale;
+    //                 const y = this.height - (coord[1] - easternMinLat) * yScale;
+
+    //                 totalX += x;
+    //                 totalY += y;
+    //                 pointCount++;
+    //             });
+    //         };
+
+    //         if (county.geometry.type === 'Polygon') {
+    //             county.geometry.coordinates.forEach(processRing);
+    //         } else if (county.geometry.type === 'MultiPolygon') {
+    //             county.geometry.coordinates.forEach(polygon => {
+    //                 polygon.forEach(processRing);
+    //             });
+    //         }
+
+    //         return {
+    //             x: totalX / pointCount,
+    //             y: totalY / pointCount
+    //         };
+    //     }
+    // }
+
+    // Find the centroid of a county
+    findCentroid(county) {
+        if (window.d3) {
+            // Use D3's centroid calculation
+            const centroidCoords = d3.geoCentroid(county);
+            return {
+                x: this.projection(centroidCoords)[0],
+                y: this.projection(centroidCoords)[1]
+            };
+        } else {
+            // Calculate a simple average of all coordinates
+            let totalX = 0;
+            let totalY = 0;
+            let pointCount = 0;
+
+            // Helper function to process each coordinate
+            const processCoordinates = (coords) => {
+                coords.forEach(coord => {
+                    if (Array.isArray(coord[0])) {
+                        // This is a nested array of coordinates
+                        processCoordinates(coord);
+                    } else {
+                        // This is a single [lon, lat] coordinate
+                        const point = this.projection([coord[0], coord[1]]);
+                        if (point) {
+                            totalX += point[0];
+                            totalY += point[1];
+                            pointCount++;
+                        }
+                    }
+                });
+            };
+
+            // Process the geometry's coordinates
+            processCoordinates(county.geometry.coordinates);
+
+            return {
+                x: totalX / (pointCount || 1),
+                y: totalY / (pointCount || 1)
+            };
+        }
+    }
+
+    // Handle county hover event
     handleCountyHover(county, pathElement) {
         const countyName = county.properties.name;
-        pathElement.setAttribute('opacity', '0.8');
+
+        // Highlight the county
+        pathElement.setAttribute('fill', this.options.highlightFill);
 
         // Show tooltip if we have weather data
         if (this.weatherData[countyName.toLowerCase()]) {
@@ -232,11 +611,16 @@ export class NCCountyMap {
         }
     }
 
+    // Handle county mouseout event
     handleCountyOut(county, pathElement) {
-        pathElement.setAttribute('opacity', '1');
+        // Restore original fill color
+        pathElement.setAttribute('fill', this.options.defaultFill);
+
+        // Hide tooltip
         this.hideTooltip();
     }
 
+    // Handle county click event
     handleCountyClick(county) {
         const countyName = county.properties.name.toLowerCase();
 
@@ -244,12 +628,13 @@ export class NCCountyMap {
         const countyConfig = (window.siteConfig?.counties || [])
             .find(c => c.name.toLowerCase() === countyName);
 
+        // Navigate to county page if URL exists
         if (countyConfig && countyConfig.url) {
             window.location.href = countyConfig.url;
         }
     }
 
-    // Tooltip functions
+    // Show tooltip with weather data
     showTooltip(county, weatherData) {
         // Remove any existing tooltip
         this.hideTooltip();
@@ -266,37 +651,27 @@ export class NCCountyMap {
 
         // Background rect
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', centroid.x - 60);
-        rect.setAttribute('y', centroid.y - 50);
-        rect.setAttribute('width', '120');
-        rect.setAttribute('height', '100');
+        rect.setAttribute('x', centroid.x - 70);
+        rect.setAttribute('y', centroid.y - 80);
+        rect.setAttribute('width', '140');
+        rect.setAttribute('height', '70');
         rect.setAttribute('rx', '5');
         rect.setAttribute('ry', '5');
-        rect.setAttribute('fill', 'rgba(0,0,0,0.7)');
+        rect.setAttribute('fill', 'rgba(0,0,0,0.8)');
 
         // County name
         const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         nameText.setAttribute('x', centroid.x);
-        nameText.setAttribute('y', centroid.y - 30);
+        nameText.setAttribute('y', centroid.y - 55);
         nameText.setAttribute('text-anchor', 'middle');
         nameText.setAttribute('fill', 'white');
         nameText.setAttribute('font-weight', 'bold');
         nameText.textContent = countyName;
 
-        // Temperature
-        const tempText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        tempText.setAttribute('x', centroid.x);
-        tempText.setAttribute('y', centroid.y);
-        tempText.setAttribute('text-anchor', 'middle');
-        tempText.setAttribute('fill', 'yellow');
-        tempText.setAttribute('font-size', '18');
-        tempText.setAttribute('font-weight', 'bold');
-        tempText.textContent = `${weatherData.temp}°F`;
-
-        // Condition
+        // Weather condition
         const condText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         condText.setAttribute('x', centroid.x);
-        condText.setAttribute('y', centroid.y + 25);
+        condText.setAttribute('y', centroid.y - 35);
         condText.setAttribute('text-anchor', 'middle');
         condText.setAttribute('fill', 'white');
         condText.setAttribute('font-size', '12');
@@ -305,65 +680,17 @@ export class NCCountyMap {
         // Add elements to tooltip
         tooltip.appendChild(rect);
         tooltip.appendChild(nameText);
-        tooltip.appendChild(tempText);
         tooltip.appendChild(condText);
 
         // Add tooltip to SVG
         this.svg.appendChild(tooltip);
     }
 
+    // Hide tooltip
     hideTooltip() {
         const tooltip = document.getElementById('county-tooltip');
         if (tooltip) {
             tooltip.parentNode.removeChild(tooltip);
-        }
-    }
-
-    // Find the centroid of a county
-    findCentroid(county) {
-        if (window.d3) {
-            // Use D3's centroid calculation if available
-            const centroidCoords = d3.geoCentroid(county);
-            return {
-                x: this.projection(centroidCoords)[0],
-                y: this.projection(centroidCoords)[1]
-            };
-        } else {
-            // Calculate a simple average of all coordinates
-            let totalX = 0;
-            let totalY = 0;
-            let pointCount = 0;
-
-            // Helper function to process a ring of coordinates
-            const processRing = (ring) => {
-                ring.forEach(coord => {
-                    const features = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
-                    const bounds = this.getBoundingBox(features);
-
-                    const xScale = this.width / (bounds.maxX - bounds.minX);
-                    const yScale = this.height / (bounds.maxY - bounds.minY);
-
-                    const x = (coord[0] - bounds.minX) * xScale;
-                    const y = (coord[1] - bounds.minY) * yScale;
-
-                    totalX += x;
-                    totalY += y;
-                    pointCount++;
-                });
-            };
-
-            if (county.geometry.type === 'Polygon') {
-                county.geometry.coordinates.forEach(processRing);
-            } else if (county.geometry.type === 'MultiPolygon') {
-                county.geometry.coordinates.forEach(polygon => {
-                    polygon.forEach(processRing);
-                });
-            }
-
-            return {
-                x: totalX / pointCount,
-                y: totalY / pointCount
-            };
         }
     }
 
@@ -380,9 +707,6 @@ export class NCCountyMap {
                 // Store weather data by county name (lowercase for consistency)
                 this.weatherData[county.name.toLowerCase()] = weatherData;
 
-                // Update county fill color based on temperature
-                this.updateCountyFill(county.name, weatherData);
-
                 // Add weather marker at county location
                 this.addWeatherMarker(county, weatherData);
             }
@@ -394,35 +718,45 @@ export class NCCountyMap {
         }
     }
 
-    // Update county fill color based on temperature
-    updateCountyFill(countyName, weatherData) {
-        const countyPath = document.getElementById(`county-${countyName.toLowerCase()}`);
-        if (!countyPath) return;
-
-        // Simple temperature-based color scale (blue to red)
-        const temp = parseFloat(weatherData.temp);
-        if (isNaN(temp)) return;
-
-        // Temperature ranges for color scale (adjust as needed)
-        const minTemp = 20;  // Cold - blue
-        const maxTemp = 100; // Hot - red
-
-        // Calculate color (simple linear gradient from blue to red)
-        let normalizedTemp = Math.max(0, Math.min(1, (temp - minTemp) / (maxTemp - minTemp)));
-        const r = Math.round(normalizedTemp * 255);
-        const b = Math.round((1 - normalizedTemp) * 255);
-        const g = Math.round(100 - Math.abs(normalizedTemp - 0.5) * 100);
-
-        const fillColor = `rgb(${r}, ${g}, ${b})`;
-        countyPath.setAttribute('fill', fillColor);
-        countyPath.setAttribute('original-fill', fillColor);
-    }
-
-    // Add weather marker for a county
+    // Add weather marker (temperature) for a county
     addWeatherMarker(county, weatherData) {
-        // Find the position based on lat/lon
-        const position = this.latLonToSvgCoords(county.lat, county.lon);
-        if (!position) return;
+        // Find the county in our GeoJSON
+        const countyFeature = this.countyData.features.find(feature => {
+            const countyName = (
+                feature.properties.name ||
+                feature.properties.NAME ||
+                feature.properties.County ||
+                feature.properties.COUNTY ||
+                ""
+            ).toLowerCase().replace(/\s+county$/, "");
+
+            return countyName === county.name.toLowerCase();
+        });
+
+        // Initialize position
+        let position;
+
+        // Try to get position from county feature
+        if (countyFeature) {
+            position = this.findCentroid(countyFeature);
+        }
+
+        // If we couldn't find the position, use a manual fallback position
+        if (!position) {
+            // Fallback manual positions
+            const manualPositions = {
+                'bertie': { x: this.width * 0.3, y: this.height * 0.3 },
+                'pitt': { x: this.width * 0.45, y: this.height * 0.5 },
+                'beaufort': { x: this.width * 0.55, y: this.height * 0.6 },
+                'dare': { x: this.width * 0.7, y: this.height * 0.3 },
+                'washington': { x: this.width * 0.4, y: this.height * 0.4 },
+                'tyrrell': { x: this.width * 0.6, y: this.height * 0.35 },
+                'hyde': { x: this.width * 0.65, y: this.height * 0.55 }
+            };
+
+            position = manualPositions[county.name.toLowerCase()] ||
+                { x: this.width * 0.5, y: this.height * 0.5 }; // Default fallback
+        }
 
         // Create marker group
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -432,12 +766,13 @@ export class NCCountyMap {
 
         // Temperature text
         const tempText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        tempText.setAttribute('x', position.x);
-        tempText.setAttribute('y', position.y);
+        tempText.setAttribute('x', centroid.x);
+        tempText.setAttribute('y', centroid.y);
         tempText.setAttribute('text-anchor', 'middle');
-        tempText.setAttribute('font-size', '18');
+        tempText.setAttribute('dominant-baseline', 'middle');
+        tempText.setAttribute('font-size', '22px');
         tempText.setAttribute('font-weight', 'bold');
-        tempText.setAttribute('fill', 'white');
+        tempText.setAttribute('fill', 'yellow');
         tempText.setAttribute('stroke', 'black');
         tempText.setAttribute('stroke-width', '0.5');
         tempText.textContent = `${weatherData.temp}°`;
@@ -454,45 +789,22 @@ export class NCCountyMap {
         this.svg.appendChild(marker);
     }
 
-    // Convert lat/lon to SVG coordinates
-    latLonToSvgCoords(lat, lon) {
-        if (window.d3 && this.projection) {
-            // Use D3's projection capabilities
-            return {
-                x: this.projection([lon, lat])[0],
-                y: this.projection([lon, lat])[1]
-            };
-        } else {
-            // Without D3, we need a custom transformation
-            // This is a very simplified approximation
-            const features = topojson.feature(this.countyData, this.countyData.objects.North_Carolina);
-            const bounds = this.getBoundingBox(features);
-
-            // North Carolina's approximate bounds
-            const ncMinLon = -84.32;
-            const ncMaxLon = -75.46;
-            const ncMinLat = 33.88;
-            const ncMaxLat = 36.59;
-
-            // Calculate position
-            const x = this.width * (lon - ncMinLon) / (ncMaxLon - ncMinLon);
-            const y = this.height * (1 - (lat - ncMinLat) / (ncMaxLat - ncMinLat));
-
-            return { x, y };
-        }
+    // Handle window resize
+    handleResize() {
+        // This method can be extended to handle responsive adjustments
+        // For now, the SVG viewBox should handle most of the responsive behavior
     }
 
-    // Update the map (for refreshing data)
+    // Refresh the map data
     async refresh() {
-        // Clear existing markers
+        // Clear existing weather markers
         const markers = this.svg.querySelectorAll('.weather-marker');
         markers.forEach(marker => marker.remove());
 
         // Reset county fills
         const countyPaths = this.svg.querySelectorAll('path[id^="county-"]');
         countyPaths.forEach(path => {
-            path.setAttribute('fill', this.targetCounties.has(path.getAttribute('data-name')) ?
-                this.options.highlightFill : this.options.defaultFill);
+            path.setAttribute('fill', this.options.defaultFill);
         });
 
         // Update with fresh weather data
@@ -500,33 +812,42 @@ export class NCCountyMap {
     }
 }
 
-// Usage example:
-// 1. Add to index.js or main.js
+// Export function to initialize the county map
 export function initCountyMap() {
     const mapContainer = document.getElementById('nc-county-map');
-    if (!mapContainer) return;
+    if (!mapContainer) {
+        console.error("Map container not found");
+        return null;
+    }
 
+    // Create map instance with options
     const countyMap = new NCCountyMap('nc-county-map', {
-        defaultFill: '#e0e0e0',
-        highlightFill: '#ffc107',
+        defaultFill: '#0077cc',
+        highlightFill: '#1e88e5',
         strokeColor: '#ffffff',
-        strokeWidth: 1
+        strokeWidth: 2
     });
 
+    // Initialize the map
     countyMap.init().then(success => {
         if (success) {
             console.log('NC County Map initialized successfully');
-
-            // Optionally refresh on global refresh button click
-            const refreshButton = document.getElementById('global-refresh');
-            if (refreshButton) {
-                refreshButton.addEventListener('click', function () {
-                    countyMap.refresh();
-                });
-            }
+        } else {
+            console.error('Failed to initialize NC County Map');
         }
     });
 
-    // Store in window for debugging
-    window.ncCountyMap = countyMap;
+    // Set up refresh button to update the map
+    const refreshButton = document.getElementById('global-refresh');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function () {
+            // The main refresh functionality is in index.js
+            // This prevents duplicate event listeners
+            if (countyMap && typeof countyMap.refresh === 'function') {
+                countyMap.refresh();
+            }
+        });
+    }
+
+    return countyMap;
 }
