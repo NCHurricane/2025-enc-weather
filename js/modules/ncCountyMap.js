@@ -1,6 +1,7 @@
 // North Carolina County Map Module
 import { fetchCurrentWeather, getWeatherIcon } from './weatherData.js';
 import { safeSetHTML, createElement } from './utils.js';
+import { warningColors, warningPriorities } from './warningColors.js';
 
 export class NCCountyMap {
     constructor(containerId, options = {}) {
@@ -21,11 +22,26 @@ export class NCCountyMap {
             strokeWidth: 2,
             ...options
         };
+        this.alertData = {};
 
         // Create a set of counties we want to highlight (from your siteConfig)
         this.targetCounties = new Set(
             (window.siteConfig?.counties || []).map(county => county.name.toLowerCase())
         );
+    }
+
+    // Add a new method to fetch alerts for a county
+    async fetchCountyAlerts(county) {
+        try {
+            const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+            const data = await response.json();
+            return data.features || [];
+        } catch (error) {
+            console.error(`Error fetching alerts for ${county.name}:`, error);
+            return [];
+        }
     }
 
     // Initialize the map
@@ -345,21 +361,80 @@ export class NCCountyMap {
         }
     }
 
+    // Add a new method to update county alert visualization
+    // In the updateCountyAlertStatus method:
+    updateCountyAlertStatus(countyName, alerts) {
+        const normalizedName = countyName.toLowerCase();
+        const countyPath = document.getElementById(`county-${normalizedName}`);
+        if (!countyPath) return;
+
+        // If no alerts, keep default fill
+        if (!alerts || alerts.length === 0) return;
+
+        // Find highest priority alert
+        let highestPriorityAlert = null;
+        let highestPriority = Infinity;
+
+        alerts.forEach(alert => {
+            const eventName = alert.properties.event;
+            // Use priority directly from the warningPriorities object
+            const priority = warningPriorities[eventName];
+
+            if (priority && priority < highestPriority) {
+                highestPriority = priority;
+                highestPriorityAlert = {
+                    name: eventName,
+                    color: warningColors[eventName]
+                };
+            }
+        });
+
+        // Update the county fill color if we found a warning
+        if (highestPriorityAlert) {
+            countyPath.setAttribute('fill', highestPriorityAlert.color);
+            // Optional: Add stroke highlighting for better visibility
+            countyPath.setAttribute('stroke-width', '3');
+            // Add a title with alert info for tooltip
+            countyPath.setAttribute('title', highestPriorityAlert.name);
+        }
+    }
+
+    // Helper method to get warning priority
+    getWarningPriority(warningName) {
+        // This would need to map to your priority system from warningColors.csv
+        // Example implementation:
+        const priorityMap = {
+            "Tornado Warning": 1,
+            "Severe Thunderstorm Warning": 2,
+            "Flash Flood Warning": 3,
+            "Extreme Wind Warning": 4,
+            // ... other warnings with their priorities
+        };
+
+        return priorityMap[warningName] || 999; // Default to low priority if not found
+    }
+
     // Fetch and update weather data for counties
     async updateWeatherData() {
         try {
             // Get counties from siteConfig
             const counties = window.siteConfig?.counties || [];
 
-            // Fetch weather data for each county
+            // Fetch weather data and alerts for each county
             for (const county of counties) {
+                // Fetch weather data (existing code)
                 const weatherData = await fetchCurrentWeather(county.lat, county.lon);
-
-                // Store weather data by county name (lowercase for consistency)
                 this.weatherData[county.name.toLowerCase()] = weatherData;
 
-                // Add weather marker at county location
+                // Add weather marker (existing code)
                 this.addWeatherMarker(county, weatherData);
+
+                // Fetch alerts for this county
+                const alerts = await this.fetchCountyAlerts(county);
+                this.alertData[county.name.toLowerCase()] = alerts;
+
+                // Update county polygon color based on alerts
+                this.updateCountyAlertStatus(county.name, alerts);
             }
 
             return true;
