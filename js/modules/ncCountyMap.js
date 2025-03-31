@@ -19,6 +19,7 @@ export class NCCountyMap {
             highlightFill: '#1e88e5',
             strokeColor: '#ffffff',
             strokeWidth: 2,
+            ...options
         };
 
         // Create a set of counties we want to highlight (from your siteConfig)
@@ -171,11 +172,10 @@ export class NCCountyMap {
                 const centroid = this.findCentroid(county);
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 label.setAttribute('x', centroid.x);
-                label.setAttribute('y', centroid.y + 30); // Position below where temp will be
+                label.setAttribute('y', centroid.y + 40); // Position below where temp will be
                 label.setAttribute('text-anchor', 'middle');
                 label.setAttribute('fill', 'white');
                 label.setAttribute('font-size', '12px');
-                label.setAttribute('text-transform', 'uppercase');
                 label.setAttribute('class', 'county-label');
                 label.textContent = displayName;
                 countyGroup.appendChild(label);
@@ -316,17 +316,12 @@ export class NCCountyMap {
 
         // Highlight the county
         pathElement.setAttribute('fill', this.options.highlightFill);
-
-
     }
 
     // Handle county mouseout event
     handleCountyOut(county, pathElement) {
         // Restore original fill color
         pathElement.setAttribute('fill', this.options.defaultFill);
-
-        // Hide tooltip
-        this.hideTooltip();
     }
 
     // Handle county click event
@@ -347,79 +342,6 @@ export class NCCountyMap {
         // Navigate to county page if URL exists
         if (countyConfig && countyConfig.url) {
             window.location.href = countyConfig.url;
-        }
-    }
-
-    // Show tooltip with weather data
-    showTooltip(county, weatherData) {
-        // Remove any existing tooltip
-        this.hideTooltip();
-
-        // Get display name for county
-        const countyName = county.properties.name ||
-            county.properties.NAME ||
-            county.properties.County ||
-            county.properties.COUNTY;
-
-        // Create tooltip group
-        const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        tooltip.setAttribute('id', 'county-tooltip');
-        tooltip.setAttribute('class', 'county-tooltip');
-
-        // Find county centroid
-        const centroid = this.findCentroid(county);
-
-        // Background rect
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', centroid.x - 70);
-        rect.setAttribute('y', centroid.y - 80);
-        rect.setAttribute('width', '140');
-        rect.setAttribute('height', '90');
-        rect.setAttribute('rx', '5');
-        rect.setAttribute('ry', '5');
-        rect.setAttribute('fill', 'rgba(0,0,0,0.8)');
-
-        // County name
-        const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        nameText.setAttribute('x', centroid.x);
-        nameText.setAttribute('y', centroid.y - 55);
-        nameText.setAttribute('text-anchor', 'middle');
-        nameText.setAttribute('fill', 'white');
-        nameText.setAttribute('font-weight', 'bold');
-        nameText.textContent = countyName;
-
-        // Weather condition
-        const condText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        condText.setAttribute('x', centroid.x);
-        condText.setAttribute('y', centroid.y - 35);
-        condText.setAttribute('text-anchor', 'middle');
-        condText.setAttribute('fill', 'white');
-        condText.setAttribute('font-size', '12');
-        condText.textContent = weatherData.condition;
-
-        // Wind Info
-        const windText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        windText.setAttribute('x', centroid.x);
-        windText.setAttribute('y', centroid.y - 35);
-        windText.setAttribute('text-anchor', 'middle');
-        windText.setAttribute('fill', 'white');
-        windText.setAttribute('font-size', '12');
-        windText.textContent = weatherData.wind;
-
-        // Add elements to tooltip
-        tooltip.appendChild(rect);
-        tooltip.appendChild(nameText);
-        tooltip.appendChild(condText);
-
-        // Add tooltip to SVG
-        this.svg.appendChild(tooltip);
-    }
-
-    // Hide tooltip
-    hideTooltip() {
-        const tooltip = document.getElementById('county-tooltip');
-        if (tooltip) {
-            tooltip.parentNode.removeChild(tooltip);
         }
     }
 
@@ -492,15 +414,6 @@ export class NCCountyMap {
         tempText.setAttribute('fill', 'yellow');
         tempText.textContent = `${weatherData.temp}°`;
 
-        // Add hover events for tooltip
-        marker.addEventListener('mouseover', () => {
-            this.showTooltip(countyFeature, weatherData);
-        });
-
-        marker.addEventListener('mouseout', () => {
-            this.hideTooltip();
-        });
-
         // Add click handler
         marker.addEventListener('click', () => {
             if (county.url) {
@@ -547,9 +460,9 @@ export function initCountyMap() {
     // Create map instance with options
     const countyMap = new NCCountyMap('nc-county-map', {
         defaultFill: '#0077cc',
-        highlightFill: 'yellow',
+        highlightFill: '#1e88e5',
         strokeColor: '#ffffff',
-        strokeWidth: 1
+        strokeWidth: 2
     });
 
     // Initialize the map

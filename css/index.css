@@ -48,13 +48,6 @@
     opacity: 0.8;
 }
 
-/* County tooltip */
-.county-tooltip rect {
-    opacity: 0.9;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
-}
-
-/* Remove the old SVG-specific styles that are no longer needed */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

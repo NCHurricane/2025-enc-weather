@@ -474,7 +474,8 @@
             "COUNTY": "117",
             "NAME": "Martin",
             "LSAD": "County",
-            "CENSUSAREA": 461.217
+            "CENSUSAREA": 461.217,
+            "CITY": "Williamston"
          },
          "geometry": {
             "type": "Polygon",
@@ -937,7 +938,8 @@
             "COUNTY": "095",
             "NAME": "Hyde",
             "LSAD": "County",
-            "CENSUSAREA": 612.7
+            "CENSUSAREA": 612.7,
+            "CITY": "Swanquarter"
          },
          "geometry": {
             "type": "MultiPolygon",
@@ -1344,7 +1346,8 @@
             "COUNTY": "055",
             "NAME": "Dare",
             "LSAD": "County",
-            "CENSUSAREA": 383.42
+            "CENSUSAREA": 383.42,
+            "CITY": "Manteo"
          },
          "geometry": {
             "type": "MultiPolygon",
@@ -1851,7 +1854,8 @@
             "COUNTY": "013",
             "NAME": "Beaufort",
             "LSAD": "County",
-            "CENSUSAREA": 827.192
+            "CENSUSAREA": 827.192,
+            "CITY": "Washington"
          },
          "geometry": {
             "type": "Polygon",
@@ -2249,7 +2253,8 @@
             "COUNTY": "147",
             "NAME": "Pitt",
             "LSAD": "County",
-            "CENSUSAREA": 651.975
+            "CENSUSAREA": 651.975,
+            "CITY": "Greenville"
          },
          "geometry": {
             "type": "Polygon",
@@ -2767,7 +2772,8 @@
             "COUNTY": "177",
             "NAME": "Tyrrell",
             "LSAD": "County",
-            "CENSUSAREA": 389.035
+            "CENSUSAREA": 389.035,
+            "CITY": "Columbia"
          },
          "geometry": {
             "type": "Polygon",
@@ -2955,7 +2961,8 @@
             "COUNTY": "187",
             "NAME": "Washington",
             "LSAD": "County",
-            "CENSUSAREA": 348.135
+            "CENSUSAREA": 348.135,
+            "CITY": "Plymouth"
          },
          "geometry": {
             "type": "Polygon",
