@@ -16,8 +16,8 @@ window.siteConfig = {
         {
             name: "Pitt",
             city: "Greenville",
-            lat: 35.64,
-            lon: -77.39,
+            lat: 35.6115,
+            lon: -77.3752,
             url: "counties/pitt/greenville.html"
         },
         {
@@ -27,13 +27,13 @@ window.siteConfig = {
             lon: -77.0519,
             url: "counties/beaufort/washington.html"
         },
-        // {
-        //     name: "Martin",
-        //     city: "Williamston",
-        //     lat: 35.8557,
-        //     lon: -77.0560,
-        //     url: "counties/martin/williamston.html"
-        // },
+        {
+            name: "Martin",
+            city: "Williamston",
+            lat: 35.8557,
+            lon: -77.0560,
+            url: "counties/martin/williamston.html"
+        },
         {
             name: "Dare",
             city: "Manteo",
@@ -51,8 +51,8 @@ window.siteConfig = {
         {
             name: "Tyrrell",
             city: "Columbia",
-            lat: 35.9168,
-            lon: -76.2517,
+            lat: 35.9177,
+            lon: -76.2522,
             url: "counties/tyrrell/columbia.html"
         },
         {

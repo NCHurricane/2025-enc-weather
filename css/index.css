@@ -13,6 +13,7 @@
     margin: 0 auto;
     box-shadow: var(--shadow-standard);
     background-color: #262626;
+    background: linear-gradient(180deg, var(--color-gradient-start) 20%, var(--color-gradient-end) 100%);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -26,15 +27,16 @@
 /* Weather markers */
 .weather-marker text {
     transition: transform 0.2s ease;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-    font-size: 18px;
-    font-weight: bold;
+    /* text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); */
+    font-family: 'Montserrat', monospace;
+    font-size: 2rem;
+    font-weight: 800;
     fill: yellow;
 }
 
-.weather-marker:hover text {
+/* .weather-marker:hover text {
     transform: scale(1.2);
-}
+} */
 
 /* County paths */
 .counties path {

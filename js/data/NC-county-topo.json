@@ -9,7 +9,8 @@
             "COUNTY": "015",
             "NAME": "Bertie",
             "LSAD": "County",
-            "CENSUSAREA": 699.27
+            "CENSUSAREA": 699.27,
+            "CITY": "Windsor"
          },
          "geometry": {
             "type": "Polygon",
