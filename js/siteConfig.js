@@ -3,6 +3,29 @@
  * Contains settings for counties, locations, and tropical weather
  */
 
+// Load the configuration
+(function () {
+    // Attempt to load counties from counties.json if available
+    fetch('./counties/counties.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Counties JSON not available, using built-in config');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Merge the loaded counties with the rest of the config
+            window.siteConfig = Object.assign({}, window.siteConfig || {}, {
+                counties: data.counties
+            });
+        })
+        .catch(error => {
+            console.log('Using default county configuration');
+            // Default config will be used (already set below)
+        });
+})();
+
+// Default configuration (used if counties.json isn't available)
 window.siteConfig = {
     // County data with coordinates and page URLs
     counties: [

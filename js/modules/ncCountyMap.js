@@ -187,8 +187,8 @@ export class NCCountyMap {
 
                 const centroid = this.findCentroid(county);
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                label.setAttribute('x', centroid.x);
-                label.setAttribute('y', centroid.y + 40); // Position below where temp will be
+                label.setAttribute('x', centroid.x + 10);
+                label.setAttribute('y', centroid.y + 25); // Position below where temp will be
                 label.setAttribute('text-anchor', 'middle');
                 label.setAttribute('fill', 'white');
                 label.setAttribute('font-size', '12px');
@@ -331,13 +331,16 @@ export class NCCountyMap {
         ).toLowerCase();
 
         // Highlight the county
-        pathElement.setAttribute('fill', this.options.highlightFill);
+        pathElement.setAttribute('stroke-width', '3');
+        pathElement.setAttribute('stroke', 'black')
     }
 
     // Handle county mouseout event
     handleCountyOut(county, pathElement) {
         // Restore original fill color
-        pathElement.setAttribute('fill', this.options.defaultFill);
+        pathElement.setAttribute('stroke-width', this.options.strokeWidth);
+
+        pathElement.setAttribute('stroke', this.options.strokeColor)
     }
 
     // Handle county click event
@@ -487,7 +490,7 @@ export class NCCountyMap {
         tempText.setAttribute('font-size', '22px');
         tempText.setAttribute('font-weight', 'bold');
         tempText.setAttribute('fill', 'yellow');
-        tempText.textContent = `${weatherData.temp}°`;
+        tempText.textContent = `${weatherData.temp}`;
 
         // Add click handler
         marker.addEventListener('click', () => {

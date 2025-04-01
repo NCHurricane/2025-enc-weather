@@ -228,16 +228,18 @@ hr {
 }
 
 /* CURRENT CONDITIONS */
+
+
 .current-container {
     border-radius: 8px;
     margin-bottom: 5px;
     overflow: hidden;
     position: relative;
     width: 100%;
-    box-shadow: var(--shadow-standard);
     background-position: top right;
     background-size: contain;
     background-repeat: no-repeat;
+    background-color: var(--gradient-header);
 }
 
 
