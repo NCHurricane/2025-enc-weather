@@ -7,6 +7,24 @@ import { updateTropicalOutlook, checkActiveSystemsStatus, updateTropicalAlertBan
 import { initCountyMap } from './modules/ncCountyMap.js';
 
 // Initialize the index page
+// async function initIndexPage() {
+//     // Initialize the NC County Map
+//     const countyMap = initCountyMap();
+
+//     // Store the map instance globally for debugging or future access
+//     window.countyMap = countyMap;
+
+//     // Load tropical outlook
+//     updateTropicalOutlook();
+
+//     // Check for active tropical systems
+//     const hasActiveSystems = await checkActiveSystemsStatus();
+//     updateTropicalAlertBanner(hasActiveSystems);
+
+//     // Set up event handlers
+//     setupEventHandlers();
+// }
+
 async function initIndexPage() {
     // Initialize the NC County Map
     const countyMap = initCountyMap();
@@ -23,6 +41,22 @@ async function initIndexPage() {
 
     // Set up event handlers
     setupEventHandlers();
+
+    // Set up auto-refresh (new code)
+    setInterval(() => {
+        console.log('Auto-refreshing weather data');
+
+        // Refresh the county map if available
+        if (window.countyMap && typeof window.countyMap.refresh === 'function') {
+            window.countyMap.refresh();
+        }
+
+        // Refresh tropical data
+        updateTropicalOutlook();
+        checkActiveSystemsStatus().then(hasActiveSystems => {
+            updateTropicalAlertBanner(hasActiveSystems);
+        });
+    }, 300000);
 }
 
 /**

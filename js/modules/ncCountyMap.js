@@ -3,6 +3,8 @@ import { fetchCurrentWeather, getWeatherIcon } from './weatherData.js';
 import { safeSetHTML, createElement } from './utils.js';
 import { warningColors, warningPriorities } from './warningColors.js';
 
+
+
 export class NCCountyMap {
     constructor(containerId, options = {}) {
         this.containerId = containerId;
@@ -23,8 +25,8 @@ export class NCCountyMap {
             ...options
         };
         this.alertData = {};
-
-        // Create a set of counties we want to highlight (from your siteConfig)
+        // Script to test the county alert highlight functionality
+        this.testModeEnabled = false;
         this.targetCounties = new Set(
             (window.siteConfig?.counties || []).map(county => county.name.toLowerCase())
         );
@@ -33,6 +35,19 @@ export class NCCountyMap {
     // Add a new method to fetch alerts for a county
     async fetchCountyAlerts(county) {
         try {
+            // For testing: Return mock data when in test mode
+            if (this.testModeEnabled) {
+                console.log(`Using test data for ${county.name}`);
+                return [{
+                    properties: {
+                        event: "Severe Thunderstorm Warning", // Or any other warning type from your warningColors
+                        headline: "Test Tornado Warning",
+                        description: "This is a test alert for development purposes."
+                    }
+                }];
+            }
+
+            // Normal code for production
             const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
             if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
