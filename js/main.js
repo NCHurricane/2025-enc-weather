@@ -34,8 +34,10 @@ function updateData() {
         fetchWeatherForecast(lat, lon);
     }
 
-    // Initialize alerts (always try to fetch alerts as they might be needed)
-    fetchCurrentWarnings(lat, lon);
+    // Initialize alerts (check if element exists first)
+    if (document.getElementById('alerts')) {
+        fetchCurrentWarnings(lat, lon);
+    }
 
     // Initialize AFD text (check if element exists first)
     if (document.getElementById('afd-content')) {
