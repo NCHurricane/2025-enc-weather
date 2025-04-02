@@ -439,33 +439,62 @@ export class NCCountyMap {
             const counties = window.siteConfig?.counties || [];
 
             // Fetch weather data and alerts for each county
-            for (const county of counties) {
-                // Fetch weather data (existing code)
-                const weatherData = await fetchCurrentWeather(county.lat, county.lon);
-                this.weatherData[county.name.toLowerCase()] = weatherData;
+            const weatherPromises = counties.map(async (county) => {
+                try {
+                    // Fetch weather data 
+                    const weatherData = await fetchCurrentWeather(county.lat, county.lon);
 
-                // Add weather marker (existing code)
-                this.addWeatherMarker(county, weatherData);
+                    // Validate weather data
+                    if (!weatherData || weatherData.temp === 'N/A') {
+                        console.warn(`No valid weather data for ${county.name}:`, weatherData);
+                        return null;
+                    }
 
-                // Fetch alerts for this county
-                const alerts = await this.fetchCountyAlerts(county);
-                this.alertData[county.name.toLowerCase()] = alerts;
+                    // Store weather data
+                    this.weatherData[county.name.toLowerCase()] = weatherData;
 
-                // Update county polygon color based on alerts
-                this.updateCountyAlertStatus(county.name, alerts);
+                    // Add weather marker
+                    this.addWeatherMarker(county, weatherData);
+
+                    // Fetch alerts for this county
+                    const alerts = await this.fetchCountyAlerts(county);
+                    this.alertData[county.name.toLowerCase()] = alerts;
+
+                    // Update county polygon color based on alerts
+                    this.updateCountyAlertStatus(county.name, alerts);
+
+                    return weatherData;
+                } catch (countyError) {
+                    console.error(`Error processing county ${county.name}:`, countyError);
+                    return null;
+                }
+            });
+
+            // Wait for all counties to be processed
+            const results = await Promise.allSettled(weatherPromises);
+
+            // Log any failed county data fetches
+            const failedCounties = results.filter(result =>
+                result.status === 'rejected' ||
+                (result.status === 'fulfilled' && result.value === null)
+            );
+
+            if (failedCounties.length > 0) {
+                console.warn(`Failed to fetch data for ${failedCounties.length} counties`);
             }
 
-            return true;
+            return results.some(result => result.status === 'fulfilled' && result.value !== null);
         } catch (error) {
             console.error('Error updating weather data:', error);
             return false;
         }
     }
 
-    // Add weather marker (temperature) for a county
+    // Modify addWeatherMarker to be more defensive
     addWeatherMarker(county, weatherData) {
-        if (!this.countyFeatures) {
-            console.error("County features not available");
+        // Add a null check
+        if (!weatherData || !weatherData.temp) {
+            console.warn(`Cannot add weather marker for ${county.name}: Invalid weather data`, weatherData);
             return;
         }
 
