@@ -27,23 +27,23 @@
 
 
 /* Weather markers */
+.weather-marker {
+    background-color: blue;
+}
+
 .weather-marker text {
     transition: transform 0.2s ease;
-    /* text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); */
+    text-shadow: 5px 5px 3px rgba(0, 0, 0, 0.7);
     font-family: 'Montserrat', monospace;
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: 800;
     fill: yellow;
 }
 
-/* .weather-marker:hover text {
-    transform: scale(1.2);
-} */
-
 .county-label {
     text-transform: uppercase;
-    font-weight: 500;
-    text-shadow: var(--shadow-standard);
+    font-weight: 800;
+    text-shadow: 4px 4px 3px rgba(0, 0, 0, 1);
 }
 
 /* County paths */
@@ -63,9 +63,9 @@
         height: 400px;
     }
 
-    .weather-marker text {
+    /* .weather-marker text {
         font-size: 16px;
-    }
+    } */
 }
 
 @media (max-width: 600px) {
@@ -73,9 +73,9 @@
         height: 350px;
     }
 
-    .weather-marker text {
+    /* .weather-marker text {
         font-size: 14px;
-    }
+    } */
 }
 
 /* ------------------------ */

@@ -3,8 +3,6 @@ import { fetchCurrentWeather, getWeatherIcon } from './weatherData.js';
 import { safeSetHTML, createElement } from './utils.js';
 import { warningColors, warningPriorities } from './warningColors.js';
 
-
-
 export class NCCountyMap {
     constructor(containerId, options = {}) {
         this.containerId = containerId;
@@ -164,6 +162,12 @@ export class NCCountyMap {
             countyGroup.setAttribute('class', 'counties');
             this.svg.appendChild(countyGroup);
 
+            // Create a separate group for labels that will be rendered on top of everything else
+            const labelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            labelsGroup.setAttribute('class', 'county-labels');
+            // Add this group as the last child of the SVG so it renders on top
+            this.svg.appendChild(labelsGroup);
+
             // Draw each county
             this.countyFeatures.features.forEach(county => {
                 // Get county name - handle various property formats
@@ -191,25 +195,70 @@ export class NCCountyMap {
 
                 // Add to the group
                 countyGroup.appendChild(path);
+            });
 
-                // Add county label - use the original capitalization
-                const displayName = county.properties.CITY ||
+            // After all counties are drawn, add the labels to avoid clipping
+            this.countyFeatures.features.forEach(county => {
+                // Get county name
+                const countyName = (
                     county.properties.name ||
                     county.properties.NAME ||
                     county.properties.County ||
                     county.properties.COUNTY ||
-                    countyName;
+                    ""
+                ).toLowerCase();
 
-                const centroid = this.findCentroid(county);
-                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                label.setAttribute('x', centroid.x + 10);
-                label.setAttribute('y', centroid.y + 25); // Position below where temp will be
-                label.setAttribute('text-anchor', 'middle');
-                label.setAttribute('fill', 'white');
-                label.setAttribute('font-size', '12px');
-                label.setAttribute('class', 'county-label');
-                label.textContent = displayName;
-                countyGroup.appendChild(label);
+                // Find the county in our config to get the city name
+                const countyConfig = (window.siteConfig?.counties || [])
+                    .find(c => c.name.toLowerCase() === countyName);
+
+                if (countyConfig) {
+                    // Use city name from config as label, or county name as fallback
+                    const displayName = countyConfig.city ||
+                        county.properties.CITY ||
+                        county.properties.name ||
+                        county.properties.NAME;
+
+                    // Calculate center point
+                    const centroid = this.findCentroid(county);
+
+                    // Padding values
+                    const paddingX = 8; // Horizontal padding (left and right)
+                    const paddingY = 5; // Vertical padding (top and bottom)
+
+                    // Calculate dimensions with padding
+                    const textWidth = displayName.length * 10;
+                    const bgWidth = textWidth + (paddingX * 2); // Add padding to both sides
+                    const bgHeight = 12 + (paddingY * 2); // Add padding to top and bottom
+
+                    // First create the background with rounded corners
+                    const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    labelBg.setAttribute('class', 'label-background');
+                    labelBg.setAttribute('x', centroid.x - bgWidth / 2); // Center the wider rectangle
+                    labelBg.setAttribute('y', centroid.y + 22 - paddingY); // Adjust y position for top padding
+                    labelBg.setAttribute('width', bgWidth);
+                    labelBg.setAttribute('height', bgHeight);
+                    labelBg.setAttribute('rx', '5'); // Rounded corners
+                    labelBg.setAttribute('ry', '5'); // Rounded corners
+                    labelBg.setAttribute('fill', 'rgba(0, 0, 0, 0.6)'); // Semi-transparent background
+
+                    // Then create the text label itself
+                    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    label.setAttribute('x', centroid.x);
+                    label.setAttribute('y', centroid.y + 30); // Positioned within background 
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('dominant-baseline', 'middle');
+                    label.setAttribute('fill', '#ffff00'); // Yellow text to match temps
+                    label.setAttribute('font-size', '12px');
+                    label.setAttribute('font-weight', 'bold');
+                    label.setAttribute('font-family', "'Montserrat', monospace"); // Match temperature font
+                    label.setAttribute('class', 'county-label');
+                    label.textContent = displayName.toUpperCase();
+
+                    // Add background first, then text to the labels group
+                    labelsGroup.appendChild(labelBg);
+                    labelsGroup.appendChild(label);
+                }
             });
 
             return true;
@@ -347,15 +396,14 @@ export class NCCountyMap {
 
         // Highlight the county
         pathElement.setAttribute('stroke-width', '3');
-        pathElement.setAttribute('stroke', 'black')
+        pathElement.setAttribute('stroke', 'black');
     }
 
     // Handle county mouseout event
     handleCountyOut(county, pathElement) {
         // Restore original fill color
         pathElement.setAttribute('stroke-width', this.options.strokeWidth);
-
-        pathElement.setAttribute('stroke', this.options.strokeColor)
+        pathElement.setAttribute('stroke', this.options.strokeColor);
     }
 
     // Handle county click event
@@ -380,7 +428,6 @@ export class NCCountyMap {
     }
 
     // Add a new method to update county alert visualization
-    // In the updateCountyAlertStatus method:
     updateCountyAlertStatus(countyName, alerts) {
         const normalizedName = countyName.toLowerCase();
         const countyPath = document.getElementById(`county-${normalizedName}`);
@@ -490,7 +537,7 @@ export class NCCountyMap {
         }
     }
 
-    // Modify addWeatherMarker to be more defensive
+    // Add weather marker to the map
     addWeatherMarker(county, weatherData) {
         // Add a null check
         if (!weatherData || !weatherData.temp) {
@@ -528,7 +575,7 @@ export class NCCountyMap {
         // Temperature text
         const tempText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tempText.setAttribute('x', centroid.x);
-        tempText.setAttribute('y', centroid.y);
+        tempText.setAttribute('y', centroid.y - 5);
         tempText.setAttribute('text-anchor', 'middle');
         tempText.setAttribute('dominant-baseline', 'middle');
         tempText.setAttribute('font-size', '22px');
@@ -548,10 +595,10 @@ export class NCCountyMap {
         this.svg.appendChild(marker);
     }
 
-    // Handle window resize
+    // Handle window resize - minimal version
     handleResize() {
-        // This method can be extended to handle responsive adjustments
-        // For now, the SVG viewBox should handle most of the responsive behavior
+        // Basic resize handler - just relies on SVG viewBox for responsiveness
+        // No dynamic scaling or element adjustments
     }
 
     // Refresh the map data
