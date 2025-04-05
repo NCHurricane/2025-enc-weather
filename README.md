@@ -89,7 +89,8 @@ Contributions may be requested in the future, but for now, this is for my testin
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+© 2025 ChuckCopeland.com/NCHurricane.com. All rights reserved.
+This project is currently under development and is not intended for public distribution. No part of this project may be reproduced, distributed, or transmitted in any form or by any means without the prior written permission of the copyright holder.
 
 ## Acknowledgments
 
