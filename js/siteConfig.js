@@ -53,9 +53,10 @@ window.siteConfig = {
         {
             name: "Martin",
             city: "Williamston",
-            lat: 35.8557,
-            lon: -77.0560,
-            url: "counties/martin/williamston.html"
+            lat: 35.86,
+            lon: -77.18,
+            url: "counties/martin/williamston.html",
+            station: "KMCZ"
         },
         {
             name: "Dare",

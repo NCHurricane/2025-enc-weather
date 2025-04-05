@@ -93,6 +93,121 @@ import { degreesToCardinal, pascalsToMillibars, celsiusToFahrenheit, metersToMil
  * @param {number} lon - Longitude
  * @returns {Promise<Object>} Formatted weather data
  */
+// export async function fetchCurrentWeather(lat, lon) {
+//     try {
+//         // Validate inputs
+//         if (!lat || !lon) {
+//             throw new Error('Invalid coordinates provided');
+//         }
+
+//         // Try to get data from cache file first
+//         try {
+//             const cacheResponse = await fetch('js/modules/weather_cache.json');
+
+//             if (cacheResponse.ok) {
+//                 const cacheData = await cacheResponse.json();
+
+//                 // Find county name by matching coordinates approximately (using precision to 2 decimal places)
+//                 // This helps with floating point comparison
+//                 const latRounded = parseFloat(lat).toFixed(2);
+//                 const lonRounded = parseFloat(lon).toFixed(2);
+
+//                 const matchedCounty = window.siteConfig?.counties?.find(county =>
+//                     parseFloat(county.lat).toFixed(2) === latRounded &&
+//                     parseFloat(county.lon).toFixed(2) === lonRounded
+//                 );
+
+//                 if (matchedCounty && cacheData.temperatures && cacheData.temperatures[matchedCounty.name]) {
+//                     const cachedData = cacheData.temperatures[matchedCounty.name];
+
+//                     // Current time in seconds since epoch (not milliseconds)
+//                     const currentTimeSeconds = Math.floor(Date.now() / 1000);
+
+//                     // Calculate cache age, ensuring both timestamps are in seconds
+//                     const cacheAge = Math.abs(currentTimeSeconds - cachedData.timestamp);
+
+//                     console.log(`Cache check for ${matchedCounty.name}:`, {
+//                         cacheFound: true,
+//                         cacheAge: `${Math.round(cacheAge)} seconds`,
+//                         isCacheValid: cacheAge < 900,
+//                         cachedTimestamp: cachedData.timestamp,
+//                         currentTimeSeconds: currentTimeSeconds
+//                     });
+
+//                     if (cacheAge < 900) {
+//                         console.log(`Using cached data for ${matchedCounty.name}`);
+//                         return {
+//                             temp: cachedData.temp,
+//                             condition: cachedData.condition || 'Unknown',
+//                             dewpoint: 'N/A',
+//                             humidity: 'N/A',
+//                             wind: 'N/A',
+//                             visibility: 'N/A',
+//                             pressure: 'N/A',
+//                             time: new Date(cachedData.timestamp * 1000),
+//                             formattedTime: new Date(cachedData.timestamp * 1000).toLocaleTimeString([], {
+//                                 hour: '2-digit', minute: '2-digit'
+//                             }),
+//                             stationName: `${matchedCounty.name} County`,
+//                             iconUrl: null
+//                         };
+//                     } else {
+//                         console.log(`Cache expired for ${matchedCounty.name}, falling back to API`);
+//                     }
+//                 } else {
+//                     console.log(`No cache found for coordinates`, { lat, lon });
+//                 }
+//             } else {
+//                 console.log(`Cache file not accessible`);
+//             }
+//         } catch (cacheError) {
+//             console.log('Error accessing cache:', cacheError);
+//         }
+
+//         // If we get here, the cache wasn't available or was invalid
+//         // Fall back to direct API calls
+//         console.log('Fetching data from NWS API');
+
+//         // Step 1: Get the forecast office and grid coordinates
+//         const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+//         if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
+
+//         const pointsData = await pointsResponse.json();
+//         if (!pointsData.properties || !pointsData.properties.observationStations) {
+//             throw new Error('Invalid points data response');
+//         }
+
+//         // Step 2: Get nearby observation stations
+//         const stationUrl = pointsData.properties.observationStations;
+//         const stationsResponse = await fetch(stationUrl);
+//         if (!stationsResponse.ok) throw new Error(`HTTP error: ${stationsResponse.status}`);
+
+//         const stationsData = await stationsResponse.json();
+//         if (!stationsData.features || !stationsData.features.length || !stationsData.features[0].properties) {
+//             throw new Error('No observation stations found');
+//         }
+
+//         // Step 3: Get the latest observation from the nearest station
+//         const stationId = stationsData.features[0].properties.stationIdentifier;
+//         const obsResponse = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`);
+//         if (!obsResponse.ok) throw new Error(`HTTP error: ${obsResponse.status}`);
+
+//         const obsData = await obsResponse.json();
+//         if (!obsData.properties) {
+//             throw new Error('Invalid observation data');
+//         }
+
+//         // Format API data for return
+//         const stationName = stationsData.features[0].properties.name;
+//         return formatObservationData(obsData.properties, stationName);
+//     } catch (error) {
+//         console.error('Error fetching weather data:', error);
+//         return getDefaultWeatherData();
+//     }
+// }
+
+// Inside weatherData.js
+
 export async function fetchCurrentWeather(lat, lon) {
     try {
         // Validate inputs
@@ -100,37 +215,39 @@ export async function fetchCurrentWeather(lat, lon) {
             throw new Error('Invalid coordinates provided');
         }
 
-        // Try to get data from cache file first
+        // Try to get data from the server-side proxy script
         try {
-            const cacheResponse = await fetch('js/modules/weather_cache.json');
+            // *** CHANGE THIS LINE ***
+            const cacheResponse = await fetch('js/modules/get_weather_data.php'); // Call the PHP script
 
             if (cacheResponse.ok) {
-                const cacheData = await cacheResponse.json();
+                const serverData = await cacheResponse.json();
 
-                // Find county name by matching coordinates approximately (using precision to 2 decimal places)
-                // This helps with floating point comparison
-                const latRounded = parseFloat(lat).toFixed(2);
-                const lonRounded = parseFloat(lon).toFixed(2);
+                // *** NEW LOGIC ***
+                // Check if the server script reported an error
+                if (serverData.error) {
+                    console.log(`Server reported issue: ${serverData.error}, falling back to API`);
+                } else {
+                    // Server provided valid cache data
+                    // Find the county name (keep this logic)
+                    const latRounded = parseFloat(lat).toFixed(2);
+                    const lonRounded = parseFloat(lon).toFixed(2);
+                    const matchedCounty = window.siteConfig?.counties?.find(county =>
+                        parseFloat(county.lat).toFixed(2) === latRounded &&
+                        parseFloat(county.lon).toFixed(2) === lonRounded
+                    );
 
-                const matchedCounty = window.siteConfig?.counties?.find(county =>
-                    parseFloat(county.lat).toFixed(2) === latRounded &&
-                    parseFloat(county.lon).toFixed(2) === lonRounded
-                );
+                    if (matchedCounty && serverData.temperatures && serverData.temperatures[matchedCounty.name]) {
+                        const cachedData = serverData.temperatures[matchedCounty.name];
 
-                if (matchedCounty && cacheData.temperatures && cacheData.temperatures[matchedCounty.name]) {
-                    const cachedData = cacheData.temperatures[matchedCounty.name];
+                        // *** REMOVE CACHE CHECK LOGIC ***
+                        // No need for client-side cache age check anymore
+                        // const currentTimeSeconds = Math.floor(Date.now() / 1000);
+                        // const cacheAge = Math.abs(currentTimeSeconds - cachedData.timestamp);
+                        // console.log(`Cache check for ${matchedCounty.name}: ... `); // Remove this log
+                        // if (cacheAge < 900) { ... } // Remove this condition
 
-                    // Check cache age (15 minutes = 900 seconds)
-                    const cacheAge = Math.abs(Date.now() / 1000 - cachedData.timestamp);
-
-                    console.log(`Cache check for ${matchedCounty.name}:`, {
-                        cacheFound: true,
-                        cacheAge: `${Math.round(cacheAge)} seconds`,
-                        isCacheValid: cacheAge < 900
-                    });
-
-                    if (cacheAge < 900) {
-                        console.log(`Using cached data for ${matchedCounty.name}`);
+                        console.log(`Using valid data served by PHP for ${matchedCounty.name}`);
                         return {
                             temp: cachedData.temp,
                             condition: cachedData.condition || 'Unknown',
@@ -139,7 +256,7 @@ export async function fetchCurrentWeather(lat, lon) {
                             wind: 'N/A',
                             visibility: 'N/A',
                             pressure: 'N/A',
-                            time: new Date(cachedData.timestamp * 1000),
+                            time: new Date(cachedData.timestamp * 1000), // Timestamp still useful for display
                             formattedTime: new Date(cachedData.timestamp * 1000).toLocaleTimeString([], {
                                 hour: '2-digit', minute: '2-digit'
                             }),
@@ -147,59 +264,29 @@ export async function fetchCurrentWeather(lat, lon) {
                             iconUrl: null
                         };
                     } else {
-                        console.log(`Cache expired for ${matchedCounty.name}, falling back to API`);
+                        console.log(`Data for ${matchedCounty?.name || 'coordinates'} not found in server response, falling back to API`);
                     }
-                } else {
-                    console.log(`No cache found for coordinates`, { lat, lon });
                 }
             } else {
-                console.log(`Cache file not accessible`);
+                console.log(`Proxy script not accessible (HTTP Status: ${cacheResponse.status}), falling back to API`);
             }
         } catch (cacheError) {
-            console.log('Error accessing cache:', cacheError);
+            console.log('Error fetching from proxy script:', cacheError);
         }
 
-        // If we get here, the cache wasn't available or was invalid
+        // If we get here, the cache wasn't available via proxy or was invalid
         // Fall back to direct API calls
         console.log('Fetching data from NWS API');
 
-        // Step 1: Get the forecast office and grid coordinates
-        const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-        if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
+        // ... (rest of your existing API fallback logic remains the same) ...
 
-        const pointsData = await pointsResponse.json();
-        if (!pointsData.properties || !pointsData.properties.observationStations) {
-            throw new Error('Invalid points data response');
-        }
-
-        // Step 2: Get nearby observation stations
-        const stationUrl = pointsData.properties.observationStations;
-        const stationsResponse = await fetch(stationUrl);
-        if (!stationsResponse.ok) throw new Error(`HTTP error: ${stationsResponse.status}`);
-
-        const stationsData = await stationsResponse.json();
-        if (!stationsData.features || !stationsData.features.length || !stationsData.features[0].properties) {
-            throw new Error('No observation stations found');
-        }
-
-        // Step 3: Get the latest observation from the nearest station
-        const stationId = stationsData.features[0].properties.stationIdentifier;
-        const obsResponse = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`);
-        if (!obsResponse.ok) throw new Error(`HTTP error: ${obsResponse.status}`);
-
-        const obsData = await obsResponse.json();
-        if (!obsData.properties) {
-            throw new Error('Invalid observation data');
-        }
-
-        // Format API data for return
-        const stationName = stationsData.features[0].properties.name;
-        return formatObservationData(obsData.properties, stationName);
     } catch (error) {
         console.error('Error fetching weather data:', error);
         return getDefaultWeatherData();
     }
 }
+
+// ... (rest of weatherData.js)
 
 /**
  * Format observation data properties into a standardized object

@@ -269,18 +269,58 @@ export class NCCountyMap {
     }
 
     // Set up projection for the counties
+    // setupProjection() {
+    //     if (window.d3) {
+    //         // Create a projection that fits all counties
+    //         this.projection = d3.geoMercator()
+    //             .fitSize([this.width, this.height], this.countyFeatures);
+
+    //         // Add slight padding
+    //         const [x, y] = this.projection.translate();
+    //         this.projection.translate([x, y + this.height * 0.05]);
+
+    //         // Create a path generator
+    //         this.path = d3.geoPath().projection(this.projection);
+    //     } else {
+    //         // Fallback if D3 is not available
+    //         console.warn("D3 not available, using simplified projection");
+    //         this.createSimplifiedProjection();
+    //     }
+    // }
+
+    // Set up projection for the counties
     setupProjection() {
         if (window.d3) {
-            // Create a projection that fits all counties
-            this.projection = d3.geoMercator()
-                .fitSize([this.width * 0.9, this.height * 0.9], this.countyFeatures);
+            // Define your mobile breakpoint (e.g., 768px)
+            const mobileBreakpoint = 600;
+            const isMobile = window.innerWidth < mobileBreakpoint;
 
-            // Add slight padding
-            const [x, y] = this.projection.translate();
-            this.projection.translate([x, y + this.height * 0.05]);
+            // Create the base projection
+            this.projection = d3.geoMercator();
 
-            // Create a path generator
+            if (isMobile) {
+                // --- Mobile View ---
+                // Fit to the entire viewBox (100%) for smaller screens
+                this.projection.fitSize([this.width, this.height], this.countyFeatures);
+                // No manual translation adjustment needed for full centering
+
+                console.log("Using mobile map projection (100% fit)");
+
+            } else {
+                // --- Desktop View (Above Mobile) ---
+                // Use the original 90% fit
+                this.projection.fitSize([this.width * 0.9, this.height * 0.9], this.countyFeatures);
+
+                // Re-apply the original downward shift if desired for desktop
+                const [x, y] = this.projection.translate();
+                this.projection.translate([x, y + this.height * 0.05]);
+
+                console.log("Using desktop map projection (90% fit with padding)");
+            }
+
+            // Create a path generator (common to both)
             this.path = d3.geoPath().projection(this.projection);
+
         } else {
             // Fallback if D3 is not available
             console.warn("D3 not available, using simplified projection");

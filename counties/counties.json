@@ -12,28 +12,32 @@
          "city": "Greenville",
          "lat": 35.6115,
          "lon": -77.3752,
-         "url": "counties/pitt/greenville.html"
+         "url": "counties/pitt/greenville.html",
+         "station_id": "KPGV"
       },
       {
          "name": "Beaufort",
          "city": "Washington",
-         "lat": 35.5465,
-         "lon": -77.0519,
-         "url": "counties/beaufort/washington.html"
+         "lat": 35.57056,
+         "lon": -77.04972,
+         "url": "counties/beaufort/washington.html",
+         "station_id": "KOCW"
       },
       {
          "name": "Martin",
          "city": "Williamston",
          "lat": 35.8557,
          "lon": -77.056,
-         "url": "counties/martin/williamston.html"
+         "url": "counties/martin/williamston.html",
+         "station_id": "KMCZ"
       },
       {
          "name": "Dare",
          "city": "Manteo",
-         "lat": 35.9082,
-         "lon": -75.6757,
-         "url": "counties/dare/manteo.html"
+         "lat": 35.91667,
+         "lon": -75.7,
+         "url": "counties/dare/manteo.html",
+         "station_id": "KMQI"
       },
       {
          "name": "Washington",

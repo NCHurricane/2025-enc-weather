@@ -1,0 +1,40 @@
+{
+    "timestamp": 1743641240,
+    "temperatures": {
+        "Bertie": {
+            "temp": 67,
+            "condition": "Cloudy",
+            "timestamp": 1743641261
+        },
+        "Pitt": {
+            "temp": 66,
+            "condition": "Cloudy",
+            "timestamp": 1743641264
+        },
+        "Beaufort": {
+            "temp": 65,
+            "condition": "Partly Cloudy",
+            "timestamp": 1743641266
+        },
+        "Dare": {
+            "temp": 62,
+            "condition": "Clear",
+            "timestamp": 1743641269
+        },
+        "Washington": {
+            "temp": 67,
+            "condition": "Cloudy",
+            "timestamp": 1743641270
+        },
+        "Tyrrell": {
+            "temp": 67,
+            "condition": "Cloudy",
+            "timestamp": 1743641271
+        },
+        "Hyde": {
+            "temp": 67,
+            "condition": "Mostly Cloudy",
+            "timestamp": 1743641272
+        }
+    }
+}
