@@ -1,13 +1,27 @@
 /**
  * Weather Data Module
- * Handles fetching and formatting weather data directly from the API
+ * Handles fetching and formatting weather data directly from county-specific JSON cache
  */
 
-import { degreesToCardinal, pascalsToMillibars, celsiusToFahrenheit, metersToMiles } from './utils.js';
+import { degreesToCardinal, celsiusToFahrenheit, pascalsToMillibars, metersToMiles } from './utils.js';
+
+/**
+ * Extract county name from coordinates
+ * @param {number} lat - Latitude
+ * @param {number} lon - Longitude
+ * @returns {string|null} County name or null if not found
+ */
+function findCountyByCoordinates(lat, lon) {
+    const counties = window.siteConfig?.counties || [];
+    return counties.find(county =>
+        Math.abs(county.lat - lat) < 0.1 &&
+        Math.abs(county.lon - lon) < 0.1
+    )?.name || null;
+}
 
 /**
  * Fetch current weather conditions for a specific location
- * Uses cached data first, falls back to API if necessary
+ * Uses county-specific JSON cache with API fallback
  * 
  * @param {number} lat - Latitude
  * @param {number} lon - Longitude
@@ -20,66 +34,53 @@ export async function fetchCurrentWeather(lat, lon) {
             throw new Error('Invalid coordinates provided');
         }
 
-        // Try to get data from cache file first
-        try {
-            const cacheResponse = await fetch('js/modules/weather_cache.json?t=' + Date.now());
+        // Identify county by coordinates
+        const countyName = findCountyByCoordinates(lat, lon);
 
-            if (cacheResponse.ok) {
-                const cacheData = await cacheResponse.json();
-
-                // Find county name by matching coordinates
-                const matchedCounty = findCountyByCoordinates(lat, lon);
-
-                if (matchedCounty && cacheData.temperatures && cacheData.temperatures[matchedCounty]) {
-                    const cachedTemp = cacheData.temperatures[matchedCounty];
-
-                    console.log("Debug timestamps:", {
-                        currentTime: Date.now() / 1000,
-                        cacheTimestamp: cachedTemp.timestamp,
-                        difference: Math.abs(Date.now() / 1000 - cachedTemp.timestamp)
-                    });
-
-                    // Check cache age (1 hour = 3600 seconds)
-                    const cacheAge = Math.abs(Date.now() / 1000 - cachedTemp.timestamp);
-                    console.log(`Cache check for ${matchedCounty}:`, {
-                        cacheFound: true,
-                        cacheAge: `${cacheAge.toFixed(2)} seconds`,
-                        isCacheValid: cacheAge < 3600  // Changed from 900 to 3600
-                    });
-
-                    if (cacheAge < 3600) {
-                        console.log(`Using cached data for ${matchedCounty}`);
-                        return {
-                            temp: cachedTemp.temp,
-                            condition: cachedTemp.condition || 'Unknown',
-                            dewpoint: 'N/A',
-                            humidity: 'N/A',
-                            wind: 'N/A',
-                            visibility: 'N/A',
-                            pressure: 'N/A',
-                            time: new Date(cachedTemp.timestamp * 1000),
-                            formattedTime: new Date(cachedTemp.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            stationName: `${matchedCounty} County`,
-                            iconUrl: null
-                        };
-                    } else {
-                        console.log(`Cache expired for ${matchedCounty}, falling back to API`);
-                    }
-                } else {
-                    console.log(`No cache found for coordinates`, { lat, lon });
-                }
-            } else {
-                console.log(`Cache file not accessible`);
-            }
-        } catch (cacheError) {
-            console.log('Error accessing cache:', cacheError);
+        if (!countyName) {
+            console.warn('No matching county found for coordinates:', { lat, lon });
+            return getDefaultWeatherData();
         }
 
-        // If we get here, the cache wasn't available or was invalid
-        // Fall back to direct API calls
-        console.log('Fetching data from NWS API');
+        try {
+            // Fetch county-specific JSON cache
+            const response = await fetch(`../js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
 
-        // Step 1: Get the forecast office and grid coordinates
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Check if weather data exists
+            if (!data.weather) {
+                console.warn(`No weather data found in cache for ${countyName}`);
+                return getDefaultWeatherData();
+            }
+
+            // Return formatted data
+            return formatWeatherData(data.weather);
+
+        } catch (cacheError) {
+            console.warn(`Error accessing cache for ${countyName}:`, cacheError);
+
+            // Fallback to API if cache fetch fails
+            return await fetchWeatherFromAPI(lat, lon);
+        }
+    } catch (error) {
+        console.error('Comprehensive weather data retrieval failed:', error);
+        return getDefaultWeatherData();
+    }
+}
+
+/**
+ * Fallback method to fetch data directly from NWS API
+ * @param {number} lat - Latitude
+ * @param {number} lon - Longitude
+ * @returns {Promise<Object>} Formatted weather data
+ */
+async function fetchWeatherFromAPI(lat, lon) {
+    try {
         const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
         if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
 
@@ -88,17 +89,15 @@ export async function fetchCurrentWeather(lat, lon) {
             throw new Error('Invalid points data response');
         }
 
-        // Step 2: Get nearby observation stations
         const stationUrl = pointsData.properties.observationStations;
         const stationsResponse = await fetch(stationUrl);
         if (!stationsResponse.ok) throw new Error(`HTTP error: ${stationsResponse.status}`);
 
         const stationsData = await stationsResponse.json();
-        if (!stationsData.features || !stationsData.features.length || !stationsData.features[0].properties) {
+        if (!stationsData.features || !stationsData.features.length) {
             throw new Error('No observation stations found');
         }
 
-        // Step 3: Get the latest observation from the nearest station
         const stationId = stationsData.features[0].properties.stationIdentifier;
         const obsResponse = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`);
         if (!obsResponse.ok) throw new Error(`HTTP error: ${obsResponse.status}`);
@@ -108,101 +107,84 @@ export async function fetchCurrentWeather(lat, lon) {
             throw new Error('Invalid observation data');
         }
 
-        // Format API data for return
-        const stationName = stationsData.features[0].properties.name;
-        return formatObservationData(obsData.properties, stationName);
+        return formatObservationData(obsData.properties, stationsData.features[0].properties.name);
     } catch (error) {
-        console.error('Error fetching weather data:', error);
+        console.error('API fallback failed:', error);
         return getDefaultWeatherData();
     }
 }
 
 /**
- * Find county name by coordinates
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @returns {string|null} County name or null if not found
+ * Format weather data from county cache JSON
+ * @param {Object} weatherData - Raw weather data from cache
+ * @returns {Object} Formatted weather object
  */
-function findCountyByCoordinates(lat, lon) {
-    // Find county name by matching coordinates approximately (using precision to 2 decimal places)
-    const latRounded = parseFloat(lat).toFixed(2);
-    const lonRounded = parseFloat(lon).toFixed(2);
-
-    const matchedCounty = window.siteConfig?.counties?.find(county => {
-        const countyLatRounded = parseFloat(county.lat).toFixed(2);
-        const countyLonRounded = parseFloat(county.lon).toFixed(2);
-
-        return countyLatRounded === latRounded && countyLonRounded === lonRounded;
-    });
-
-    return matchedCounty ? matchedCounty.name : null;
-}
-
-/**
- * Format observation data properties into a standardized object
- * 
- * @param {Object} properties - Observation properties from API
- * @param {string} stationName - Name of the weather station
- * @returns {Object} Formatted weather data
- */
-function formatObservationData(properties, stationName) {
-    // Format temperature (convert from C to F)
-    const temperature = properties.temperature && properties.temperature.value !== null ?
-        celsiusToFahrenheit(properties.temperature.value) : 'N/A';
-
-    // Format dewpoint
-    const dewpoint = properties.dewpoint && properties.dewpoint.value !== null ?
-        celsiusToFahrenheit(properties.dewpoint.value) : 'N/A';
-
-    // Format humidity
-    const humidity = properties.relativeHumidity && properties.relativeHumidity.value !== null ?
-        Math.round(properties.relativeHumidity.value) : 'N/A';
-
-    // Format wind
-    let windDisplay = 'N/A';
-    if (properties.windSpeed && properties.windSpeed.value !== null) {
-        const windSpeed = Math.round(properties.windSpeed.value * 2.23694); // Convert m/s to mph
-        if (windSpeed === 0) {
-            windDisplay = 'Calm';
-        } else if (properties.windDirection && properties.windDirection.value !== null) {
-            const direction = degreesToCardinal(properties.windDirection.value);
-            windDisplay = `${windSpeed} mph from ${direction}`;
-        } else {
-            windDisplay = `${windSpeed} mph`;
-        }
-    }
-
-    // Format visibility
-    const visibility = properties.visibility && properties.visibility.value !== null ?
-        metersToMiles(properties.visibility.value) : 'N/A';
-
-    // Format pressure
-    const pressure = properties.barometricPressure && properties.barometricPressure.value !== null ?
-        pascalsToMillibars(properties.barometricPressure.value) : 'N/A';
-
-    // Create observation time
-    const observationTime = properties.timestamp ? new Date(properties.timestamp) : null;
-    const formattedTime = observationTime ?
-        observationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-
-    // Return formatted data
+function formatWeatherData(weatherData) {
     return {
-        temp: temperature,
-        condition: properties.textDescription || 'Unknown',
-        dewpoint: dewpoint,
-        humidity: humidity,
-        wind: windDisplay,
-        visibility: visibility,
-        pressure: pressure,
-        time: observationTime,
-        formattedTime: formattedTime,
-        stationName: stationName,
-        iconUrl: properties.icon
+        temp: formatTemperature(weatherData.temperature),
+        condition: weatherData.skyConditions || 'Unknown',
+        dewpoint: formatDewpoint(weatherData.dewPoint),
+        humidity: formatHumidity(weatherData.humidity),
+        wind: formatWind(weatherData.windSpeed, weatherData.windDirectionCardinal),
+        visibility: formatVisibility(weatherData.visibility),
+        pressure: formatPressure(weatherData.pressure),
+        time: new Date(weatherData.timestamp * 1000),
+        formattedTime: formatTime(weatherData.timestamp),
+        stationName: weatherData.stationName || 'Local Station',
+        iconUrl: null  // County cache JSONs don't include icon URLs
     };
 }
 
 /**
- * Get default weather data when actual data can't be retrieved
+ * Helper formatting functions
+ */
+function formatTemperature(temp) {
+    return temp !== null && temp !== undefined
+        ? Math.round(typeof temp === 'string' ? parseFloat(temp) : temp)
+        : 'N/A';
+}
+
+function formatDewpoint(dewpoint) {
+    return dewpoint !== null && dewpoint !== undefined
+        ? Math.round(dewpoint)
+        : 'N/A';
+}
+
+function formatHumidity(humidity) {
+    return humidity !== null && humidity !== undefined
+        ? Math.round(humidity)
+        : 'N/A';
+}
+
+function formatWind(speed, direction) {
+    if (speed === null || speed === undefined) return 'N/A';
+
+    const windSpeed = Math.round(speed);
+    return windSpeed === 0
+        ? 'Calm'
+        : `${windSpeed} mph from ${direction || 'N/A'}`;
+}
+
+function formatVisibility(visibility) {
+    return visibility !== null && visibility !== undefined
+        ? visibility
+        : 'N/A';
+}
+
+function formatPressure(pressure) {
+    return pressure !== null && pressure !== undefined
+        ? pressure
+        : 'N/A';
+}
+
+function formatTime(timestamp) {
+    return timestamp
+        ? new Date(timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : 'Unknown';
+}
+
+/**
+ * Fallback function for when no weather data can be retrieved
  * @returns {Object} Default weather data object
  */
 function getDefaultWeatherData() {
@@ -258,11 +240,6 @@ export function getWeatherIcon(condition) {
     }
 }
 
-/**
- * Check if a date is within hurricane season
- * @param {Date} date - Date to check (defaults to current date)
- * @returns {boolean} Whether the date is in hurricane season
- */
 export function isDateInHurricaneSeason(date = new Date()) {
     const config = window.siteConfig.tropicalWeather.season;
     const year = date.getFullYear();
