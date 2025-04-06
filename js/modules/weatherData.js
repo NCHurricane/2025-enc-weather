@@ -1,7 +1,6 @@
 /**
  * Weather Data Module
- * Handles fetching and formatting weather data from cached sources with API fallback
- * Consolidated functionality for reuse across the application
+ * Handles fetching and formatting weather data directly from the API
  */
 
 import { degreesToCardinal, pascalsToMillibars, celsiusToFahrenheit, metersToMiles } from './utils.js';
@@ -23,20 +22,54 @@ export async function fetchCurrentWeather(lat, lon) {
 
         // Try to get data from cache file first
         try {
-            const cacheResponse = await fetch('./weather_cache.json');
+            const cacheResponse = await fetch('js/modules/weather_cache.json?t=' + Date.now());
 
             if (cacheResponse.ok) {
                 const cacheData = await cacheResponse.json();
 
-                // Check if cache is valid and contains observation data
-                if (cacheData.status === 'ok' && cacheData.observation && cacheData.observation.properties) {
-                    console.log('Using cached weather data');
-                    return formatWeatherData(cacheData);
+                // Find county name by matching coordinates
+                const matchedCounty = findCountyByCoordinates(lat, lon);
+
+                if (matchedCounty && cacheData.temperatures && cacheData.temperatures[matchedCounty]) {
+                    const cachedTemp = cacheData.temperatures[matchedCounty];
+
+                    console.log("Debug timestamps:", {
+                        currentTime: Date.now() / 1000,
+                        cacheTimestamp: cachedTemp.timestamp,
+                        difference: Math.abs(Date.now() / 1000 - cachedTemp.timestamp)
+                    });
+
+                    // Check cache age (1 hour = 3600 seconds)
+                    const cacheAge = Math.abs(Date.now() / 1000 - cachedTemp.timestamp);
+                    console.log(`Cache check for ${matchedCounty}:`, {
+                        cacheFound: true,
+                        cacheAge: `${cacheAge.toFixed(2)} seconds`,
+                        isCacheValid: cacheAge < 3600  // Changed from 900 to 3600
+                    });
+
+                    if (cacheAge < 3600) {
+                        console.log(`Using cached data for ${matchedCounty}`);
+                        return {
+                            temp: cachedTemp.temp,
+                            condition: cachedTemp.condition || 'Unknown',
+                            dewpoint: 'N/A',
+                            humidity: 'N/A',
+                            wind: 'N/A',
+                            visibility: 'N/A',
+                            pressure: 'N/A',
+                            time: new Date(cachedTemp.timestamp * 1000),
+                            formattedTime: new Date(cachedTemp.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            stationName: `${matchedCounty} County`,
+                            iconUrl: null
+                        };
+                    } else {
+                        console.log(`Cache expired for ${matchedCounty}, falling back to API`);
+                    }
                 } else {
-                    console.log('Cache data invalid, falling back to API');
+                    console.log(`No cache found for coordinates`, { lat, lon });
                 }
             } else {
-                console.log('Cache not available, falling back to API');
+                console.log(`Cache file not accessible`);
             }
         } catch (cacheError) {
             console.log('Error accessing cache:', cacheError);
@@ -44,6 +77,7 @@ export async function fetchCurrentWeather(lat, lon) {
 
         // If we get here, the cache wasn't available or was invalid
         // Fall back to direct API calls
+        console.log('Fetching data from NWS API');
 
         // Step 1: Get the forecast office and grid coordinates
         const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
@@ -84,22 +118,30 @@ export async function fetchCurrentWeather(lat, lon) {
 }
 
 /**
- * Format weather data from the cache file
- * 
- * @param {Object} cacheData - The cached weather data
- * @returns {Object} Formatted weather data
+ * Find county name by coordinates
+ * @param {number} lat - Latitude
+ * @param {number} lon - Longitude
+ * @returns {string|null} County name or null if not found
  */
-function formatWeatherData(cacheData) {
-    const properties = cacheData.observation.properties;
-    const stationName = cacheData.location?.stationName || 'Unknown Station';
+function findCountyByCoordinates(lat, lon) {
+    // Find county name by matching coordinates approximately (using precision to 2 decimal places)
+    const latRounded = parseFloat(lat).toFixed(2);
+    const lonRounded = parseFloat(lon).toFixed(2);
 
-    return formatObservationData(properties, stationName);
+    const matchedCounty = window.siteConfig?.counties?.find(county => {
+        const countyLatRounded = parseFloat(county.lat).toFixed(2);
+        const countyLonRounded = parseFloat(county.lon).toFixed(2);
+
+        return countyLatRounded === latRounded && countyLonRounded === lonRounded;
+    });
+
+    return matchedCounty ? matchedCounty.name : null;
 }
 
 /**
  * Format observation data properties into a standardized object
  * 
- * @param {Object} properties - Observation properties from API or cache
+ * @param {Object} properties - Observation properties from API
  * @param {string} stationName - Name of the weather station
  * @returns {Object} Formatted weather data
  */
@@ -213,43 +255,6 @@ export function getWeatherIcon(condition) {
         return 'fa-solid fa-sun';
     } else {
         return 'fa-solid fa-cloud';
-    }
-}
-
-/**
- * Set weather background based on conditions
- * 
- * @param {Object} weatherData - Weather data object
- * @param {string} containerId - ID of container to update
- */
-export function setWeatherBackground(weatherData, containerId = 'weather-background') {
-    // Get county name from window variable or default
-    const config = window.weatherConfig || {};
-    const location = config.location || {};
-    const countyName = location.countyName || 'county_map';
-
-    // Check if icon URL is available in the weather data
-    let iconUrl = weatherData.iconUrl ? weatherData.iconUrl : `images/county/${countyName}.png`;
-
-    // Update resolution if needed
-    if (weatherData.iconUrl) {
-        iconUrl = iconUrl.replace(/\?size=\w+/, '?size=large');
-    }
-
-    // Set background image for weather card
-    const weatherBgElement = document.getElementById(containerId);
-    if (weatherBgElement) {
-        weatherBgElement.classList.add('weather-bg');
-
-        // Use a linear-gradient to create an overlay that controls opacity
-        weatherBgElement.style.backgroundImage =
-            `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url(${iconUrl})`;
-    }
-
-    // Hide any existing weather icon div (if present)
-    const weatherIconDiv = document.querySelector('.weather-icon');
-    if (weatherIconDiv) {
-        weatherIconDiv.style.display = 'none';
     }
 }
 

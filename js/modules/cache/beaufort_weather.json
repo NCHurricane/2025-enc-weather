@@ -1,0 +1,21 @@
+{
+   "timestamp": 1743976529,
+   "lastUpdated": "2025-04-06 17:55:29",
+   "location": "Washington",
+   "coords": { "lat": 35.5465, "lon": -77.0519 },
+   "weather": {
+      "temperature": 85,
+      "skyConditions": "Clear",
+      "humidity": 39.832159586505,
+      "windSpeed": null,
+      "windDirection": null,
+      "windDirectionCardinal": "N/A",
+      "pressure": 1012,
+      "dewPoint": 58,
+      "visibility": 10,
+      "timestamp": 1743972300,
+      "source": "nws",
+      "station": "KOCW",
+      "stationName": "Washington, Warren Field Airport"
+   }
+}

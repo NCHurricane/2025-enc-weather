@@ -1,1 +1,22 @@
-{"timestamp":1743973981,"lastUpdated":"2025-04-06 21:13:01","location":"Greenville","coords":{"lat":35.64,"lon":-77.39},"weather":{"temperature":86,"skyConditions":"Partly Cloudy","humidity":40.172842074825,"windSpeed":null,"windDirection":null,"pressure":1012,"dewPoint":59,"visibility":10,"timestamp":1743965400,"source":"nws","station":"KPGV"}}
+{
+   "timestamp": 1743975901,
+   "lastUpdated": "2025-04-06 21:45:01",
+   "temperatures": {
+      "Bertie": { "temp": 86, "condition": "Clear", "timestamp": 1743972600 },
+      "Pitt": { "temp": 86, "condition": "Clear", "timestamp": 1743972600 },
+      "Beaufort": { "temp": 85, "condition": "Clear", "timestamp": 1743972300 },
+      "Martin": {
+         "temp": "N/A",
+         "condition": "Clear",
+         "timestamp": 1743972300
+      },
+      "Dare": { "temp": 80, "condition": "Clear", "timestamp": 1743972600 },
+      "Washington": {
+         "temp": 86,
+         "condition": "Clear",
+         "timestamp": 1743972600
+      },
+      "Tyrrell": { "temp": 86, "condition": "Clear", "timestamp": 1743972600 },
+      "Hyde": { "temp": "N/A", "condition": "Clear", "timestamp": 1743972660 }
+   }
+}

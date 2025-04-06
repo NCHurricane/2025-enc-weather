@@ -1,0 +1,21 @@
+{
+   "timestamp": 1743976528,
+   "lastUpdated": "2025-04-06 17:55:28",
+   "location": "Windsor",
+   "coords": { "lat": 35.9985, "lon": -76.9461 },
+   "weather": {
+      "temperature": 86,
+      "skyConditions": "Clear",
+      "humidity": 55.419404125896,
+      "windSpeed": 58,
+      "windDirection": 230,
+      "windDirectionCardinal": "SW",
+      "pressure": 1011,
+      "dewPoint": 68,
+      "visibility": 10,
+      "timestamp": 1743972600,
+      "source": "nws",
+      "station": "KEDE",
+      "stationName": "Edenton, Northeastern Regional Airport"
+   }
+}

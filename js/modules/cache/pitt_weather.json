@@ -1,0 +1,21 @@
+{
+   "timestamp": 1743976529,
+   "lastUpdated": "2025-04-06 17:55:29",
+   "location": "Greenville",
+   "coords": { "lat": 35.6115, "lon": -77.3752 },
+   "weather": {
+      "temperature": 86,
+      "skyConditions": "Clear",
+      "humidity": 40.172842074825,
+      "windSpeed": 54,
+      "windDirection": 250,
+      "windDirectionCardinal": "WSW",
+      "pressure": 1011,
+      "dewPoint": 59,
+      "visibility": 7,
+      "timestamp": 1743972600,
+      "source": "nws",
+      "station": "KPGV",
+      "stationName": "Pitt-Greenville Airport"
+   }
+}
