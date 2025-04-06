@@ -23,7 +23,7 @@ export async function fetchCurrentWeather(lat, lon) {
 
         // Try to get data from cache file first
         try {
-            const cacheResponse = await fetch('js/modules/weather_cache.json');
+            const cacheResponse = await fetch('./weather_cache.json');
 
             if (cacheResponse.ok) {
                 const cacheData = await cacheResponse.json();
