@@ -6,25 +6,6 @@
 import { updateTropicalOutlook, checkActiveSystemsStatus, updateTropicalAlertBanner } from './modules/tropical.js';
 import { initCountyMap } from './modules/ncCountyMap.js';
 
-// Initialize the index page
-// async function initIndexPage() {
-//     // Initialize the NC County Map
-//     const countyMap = initCountyMap();
-
-//     // Store the map instance globally for debugging or future access
-//     window.countyMap = countyMap;
-
-//     // Load tropical outlook
-//     updateTropicalOutlook();
-
-//     // Check for active tropical systems
-//     const hasActiveSystems = await checkActiveSystemsStatus();
-//     updateTropicalAlertBanner(hasActiveSystems);
-
-//     // Set up event handlers
-//     setupEventHandlers();
-// }
-
 async function initIndexPage() {
     // Initialize the NC County Map
     const countyMap = initCountyMap();

@@ -129,3 +129,5 @@ function initializeWeatherApp() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeWeatherApp);
+
+

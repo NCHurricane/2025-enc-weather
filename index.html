@@ -16,6 +16,14 @@
 
       <link rel="stylesheet" href="css/styles.css?v=3.24.3" />
       <link rel="stylesheet" href="css/index.css?v=3.24.3" />
+      <script>
+         window.weatherConfig = {
+            location: {
+               lat: null,
+               lon: null
+            }
+      };
+      </script>
    </head>
 
    <body>
@@ -54,7 +62,7 @@
                      class="fa-solid fa-map-location-dot fa-xl"
                      aria-hidden="true"></i>
                   <h2 id="current-conditions-heading">Current Conditions</h2>
-               </div>
+</div>
 
                <div class="current-content">
                   
@@ -62,7 +70,7 @@
                   <div id="nc-county-map" class="county-map-container">
                      <!-- Map will be dynamically inserted here -->
                   </div>
-
+<div class="county-instruct"></div>
                   <div
                      class="refresh-container"
                      style="text-align: right; margin-top: 10px">
@@ -99,7 +107,7 @@
                      Data courtesy of the National Hurricane Center. For
                      official information, visit
                      
-                        href="https://www.nhc.noaa.gov/"
+                        <a href="https://www.nhc.noaa.gov/"
                         target="_blank"
                         rel="noopener"
                         >nhc.noaa.gov</a
@@ -179,7 +187,7 @@
          </div>
       </footer>
 
-      
+
       <script src="https://unpkg.com/topojson-client@3"></script>
       <script src="https://d3js.org/d3.v7.min.js"></script>
 

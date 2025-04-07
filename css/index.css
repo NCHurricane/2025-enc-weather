@@ -59,11 +59,18 @@
         height: 400px;
     }
 
+    .main-title {
+        font-size: 1.5rem;
+    }
 }
 
 @media (max-width: 600px) {
     .county-map-container {
         height: 300px;
+    }
+
+    .main-title {
+        font-size: 1rem;
     }
 
     .county-label,
@@ -117,12 +124,12 @@
 
 .tropical-content h3,
 .current-content h3 {
-    color: var(--color-text-light);
+    color: var((--color-primary));
     margin-top: 0;
 }
 
 .tropical-content img {
-    max-width: 100%;
+    max-width: 80%;
     height: auto;
     border-radius: 5px;
     display: block;
@@ -149,13 +156,42 @@
 
 /* Media queries for responsive design */
 @media (max-width: 768px) {
-    .tropical-title h2 {
+
+    .tropical-title h2,
+    .current-title h2 {
         font-size: 1.3rem;
+    }
+
+    .tropical-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .tropical-content p {
+        font-size: 1rem;
+    }
+
+    .tropical-disclaimer {
+        font-size: 1rem;
     }
 }
 
 @media (max-width: 600px) {
-    .tropical-title h2 {
-        font-size: 1.1rem;
+
+    .tropical-title h2,
+    .current-title h2 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .tropical-content h3 {
+        font-size: 1rem;
+    }
+
+    .tropical-content p {
+        font-size: .9rem;
+    }
+
+    .tropical-disclaimer {
+        font-size: .9rem;
     }
 }

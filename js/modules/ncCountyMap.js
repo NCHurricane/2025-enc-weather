@@ -24,7 +24,7 @@ export class NCCountyMap {
         };
         this.alertData = {};
         // Script to test the county alert highlight functionality
-        this.testModeEnabled = false;
+        this.testModeEnabled = true;
         this.targetCounties = new Set(
             (window.siteConfig?.counties || []).map(county => county.name.toLowerCase())
         );
