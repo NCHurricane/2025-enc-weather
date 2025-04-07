@@ -44,7 +44,7 @@ export async function fetchCurrentWeather(lat, lon) {
 
         try {
             // Fetch county-specific JSON cache
-            const response = await fetch(`../js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+            const response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);

@@ -119,6 +119,73 @@ export async function fetchCurrentConditions(lat, lon) {
 //     updateLastUpdateTimestamp();
 // }
 
+// export function updateDOMWithObservation(properties, stationName) {
+//     // Cache DOM elements to minimize lookups
+//     const tempElement = document.getElementById('current-temp');
+//     const descElement = document.getElementById('current-desc');
+//     const dewpointElement = document.getElementById('current-dewpoint');
+//     const humidityElement = document.getElementById('current-humidity');
+//     const windElement = document.getElementById('current-wind');
+//     const visibilityElement = document.getElementById('current-visibility');
+//     const pressureElement = document.getElementById('current-pressure');
+//     const timeElement = document.getElementById('current-obs-time');
+//     const locationElement = document.getElementById('current-location');
+
+//     // Calculate all values first before DOM manipulation
+//     const temperature = properties.temperature && properties.temperature.value !== null ?
+//         celsiusToFahrenheit(properties.temperature.value) : 'N/A';
+
+//     const dewpoint = properties.dewpoint && properties.dewpoint.value !== null ?
+//         Math.round((properties.dewpoint.value * 9 / 5) + 32) : 'N/A';
+
+//     const humidity = properties.relativeHumidity && properties.relativeHumidity.value !== null ?
+//         Math.round(properties.relativeHumidity.value) : 'N/A';
+
+//     let windDisplay = 'N/A';
+//     if (properties.windSpeed && properties.windSpeed.value !== null) {
+//         const windSpeed = Math.round(properties.windSpeed.value);
+//         if (windSpeed === 0) {
+//             windDisplay = 'Calm';
+//         } else if (properties.windDirection && properties.windDirection.value !== null) {
+//             windDisplay = `${windSpeed} mph from ${degreesToCardinal(properties.windDirection.value)}`;
+//         } else {
+//             windDisplay = `${windSpeed} mph`;
+//         }
+//     }
+
+//     const visibility = properties.visibility && properties.visibility.value !== null ?
+//         metersToMiles(properties.visibility.value) : 'N/A';
+
+//     const pressure = properties.barometricPressure && properties.barometricPressure.value !== null ?
+//         Math.round((properties.barometricPressure.value / 3386.389) * 33.8639) : 'N/A';
+
+//     // Store and format observation time
+//     let observationTime = null;
+//     if (properties.timestamp) {
+//         observationTime = new Date(properties.timestamp);
+//     }
+
+//     const formattedTime = observationTime ?
+//         observationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
+
+//     // Batch DOM updates with a single reflow
+//     requestAnimationFrame(() => {
+//         // Update DOM elements only if they exist
+//         if (tempElement) tempElement.textContent = `${temperature}°`;
+//         if (descElement) descElement.textContent = properties.textDescription || 'Sky Conditions N/A';
+//         if (dewpointElement) dewpointElement.innerHTML = `<strong>Dew Point:</strong> ${dewpoint}°F`;
+//         if (humidityElement) humidityElement.innerHTML = `<strong>Humidity:</strong> ${humidity}%`;
+//         if (windElement) windElement.innerHTML = `<strong>Wind:</strong> ${windDisplay}`;
+//         if (visibilityElement) visibilityElement.innerHTML = `<strong>Visibility:</strong> ${visibility} mi`;
+//         if (pressureElement) pressureElement.innerHTML = `<strong>Pressure:</strong> ${pressure} mb`;
+//         if (timeElement) timeElement.textContent = formattedTime;
+//         if (locationElement) locationElement.textContent = stationName || 'Unknown Station';
+//     });
+
+//     // Return the observation time for use in other functions
+//     return observationTime;
+// }
+
 export function updateDOMWithObservation(properties, stationName) {
     // Cache DOM elements to minimize lookups
     const tempElement = document.getElementById('current-temp');
@@ -159,15 +226,6 @@ export function updateDOMWithObservation(properties, stationName) {
     const pressure = properties.barometricPressure && properties.barometricPressure.value !== null ?
         Math.round((properties.barometricPressure.value / 3386.389) * 33.8639) : 'N/A';
 
-    // Store and format observation time
-    let observationTime = null;
-    if (properties.timestamp) {
-        observationTime = new Date(properties.timestamp);
-    }
-
-    const formattedTime = observationTime ?
-        observationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-
     // Batch DOM updates with a single reflow
     requestAnimationFrame(() => {
         // Update DOM elements only if they exist
@@ -180,6 +238,9 @@ export function updateDOMWithObservation(properties, stationName) {
         if (pressureElement) pressureElement.innerHTML = `<strong>Pressure:</strong> ${pressure} mb`;
         if (timeElement) timeElement.textContent = formattedTime;
         if (locationElement) locationElement.textContent = stationName || 'Unknown Station';
+
+        // NEW: Call setWeatherBackground with the full properties
+        setWeatherBackground(properties);
     });
 
     // Return the observation time for use in other functions
