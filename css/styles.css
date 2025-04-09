@@ -285,10 +285,29 @@ hr {
 }
 
 .weather-bg {
-    background-position: left center;
-    background-repeat: no-repeat;
-    background-size: auto 100%;
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.weather-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 35%;
+    opacity: 0.7;
+    /* Adjust width as needed */
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+.weather-desc {
+    z-index: 1;
+    position: relative;
+    /* Keep other existing styles */
 }
 
 /* Property references with data attributes */
@@ -959,6 +978,19 @@ canvas#meteogramChart {
     .weather-temp {
         background-color: transparent;
         font-size: 4rem;
+    }
+
+    .weather-icon {
+        width: 100%;
+        /* Full width background */
+        opacity: 0.7;
+        /* Add some transparency so text remains readable */
+    }
+
+    /* You may want to adjust text colors for better contrast on smaller screens */
+    .weather-desc {
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        /* Stronger text shadow for readability */
     }
 
     .alert-details {

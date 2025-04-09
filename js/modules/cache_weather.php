@@ -198,6 +198,13 @@ foreach ($counties as $county) {
                 
         // Extract condition
         $condition = $props['textDescription'] ?? 'Unknown';
+
+        // Get the icon URL and upgrade size from medium to large
+$iconUrl = $props['icon'] ?? null;
+if ($iconUrl) {
+    // Replace size=medium with size=large in the URL
+    $iconUrl = str_replace('size=medium', 'size=large', $iconUrl);
+}
         
         // Extract other weather data
         $weather = [
@@ -218,7 +225,8 @@ foreach ($counties as $county) {
             'timestamp' => strtotime($props['timestamp'] ?? 'now'),
             'source' => 'nws',
             'station' => $stationId,
-            'stationName' => $stationName
+            'stationName' => $stationName,
+            'iconUrl' => $iconUrl
         ];
         
         // Create county-specific cache file

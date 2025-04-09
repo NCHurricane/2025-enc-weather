@@ -345,7 +345,7 @@ function formatWeatherData(weatherData) {
         time: observationTime,
         formattedTime: formatTime(weatherData.timestamp),
         stationName: weatherData.stationName || 'Local Station',
-        iconUrl: null  // County cache JSONs don't include icon URLs
+        iconUrl: weatherData.iconUrl || null
     };
 }
 
@@ -564,6 +564,33 @@ export function updateDOMWithObservation(weatherData) {
  * @param {Object} weatherData - Weather data object
  * @param {string} containerId - ID of container to update
  */
+// export function setWeatherBackground(weatherData, containerId = 'weather-background') {
+//     const weatherBgElement = document.getElementById(containerId);
+//     if (!weatherBgElement) {
+//         console.error('Weather background element not found:', containerId);
+//         return;
+//     }
+
+//     console.log("Setting weather background with data:", weatherData);
+
+//     // CRITICAL: Apply ONLY the background image property, don't try to add multiple styles
+//     if (weatherData.iconUrl) {
+//         // Log before modifying
+//         console.log("Original background image:", weatherBgElement.style.backgroundImage);
+
+//         // Don't modify the URL, use it exactly as provided by the API
+//         const iconUrl = weatherData.iconUrl;
+
+//         // Apply background image - EXACTLY as seen in working example
+//         weatherBgElement.style.backgroundImage =
+//             `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url("${iconUrl}")`;
+
+//         console.log("Applied background image:", weatherBgElement.style.backgroundImage);
+//     } else {
+//         console.log("No icon URL available");
+//     }
+// }
+
 export function setWeatherBackground(weatherData, containerId = 'weather-background') {
     const weatherBgElement = document.getElementById(containerId);
     if (!weatherBgElement) {
@@ -571,23 +598,23 @@ export function setWeatherBackground(weatherData, containerId = 'weather-backgro
         return;
     }
 
-    console.log("Setting weather background with data:", weatherData);
-
-    // CRITICAL: Apply ONLY the background image property, don't try to add multiple styles
+    // Only apply if we have an icon URL
     if (weatherData.iconUrl) {
-        // Log before modifying
-        console.log("Original background image:", weatherBgElement.style.backgroundImage);
+        // Instead of setting it as background-image, create a side image div
+        weatherBgElement.classList.add('weather-bg');
 
-        // Don't modify the URL, use it exactly as provided by the API
-        const iconUrl = weatherData.iconUrl;
+        // Check if the weather-icon element already exists
+        let weatherIconDiv = weatherBgElement.querySelector('.weather-icon');
+        if (!weatherIconDiv) {
+            // Create the weather icon div if it doesn't exist
+            weatherIconDiv = document.createElement('div');
+            weatherIconDiv.className = 'weather-icon';
+            weatherBgElement.appendChild(weatherIconDiv);
+        }
 
-        // Apply background image - EXACTLY as seen in working example
-        weatherBgElement.style.backgroundImage =
-            `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url("${iconUrl}")`;
-
-        console.log("Applied background image:", weatherBgElement.style.backgroundImage);
-    } else {
-        console.log("No icon URL available");
+        // Set the background image of just the weather-icon div
+        weatherIconDiv.style.backgroundImage = `url("${weatherData.iconUrl}")`;
+        weatherIconDiv.style.display = 'block';
     }
 }
 
