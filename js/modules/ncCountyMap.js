@@ -684,14 +684,15 @@ export class NCCountyMap {
         legend.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
         legend.style.maxWidth = '80%';
         legend.style.fontSize = '0.8rem';
+        legend.style.textTransform = 'uppercase';
         legend.style.zIndex = '1000';
 
         // Create legend title
         const title = document.createElement('div');
-        title.textContent = 'Active Warnings';
+        title.textContent = 'Active Alerts';
         title.style.fontWeight = 'bold';
-        title.style.marginBottom = '5px';
-        title.style.borderBottom = '1px solid #ccc';
+        title.style.marginBottom = '3px';
+        // title.style.borderBottom = '1px solid #ccc';
         legend.appendChild(title);
 
         // Create a flex container for warning items

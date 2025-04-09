@@ -1,1 +1,19 @@
-{"timestamp":1743974822,"lastUpdated":"2025-04-06 21:27:02","location":"Greenville","coords":{"lat":35.64,"lon":-77.39},"weather":{"temperature":86,"skyConditions":"Clear","humidity":40.172842074825,"windSpeed":null,"windDirection":null,"pressure":1011,"dewPoint":59,"visibility":10,"timestamp":1743971400,"source":"nws","station":"KPGV"}}
+{
+   "timestamp": 1743974822,
+   "lastUpdated": "2025-04-06 21:27:02",
+   "location": "Greenville",
+   "coords": { "lat": 35.64, "lon": -77.39 },
+   "weather": {
+      "temperature": 86,
+      "skyConditions": "Clear",
+      "humidity": 40.172842074825,
+      "windSpeed": null,
+      "windDirection": null,
+      "pressure": 1011,
+      "dewPoint": 59,
+      "visibility": 10,
+      "timestamp": 1743971400,
+      "source": "nws",
+      "station": "KPGV"
+   }
+}

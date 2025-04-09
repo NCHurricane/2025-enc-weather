@@ -998,6 +998,10 @@ canvas#meteogramChart {
         font-weight: 600;
     }
 
+    .map-legend div {
+        font-size: .6rem;
+    }
+
     .detailed-row {
         flex-direction: column;
         gap: 5px;

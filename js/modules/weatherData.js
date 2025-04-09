@@ -6,7 +6,6 @@
  * files into a single, cohesive module that prioritizes cached JSON data sources
  * with API fallbacks.
  */
-// Import utility functions
 import {
     safeSetText,
     safeSetHTML,
@@ -16,7 +15,6 @@ import {
     pascalsToMillibars
 } from './utils.js';
 
-// Track observation time globally for the update timer
 let observationTime = null;
 
 /**
@@ -41,7 +39,6 @@ function findCountyByCoordinates(lat, lon) {
  */
 export async function fetchWeatherForecast(lat, lon) {
     try {
-        // Get county name
         const countyName = findCountyByCoordinates(lat, lon) ||
             (window.weatherConfig?.location?.countyName?.toLowerCase());
 
@@ -49,9 +46,7 @@ export async function fetchWeatherForecast(lat, lon) {
             throw new Error('Unable to determine county name');
         }
 
-        // Try to fetch from cache first
         try {
-            // Try both relative and absolute paths
             let response;
             try {
                 response = await fetch(`../../js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
@@ -72,13 +67,11 @@ export async function fetchWeatherForecast(lat, lon) {
                 throw new Error('Invalid forecast cache data');
             }
 
-            // Render forecast
             return renderForecast(data.forecast.daily);
 
         } catch (cacheError) {
             console.warn('Forecast cache error, falling back to API:', cacheError);
 
-            // Fall back to API
             const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
             if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
 
@@ -144,7 +137,6 @@ function renderForecast(periods) {
  */
 export async function fetchDetailedForecast(lat, lon) {
     try {
-        // Get county name
         const countyName = findCountyByCoordinates(lat, lon) ||
             (window.weatherConfig?.location?.countyName?.toLowerCase());
 
@@ -152,9 +144,7 @@ export async function fetchDetailedForecast(lat, lon) {
             throw new Error('Unable to determine county name');
         }
 
-        // Try to fetch from cache first
         try {
-            // Try both relative and absolute paths
             let response;
             try {
                 response = await fetch(`../../js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
@@ -175,13 +165,11 @@ export async function fetchDetailedForecast(lat, lon) {
                 throw new Error('Invalid forecast cache data');
             }
 
-            // Render detailed forecast
             return renderDetailedForecast(data.forecast.daily);
 
         } catch (cacheError) {
             console.warn('Detailed forecast cache error, falling back to API:', cacheError);
 
-            // Fall back to API
             const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
             if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
 
@@ -252,11 +240,9 @@ function renderDetailedForecast(periods) {
  */
 export async function fetchCurrentWeather(lat, lon) {
     try {
-        // Validate inputs
         if (!lat || !lon) {
             throw new Error('Invalid coordinates provided');
         }
-        // Identify county by coordinates
         const countyName = findCountyByCoordinates(lat, lon);
 
         if (!countyName) {
@@ -265,22 +251,18 @@ export async function fetchCurrentWeather(lat, lon) {
         }
 
         try {
-            // Primary: Try county-specific JSON cache
             const response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
             }
             const data = await response.json();
-            // Check if weather data exists
             if (!data.weather) {
                 console.warn(`No weather data found in cache for ${countyName}`);
                 throw new Error('Invalid cache data');
             }
-            // Cache hit - Return formatted data
             return formatWeatherData(data.weather);
         } catch (cacheError) {
             console.warn(`Cache error for ${countyName}, attempting NWS API:`, cacheError);
-            // Secondary: Fall back to API if cache fetch fails
             return await fetchWeatherFromAPI(lat, lon);
         }
     } catch (error) {
@@ -330,7 +312,6 @@ async function fetchWeatherFromAPI(lat, lon) {
  * @returns {Object} Formatted weather object
  */
 function formatWeatherData(weatherData) {
-    // Store observation time globally
     if (weatherData.timestamp) {
         observationTime = new Date(weatherData.timestamp * 1000);
     }
@@ -357,23 +338,18 @@ function formatWeatherData(weatherData) {
  * @returns {Object} Formatted weather data
  */
 function formatObservationData(properties, stationName) {
-    // Store observation time globally
     if (properties.timestamp) {
         observationTime = new Date(properties.timestamp);
     }
-    // Format temperature (convert from C to F)
     const temperature = properties.temperature && properties.temperature.value !== null ?
         celsiusToFahrenheit(properties.temperature.value) : 'N/A';
-    // Format dewpoint
     const dewpoint = properties.dewpoint && properties.dewpoint.value !== null ?
         celsiusToFahrenheit(properties.dewpoint.value) : 'N/A';
-    // Format humidity
     const humidity = properties.relativeHumidity && properties.relativeHumidity.value !== null ?
         Math.round(properties.relativeHumidity.value) : 'N/A';
-    // Format wind
     let windDisplay = 'N/A';
     if (properties.windSpeed && properties.windSpeed.value !== null) {
-        const windSpeed = Math.round(properties.windSpeed.value * 2.23694); // Convert m/s to mph
+        const windSpeed = Math.round(properties.windSpeed.value * 0.621371);
         if (windSpeed === 0) {
             windDisplay = 'Calm';
         } else if (properties.windDirection && properties.windDirection.value !== null) {
@@ -383,16 +359,12 @@ function formatObservationData(properties, stationName) {
             windDisplay = `${windSpeed} mph`;
         }
     }
-    // Format visibility
     const visibility = properties.visibility && properties.visibility.value !== null ?
         metersToMiles(properties.visibility.value) : 'N/A';
-    // Format pressure
     const pressure = properties.barometricPressure && properties.barometricPressure.value !== null ?
         pascalsToMillibars(properties.barometricPressure.value) : 'N/A';
-    // Create observation time
     const formattedTime = observationTime ?
         observationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-    // Return formatted data
     return {
         temp: temperature,
         condition: properties.textDescription || 'Unknown',
@@ -430,11 +402,26 @@ function formatHumidity(humidity) {
 }
 
 function formatWind(speed, direction) {
-    if (speed === null || speed === undefined) return 'N/A';
-    const windSpeed = Math.round(speed);
-    return windSpeed === 0
-        ? 'Calm'
-        : `${windSpeed} mph from ${direction || 'N/A'}`;
+    if (typeof speed === 'string') {
+        const match = speed.match(/(\d+)/);
+        if (match) {
+            speed = parseInt(match[1], 10);
+        } else {
+            return 'N/A';
+        }
+    }
+
+    if (speed > 20) {
+        speed = Math.round(speed);
+    } else {
+        speed = Math.round(speed * 0.621371);
+    }
+
+    if (speed === 0) {
+        return 'Calm';
+    } else {
+        return `${speed} mph from ${direction || 'N/A'}`;
+    }
 }
 
 function formatVisibility(visibility) {
@@ -531,9 +518,7 @@ export function updateDOMWithObservation(weatherData) {
     console.log("Weather data for display:", JSON.stringify(weatherData));
 
     if (!weatherData) return;
-    // Start timer to update "data age" display
     startUpdateTimer();
-    // Cache DOM elements to minimize lookups
     const tempElement = document.getElementById('current-temp');
     const descElement = document.getElementById('current-desc');
     const dewpointElement = document.getElementById('current-dewpoint');
@@ -543,7 +528,6 @@ export function updateDOMWithObservation(weatherData) {
     const pressureElement = document.getElementById('current-pressure');
     const timeElement = document.getElementById('current-obs-time');
     const locationElement = document.getElementById('current-location');
-    // Batch DOM updates with a single reflow
     requestAnimationFrame(() => {
         if (tempElement) tempElement.textContent = `${weatherData.temp}°`;
         if (descElement) descElement.textContent = weatherData.condition || 'Sky Conditions N/A';
@@ -554,7 +538,6 @@ export function updateDOMWithObservation(weatherData) {
         if (pressureElement) pressureElement.innerHTML = `<strong>Pressure:</strong> ${weatherData.pressure} mb`;
         if (timeElement) timeElement.textContent = weatherData.formattedTime;
         if (locationElement) locationElement.textContent = weatherData.stationName || 'Unknown Station';
-        // Set weather background
         setWeatherBackground(weatherData);
     });
 }
@@ -564,32 +547,6 @@ export function updateDOMWithObservation(weatherData) {
  * @param {Object} weatherData - Weather data object
  * @param {string} containerId - ID of container to update
  */
-// export function setWeatherBackground(weatherData, containerId = 'weather-background') {
-//     const weatherBgElement = document.getElementById(containerId);
-//     if (!weatherBgElement) {
-//         console.error('Weather background element not found:', containerId);
-//         return;
-//     }
-
-//     console.log("Setting weather background with data:", weatherData);
-
-//     // CRITICAL: Apply ONLY the background image property, don't try to add multiple styles
-//     if (weatherData.iconUrl) {
-//         // Log before modifying
-//         console.log("Original background image:", weatherBgElement.style.backgroundImage);
-
-//         // Don't modify the URL, use it exactly as provided by the API
-//         const iconUrl = weatherData.iconUrl;
-
-//         // Apply background image - EXACTLY as seen in working example
-//         weatherBgElement.style.backgroundImage =
-//             `linear-gradient(rgba(45, 45, 45, 0.5), rgba(45, 45, 45, 0.5)), url("${iconUrl}")`;
-
-//         console.log("Applied background image:", weatherBgElement.style.backgroundImage);
-//     } else {
-//         console.log("No icon URL available");
-//     }
-// }
 
 export function setWeatherBackground(weatherData, containerId = 'weather-background') {
     const weatherBgElement = document.getElementById(containerId);
@@ -598,21 +555,16 @@ export function setWeatherBackground(weatherData, containerId = 'weather-backgro
         return;
     }
 
-    // Only apply if we have an icon URL
     if (weatherData.iconUrl) {
-        // Instead of setting it as background-image, create a side image div
         weatherBgElement.classList.add('weather-bg');
 
-        // Check if the weather-icon element already exists
         let weatherIconDiv = weatherBgElement.querySelector('.weather-icon');
         if (!weatherIconDiv) {
-            // Create the weather icon div if it doesn't exist
             weatherIconDiv = document.createElement('div');
             weatherIconDiv.className = 'weather-icon';
             weatherBgElement.appendChild(weatherIconDiv);
         }
 
-        // Set the background image of just the weather-icon div
         weatherIconDiv.style.backgroundImage = `url("${weatherData.iconUrl}")`;
         weatherIconDiv.style.display = 'block';
     }
@@ -704,7 +656,6 @@ export async function fetchAFDText(wfo) {
         return 'No forecast office specified';
     }
     try {
-        // Primary: Try AFD cache
         try {
             const response = await fetch(`../../js/modules/cache/${wfo.toLowerCase()}_afd.json?t=${Date.now()}`);
             if (!response.ok) {

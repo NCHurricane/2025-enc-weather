@@ -212,7 +212,7 @@ if ($iconUrl) {
             'skyConditions' => $condition,
             'humidity' => $props['relativeHumidity']['value'] ?? null,
             'windSpeed' => isset($props['windSpeed']['value']) ? 
-                round($props['windSpeed']['value'] * 2.237) : null, // Convert m/s to mph
+                round($props['windSpeed']['value'] * 0.621371) : null, // Convert m/s to mph
             'windDirection' => $props['windDirection']['value'] ?? null,
             'windDirectionCardinal' => isset($props['windDirection']['value']) ? 
                 degreesToCardinal($props['windDirection']['value']) : 'N/A',

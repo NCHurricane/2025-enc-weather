@@ -1,6 +1,5 @@
 // meteogram.js
 
-// Import the forecast data function from alertsForecastAFD.js
 import { degreesToCardinal } from './utils.js';
 
 // Define your own fetchForecastData function that works with the existing fetchWeatherForecast
@@ -296,7 +295,7 @@ export function processForecastData(rawData) {
         time: p.timestamp.getHours() + ":00"
       })),
       temperature: group.map(p => p.temperature !== null ? Math.round(p.temperature) : null),
-      dewpoint: group.map(p => p.dewpoint !== null ? Math.round(p.dewpoint) : null),
+      dewpoint: group.map(p => p.dewpoint !== null ? Math.round((p.dewpoint * 9 / 5) + 32) : null),
       skyCover: group.map(p => p.skyCover),
       humidity: group.map(p => p.relativeHumidity !== null ? Math.round(p.relativeHumidity) : null),
       precipChance: group.map(p => p.probabilityOfPrecipitation !== null ?
