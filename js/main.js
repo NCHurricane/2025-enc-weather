@@ -1,6 +1,11 @@
 // main.js
-import { initWeather } from './modules/currentConditions.js';
-import { fetchWeatherForecast, fetchCurrentWarnings, fetchAFDText, fetchDetailedForecast } from './modules/alertsForecastAFD.js';
+import {
+    initWeather,
+    fetchAlerts,
+    fetchAFDText,
+    fetchWeatherForecast,
+    fetchDetailedForecast
+} from './modules/weatherData.js';
 import { initMeteogram } from './modules/meteogram.js';
 import { initSatellite } from './modules/satellite.js';
 import { initRadar } from './modules/radar.js';
@@ -21,7 +26,7 @@ function updateData() {
     const lat = location.lat || 35.64;
     const lon = location.lon || -77.39;
     const wfo = location.afdWFO || "MHX";
-    const countyName = extractCountyNameFromURL();
+    const countyName = location.countyName || extractCountyNameFromURL();
 
     // If using defaults, log a warning
     if (!config.location || !location.lat || !location.lon) {
@@ -36,7 +41,16 @@ function updateData() {
         }
 
         try {
-            const response = await fetch(`../../js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+            // Try both relative and absolute paths
+            let response;
+            try {
+                response = await fetch(`../../js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+                if (!response.ok) {
+                    response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+                }
+            } catch (e) {
+                response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
@@ -63,23 +77,29 @@ function updateData() {
             .catch(() => initWeather(lat, lon));
     }
 
-    // The rest of the initialization remains the same
+    // Fetch and display forecast data
     if (document.getElementById('forecast')) {
         fetchWeatherForecast(lat, lon);
     }
 
+    // Fetch and display alerts
     if (document.getElementById('alerts')) {
-        fetchCurrentWarnings(lat, lon);
+        fetchAlerts(lat, lon).then(alerts => {
+            renderAlerts(alerts);
+        });
     }
 
+    // Fetch and display Area Forecast Discussion
     if (document.getElementById('afd-content')) {
         fetchAFDText(wfo);
     }
 
+    // Fetch and display detailed forecast
     if (document.getElementById('detailed-forecast')) {
         fetchDetailedForecast(lat, lon);
     }
 
+    // Initialize other components
     if (document.getElementById('meteogram-chart-container')) {
         initMeteogram(lat, lon);
     }
@@ -90,6 +110,48 @@ function updateData() {
 
     if (document.getElementById('radar-image-container')) {
         initRadar();
+    }
+}
+
+// Function to render alerts
+function renderAlerts(alerts) {
+    const alertsElement = document.getElementById('alerts');
+    if (!alertsElement) return;
+
+    try {
+        if (!alerts || alerts.length === 0) {
+            alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
+            return;
+        }
+
+        let alertsHTML = '';
+        alerts.forEach((alert, index) => {
+            if (!alert.properties) return;
+
+            const eventName = alert.properties.event || 'Unknown Alert';
+            let description = alert.properties.description || 'No description available.';
+            description = description.replace(/\r\n/g, "\n");
+            const paragraphs = description.split(/\n\s*\n/);
+            const formattedDescription = paragraphs.map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join("");
+
+            alertsHTML += `
+              <div class="alert">
+                <input type="checkbox" id="alert-${index}" class="alert-toggle">
+                <label for="alert-${index}" class="alert-title">
+                  <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
+                  ${eventName}
+                </label>
+                <div class="alert-details">
+                  ${formattedDescription}
+                </div>
+              </div>
+            `;
+        });
+
+        alertsElement.innerHTML = alertsHTML;
+    } catch (error) {
+        console.error('Error rendering alerts:', error);
+        alertsElement.innerHTML = '<div class="alert"><p><b>Unable to render alerts. Please try again later.</b></p></div>';
     }
 }
 
@@ -129,5 +191,3 @@ function initializeWeatherApp() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeWeatherApp);
-
-

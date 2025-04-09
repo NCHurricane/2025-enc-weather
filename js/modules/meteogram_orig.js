@@ -1,184 +1,139 @@
 // meteogram.js
 
 // Import the forecast data function from alertsForecastAFD.js
-import { degreesToCardinal } from './utils.js';
+import { fetchWeatherForecast } from './weatherData.js';
 
 // Define your own fetchForecastData function that works with the existing fetchWeatherForecast
 export async function fetchForecastData(lat, lon) {
   try {
-    // Get county name from coordinates or page configuration
-    const countyName = getCountyNameFromCoordinates(lat, lon);
+    const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    const pointsData = await pointsResponse.json();
+    const gridId = pointsData.properties.gridId;
+    const gridX = pointsData.properties.gridX;
+    const gridY = pointsData.properties.gridY;
 
-    if (!countyName) {
-      console.error("Could not determine county name from coordinates:", lat, lon);
-      return null;
-    }
-
-    console.log(`Fetching forecast for ${countyName} county...`);
-
-    // Try both relative and absolute path patterns
-    let response;
-    try {
-      // Try relative path first (for county pages)
-      response = await fetch(`../../js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
-
-      if (!response.ok) {
-        // Try alternative path (for root pages)
-        response = await fetch(`js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
-      }
-    } catch (pathError) {
-      // If first path fails, try alternative path
-      console.log("Trying alternative path for forecast data...");
-      response = await fetch(`js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
-    }
-
-    if (!response.ok) {
-      console.error(`Failed to fetch forecast data for ${countyName}: ${response.status}`);
-
-      // Fallback to API for meteorological data
-      console.log("Attempting fallback to direct API...");
-      return await fetchForecastFromAPI(lat, lon);
-    }
-
-    return await response.json();
+    // Use the raw gridpoints endpoint instead of forecast/hourly
+    const gridpointsUrl = `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}`;
+    const gridpointsResponse = await fetch(gridpointsUrl);
+    return await gridpointsResponse.json();
   } catch (error) {
     console.error("Error fetching forecast data:", error);
     return null;
   }
 }
 
-// Fallback function to get basic forecast data directly from API
-async function fetchForecastFromAPI(lat, lon) {
-  try {
-    console.log("Fetching meteorological data from API fallback");
-    // Get the forecast from NWS API
-    const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-    const pointsData = await pointsResponse.json();
+// export function processForecastData(rawData) {
+//   console.log("Raw forecast data:", rawData.properties.periods[0]);
+//   if (!rawData || !rawData.properties || !rawData.properties.periods) return null;
+//   const periods = rawData.properties.periods;
+//   const timeframes = { "0": [], "24": [], "48": [], "72": [], "96": [] };
 
-    if (!pointsData.properties || !pointsData.properties.forecastHourly) {
-      throw new Error("Invalid points data from API");
-    }
+//   periods.forEach((period, index) => {
+//     if (index < 24) {
+//       timeframes["0"].push(period);
+//     } else if (index < 48) {
+//       timeframes["24"].push(period);
+//     } else if (index < 72) {
+//       timeframes["48"].push(period);
+//     } else if (index < 96) {
+//       timeframes["72"].push(period);
+//     } else if (index < 120) {
+//       timeframes["96"].push(period);
+//     }
+//   });
 
-    const forecastUrl = pointsData.properties.forecastHourly;
-    const forecastResponse = await fetch(forecastUrl);
-    const forecastData = await forecastResponse.json();
+//   const processed = {};
+//   for (const key in timeframes) {
+//     const group = timeframes[key];
+//     if (!group.length) continue;
 
-    if (!forecastData.properties || !forecastData.properties.periods) {
-      throw new Error("Invalid forecast data from API");
-    }
+//     processed[key] = {
+//       labels: group.map(p => {
+//         const date = new Date(p.startTime);
+//         return {
+//           date: date.toLocaleDateString('en-US', {
+//             day: 'numeric',
+//             month: 'numeric'
+//           }),
+//           time: date.getHours() + ":00",
+//         };
+//       }),
+//       temperature: group.map(p => p.temperature),
+//       dewpoint: group.map(p => {
+//         // Handle different possible structures for dewpoint
+//         if (p.dewpoint && typeof p.dewpoint === 'object' && 'value' in p.dewpoint) {
+//           // Convert from C to F if needed
+//           return Math.round((p.dewpoint.value * 9 / 5) + 32);
+//         } else if (typeof p.dewpoint === 'number') {
+//           return p.dewpoint;
+//         }
+//         return null;
+//       }),
+//       windSpeed: group.map(p => {
+//         // Parse wind speed values from string like "5 to 10 mph"
+//         if (typeof p.windSpeed === 'string') {
+//           const match = p.windSpeed.match(/(\d+)/);
+//           return match ? parseInt(match[0], 10) : 0;
+//         }
+//         return p.windSpeed || 0;
+//       }),
+//       humidity: group.map(p => {
+//         if (p.relativeHumidity && typeof p.relativeHumidity === 'object') {
+//           return p.relativeHumidity.value || 0;
+//         }
+//         return 0;
+//       }),
+//       precipChance: group.map(p => {
+//         if (p.probabilityOfPrecipitation && typeof p.probabilityOfPrecipitation === 'object') {
+//           return p.probabilityOfPrecipitation.value || 0;
+//         }
+//         return 0;
+//       }),
+//       skyCover: group.map(p => {
+//         if (p.skyCover !== undefined) {
+//           return typeof p.skyCover === 'object' ? (p.skyCover.value || 0) : p.skyCover;
+//         }
+//         return 0;
+//       }),
 
-    // Structure data in the same format as our cache files
-    return {
-      timestamp: Math.floor(Date.now() / 1000),
-      lastUpdated: new Date().toISOString(),
-      location: "API Fallback",
-      coords: { lat, lon },
-      forecast: {
-        hourly: forecastData.properties.periods,
-        daily: []
-      }
-    };
-  } catch (apiError) {
-    console.error("API fallback failed:", apiError);
-    return null;
-  }
-}
+//       // Add wind direction - handle both string directions and numeric degrees
+//       windDirection: group.map(p => {
+//         if (p.windDirection) {
+//           // Some APIs provide cardinal directions as strings, others as degrees
+//           if (!isNaN(p.windDirection)) {
+//             return parseInt(p.windDirection, 10); // It's a number, return as is
+//           } else {
+//             // It's a string like "N" or "NE" - convert to approximate degrees
+//             const directionMap = {
+//               'N': 0, 'NNE': 22.5, 'NE': 45, 'ENE': 67.5,
+//               'E': 90, 'ESE': 112.5, 'SE': 135, 'SSE': 157.5,
+//               'S': 180, 'SSW': 202.5, 'SW': 225, 'WSW': 247.5,
+//               'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5
+//             };
+//             return directionMap[p.windDirection] !== undefined ?
+//               directionMap[p.windDirection] : null;
+//           }
+//         }
+//         return null; // Return null instead of empty string for missing values
+//       })
+//     };
+//   }
 
-// Helper function to get county name from coordinates
-// Updated county detection function with more flexible matching
-function getCountyNameFromCoordinates(lat, lon) {
-  // First, check if there's a direct configuration match from the page
-  const config = window.weatherConfig || {};
-  if (config.location && config.location.countyName) {
-    console.log("Found county name from weatherConfig:", config.location.countyName);
-    return config.location.countyName.toLowerCase();
-  }
-
-  // If no direct match, try to find by coordinates
-  const counties = window.siteConfig?.counties || [];
-  const matchedCounty = counties.find(county =>
-    Math.abs(county.lat - lat) < 0.1 &&
-    Math.abs(county.lon - lon) < 0.1
-  );
-
-  if (matchedCounty) {
-    console.log("Found county by coordinates:", matchedCounty.name);
-    return matchedCounty.name.toLowerCase();
-  }
-
-  // Last attempt - try to extract county from current URL path
-  const path = window.location.pathname;
-  const countyMatch = path.match(/\/counties\/(\w+)\//);
-  if (countyMatch && countyMatch[1]) {
-    console.log("Extracted county from URL path:", countyMatch[1]);
-    return countyMatch[1].toLowerCase();
-  }
-
-  console.error("Could not determine county name from any source");
-  return null;
-}
-
-function processWindDirection(direction) {
-  // Handle various formats of wind direction data
-  if (direction === null || direction === undefined) return null;
-
-  // If it's already a number (degrees), return it directly
-  if (typeof direction === 'number') return direction;
-
-  // If it's a string with a cardinal direction, convert to degrees
-  if (typeof direction === 'string') {
-    const directionMap = {
-      'N': 0, 'NNE': 22.5, 'NE': 45, 'ENE': 67.5,
-      'E': 90, 'ESE': 112.5, 'SE': 135, 'SSE': 157.5,
-      'S': 180, 'SSW': 202.5, 'SW': 225, 'WSW': 247.5,
-      'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5
-    };
-
-    // Check if string is already a cardinal direction
-    if (directionMap[direction] !== undefined) {
-      return directionMap[direction];
-    }
-
-    // Check if string contains degrees
-    const degMatch = direction.match(/(\d+)/);
-    if (degMatch) {
-      return parseInt(degMatch[1]);
-    }
-  }
-
-  return null;
-}
+//   return processed;
+// }
 
 export function processForecastData(rawData) {
-  // Debug the incoming data
-  console.log("Processing forecast data:", rawData);
-
   // Check if we have the necessary data
-  if (!rawData) {
-    console.error('No forecast data available');
-    return null;
-  }
+  if (!rawData || !rawData.properties) return null;
 
-  // Handle different data structures - check for hourly data in several possible locations
-  let hourlyData = [];
-
-  if (rawData.forecast && rawData.forecast.hourly) {
-    // Standard structure from our cache
-    hourlyData = rawData.forecast.hourly;
-  } else if (rawData.properties && rawData.properties.periods) {
-    // Direct API structure
-    hourlyData = rawData.properties.periods;
-  } else if (Array.isArray(rawData)) {
-    // Maybe it's already an array of periods
-    hourlyData = rawData;
-  }
-
-  if (!hourlyData.length) {
-    console.error('Could not find hourly forecast data in:', rawData);
-    return null;
-  }
-
-  console.log(`Found ${hourlyData.length} hourly data points`);
+  // Extract all the relevant properties
+  const skyCover = rawData.properties.skyCover?.values || [];
+  const temperature = rawData.properties.temperature?.values || [];
+  const dewpoint = rawData.properties.dewpoint?.values || [];
+  const relativeHumidity = rawData.properties.relativeHumidity?.values || [];
+  const windSpeed = rawData.properties.windSpeed?.values || [];
+  const windDirection = rawData.properties.windDirection?.values || [];
+  const probabilityOfPrecipitation = rawData.properties.probabilityOfPrecipitation?.values || [];
 
   // Get the current time to use as a reference point
   const now = new Date();
@@ -186,100 +141,59 @@ export function processForecastData(rawData) {
   // Create timeframes (0-24h, 24-48h, etc.)
   const timeframes = { "0": [], "24": [], "48": [], "72": [], "96": [] };
 
-  // Process each hourly data point
-  hourlyData.forEach((hourData) => {
-    if (!hourData) return;
-
-    // Get timestamp from startTime or time property
-    let timestamp;
-    if (hourData.startTime) {
-      timestamp = new Date(hourData.startTime);
-    } else if (hourData.time) {
-      timestamp = new Date(hourData.time);
-    } else {
-      console.warn("Missing timestamp in hourly data:", hourData);
-      return;
-    }
-
-    // Calculate hours since now
-    const hoursSinceNow = Math.floor((timestamp - now) / (60 * 60 * 1000));
-
-    // Only include future hours (hoursSinceNow >= 0)
-    if (hoursSinceNow < 0) return;
-
-    // Determine which timeframe this hour belongs to
-    let timeframeKey;
-    if (hoursSinceNow < 24) timeframeKey = "0";
-    else if (hoursSinceNow < 48) timeframeKey = "24";
-    else if (hoursSinceNow < 72) timeframeKey = "48";
-    else if (hoursSinceNow < 96) timeframeKey = "72";
-    else if (hoursSinceNow < 120) timeframeKey = "96";
-    else return; // Skip hours beyond 120h
-
-    // Extract the data - handle various property structures
-    const tempValue = hourData.temperature !== undefined ?
-      hourData.temperature :
-      (hourData.value !== undefined ? hourData.value : null);
-
-    // Handle different ways dewpoint might be stored
-    let dewpointValue = null;
-    if (hourData.dewpoint !== undefined) {
-      if (typeof hourData.dewpoint === 'object' && hourData.dewpoint !== null) {
-        dewpointValue = hourData.dewpoint.value;
-      } else {
-        dewpointValue = hourData.dewpoint;
-      }
-    }
-
-    // Handle different ways humidity might be stored
-    let humidityValue = null;
-    if (hourData.relativeHumidity !== undefined) {
-      if (typeof hourData.relativeHumidity === 'object' && hourData.relativeHumidity !== null) {
-        humidityValue = hourData.relativeHumidity.value;
-      } else {
-        humidityValue = hourData.relativeHumidity;
-      }
-    }
-
-    // Handle different ways precipitation probability might be stored
-    let precipValue = null;
-    if (hourData.probabilityOfPrecipitation !== undefined) {
-      if (typeof hourData.probabilityOfPrecipitation === 'object' && hourData.probabilityOfPrecipitation !== null) {
-        precipValue = hourData.probabilityOfPrecipitation.value;
-      } else {
-        precipValue = hourData.probabilityOfPrecipitation;
-      }
-    }
-
-    // Process wind direction with our new function
-    const windDirectionValue = processWindDirection(hourData.windDirection);
-
-    // Add this hour's data to the appropriate timeframe
-    timeframes[timeframeKey].push({
-      timestamp,
-      temperature: tempValue,
-      dewpoint: dewpointValue,
-      skyCover: hourData.skyCover,
-      relativeHumidity: humidityValue,
-      windSpeed: getWindSpeed(hourData.windSpeed),
-      windDirection: windDirectionValue,
-      probabilityOfPrecipitation: precipValue
-    });
-  });
-
-  // Check if we have any usable data
-  let hasData = false;
-  for (const key in timeframes) {
-    if (timeframes[key].length > 0) {
-      hasData = true;
-      break;
-    }
+  // Process each property into hourly data points
+  // We'll start by creating a timeline of hourly timestamps for the next 120 hours
+  const hourlyTimestamps = [];
+  for (let i = 0; i < 120; i++) {
+    const timestamp = new Date(now.getTime() + i * 60 * 60 * 1000);
+    hourlyTimestamps.push(timestamp);
   }
 
-  if (!hasData) {
-    console.error("No usable forecast data points found");
+  // Function to get value for a specific timestamp from a property array
+  function getValueAtTime(propertyArray, timestamp) {
+    for (const item of propertyArray) {
+      const validTime = item.validTime;
+      const [startTimeStr, durationStr] = validTime.split('/');
+
+      const startTime = new Date(startTimeStr);
+
+      // Parse the duration (e.g., "PT1H" = 1 hour, "PT2H" = 2 hours)
+      let hours = 1;
+      if (durationStr) {
+        const match = durationStr.match(/PT(\d+)H/);
+        if (match) {
+          hours = parseInt(match[1], 10);
+        }
+      }
+
+      const endTime = new Date(startTime.getTime() + hours * 60 * 60 * 1000);
+
+      if (timestamp >= startTime && timestamp < endTime) {
+        return item.value;
+      }
+    }
     return null;
   }
+
+  // Process data for each timeframe
+  hourlyTimestamps.forEach((timestamp, index) => {
+    const hour = Math.floor(index / 24); // 0, 1, 2, 3, 4 for the different timeframes
+    if (hour > 4) return; // Skip if beyond our timeframes
+
+    const timeframeKey = (hour * 24).toString();
+    if (!timeframes[timeframeKey]) return;
+
+    timeframes[timeframeKey].push({
+      timestamp,
+      temperature: getValueAtTime(temperature, timestamp),
+      dewpoint: getValueAtTime(dewpoint, timestamp),
+      skyCover: getValueAtTime(skyCover, timestamp),
+      relativeHumidity: getValueAtTime(relativeHumidity, timestamp),
+      windSpeed: getValueAtTime(windSpeed, timestamp),
+      windDirection: getValueAtTime(windDirection, timestamp),
+      probabilityOfPrecipitation: getValueAtTime(probabilityOfPrecipitation, timestamp)
+    });
+  });
 
   // Format the processed data for the chart
   const processed = {};
@@ -288,54 +202,44 @@ export function processForecastData(rawData) {
     if (!group.length) continue;
 
     processed[key] = {
-      labels: group.map(p => ({
-        date: p.timestamp.toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'numeric'
-        }),
-        time: p.timestamp.getHours() + ":00"
-      })),
-      temperature: group.map(p => p.temperature !== null ? Math.round(p.temperature) : null),
-      dewpoint: group.map(p => p.dewpoint !== null ? Math.round(p.dewpoint) : null),
+      labels: group.map(p => {
+        const date = p.timestamp;
+        return {
+          date: date.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'numeric'
+          }),
+          time: date.getHours() + ":00",
+        };
+      }),
+      temperature: group.map(p => {
+        // Convert from C to F if needed
+        return p.temperature !== null ? Math.round((p.temperature * 9 / 5) + 32) : null;
+      }),
+      dewpoint: group.map(p => {
+        // Convert from C to F if needed
+        return p.dewpoint !== null ? Math.round((p.dewpoint * 9 / 5) + 32) : null;
+      }),
       skyCover: group.map(p => p.skyCover),
-      humidity: group.map(p => p.relativeHumidity !== null ? Math.round(p.relativeHumidity) : null),
-      precipChance: group.map(p => p.probabilityOfPrecipitation !== null ?
-        Math.round(p.probabilityOfPrecipitation) : null),
-      windSpeed: group.map(p => p.windSpeed !== null ? Math.round(p.windSpeed) : null),
+      humidity: group.map(p => p.relativeHumidity),
+      precipChance: group.map(p => p.probabilityOfPrecipitation),
+      windSpeed: group.map(p => {
+        // Convert from km/h to mph if needed
+        return p.windSpeed !== null ? Math.round(p.windSpeed * 0.621371) : null;
+      }),
       windDirection: group.map(p => p.windDirection)
     };
   }
 
-  console.log("Successfully processed forecast data for chart");
   return processed;
 }
-// Helper function to parse wind speed from various formats
-function getWindSpeed(windSpeedText) {
-  if (windSpeedText === null || windSpeedText === undefined) return null;
 
-  // Check if it's a string like "5 to 10 mph"
-  if (typeof windSpeedText === 'string') {
-    const matches = windSpeedText.match(/(\d+)\s*to\s*(\d+)\s*mph/);
-    if (matches) {
-      // Average the range
-      return Math.round((parseInt(matches[1]) + parseInt(matches[2])) / 2);
-    }
-    // Try to extract just a number
-    const numMatch = windSpeedText.match(/(\d+)/);
-    if (numMatch) {
-      return parseInt(numMatch[1]);
-    }
-  }
-
-  // If it's already a number
-  if (typeof windSpeedText === 'number') {
-    return windSpeedText;
-  }
-
-  return null;
+// Helper function to convert degrees to cardinal directions
+function degreesToCardinal(deg) {
+  if (deg === undefined || deg === null) return 'N/A';
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  return directions[Math.floor((deg / 22.5) + 0.5) % 16];
 }
-
-
 
 // This function creates the meteogram chart with selected parameters
 export function createMeteogramChart(timeframeKey, processedData, selectedParams) {
@@ -403,12 +307,8 @@ export function createMeteogramChart(timeframeKey, processedData, selectedParams
 
   if (selectedParams.includes('wind') && data.windSpeed) {
     // Create arrow images for point style
-    const pointImages = data.windDirection.map((direction, index) => {
-      // Skip creating arrows if either direction is missing or wind speed is 0
-      if (direction === null || direction === undefined || data.windSpeed[index] === 0) {
-        console.log("Missing wind direction or zero wind speed at index:", index);
-        return undefined;
-      }
+    const pointImages = data.windDirection.map(direction => {
+      if (direction === null || direction === undefined) return undefined;
 
       // Create a canvas for each arrow
       const canvas = document.createElement('canvas');
@@ -420,28 +320,31 @@ export function createMeteogramChart(timeframeKey, processedData, selectedParams
       ctx.save();
       ctx.translate(20, 25);
 
-      // Rotate to show direction wind is blowing towards (wind direction is where wind is coming FROM)
+      // Rotate to show direction wind is blowing towards
       ctx.rotate(((direction + 180) * Math.PI) / 180);
 
       // Arrow stem
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, -20);
+      ctx.moveTo(0, 0);     // Keep the same starting point
+      ctx.lineTo(0, -20);   // Double the length from -5 to -10
       ctx.strokeStyle = 'rgb(0, 16, 134)';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3;    // Keep the same line width
       ctx.stroke();
 
-      // Arrow head
+      // Arrow head - doubled in size
       ctx.beginPath();
-      ctx.moveTo(0, -20);
-      ctx.lineTo(8, -8);
-      ctx.lineTo(-8, -8);
+      ctx.moveTo(0, -20);   // Move tip twice as far (from -10 to -20)
+      ctx.lineTo(8, -8);  // Double the width (from 5 to 10) and height
+      ctx.lineTo(-8, -8); // Double the width on left side too
       ctx.fillStyle = 'rgb(0, 16, 134)';
       ctx.fill();
 
+
       ctx.restore();
+
       return canvas;
     });
+
     datasets.push({
       type: 'line',
       label: 'Wind (mph)',
@@ -644,11 +547,7 @@ export function createMeteogramChart(timeframeKey, processedData, selectedParams
               if (selectedParams.includes('wind') && data.windDirection) {
                 const index = context[0].dataIndex;
                 const direction = data.windDirection[index];
-
-                if (direction !== null && direction !== undefined) {
-                  return `Wind Direction: ${degreesToCardinal(direction)}`;
-                }
-                return 'Wind Direction: N/A';
+                return `Wind Direction: ${degreesToCardinal(direction) || 'N/A'}`;
               }
               return '';
             }

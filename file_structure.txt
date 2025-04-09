@@ -1,47 +1,42 @@
 Weather 2025/
 ├── counties/
-│   └── bertie/
-│       └── windsor.html
-│   └── pitt/
-│       └── greenville.html
+│   ├── bertie/
+│   ├── pitt/
+│   └── greenville.html
+├── counties.json
 ├── css/
-│   └── index.css
-│   └── styles.css
 ├── fonts/
-│   ├── Fira_Code/
-│   ├── Montserrat/
-│   ├── Poppins/
-│   ├── Roboto/
 ├── images/
-│   └── 2025_banner.png
-│   ├── county/
-│   	└── [Various Images]
-│   ├── graphics/
-│   	└── [Various Images]
-├── data/
-│   └── NC-county-topo.json
 ├── js/
-│   └── index.js
-│   └── main.js
-│   └── siteConfig.js
-│   ├── modules/
-│   	└── alertsForecastAFD.js
-│   	└── cache_weather.php
-│   	└── config.js
-│   	└── currentConditions.js
-│   	└── get_weather_data.php
-│   	└── imageLoader.js
-│   	└── meteogram.js
-│   	└── ncCountyMap.js
-│   	└── satellite.js
-│   	└── tropical.js
-│   	└── utils.js
-│   	└── warningColors.csv
-│   	└── warningColors.js
-│   	└── warningColors.xlsx
-│   	└── weather_cache.json
-│   	└── weatherData.js
-│   	└── weatherData_old.js
-├── index.html
+│   ├── data/
+│   │   └── modules/
+│   │       ├── cache/
+│   │       │   └── logs/
+│   │       ├── cache_afd.php
+│   │       ├── cache_alerts.php
+│   │       ├── cache_forecasts.php
+│   │       ├── cache_health.php
+│   │       ├── cache_weather.php
+│   │       ├── config.js
+│   │       ├── dashboard.php
+│   │       ├── force_refresh.php
+│   │       ├── imageLoader.js
+│   │       ├── maintain_cache.php
+│   │       ├── Meteogram.js
+│   │       ├── ncCountyMap.js
+│   │       ├── radar.js
+│   │       ├── refresh_all.php
+│   │       ├── satellite.js
+│   │       ├── tropical.js
+│   │       ├── utils.js
+│   │       ├── warningColors.csv
+│   │       ├── warningColors.js
+│   │       └── warningColors.xlsx
+│   ├── weather_cache_scheduler.bat
+│   └── weatherData.js
+├── index.js
+├── main.js
+├── siteConfig.js
+├── weather_cache.json
 ├── file_structure.txt
-└── README.md
+└── index.html
