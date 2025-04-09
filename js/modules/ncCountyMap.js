@@ -24,7 +24,7 @@ export class NCCountyMap {
         };
         this.alertData = {};
         // Script to test the county alert highlight functionality
-        this.testModeEnabled = true;
+        this.testModeEnabled = false;
         this.targetCounties = new Set(
             (window.siteConfig?.counties || []).map(county => county.name.toLowerCase())
         );
@@ -38,8 +38,8 @@ export class NCCountyMap {
                 console.log(`Using test data for ${county.name}`);
                 return [{
                     properties: {
-                        event: "Severe Thunderstorm Warning", // Or any other warning type from your warningColors
-                        headline: "Test Tornado Warning",
+                        event: "Earthquake Warning", // Or any other warning type from your warningColors
+                        headline: "Current Warning",
                         description: "This is a test alert for development purposes."
                     }
                 }];
@@ -267,26 +267,6 @@ export class NCCountyMap {
             return false;
         }
     }
-
-    // Set up projection for the counties
-    // setupProjection() {
-    //     if (window.d3) {
-    //         // Create a projection that fits all counties
-    //         this.projection = d3.geoMercator()
-    //             .fitSize([this.width, this.height], this.countyFeatures);
-
-    //         // Add slight padding
-    //         const [x, y] = this.projection.translate();
-    //         this.projection.translate([x, y + this.height * 0.05]);
-
-    //         // Create a path generator
-    //         this.path = d3.geoPath().projection(this.projection);
-    //     } else {
-    //         // Fallback if D3 is not available
-    //         console.warn("D3 not available, using simplified projection");
-    //         this.createSimplifiedProjection();
-    //     }
-    // }
 
     // Set up projection for the counties
     setupProjection() {
@@ -570,6 +550,8 @@ export class NCCountyMap {
                 console.warn(`Failed to fetch data for ${failedCounties.length} counties`);
             }
 
+            this.createWarningLegend();
+
             return results.some(result => result.status === 'fulfilled' && result.value !== null);
         } catch (error) {
             console.error('Error updating weather data:', error);
@@ -656,6 +638,153 @@ export class NCCountyMap {
         // Update with fresh weather data
         await this.updateWeatherData();
     }
+
+    // Add this method to the NCCountyMap class in ncCountyMap.js
+
+    /**
+     * Creates or updates the warning legend at the bottom of the map
+     * Only displays warnings that are currently active on the map
+     */
+    createWarningLegend() {
+        // Remove any existing legend first
+        const existingLegend = document.querySelector('.map-legend');
+        if (existingLegend) {
+            existingLegend.remove();
+        }
+
+        // Check if there are any active alerts
+        const activeWarnings = new Map();
+
+        // Collect all unique warnings currently displayed on the map
+        Object.values(this.alertData).forEach(countyAlerts => {
+            if (countyAlerts && countyAlerts.length > 0) {
+                countyAlerts.forEach(alert => {
+                    const eventName = alert.properties.event;
+                    if (warningColors[eventName]) {
+                        activeWarnings.set(eventName, warningColors[eventName]);
+                    }
+                });
+            }
+        });
+
+        // If no active warnings, no need for a legend
+        if (activeWarnings.size === 0) {
+            return;
+        }
+
+        // Create legend container
+        const legend = document.createElement('div');
+        legend.className = 'map-legend';
+        legend.style.position = 'absolute';
+        legend.style.bottom = '10px';
+        legend.style.left = '10px';
+        legend.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        legend.style.padding = '8px';
+        legend.style.borderRadius = '4px';
+        legend.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
+        legend.style.maxWidth = '80%';
+        legend.style.fontSize = '0.8rem';
+        legend.style.zIndex = '1000';
+
+        // Create legend title
+        const title = document.createElement('div');
+        title.textContent = 'Active Warnings';
+        title.style.fontWeight = 'bold';
+        title.style.marginBottom = '5px';
+        title.style.borderBottom = '1px solid #ccc';
+        legend.appendChild(title);
+
+        // Create a flex container for warning items
+        const warningContainer = document.createElement('div');
+        warningContainer.style.display = 'flex';
+        warningContainer.style.flexWrap = 'wrap';
+        warningContainer.style.gap = '5px';
+        legend.appendChild(warningContainer);
+
+        // Add each active warning to the legend
+        activeWarnings.forEach((color, warningName) => {
+            const warningItem = document.createElement('div');
+            warningItem.style.display = 'flex';
+            warningItem.style.alignItems = 'center';
+            warningItem.style.marginRight = '10px';
+
+            // Color box
+            const colorBox = document.createElement('div');
+            colorBox.style.width = '12px';
+            colorBox.style.height = '12px';
+            colorBox.style.backgroundColor = color;
+            colorBox.style.marginRight = '5px';
+            colorBox.style.border = '1px solid #333';
+
+            // Warning text
+            const warningText = document.createElement('span');
+            warningText.textContent = warningName;
+
+            warningItem.appendChild(colorBox);
+            warningItem.appendChild(warningText);
+            warningContainer.appendChild(warningItem);
+        });
+
+        // Add legend to the map container
+        this.container.appendChild(legend);
+
+        // Add responsive styling for smaller screens
+        if (window.innerWidth <= 600) {
+            legend.style.fontSize = '0.7rem';
+            legend.style.padding = '5px';
+        }
+    }
+
+    // Modify the updateCountyAlertStatus method to track active warnings
+    updateCountyAlertStatus(countyName, alerts) {
+        const normalizedName = countyName.toLowerCase();
+        const countyPath = document.getElementById(`county-${normalizedName}`);
+        if (!countyPath) return;
+
+        // Store the alerts in the alertData object
+        this.alertData[normalizedName] = alerts;
+
+        // If no alerts, keep default fill
+        if (!alerts || alerts.length === 0) return;
+
+        // Find highest priority alert
+        let highestPriorityAlert = null;
+        let highestPriority = Infinity;
+
+        alerts.forEach(alert => {
+            const eventName = alert.properties.event;
+            // Use priority directly from the warningPriorities object
+            const priority = warningPriorities[eventName];
+
+            if (priority && priority < highestPriority) {
+                highestPriority = priority;
+                highestPriorityAlert = {
+                    name: eventName,
+                    color: warningColors[eventName]
+                };
+            }
+        });
+
+        // Update the county fill color if we found a warning
+        if (highestPriorityAlert) {
+            countyPath.setAttribute('fill', highestPriorityAlert.color);
+            // Optional: Add stroke highlighting for better visibility
+            countyPath.setAttribute('stroke-width', '3');
+            // Add a title with alert info for tooltip
+            countyPath.setAttribute('title', highestPriorityAlert.name);
+        }
+
+        // Update the legend
+        this.createWarningLegend();
+    }
+
+    // Initialize alertData in the constructor
+    // Add this line to the constructor of NCCountyMap class:
+    // this.alertData = {};
+
+    // Call createWarningLegend after updating weather data
+    // Add this line at the end of the updateWeatherData method:
+    // this.createWarningLegend();
 }
 
 // Export function to initialize the county map
