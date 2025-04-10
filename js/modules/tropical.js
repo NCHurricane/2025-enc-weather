@@ -5,6 +5,26 @@
 
 import { isDateInHurricaneSeason } from './weatherData.js';
 import { formatDate } from './utils.js';
+// Initialize tropical satellite with TAW sector
+import { initSatellite } from './satellite.js';
+
+function initTropicalSatellite() {
+    initSatellite({
+        sector: 'taw',
+        containerId: 'tropical-satellite-image-container',
+        imageId: 'tropical-satellite-image',
+        loadingId: 'tropical-satellite-loading',
+        errorId: 'tropical-satellite-error',
+        timestampId: 'tropical-satellite-timestamp',
+        playButtonId: 'tropical-satellite-play-pause',
+        selectorId: 'tropical-satellite-product-select'
+    });
+}
+
+// Call this function when the document is loaded
+document.addEventListener('DOMContentLoaded', function () {
+    initTropicalSatellite();
+});
 
 /**
  * Update the tropical weather outlook section

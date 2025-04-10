@@ -1,29 +1,19 @@
-// satellite.js - Modified version with resolution handling
+// satellite.js
 import { createImageLoader } from './imageLoader.js';
 
 let zoomLevel = 2; // scale factor
 
-async function createSatelliteUrls(product = 'GEOCOLOR', sector = 'se') {
+async function createSatelliteUrls(product = 'GEOCOLOR') {
     try {
-        // Set resolution based on sector
-        let resolution;
-        let animatedSize;
-
-        if (sector === 'taw') {
-            resolution = "3600x2160"; // Tropical Atlantic Wide resolution
-            animatedSize = "900x540";  // TAW animated GIF size
-        } else {
-            resolution = "2400x2400"; // Default (southeast) resolution
-            animatedSize = "600x600";  // Default animated GIF size
-        }
-
+        const resolution = "2400x2400";
+        const sector = 'se';
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/${sector}/${product}/`;
 
         // Static image URL
         const staticImageUrl = `${baseUrl}${resolution}.jpg`;
 
         // Animated GIF URL
-        const animatedGifUrl = `${baseUrl}GOES16-${sector.toUpperCase()}-${product}-${animatedSize}.gif`;
+        const animatedGifUrl = `${baseUrl}GOES16-${sector.toUpperCase()}-${product}-600x600.gif`;
 
         return [staticImageUrl, animatedGifUrl];
     } catch (error) {
@@ -74,28 +64,21 @@ function updateSatelliteImage(imageUrl, isAnimating) {
     img.src = imageUrl;
 }
 
-// Configure and create the satellite image loader with sector support
-function createSatelliteLoader(options = {}) {
-    const defaultSector = options.sector || 'se';
-
-    return createImageLoader({
-        containerId: options.containerId || 'satellite-image-container',
-        imageId: options.imageId || 'satellite-image',
-        loadingId: options.loadingId || 'satellite-loading',
-        errorId: options.errorId || 'satellite-error',
-        timestampId: options.timestampId || 'satellite-timestamp',
-        playButtonId: options.playButtonId || 'satellite-play-pause',
-        selectorId: options.selectorId || 'satellite-product-select',
-        getImageUrls: (product) => createSatelliteUrls(product, defaultSector),
-        defaultProduct: 'GEOCOLOR',
-        updateImage: options.updateImage || updateSatelliteImage
-    });
-}
+// Configure and create the satellite image loader
+const satelliteLoader = createImageLoader({
+    containerId: 'satellite-image-container',
+    imageId: 'satellite-image',
+    loadingId: 'satellite-loading',
+    errorId: 'satellite-error',
+    timestampId: 'satellite-timestamp',
+    playButtonId: 'satellite-play-pause',
+    selectorId: 'satellite-product-select',
+    getImageUrls: createSatelliteUrls,
+    defaultProduct: 'GEOCOLOR'
+});
 
 // Export functions and values
 export { zoomLevel };
-export function initSatellite(options = {}) {
-    const loader = createSatelliteLoader(options);
-    loader.initialize();
-    return loader;
+export function initSatellite() {
+    satelliteLoader.initialize();
 }

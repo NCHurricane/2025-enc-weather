@@ -1,0 +1,17 @@
+/*--------------------*/
+/* TROPICAL PAGE STYLES */
+/*--------------------*/
+
+/* ------------------------ */
+/* Satellite section */
+/* ------------------------ */
+#tropical-satellite-image-container {
+    aspect-ratio: 5 / 3;
+    /* For the 3600x2160 resolution (5:3 aspect ratio) */
+}
+
+#tropical-satellite-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
