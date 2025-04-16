@@ -208,6 +208,118 @@ function parseTwoXml($xmlData)
 }
 
 /**
+ * Parse tropical outlook content from NHC text format
+ * @param string $textContent Raw text content from NHC
+ * @return array Structured array of outlooks
+ */
+function parseOutlookContentFromText($textContent)
+{
+    // Initialize return array
+    $outlooks = [];
+
+    // Remove headers and footers
+    $textContent = preg_replace('/^.*?For the North Atlantic...Caribbean Sea and the Gulf of Mexico:/s', '', $textContent);
+    $textContent = preg_replace('/\$\$.*$/s', '', $textContent);
+
+    // Split into sections - typically there are 48-hour and 5-day (or 7-day) outlooks
+    // First, check if we have "Active Systems" section
+    $hasActiveSystems = (stripos($textContent, 'Active Systems:') !== false);
+
+    // Extract active systems if present
+    $activeSystems = [];
+    if ($hasActiveSystems) {
+        if (preg_match('/Active Systems:(.*?)(?=\n\n)/s', $textContent, $matches)) {
+            $activeSystemsText = trim($matches[1]);
+            // Parse out each system
+            if (preg_match_all('/The National Hurricane Center is issuing advisories on (.*?)(?:,|\.)/s', $activeSystemsText, $sysMatches)) {
+                foreach ($sysMatches[1] as $system) {
+                    $activeSystems[] = trim($system);
+                }
+            }
+
+            // Remove active systems section from content to process the rest
+            $textContent = preg_replace('/Active Systems:.*?\n\n/s', '', $textContent);
+        }
+    }
+
+    // Now find disturbance areas by looking for numbered identifiers or regional identifiers
+    $areaPattern = '/(?:(\d+)\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?\n(.*?)(?=(?:\d+\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)|$)/s';
+
+    if (preg_match_all($areaPattern, $textContent, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $location = '';
+            $text = '';
+
+            // Check if we have a numbered identifier or a regional identifier
+            if (!empty($match[1])) {
+                // Numbered identifier
+                $location = "Area {$match[1]}";
+                $text = trim($match[2]);
+            } else {
+                // Regional identifier - extract it from the match
+                if (preg_match('/(Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?/s', $match[0], $locMatch)) {
+                    $location = trim($locMatch[0]);
+                    // Remove the location from the text
+                    $text = trim(str_replace($locMatch[0], '', $match[0]));
+                } else {
+                    // Fallback if no clear identifier
+                    $location = "Unnamed Area";
+                    $text = trim($match[0]);
+                }
+            }
+
+            // Extract formation chances
+            $formation48 = 0;
+            $formation7day = 0;
+
+            if (preg_match('/\* Formation chance through 48 hours.*?(\d+)\s+percent/s', $text, $chance48)) {
+                $formation48 = (int)$chance48[1];
+            }
+
+            if (preg_match('/\* Formation chance through (?:5|7) days.*?(\d+)\s+percent/s', $text, $chance7)) {
+                $formation7day = (int)$chance7[1];
+            }
+
+            // Check if this area has an ID (e.g., AL91, etc.)
+            $areaId = '';
+            if (preg_match('/\(([A-Z]{2}\d{2})\)/s', $text, $idMatch)) {
+                $areaId = $idMatch[1];
+            }
+
+            // Add this area to our outlook
+            $area = [
+                'id' => $areaId,
+                'location' => $location,
+                'text' => $text,
+                'formation_chance' => [
+                    '48hour' => $formation48,
+                    '7day' => $formation7day
+                ]
+            ];
+
+            $outlooks[] = $area;
+        }
+    } else if (stripos($textContent, 'tropical cyclone formation is not expected') !== false) {
+        // No active disturbances
+        $outlooks[] = [
+            'id' => '',
+            'location' => 'Atlantic Basin',
+            'text' => 'Tropical cyclone formation is not expected during the next 7 days.',
+            'formation_chance' => [
+                '48hour' => 0,
+                '7day' => 0
+            ]
+        ];
+    }
+
+    // Add active systems to the return data
+    return [
+        'active_systems' => $activeSystems,
+        'areas' => $outlooks
+    ];
+}
+
+/**
  * Parse Tropical Weather Discussion XML data
  * @param string $xmlData The XML data as a string
  * @return array Parsed data in a structured format
@@ -307,21 +419,119 @@ function processXmlProducts()
 
             $xmlData = fetchData($url, $userAgent);
             if ($xmlData === false) {
-                writeLog("Failed to fetch data for $productKey", 'error');
+                writeLog("Failed to fetch XML data for $productKey", 'error');
                 continue;
             }
 
-            // Parse based on product type
+            // Parse RSS-style XML
             $parsedData = [];
             if ($productKey === 'twoat' || $productKey === 'twosat') {
                 $parsedData = parseTwoXml($xmlData);
+
+                // If we got RSS data but no actual content, try to fetch from the web page
+                if (empty($parsedData['rawContent']) && !empty($parsedData['issueTime'])) {
+                    $nhcUrl = "https://www.nhc.noaa.gov/gtwo.php?basin=atlc";
+                    writeLog("Fetching TWO content directly from NHC website", 'info');
+                    $htmlContent = fetchData($nhcUrl, $userAgent);
+
+                    if ($htmlContent) {
+                        // Extract the text product with a more flexible pattern
+                        if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
+                            $textContent = $matches[1];
+                            $textContent = strip_tags($textContent); // Remove any HTML tags within pre
+                            $parsedData['rawContent'] = $textContent;
+
+                            // Add the parsed outlook content
+                            $parsedOutlook = parseOutlookContentFromText($textContent);
+                            if (!empty($parsedOutlook)) {
+                                writeLog("Successfully parsed outlook content from web page", 'info');
+                                $parsedData['active_systems'] = $parsedOutlook['active_systems'] ?? [];
+                                $parsedData['areas'] = $parsedOutlook['areas'] ?? [];
+                            }
+                        } else {
+                            writeLog("Could not find text product in NHC webpage", 'warning');
+                        }
+                    }
+                }
             } elseif ($productKey === 'twdat' || $productKey === 'twsat') {
                 $parsedData = parseTwdXml($xmlData);
+
+                // If we got RSS data but no actual discussion content, try to fetch from the web page
+                if (empty($parsedData['rawContent']) && !empty($parsedData['issueTime'])) {
+                    $nhcUrl = ($productKey === 'twdat') ?
+                        "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
+                        "https://www.nhc.noaa.gov/text/MIATWSAT.shtml";
+
+                    writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
+                    $htmlContent = fetchData($nhcUrl, $userAgent);
+
+                    if ($htmlContent) {
+                        // Find pre-formatted text - be more flexible with the regex
+                        if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
+                            $textContent = $matches[1];
+                            // Clean up HTML entities
+                            $textContent = html_entity_decode($textContent);
+                            $parsedData['rawContent'] = $textContent;
+                            $parsedData['discussion'] = formatNhcText($textContent);
+                            writeLog("Successfully extracted content from web page", 'info');
+                        } else {
+                            writeLog("Could not find pre-formatted text in NHC webpage", 'warning');
+                        }
+                    }
+                }
             }
 
-            if (empty($parsedData)) {
-                writeLog("No parsed data for $productKey", 'warning');
-                continue;
+            if (empty($parsedData) || (empty($parsedData['outlooks']) && empty($parsedData['discussion']))) {
+                writeLog("Creating default off-season data for $productKey", 'info');
+
+                if ($productKey === 'twoat' || $productKey === 'twosat') {
+                    $parsedData = [
+                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
+                        'productID' => 'OFF_SEASON_TWO',
+                        'basin' => 'Atlantic',
+                        'outlooks' => [
+                            [
+                                'timeframe' => 'Next 7 Days',
+                                'text' => 'Tropical cyclone formation is not expected during the next 7 days.',
+                                'areas' => []
+                            ]
+                        ],
+                        'active_systems' => [],
+                        'rawContent' => 'OFF SEASON - No current tropical activity',
+                        'timestamp' => time(),
+                        'source' => $url,
+                        'cacheTime' => time()
+                    ];
+                } elseif ($productKey === 'twdat') {
+                    $parsedData = [
+                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
+                        'productID' => 'OFF_SEASON_TWD',
+                        'discussion' => '<p>The Atlantic hurricane season is currently inactive. The next season begins May 15, ' . date('Y') . '.</p>',
+                        'rawContent' => 'OFF SEASON - No current tropical weather discussion',
+                        'timestamp' => time(),
+                        'source' => $url,
+                        'cacheTime' => time()
+                    ];
+                } elseif ($productKey === 'twsat') {
+                    $currentYear = date('Y');
+                    $lastYear = $currentYear - 1;
+                    $parsedData = [
+                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
+                        'productID' => 'OFF_SEASON_TWSAT',
+                        'discussion' => "<p>Summary of the {$lastYear} Atlantic hurricane season. The next season begins May 15, {$currentYear}.</p>",
+                        'rawContent' => "Summary of the {$lastYear} Atlantic hurricane season",
+                        'timestamp' => time(),
+                        'source' => $url,
+                        'cacheTime' => time()
+                    ];
+                }
+
+                // Save to cache
+                if (!empty($parsedData)) {
+                    $jsonData = json_encode($parsedData, JSON_PRETTY_PRINT);
+                    file_put_contents($cacheFile, $jsonData);
+                    writeLog("Updated cache with default data for $productKey", 'info');
+                }
             }
 
             // Add metadata
