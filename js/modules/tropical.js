@@ -20,6 +20,8 @@ let discussionTimestamp = null;
  * Initialize when DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('Tropical module initializing...');
+
     // Initialize satellite imagery
     initTropicalSatellite();
 
@@ -40,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * Initialize tropical satellite display
  */
 function initTropicalSatellite() {
+    console.log('Initializing tropical satellite...');
     initSatellite({
         sector: 'taw',
         containerId: 'tropical-satellite-image-container',
@@ -56,6 +59,8 @@ function initTropicalSatellite() {
  * Initialize text products - load cached data
  */
 function initTextProducts() {
+    console.log('Initializing tropical text products...');
+
     // Cache DOM elements
     twoTextContent = document.getElementById('two-text-content');
     twoSpanishContent = document.getElementById('two-spanish-content');
@@ -63,6 +68,17 @@ function initTextProducts() {
     twoTextTimestamp = document.getElementById('two-text-timestamp');
     twoSpanishTimestamp = document.getElementById('two-spanish-timestamp');
     discussionTimestamp = document.getElementById('discussion-timestamp');
+
+    // Check if elements exist before proceeding
+    if (!twoTextContent) {
+        console.error('Element #two-text-content not found');
+    }
+    if (!twoSpanishContent) {
+        console.error('Element #two-spanish-content not found');
+    }
+    if (!discussionContent) {
+        console.error('Element #discussion-content not found');
+    }
 
     // Load each product
     loadTropicalWeatherOutlook();
@@ -74,6 +90,7 @@ function initTextProducts() {
  * Load Tropical Weather Outlook text
  */
 function loadTropicalWeatherOutlook() {
+    console.log('Loading tropical weather outlook...');
     const loadingElement = document.getElementById('two-text-loading');
     const errorElement = document.getElementById('two-text-error');
 
@@ -81,7 +98,18 @@ function loadTropicalWeatherOutlook() {
     if (errorElement) errorElement.style.display = 'none';
     if (twoTextContent) twoTextContent.style.display = 'none';
 
-    fetch('js/modules/cache/tropical_two_at.json?t=' + Date.now())
+    // Generate a timestamp to prevent caching
+    const timestamp = Date.now();
+
+    // Try both possible paths
+    fetch(`js/modules/cache/tropical_two_at.json?t=${timestamp}`)
+        .then(response => {
+            if (!response.ok) {
+                // Try alternative path
+                return fetch(`../../js/modules/cache/tropical_two_at.json?t=${timestamp}`);
+            }
+            return response;
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
@@ -89,6 +117,7 @@ function loadTropicalWeatherOutlook() {
             return response.json();
         })
         .then(data => {
+            console.log('TWO data loaded successfully:', data);
             renderTwoText(data);
             if (loadingElement) loadingElement.style.display = 'none';
             if (twoTextContent) twoTextContent.style.display = 'block';
@@ -96,14 +125,56 @@ function loadTropicalWeatherOutlook() {
         .catch(error => {
             console.error('Error loading TWO text:', error);
             if (loadingElement) loadingElement.style.display = 'none';
-            if (errorElement) errorElement.style.display = 'block';
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                errorElement.innerHTML = `<i class="fa-solid fa-exclamation-triangle"></i>
+                    <span>Unable to load tropical weather outlook</span>
+                    <small>Error: ${error.message}. Cache file may not exist. Check PHP cron job.</small>`;
+            }
+            // Create default content as fallback
+            createDefaultTwoContent();
         });
+}
+
+/**
+ * Create default TWO content if cache fails
+ */
+function createDefaultTwoContent() {
+    if (!twoTextContent) return;
+
+    console.log('Creating default TWO content as fallback');
+    const now = new Date();
+    const isInSeason = isDateInHurricaneSeason(now);
+
+    let html = '<h3>Atlantic Tropical Weather Outlook</h3>';
+
+    if (isInSeason) {
+        html += `<div class="outlook-section">
+            <h4>Outlook for next 48 hours</h4>
+            <p>Unable to load current outlook data. Please check back later.</p>
+            <p>The Atlantic hurricane season is currently active (May 15 - November 30).</p>
+        </div>`;
+    } else {
+        const currentYear = now.getFullYear();
+        html += `<div class="outlook-section">
+            <h4>Off-Season Notification</h4>
+            <p>The Atlantic hurricane season is currently inactive. The next season begins May 15, ${currentYear}.</p>
+        </div>`;
+    }
+
+    twoTextContent.innerHTML = html;
+    twoTextContent.style.display = 'block';
+
+    if (twoTextTimestamp) {
+        twoTextTimestamp.textContent = `Status: Cache file not available`;
+    }
 }
 
 /**
  * Load Tropical Weather Outlook text in Spanish
  */
 function loadTropicalWeatherOutlookSpanish() {
+    console.log('Loading tropical weather outlook in Spanish...');
     const loadingElement = document.getElementById('two-spanish-loading');
     const errorElement = document.getElementById('two-spanish-error');
 
@@ -111,7 +182,18 @@ function loadTropicalWeatherOutlookSpanish() {
     if (errorElement) errorElement.style.display = 'none';
     if (twoSpanishContent) twoSpanishContent.style.display = 'none';
 
-    fetch('js/modules/cache/tropical_two_sat.json?t=' + Date.now())
+    // Generate a timestamp to prevent caching
+    const timestamp = Date.now();
+
+    // Try both possible paths
+    fetch(`js/modules/cache/tropical_two_sat.json?t=${timestamp}`)
+        .then(response => {
+            if (!response.ok) {
+                // Try alternative path
+                return fetch(`../../js/modules/cache/tropical_two_sat.json?t=${timestamp}`);
+            }
+            return response;
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
@@ -119,6 +201,7 @@ function loadTropicalWeatherOutlookSpanish() {
             return response.json();
         })
         .then(data => {
+            console.log('Spanish TWO data loaded successfully');
             renderTwoSpanishText(data);
             if (loadingElement) loadingElement.style.display = 'none';
             if (twoSpanishContent) twoSpanishContent.style.display = 'block';
@@ -126,14 +209,55 @@ function loadTropicalWeatherOutlookSpanish() {
         .catch(error => {
             console.error('Error loading TWO Spanish text:', error);
             if (loadingElement) loadingElement.style.display = 'none';
-            if (errorElement) errorElement.style.display = 'block';
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                errorElement.innerHTML = `<i class="fa-solid fa-exclamation-triangle"></i>
+                    <span>No se puede cargar la perspectiva del tiempo tropical</span>
+                    <small>Error: ${error.message}. El archivo de caché puede no existir.</small>`;
+            }
+            createDefaultTwoSpanishContent();
         });
+}
+
+/**
+ * Create default Spanish TWO content if cache fails
+ */
+function createDefaultTwoSpanishContent() {
+    if (!twoSpanishContent) return;
+
+    console.log('Creating default Spanish TWO content as fallback');
+    const now = new Date();
+    const isInSeason = isDateInHurricaneSeason(now);
+
+    let html = '<h3>Perspectiva del Tiempo Tropical del Atlántico</h3>';
+
+    if (isInSeason) {
+        html += `<div class="outlook-section">
+            <h4>Perspectiva para las próximas 48 horas</h4>
+            <p>No se pudieron cargar los datos actuales de la perspectiva. Por favor, vuelva más tarde.</p>
+            <p>La temporada de huracanes del Atlántico está actualmente activa (15 de mayo - 30 de noviembre).</p>
+        </div>`;
+    } else {
+        const currentYear = now.getFullYear();
+        html += `<div class="outlook-section">
+            <h4>Notificación Fuera de Temporada</h4>
+            <p>La temporada de huracanes del Atlántico está actualmente inactiva. La próxima temporada comienza el 15 de mayo de ${currentYear}.</p>
+        </div>`;
+    }
+
+    twoSpanishContent.innerHTML = html;
+    twoSpanishContent.style.display = 'block';
+
+    if (twoSpanishTimestamp) {
+        twoSpanishTimestamp.textContent = `Estado: Archivo de caché no disponible`;
+    }
 }
 
 /**
  * Load Tropical Weather Discussion text
  */
 function loadTropicalDiscussion() {
+    console.log('Loading tropical weather discussion...');
     const loadingElement = document.getElementById('discussion-loading');
     const errorElement = document.getElementById('discussion-error');
 
@@ -141,7 +265,18 @@ function loadTropicalDiscussion() {
     if (errorElement) errorElement.style.display = 'none';
     if (discussionContent) discussionContent.style.display = 'none';
 
-    fetch('js/modules/cache/tropical_disc_at.json?t=' + Date.now())
+    // Generate a timestamp to prevent caching
+    const timestamp = Date.now();
+
+    // Try both possible paths
+    fetch(`js/modules/cache/tropical_disc_at.json?t=${timestamp}`)
+        .then(response => {
+            if (!response.ok) {
+                // Try alternative path
+                return fetch(`../../js/modules/cache/tropical_disc_at.json?t=${timestamp}`);
+            }
+            return response;
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
@@ -149,6 +284,7 @@ function loadTropicalDiscussion() {
             return response.json();
         })
         .then(data => {
+            console.log('Tropical Discussion data loaded successfully');
             renderDiscussionText(data);
             if (loadingElement) loadingElement.style.display = 'none';
             if (discussionContent) discussionContent.style.display = 'block';
@@ -156,8 +292,46 @@ function loadTropicalDiscussion() {
         .catch(error => {
             console.error('Error loading Tropical Discussion text:', error);
             if (loadingElement) loadingElement.style.display = 'none';
-            if (errorElement) errorElement.style.display = 'block';
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                errorElement.innerHTML = `<i class="fa-solid fa-exclamation-triangle"></i>
+                    <span>Unable to load tropical weather discussion</span>
+                    <small>Error: ${error.message}. Cache file may not exist. Check PHP cron job.</small>`;
+            }
+            createDefaultDiscussionContent();
         });
+}
+
+/**
+ * Create default Discussion content if cache fails
+ */
+function createDefaultDiscussionContent() {
+    if (!discussionContent) return;
+
+    console.log('Creating default Discussion content as fallback');
+    const now = new Date();
+    const isInSeason = isDateInHurricaneSeason(now);
+
+    let html = '<h3>Tropical Weather Discussion</h3>';
+
+    if (isInSeason) {
+        html += `<div class="discussion-section">
+            <p>Unable to load current tropical weather discussion. Please check back later.</p>
+            <p>The Atlantic hurricane season is currently active (May 15 - November 30).</p>
+        </div>`;
+    } else {
+        const currentYear = now.getFullYear();
+        html += `<div class="discussion-section">
+            <p>The Atlantic hurricane season is currently inactive. The next season begins May 15, ${currentYear}.</p>
+        </div>`;
+    }
+
+    discussionContent.innerHTML = html;
+    discussionContent.style.display = 'block';
+
+    if (discussionTimestamp) {
+        discussionTimestamp.textContent = `Status: Cache file not available`;
+    }
 }
 
 /**
@@ -191,6 +365,24 @@ function renderTwoText(data) {
 
             html += `</div>`;
         });
+    } else if (data.areas && data.areas.length > 0) {
+        // Alternative data structure
+        html += `<div class="outlook-section">`;
+        html += `<h4>Current Outlook</h4>`;
+
+        data.areas.forEach(area => {
+            html += `<div class="disturbance-area">`;
+            html += `<p><strong>${area.location}</strong></p>`;
+            html += `<p>${area.text}</p>`;
+            if (area.formation_chance) {
+                html += `<p><strong>Formation Chance:</strong><br>`;
+                html += `48-Hour: ${area.formation_chance['48hour']}%<br>`;
+                html += `5-Day: ${area.formation_chance['7day'] || area.formation_chance['5day']}%</p>`;
+            }
+            html += `</div>`;
+        });
+
+        html += `</div>`;
     } else {
         html += `<p>No tropical weather outlook data available.</p>`;
     }
@@ -200,6 +392,9 @@ function renderTwoText(data) {
     // Update timestamp
     if (twoTextTimestamp && data.issueTime) {
         const date = new Date(data.issueTime);
+        twoTextTimestamp.textContent = `Last Updated: ${formatDate(date)}`;
+    } else if (twoTextTimestamp && data.timestamp) {
+        const date = new Date(data.timestamp * 1000);
         twoTextTimestamp.textContent = `Last Updated: ${formatDate(date)}`;
     }
 }
@@ -235,6 +430,24 @@ function renderTwoSpanishText(data) {
 
             html += `</div>`;
         });
+    } else if (data.areas && data.areas.length > 0) {
+        // Alternative data structure
+        html += `<div class="outlook-section">`;
+        html += `<h4>Perspectiva Actual</h4>`;
+
+        data.areas.forEach(area => {
+            html += `<div class="disturbance-area">`;
+            html += `<p><strong>${area.location}</strong></p>`;
+            html += `<p>${area.text}</p>`;
+            if (area.formation_chance) {
+                html += `<p><strong>Probabilidad de Formación:</strong><br>`;
+                html += `48 Horas: ${area.formation_chance['48hour']}%<br>`;
+                html += `5 Días: ${area.formation_chance['7day'] || area.formation_chance['5day']}%</p>`;
+            }
+            html += `</div>`;
+        });
+
+        html += `</div>`;
     } else {
         html += `<p>No hay datos disponibles de la perspectiva del tiempo tropical.</p>`;
     }
@@ -244,6 +457,9 @@ function renderTwoSpanishText(data) {
     // Update timestamp
     if (twoSpanishTimestamp && data.issueTime) {
         const date = new Date(data.issueTime);
+        twoSpanishTimestamp.textContent = `Última Actualización: ${formatDate(date)}`;
+    } else if (twoSpanishTimestamp && data.timestamp) {
+        const date = new Date(data.timestamp * 1000);
         twoSpanishTimestamp.textContent = `Última Actualización: ${formatDate(date)}`;
     }
 }
@@ -259,6 +475,9 @@ function renderDiscussionText(data) {
 
     if (data.discussion) {
         html += data.discussion;
+    } else if (data.rawContent) {
+        // Fallback to raw content if available
+        html += `<pre>${data.rawContent}</pre>`;
     } else {
         html += `<p>No tropical weather discussion data available.</p>`;
     }
@@ -268,6 +487,9 @@ function renderDiscussionText(data) {
     // Update timestamp
     if (discussionTimestamp && data.issueTime) {
         const date = new Date(data.issueTime);
+        discussionTimestamp.textContent = `Last Updated: ${formatDate(date)}`;
+    } else if (discussionTimestamp && data.timestamp) {
+        const date = new Date(data.timestamp * 1000);
         discussionTimestamp.textContent = `Last Updated: ${formatDate(date)}`;
     }
 }
@@ -329,7 +551,7 @@ function setupRefreshButton() {
             images.forEach(img => {
                 if (img) {
                     const originalSrc = img.src;
-                    img.src = originalSrc + '?t=' + Date.now();
+                    img.src = originalSrc.split('?')[0] + '?t=' + Date.now();
                 }
             });
 
@@ -495,7 +717,6 @@ export async function checkActiveSystemsStatus() {
         return false;
     }
 }
-
 
 /**
  * Add alert banner for active tropical systems

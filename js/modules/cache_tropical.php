@@ -1,10 +1,20 @@
 <?php
 // cache_tropical.php - Fetches and caches NHC tropical data from XML sources
 
+// Add debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+file_put_contents('logs/debug_tropical.log', 'Script started at ' . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
+
 // Configuration
 $cacheDir = 'cache/';
 $logDir = 'logs/';
 $userAgent = "NCHurricane.com Weather App/1.0 (info@nchurricane.com)";
+
+// Log directory and permissions
+file_put_contents('logs/debug_tropical.log', "Cache dir: $cacheDir\nLog dir: $logDir\n", FILE_APPEND);
+file_put_contents('logs/debug_tropical.log', "Script executed by user: " . get_current_user() . "\n", FILE_APPEND);
+file_put_contents('logs/debug_tropical.log', "Script path: " . __FILE__ . "\n", FILE_APPEND);
 
 // NHC XML Endpoints
 $xmlEndpoints = [
@@ -22,15 +32,32 @@ $cacheFiles = [
     'twsat' => 'tropical_summary_at.json'    // Monthly Summary
 ];
 
-// Ensure directories exist
+// Ensure directories exist with proper permissions
 if (!is_dir($cacheDir)) {
-    mkdir($cacheDir, 0755, true);
-    error_log("Created cache directory: $cacheDir");
+    $oldUmask = umask(0);
+    $mkdir_result = mkdir($cacheDir, 0777, true);
+    umask($oldUmask);
+    file_put_contents('logs/debug_tropical.log', "Created cache directory: $cacheDir (result: " .
+        ($mkdir_result ? "success" : "failed") . ")\n", FILE_APPEND);
 }
 
 if (!is_dir($logDir)) {
-    mkdir($logDir, 0755, true);
-    error_log("Created log directory: $logDir");
+    $oldUmask = umask(0);
+    $mkdir_result = mkdir($logDir, 0777, true);
+    umask($oldUmask);
+    file_put_contents('logs/debug_tropical.log', "Created log directory: $logDir (result: " .
+        ($mkdir_result ? "success" : "failed") . ")\n", FILE_APPEND);
+}
+
+// Manually check and set directory permissions
+if (is_dir($cacheDir)) {
+    chmod($cacheDir, 0777);
+    file_put_contents('logs/debug_tropical.log', "Set cache directory permissions to 0777\n", FILE_APPEND);
+}
+
+if (is_dir($logDir)) {
+    chmod($logDir, 0777);
+    file_put_contents('logs/debug_tropical.log', "Set log directory permissions to 0777\n", FILE_APPEND);
 }
 
 // Configure logging
@@ -73,6 +100,7 @@ function writeLog($message, $level = 'info')
 function fetchData($url, $userAgent, $retries = 3)
 {
     writeLog("Fetching URL: $url", 'debug');
+    file_put_contents('logs/debug_tropical.log', "Fetching URL: $url\n", FILE_APPEND);
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -106,6 +134,14 @@ function fetchData($url, $userAgent, $retries = 3)
     // Execute request
     $result = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Log the result
+    file_put_contents('logs/debug_tropical.log', "HTTP Response Code: $httpCode\n", FILE_APPEND);
+    if ($result === false) {
+        file_put_contents('logs/debug_tropical.log', "Curl error: " . curl_error($ch) . "\n", FILE_APPEND);
+    } else {
+        file_put_contents('logs/debug_tropical.log', "Response length: " . strlen($result) . " bytes\n", FILE_APPEND);
+    }
 
     // Handle rate limiting responses (429)
     if ($httpCode === 429) {
@@ -142,6 +178,7 @@ function fetchData($url, $userAgent, $retries = 3)
 
     curl_close($ch);
     writeLog("Successfully fetched data from $url", 'debug');
+    file_put_contents('logs/debug_tropical.log', "Successfully fetched data from $url\n", FILE_APPEND);
     return $result;
 }
 
@@ -154,10 +191,22 @@ function parseTwoXml($xmlData)
 {
     if (empty($xmlData)) {
         writeLog("Empty XML data provided to parseTwoXml", 'error');
+        file_put_contents('logs/debug_tropical.log', "Empty XML data provided to parseTwoXml\n", FILE_APPEND);
         return [];
     }
 
     try {
+        // Remove non-XML content before the XML declaration
+        $xmlStart = strpos($xmlData, '<?xml');
+        if ($xmlStart !== false && $xmlStart > 0) {
+            $xmlData = substr($xmlData, $xmlStart);
+            file_put_contents('logs/debug_tropical.log', "Cleaned XML data, removed " . $xmlStart . " bytes\n", FILE_APPEND);
+        }
+
+        // Save raw XML for debugging
+        file_put_contents('logs/debug_tropical.log', "XML Sample (first 200 chars): " .
+            substr($xmlData, 0, 200) . "...\n", FILE_APPEND);
+
         $xml = new SimpleXMLElement($xmlData);
 
         // Extract header information
@@ -165,33 +214,47 @@ function parseTwoXml($xmlData)
         $productID = (string)$xml->productID;
         $basin = (string)$xml->basin;
 
+        file_put_contents('logs/debug_tropical.log', "Parsed XML header: IssueTime=$issueTime, ProductID=$productID, Basin=$basin\n", FILE_APPEND);
+
         // Extract outlook sections (usually 2: 48-hour and 5-day)
         $outlooks = [];
-        foreach ($xml->outlooksection as $section) {
-            $outlook = [
-                'timeframe' => (string)$section->timeframe,
-                'text' => (string)$section->text,
-                'areas' => []
-            ];
+        if (isset($xml->outlooksection)) {
+            foreach ($xml->outlooksection as $section) {
+                $outlook = [
+                    'timeframe' => (string)$section->timeframe,
+                    'text' => (string)$section->text,
+                    'areas' => []
+                ];
 
-            // Extract disturbance areas
-            if (isset($section->areatype)) {
-                foreach ($section->areatype as $area) {
-                    $areaInfo = [
-                        'id' => (string)$area->id,
-                        'location' => (string)$area->location,
-                        'text' => (string)$area->text,
-                        'formation_chance' => [
-                            '48hour' => (string)$area->{"48hourprob"},
-                            '5day' => (string)$area->{"5dayprob"}
-                        ]
-                    ];
+                // Extract disturbance areas
+                if (isset($section->areatype)) {
+                    foreach ($section->areatype as $area) {
+                        $areaInfo = [
+                            'id' => (string)$area->id,
+                            'location' => (string)$area->location,
+                            'text' => (string)$area->text,
+                            'formation_chance' => [
+                                '48hour' => (string)$area->{"48hourprob"},
+                                '5day' => (string)$area->{"5dayprob"}
+                            ]
+                        ];
 
-                    $outlook['areas'][] = $areaInfo;
+                        $outlook['areas'][] = $areaInfo;
+                    }
                 }
+
+                $outlooks[] = $outlook;
             }
 
-            $outlooks[] = $outlook;
+            file_put_contents('logs/debug_tropical.log', "Parsed " . count($outlooks) . " outlook sections\n", FILE_APPEND);
+        } else {
+            file_put_contents('logs/debug_tropical.log', "No <outlooksection> elements found in XML\n", FILE_APPEND);
+        }
+
+        // Try to extract the raw text content if available
+        $rawContent = '';
+        if (isset($xml->product)) {
+            $rawContent = (string)$xml->product;
         }
 
         return [
@@ -199,16 +262,21 @@ function parseTwoXml($xmlData)
             'productID' => $productID,
             'basin' => $basin,
             'outlooks' => $outlooks,
+            'rawContent' => $rawContent,
             'timestamp' => time()
         ];
     } catch (Exception $e) {
         writeLog("Error parsing TWO XML: " . $e->getMessage(), 'error');
+        file_put_contents('logs/debug_tropical.log', "XML parsing error: " . $e->getMessage() . "\n", FILE_APPEND);
+        // Save problematic XML to debug file
+        file_put_contents('logs/problem_xml.txt', $xmlData);
+        file_put_contents('logs/debug_tropical.log', "Saved problematic XML to logs/problem_xml.txt\n", FILE_APPEND);
         return [];
     }
 }
 
 /**
- * Parse tropical outlook content from NHC text format
+ * Parse outlook content from NHC text format
  * @param string $textContent Raw text content from NHC
  * @return array Structured array of outlooks
  */
@@ -217,6 +285,8 @@ function parseOutlookContentFromText($textContent)
     // Initialize return array
     $outlooks = [];
 
+    file_put_contents('logs/debug_tropical.log', "Parsing text content, length: " . strlen($textContent) . " bytes\n", FILE_APPEND);
+
     // Remove headers and footers
     $textContent = preg_replace('/^.*?For the North Atlantic...Caribbean Sea and the Gulf of Mexico:/s', '', $textContent);
     $textContent = preg_replace('/\$\$.*$/s', '', $textContent);
@@ -224,6 +294,7 @@ function parseOutlookContentFromText($textContent)
     // Split into sections - typically there are 48-hour and 5-day (or 7-day) outlooks
     // First, check if we have "Active Systems" section
     $hasActiveSystems = (stripos($textContent, 'Active Systems:') !== false);
+    file_put_contents('logs/debug_tropical.log', "Has active systems section: " . ($hasActiveSystems ? "yes" : "no") . "\n", FILE_APPEND);
 
     // Extract active systems if present
     $activeSystems = [];
@@ -237,6 +308,8 @@ function parseOutlookContentFromText($textContent)
                 }
             }
 
+            file_put_contents('logs/debug_tropical.log', "Found " . count($activeSystems) . " active systems\n", FILE_APPEND);
+
             // Remove active systems section from content to process the rest
             $textContent = preg_replace('/Active Systems:.*?\n\n/s', '', $textContent);
         }
@@ -246,6 +319,8 @@ function parseOutlookContentFromText($textContent)
     $areaPattern = '/(?:(\d+)\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?\n(.*?)(?=(?:\d+\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)|$)/s';
 
     if (preg_match_all($areaPattern, $textContent, $matches, PREG_SET_ORDER)) {
+        file_put_contents('logs/debug_tropical.log', "Found " . count($matches) . " disturbance areas\n", FILE_APPEND);
+
         foreach ($matches as $match) {
             $location = '';
             $text = '';
@@ -301,6 +376,8 @@ function parseOutlookContentFromText($textContent)
         }
     } else if (stripos($textContent, 'tropical cyclone formation is not expected') !== false) {
         // No active disturbances
+        file_put_contents('logs/debug_tropical.log', "No active disturbances found\n", FILE_APPEND);
+
         $outlooks[] = [
             'id' => '',
             'location' => 'Atlantic Basin',
@@ -310,6 +387,8 @@ function parseOutlookContentFromText($textContent)
                 '7day' => 0
             ]
         ];
+    } else {
+        file_put_contents('logs/debug_tropical.log', "Could not parse outlooks from text content\n", FILE_APPEND);
     }
 
     // Add active systems to the return data
@@ -328,10 +407,19 @@ function parseTwdXml($xmlData)
 {
     if (empty($xmlData)) {
         writeLog("Empty XML data provided to parseTwdXml", 'error');
+        file_put_contents('logs/debug_tropical.log', "Empty XML data provided to parseTwdXml\n", FILE_APPEND);
         return [];
     }
 
     try {
+        // Remove non-XML content before the XML declaration
+        $xmlStart = strpos($xmlData, '<?xml');
+        if ($xmlStart !== false && $xmlStart > 0) {
+            $xmlData = substr($xmlData, $xmlStart);
+        }
+
+        file_put_contents('logs/debug_tropical.log', "Processing TWD XML, length: " . strlen($xmlData) . " bytes\n", FILE_APPEND);
+
         $xml = new SimpleXMLElement($xmlData);
 
         // Extract basic info
@@ -339,19 +427,29 @@ function parseTwdXml($xmlData)
         $productID = (string)$xml->productID;
 
         // Extract discussion sections
-        $discussion = (string)$xml->discussion;
+        $discussion = "";
+        if (isset($xml->discussion)) {
+            $discussion = (string)$xml->discussion;
+        } else if (isset($xml->product)) {
+            // Try alternate location
+            $discussion = (string)$xml->product;
+        }
 
         // Format the text content for better readability
         $formattedText = formatNhcText($discussion);
+
+        file_put_contents('logs/debug_tropical.log', "TWD parse successful, issueTime: $issueTime\n", FILE_APPEND);
 
         return [
             'issueTime' => $issueTime,
             'productID' => $productID,
             'discussion' => $formattedText,
+            'rawContent' => $discussion,
             'timestamp' => time()
         ];
     } catch (Exception $e) {
         writeLog("Error parsing TWD XML: " . $e->getMessage(), 'error');
+        file_put_contents('logs/debug_tropical.log', "Error parsing TWD XML: " . $e->getMessage() . "\n", FILE_APPEND);
         return [];
     }
 }
@@ -394,13 +492,17 @@ function formatNhcText($text)
 function isCacheStale($cacheFile, $maxAge = 3600)
 {
     if (!file_exists($cacheFile)) {
+        file_put_contents('logs/debug_tropical.log', "Cache file does not exist: $cacheFile\n", FILE_APPEND);
         return true;
     }
 
     $fileTime = filemtime($cacheFile);
     $currentTime = time();
+    $age = $currentTime - $fileTime;
 
-    return ($currentTime - $fileTime) > $maxAge;
+    file_put_contents('logs/debug_tropical.log', "Cache file age: " . $age . " seconds (max: $maxAge)\n", FILE_APPEND);
+
+    return ($age > $maxAge);
 }
 
 /**
@@ -414,24 +516,34 @@ function processXmlProducts()
         $cacheFile = $cacheDir . $cacheFiles[$productKey];
         $maxAge = ($productKey === 'twsat') ? 86400 : 3600; // Monthly summary cached longer
 
+        file_put_contents('logs/debug_tropical.log', "Processing product: $productKey, cache file: $cacheFile\n", FILE_APPEND);
+
         if (isCacheStale($cacheFile, $maxAge)) {
             writeLog("Cache is stale for $productKey, fetching new data", 'info');
+            file_put_contents('logs/debug_tropical.log', "Cache is stale for $productKey, fetching new data\n", FILE_APPEND);
 
             $xmlData = fetchData($url, $userAgent);
             if ($xmlData === false) {
                 writeLog("Failed to fetch XML data for $productKey", 'error');
+                file_put_contents('logs/debug_tropical.log', "Failed to fetch XML data for $productKey\n", FILE_APPEND);
+                createDefaultCacheFile($productKey, $cacheFile, $url);
                 continue;
             }
 
-            // Parse RSS-style XML
+            // Parse XML data based on product type
             $parsedData = [];
             if ($productKey === 'twoat' || $productKey === 'twosat') {
                 $parsedData = parseTwoXml($xmlData);
 
-                // If we got RSS data but no actual content, try to fetch from the web page
-                if (empty($parsedData['rawContent']) && !empty($parsedData['issueTime'])) {
-                    $nhcUrl = "https://www.nhc.noaa.gov/gtwo.php?basin=atlc";
+                // If we got XML data but no actual content, try to fetch from the web page
+                if (empty($parsedData['outlooks']) && !empty($parsedData['issueTime'])) {
+                    $nhcUrl = $productKey === 'twoat' ?
+                        "https://www.nhc.noaa.gov/text/MIATWOAT.shtml" :
+                        "https://www.nhc.noaa.gov/text/MIATWOEP.shtml";
+
                     writeLog("Fetching TWO content directly from NHC website", 'info');
+                    file_put_contents('logs/debug_tropical.log', "Fetching TWO content from: $nhcUrl\n", FILE_APPEND);
+
                     $htmlContent = fetchData($nhcUrl, $userAgent);
 
                     if ($htmlContent) {
@@ -441,28 +553,35 @@ function processXmlProducts()
                             $textContent = strip_tags($textContent); // Remove any HTML tags within pre
                             $parsedData['rawContent'] = $textContent;
 
+                            file_put_contents('logs/debug_tropical.log', "Successfully extracted text content, length: " .
+                                strlen($textContent) . " bytes\n", FILE_APPEND);
+
                             // Add the parsed outlook content
                             $parsedOutlook = parseOutlookContentFromText($textContent);
                             if (!empty($parsedOutlook)) {
                                 writeLog("Successfully parsed outlook content from web page", 'info');
+                                file_put_contents('logs/debug_tropical.log', "Successfully parsed outlooks from text content\n", FILE_APPEND);
                                 $parsedData['active_systems'] = $parsedOutlook['active_systems'] ?? [];
                                 $parsedData['areas'] = $parsedOutlook['areas'] ?? [];
                             }
                         } else {
                             writeLog("Could not find text product in NHC webpage", 'warning');
+                            file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
                         }
                     }
                 }
             } elseif ($productKey === 'twdat' || $productKey === 'twsat') {
                 $parsedData = parseTwdXml($xmlData);
 
-                // If we got RSS data but no actual discussion content, try to fetch from the web page
-                if (empty($parsedData['rawContent']) && !empty($parsedData['issueTime'])) {
+                // If we got XML data but no actual discussion content, try to fetch from the web page
+                if (empty($parsedData['discussion']) && !empty($parsedData['issueTime'])) {
                     $nhcUrl = ($productKey === 'twdat') ?
                         "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
                         "https://www.nhc.noaa.gov/text/MIATWSAT.shtml";
 
                     writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
+                    file_put_contents('logs/debug_tropical.log', "Fetching discussion content from: $nhcUrl\n", FILE_APPEND);
+
                     $htmlContent = fetchData($nhcUrl, $userAgent);
 
                     if ($htmlContent) {
@@ -474,82 +593,141 @@ function processXmlProducts()
                             $parsedData['rawContent'] = $textContent;
                             $parsedData['discussion'] = formatNhcText($textContent);
                             writeLog("Successfully extracted content from web page", 'info');
+                            file_put_contents('logs/debug_tropical.log', "Successfully extracted discussion content\n", FILE_APPEND);
                         } else {
                             writeLog("Could not find pre-formatted text in NHC webpage", 'warning');
+                            file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
                         }
                     }
                 }
             }
 
-            if (empty($parsedData) || (empty($parsedData['outlooks']) && empty($parsedData['discussion']))) {
-                writeLog("Creating default off-season data for $productKey", 'info');
-
-                if ($productKey === 'twoat' || $productKey === 'twosat') {
-                    $parsedData = [
-                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
-                        'productID' => 'OFF_SEASON_TWO',
-                        'basin' => 'Atlantic',
-                        'outlooks' => [
-                            [
-                                'timeframe' => 'Next 7 Days',
-                                'text' => 'Tropical cyclone formation is not expected during the next 7 days.',
-                                'areas' => []
-                            ]
-                        ],
-                        'active_systems' => [],
-                        'rawContent' => 'OFF SEASON - No current tropical activity',
-                        'timestamp' => time(),
-                        'source' => $url,
-                        'cacheTime' => time()
-                    ];
-                } elseif ($productKey === 'twdat') {
-                    $parsedData = [
-                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
-                        'productID' => 'OFF_SEASON_TWD',
-                        'discussion' => '<p>The Atlantic hurricane season is currently inactive. The next season begins May 15, ' . date('Y') . '.</p>',
-                        'rawContent' => 'OFF SEASON - No current tropical weather discussion',
-                        'timestamp' => time(),
-                        'source' => $url,
-                        'cacheTime' => time()
-                    ];
-                } elseif ($productKey === 'twsat') {
-                    $currentYear = date('Y');
-                    $lastYear = $currentYear - 1;
-                    $parsedData = [
-                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
-                        'productID' => 'OFF_SEASON_TWSAT',
-                        'discussion' => "<p>Summary of the {$lastYear} Atlantic hurricane season. The next season begins May 15, {$currentYear}.</p>",
-                        'rawContent' => "Summary of the {$lastYear} Atlantic hurricane season",
-                        'timestamp' => time(),
-                        'source' => $url,
-                        'cacheTime' => time()
-                    ];
-                }
-
-                // Save to cache
-                if (!empty($parsedData)) {
-                    $jsonData = json_encode($parsedData, JSON_PRETTY_PRINT);
-                    file_put_contents($cacheFile, $jsonData);
-                    writeLog("Updated cache with default data for $productKey", 'info');
-                }
+            // Check if we have valid data
+            if (empty($parsedData) || (empty($parsedData['outlooks']) && empty($parsedData['discussion']) &&
+                empty($parsedData['rawContent']) && empty($parsedData['areas']))) {
+                writeLog("No valid data found for $productKey, creating default", 'warning');
+                file_put_contents('logs/debug_tropical.log', "No valid data found for $productKey, creating default\n", FILE_APPEND);
+                createDefaultCacheFile($productKey, $cacheFile, $url);
+                continue;
             }
 
             // Add metadata
             $parsedData['source'] = $url;
             $parsedData['cacheTime'] = time();
 
-            // Save to cache
+            // Save to cache with error checking
             $jsonData = json_encode($parsedData, JSON_PRETTY_PRINT);
-            file_put_contents($cacheFile, $jsonData);
+            if ($jsonData === false) {
+                writeLog("JSON encoding failed for $productKey: " . json_last_error_msg(), 'error');
+                file_put_contents('logs/debug_tropical.log', "JSON encoding failed: " . json_last_error_msg() . "\n", FILE_APPEND);
+                continue;
+            }
 
-            writeLog("Updated cache for $productKey", 'info');
+            $writeResult = file_put_contents($cacheFile, $jsonData);
+            if ($writeResult === false) {
+                writeLog("Failed to write cache file for $productKey: $cacheFile", 'error');
+                file_put_contents('logs/debug_tropical.log', "Failed to write cache file: $cacheFile\n", FILE_APPEND);
+                file_put_contents('logs/debug_tropical.log', "Is writable: " . (is_writable(dirname($cacheFile)) ? "yes" : "no") . "\n", FILE_APPEND);
+            } else {
+                writeLog("Updated cache for $productKey", 'info');
+                file_put_contents('logs/debug_tropical.log', "Successfully wrote cache file: $cacheFile ($writeResult bytes)\n", FILE_APPEND);
+
+                // Ensure file permissions
+                chmod($cacheFile, 0666);
+            }
         } else {
             writeLog("Cache is still fresh for $productKey", 'debug');
+            file_put_contents('logs/debug_tropical.log', "Cache is still fresh for $productKey\n", FILE_APPEND);
+        }
+    }
+}
+
+/**
+ * Create a default cache file when data fetch fails
+ * @param string $productKey The product key
+ * @param string $cacheFile The cache file path
+ * @param string $url The source URL
+ */
+function createDefaultCacheFile($productKey, $cacheFile, $url)
+{
+    writeLog("Creating default data for $productKey", 'info');
+    file_put_contents('logs/debug_tropical.log', "Creating default data for $productKey\n", FILE_APPEND);
+
+    $parsedData = [];
+    $currentYear = date('Y');
+    $lastYear = $currentYear - 1;
+
+    if ($productKey === 'twoat' || $productKey === 'twosat') {
+        $isSpanish = ($productKey === 'twosat');
+        $parsedData = [
+            'issueTime' => date('Y-m-d\TH:i:s\Z'),
+            'productID' => 'OFF_SEASON_TWO',
+            'basin' => 'Atlantic',
+            'outlooks' => [
+                [
+                    'timeframe' => $isSpanish ? 'Próximos 7 días' : 'Next 7 Days',
+                    'text' => $isSpanish ?
+                        'No se espera la formación de ciclones tropicales durante los próximos 7 días.' :
+                        'Tropical cyclone formation is not expected during the next 7 days.',
+                    'areas' => []
+                ]
+            ],
+            'active_systems' => [],
+            'rawContent' => $isSpanish ?
+                'TEMPORADA INACTIVA - No hay actividad tropical actual' :
+                'OFF SEASON - No current tropical activity',
+            'timestamp' => time(),
+            'source' => $url,
+            'cacheTime' => time()
+        ];
+    } elseif ($productKey === 'twdat') {
+        $parsedData = [
+            'issueTime' => date('Y-m-d\TH:i:s\Z'),
+            'productID' => 'OFF_SEASON_TWD',
+            'discussion' => '<p>The Atlantic hurricane season is currently inactive. The next season begins May 15, ' . $currentYear . '.</p>',
+            'rawContent' => 'OFF SEASON - No current tropical weather discussion',
+            'timestamp' => time(),
+            'source' => $url,
+            'cacheTime' => time()
+        ];
+    } elseif ($productKey === 'twsat') {
+        $parsedData = [
+            'issueTime' => date('Y-m-d\TH:i:s\Z'),
+            'productID' => 'OFF_SEASON_TWSAT',
+            'discussion' => "<p>Summary of the {$lastYear} Atlantic hurricane season. The next season begins May 15, {$currentYear}.</p>",
+            'rawContent' => "Summary of the {$lastYear} Atlantic hurricane season",
+            'timestamp' => time(),
+            'source' => $url,
+            'cacheTime' => time()
+        ];
+    }
+
+    // Save to cache
+    if (!empty($parsedData)) {
+        $jsonData = json_encode($parsedData, JSON_PRETTY_PRINT);
+        $writeResult = file_put_contents($cacheFile, $jsonData);
+
+        if ($writeResult === false) {
+            writeLog("Failed to write default cache for $productKey", 'error');
+            file_put_contents('logs/debug_tropical.log', "Failed to write default cache: $cacheFile\n", FILE_APPEND);
+        } else {
+            writeLog("Created default cache for $productKey", 'info');
+            file_put_contents('logs/debug_tropical.log', "Created default cache: $cacheFile ($writeResult bytes)\n", FILE_APPEND);
+            // Ensure file permissions
+            chmod($cacheFile, 0666);
         }
     }
 }
 
 // Run the main processing logic
 writeLog("Starting tropical data cache update", 'info');
-processXmlProducts();
-writeLog("Completed tropical data cache update", 'info');
+file_put_contents('logs/debug_tropical.log', "Starting tropical data cache update\n", FILE_APPEND);
+
+try {
+    processXmlProducts();
+    writeLog("Completed tropical data cache update", 'info');
+    file_put_contents('logs/debug_tropical.log', "Completed tropical data cache update\n", FILE_APPEND);
+} catch (Exception $e) {
+    writeLog("Uncaught exception: " . $e->getMessage(), 'error');
+    file_put_contents('logs/debug_tropical.log', "FATAL ERROR: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+}
