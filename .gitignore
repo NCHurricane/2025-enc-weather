@@ -66,3 +66,5 @@ js/modules/cache/tropical_disc_at.json
 js/modules/cache/tropical_summary_at.json
 js/modules/cache/tropical_two_at.json
 js/modules/cache/tropical_two_sat.json
+js/modules/logs/cron_tropical.log
+js/modules/logs/debug_tropical.log
