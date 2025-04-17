@@ -124,7 +124,7 @@ function fetchData($url, $userAgent, $retries = 3)
     if ($timeSinceLastRequest < 0.2 && $lastRequestTime > 0) {
         $delay = 0.2 - $timeSinceLastRequest;
         writeLog("Rate limiting: Adding delay of {$delay}s", 'debug');
-        usleep($delay * 1000000); // Convert to microseconds
+        usleep((int)($delay * 1000000)); // Convert to microseconds
     }
 
     // Update tracking variables
