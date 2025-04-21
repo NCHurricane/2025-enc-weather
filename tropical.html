@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
    <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta
-         name="description"
+      <meta name="description"
          content="Tropical weather information for Eastern North Carolina using the National Hurricane Center data." />
       <title>Tropical Weather - NCHurricane.com</title>
       <link
          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
          rel="stylesheet" />
-      <script
-         src="https://kit.fontawesome.com/04fcf90301.js"
-         crossorigin="anonymous"></script>
+      <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CSS Files -->
       <link rel="stylesheet" href="css/styles.css?v=3.24.2" />
@@ -23,9 +21,7 @@
       <!-- Header -->
       <header class="header">
          <div class="header-container">
-            <img
-               src="images/2025_banner.png"
-               alt="NCHurricane.com Logo" />
+            <img src="images/2025_banner.png" alt="NCHurricane.com Logo" />
             <nav class="nav" aria-label="Main navigation">
                <ul class="nav-menu">
                   <li><a href="index.html">Home</a></li>
@@ -35,12 +31,7 @@
                   <li><a href="links.html">Links</a></li>
                </ul>
             </nav>
-            <button
-               class="hamburger"
-               id="hamburger"
-               aria-label="Menu"
-               aria-expanded="false"
-               aria-controls="nav-menu">
+            <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
                <i class="fa-solid fa-bars" aria-hidden="true"></i>
             </button>
          </div>
@@ -57,55 +48,56 @@
                Tropical Graphics
             </label>
             <div class="tropical-graphics-tabs">
-                <input type="radio" name="graphicsTab" id="graphics-current" checked />
-                <input type="radio" name="graphicsTab" id="graphics-two-day" />
-                <input type="radio" name="graphicsTab" id="graphics-seven-day" />
-                <input type="radio" name="graphicsTab" id="graphics-surface" />
+               <input type="radio" name="graphicsTab" id="graphics-current" checked />
+               <input type="radio" name="graphicsTab" id="graphics-two-day" />
+               <input type="radio" name="graphicsTab" id="graphics-seven-day" />
+               <input type="radio" name="graphicsTab" id="graphics-surface" />
 
-                <div class="tropical-graphics-tab-labels" role="tablist">
-                    <label for="graphics-current" class="tropical-graphics-tab" role="tab" aria-selected="true">Current Activity</label>
-                    <label for="graphics-two-day" class="tropical-graphics-tab" role="tab">Two-Day Outlook</label>
-                    <label for="graphics-seven-day" class="tropical-graphics-tab" role="tab">Seven-Day Outlook</label>
-                    <label for="graphics-surface" class="tropical-graphics-tab" role="tab">Surface Analysis</label>
-                </div>
+               <div class="tropical-graphics-tab-labels" role="tablist">
+                  <label for="graphics-current" class="tropical-graphics-tab" role="tab" aria-selected="true">Current
+                     Activity</label>
+                  <label for="graphics-two-day" class="tropical-graphics-tab" role="tab">Two-Day Outlook</label>
+                  <label for="graphics-seven-day" class="tropical-graphics-tab" role="tab">Seven-Day Outlook</label>
+                  <label for="graphics-surface" class="tropical-graphics-tab" role="tab">Surface Analysis</label>
+               </div>
 
-                <div class="tropical-graphics-tab-content">
-                    <!-- Current Activity Tab -->
-                    <div class="tropical-graphics-panel" id="current-activity-panel" role="tabpanel">
-                        <h3>Current Tropical Activity</h3>
-                        <div class="tropical-image-container">
-                            <img id="current-activity-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png" alt="Current Tropical Activity">
-                            <div class="image-timestamp" id="current-activity-timestamp"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Two-Day Outlook Tab -->
-                    <div class="tropical-graphics-panel" id="two-day-panel" role="tabpanel">
-                        <h3>Two-Day Tropical Weather Outlook</h3>
-                        <div class="tropical-image-container">
-                            <img id="two-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png" alt="Two-Day Tropical Weather Outlook">
-                            <div class="image-timestamp" id="two-day-timestamp"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Seven-Day Outlook Tab -->
-                    <div class="tropical-graphics-panel" id="seven-day-panel" role="tabpanel">
-                        <h3>Seven-Day Tropical Weather Outlook</h3>
-                        <div class="tropical-image-container">
-                            <img id="seven-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png" alt="Seven-Day Tropical Weather Outlook">
-                            <div class="image-timestamp" id="seven-day-timestamp"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Surface Analysis Tab -->
-                    <div class="tropical-graphics-panel" id="surface-panel" role="tabpanel">
-                        <h3>Atlantic Surface Analysis</h3>
-                        <div class="tropical-image-container">
-                            <img id="surface-img" src="https://ocean.weather.gov/A_sfc_full_ocean_color.png" alt="Atlantic Surface Analysis">
-                            <div class="image-timestamp" id="surface-timestamp"></div>
-                        </div>
-                    </div>
-                </div>
+               <div class="tropical-graphics-tab-content">
+                  <!-- Current Activity Tab -->
+                  <div class="tropical-graphics-panel" id="current-activity-panel" role="tabpanel">
+                     <div class="tropical-image-container">
+                        <img id="current-activity-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
+                           alt="Current Tropical Activity" />
+                        <div class="image-timestamp" id="current-activity-timestamp"></div>
+                     </div>
+                  </div>
+
+                  <!-- Two-Day Outlook Tab -->
+                  <div class="tropical-graphics-panel" id="two-day-panel" role="tabpanel">
+                     <div class="tropical-image-container">
+                        <img id="two-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png"
+                           alt="Two-Day Tropical Weather Outlook" />
+                        <div class="image-timestamp" id="two-day-timestamp"></div>
+                     </div>
+                  </div>
+
+                  <!-- Seven-Day Outlook Tab -->
+                  <div class="tropical-graphics-panel" id="seven-day-panel" role="tabpanel">
+                     <div class="tropical-image-container">
+                        <img id="seven-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png"
+                           alt="Seven-Day Tropical Weather Outlook" />
+                        <div class="image-timestamp" id="seven-day-timestamp"></div>
+                     </div>
+                  </div>
+
+                  <!-- Surface Analysis Tab -->
+                  <div class="tropical-graphics-panel" id="surface-panel" role="tabpanel">
+                     <div class="tropical-image-container">
+                        <img id="surface-img" src="https://ocean.weather.gov/A_sfc_full_ocean_color.png"
+                           alt="Atlantic Surface Analysis" />
+                        <div class="image-timestamp" id="surface-timestamp"></div>
+                     </div>
+                  </div>
+               </div>
             </div>
          </section>
 
@@ -117,59 +109,61 @@
                Tropical Weather Text Products
             </label>
             <div class="tropical-text-tabs">
-                <input type="radio" name="textTab" id="text-two" checked />
-                <input type="radio" name="textTab" id="text-two-spanish" />
-                <input type="radio" name="textTab" id="text-discussion" />
+               <input type="radio" name="textTab" id="text-two" checked />
+               <input type="radio" name="textTab" id="text-two-spanish" />
+               <input type="radio" name="textTab" id="text-discussion" />
 
-                <div class="tropical-text-tab-labels" role="tablist">
-                    <label for="text-two" class="tropical-text-tab" role="tab" aria-selected="true">Tropical Weather Outlook</label>
-                    <label for="text-two-spanish" class="tropical-text-tab" role="tab">TWO (Español)</label>
-                    <label for="text-discussion" class="tropical-text-tab" role="tab">Tropical Discussion</label>
-                </div>
+               <div class="tropical-text-tab-labels" role="tablist">
+                  <label for="text-two" class="tropical-text-tab" role="tab" aria-selected="true">Tropical Weather
+                     Outlook</label>
+                  <label for="text-two-spanish" class="tropical-text-tab" role="tab">TWO (Español)</label>
+                  <label for="text-discussion" class="tropical-text-tab" role="tab">Tropical Discussion</label>
+               </div>
 
-                <div class="tropical-text-tab-content">
-                    <!-- TWO Text Tab -->
-                    <div class="tropical-text-panel" id="two-text-panel" role="tabpanel">
-                        <div class="loading" id="two-text-loading">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            <span>Loading Tropical Weather Outlook...</span>
-                        </div>
-                        <div class="error" id="two-text-error" style="display: none;">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>Unable to load Tropical Weather Outlook</span>
-                        </div>
-                        <div class="tropical-text-content" id="two-text-content"></div>
-                        <div class="tropical-text-timestamp" id="two-text-timestamp"></div>
-                    </div>
-                    
-                    <!-- TWO Spanish Tab -->
-                    <div class="tropical-text-panel" id="two-spanish-panel" role="tabpanel">
-                        <div class="loading" id="two-spanish-loading">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            <span>Cargando Perspectiva del Tiempo Tropical...</span>
-                        </div>
-                        <div class="error" id="two-spanish-error" style="display: none;">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>No se pudo cargar la Perspectiva del Tiempo Tropical</span>
-                        </div>
-                        <div class="tropical-text-content" id="two-spanish-content"></div>
-                        <div class="tropical-text-timestamp" id="two-spanish-timestamp"></div>
-                    </div>
-                    
-                    <!-- Tropical Discussion Tab -->
-                    <div class="tropical-text-panel" id="discussion-panel" role="tabpanel">
-                        <div class="loading" id="discussion-loading">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            <span>Loading Tropical Weather Discussion...</span>
-                        </div>
-                        <div class="error" id="discussion-error" style="display: none;">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>Unable to load Tropical Weather Discussion</span>
-                        </div>
-                        <div class="tropical-text-content" id="discussion-content"></div>
-                        <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
-                    </div>
-                </div>
+               <div class="tropical-text-tab-content">
+                  <!-- TWO Text Tab -->
+                  <div class="tropical-text-panel" id="two-text-panel" role="tabpanel">
+                     <div class="loading" id="two-text-loading">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Loading Tropical Weather Outlook...</span>
+                     </div>
+                     <div class="error" id="two-text-error" style="display: none">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Unable to load Tropical Weather Outlook</span>
+                     </div>
+                     <div class="tropical-text-content" id="two-text-content"></div>
+                     <div class="tropical-text-timestamp" id="two-text-timestamp"></div>
+                  </div>
+
+                  <!-- TWO Spanish Tab -->
+                  <div class="tropical-text-panel" id="two-spanish-panel" role="tabpanel">
+                     <div class="loading" id="two-spanish-loading">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Cargando Perspectiva del Tiempo Tropical...</span>
+                     </div>
+                     <div class="error" id="two-spanish-error" style="display: none">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>No se pudo cargar la Perspectiva del Tiempo
+                           Tropical</span>
+                     </div>
+                     <div class="tropical-text-content" id="two-spanish-content"></div>
+                     <div class="tropical-text-timestamp" id="two-spanish-timestamp"></div>
+                  </div>
+
+                  <!-- Tropical Discussion Tab -->
+                  <div class="tropical-text-panel" id="discussion-panel" role="tabpanel">
+                     <div class="loading" id="discussion-loading">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Loading Tropical Weather Discussion...</span>
+                     </div>
+                     <div class="error" id="discussion-error" style="display: none">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Unable to load Tropical Weather Discussion</span>
+                     </div>
+                     <div class="tropical-text-content" id="discussion-content"></div>
+                     <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
+                  </div>
+               </div>
             </div>
          </section>
 
@@ -191,7 +185,8 @@
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                     <button id="tropical-satellite-play-pause" class="tropical-satellite-button" aria-label="Play satellite animation">
+                     <button id="tropical-satellite-play-pause" class="tropical-satellite-button"
+                        aria-label="Play satellite animation">
                         <i class="fa-solid fa-play" aria-hidden="true"></i>
                      </button>
                   </div>
@@ -200,16 +195,20 @@
                   <div id="tropical-satellite-loading" class="tropical-satellite-loading">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading satellite imagery...</span>
-                     <small>This may take a moment depending on your connection speed.</small>
+                     <small>This may take a moment depending on your connection
+                        speed.</small>
                   </div>
                   <div id="tropical-satellite-error" class="tropical-satellite-error" style="display: none">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load satellite imagery</span>
-                     <small>This could be due to a connection issue or NOAA server maintenance. Please try a different product, or check back later.</small>
+                     <small>This could be due to a connection issue or NOAA server
+                        maintenance. Please try a different product, or check
+                        back later.</small>
                   </div>
+                  <div id="tropical-satellite-timestamp" class="tropical-satellite-timestamp"></div>
                   <div id="tropical-satellite-image-container" class="tropical-satellite-image-container">
-                     <img id="tropical-satellite-image" class="tropical-satellite-image" alt="GOES-16 Tropical Atlantic Satellite" />
-                     <div id="tropical-satellite-timestamp" class="tropical-satellite-timestamp"></div>
+                     <img id="tropical-satellite-image" class="tropical-satellite-image"
+                        alt="GOES-16 Tropical Atlantic Satellite" />
                   </div>
                </div>
             </div>
@@ -217,10 +216,7 @@
 
          <!-- Refresh Container -->
          <div class="refresh-container" style="text-align: right; margin-top: 10px">
-            <button
-               id="global-refresh"
-               class="global-refresh-btn"
-               title="Refresh All Data"
+            <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
                aria-label="Refresh weather data">
                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
             </button>
@@ -259,18 +255,14 @@
                your life and/or personal property. Rely only on information from
                official sources of information, such as your
                <a href="https://weather.gov" target="_blank">
-                  <strong>local NWS office</strong> </a
-               >,
+                  <strong>local NWS office</strong> </a>,
                <a href="https://nhc.noaa.gov" target="_blank">
-                  <strong>the NHC</strong> </a
-               >, your local AMS certified meteorologists to make such decisions
+                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions
                in a severe weather event.
             </p>
             <p class="copyright">
                Copyright ©2003, 2025 NCHurricane.<br />Website design by
-               <a href="https://chuckcopeland.com" target="_blank"
-                  >ChuckCopeland.com</a
-               >.
+               <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>.
             </p>
          </div>
       </footer>
@@ -280,4 +272,5 @@
       <script type="module" src="js/main.js?v=3.24.2"></script>
       <script type="module" src="js/modules/tropical.js?v=3.24.2"></script>
    </body>
+
 </html>

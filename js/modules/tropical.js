@@ -34,8 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Set up refresh button
     setupRefreshButton();
 
-    // Set up tab handling
-    setupTabHandling();
 });
 
 /**
@@ -566,46 +564,6 @@ function setupRefreshButton() {
     }
 }
 
-/**
- * Set up tab handling
- */
-function setupTabHandling() {
-    // Graphics tabs
-    const graphicsTabs = document.querySelectorAll('input[name="graphicsTab"]');
-    const graphicsPanels = document.querySelectorAll('.tropical-graphics-panel');
-
-    graphicsTabs.forEach(tab => {
-        tab.addEventListener('change', function () {
-            graphicsPanels.forEach(panel => {
-                panel.style.display = 'none';
-            });
-
-            const panelId = this.id.replace('graphics-', '') + '-panel';
-            const activePanel = document.getElementById(panelId);
-            if (activePanel) {
-                activePanel.style.display = 'block';
-            }
-        });
-    });
-
-    // Text tabs
-    const textTabs = document.querySelectorAll('input[name="textTab"]');
-    const textPanels = document.querySelectorAll('.tropical-text-panel');
-
-    textTabs.forEach(tab => {
-        tab.addEventListener('change', function () {
-            textPanels.forEach(panel => {
-                panel.style.display = 'none';
-            });
-
-            const panelId = this.id.replace('text-', '') + '-panel';
-            const activePanel = document.getElementById(panelId);
-            if (activePanel) {
-                activePanel.style.display = 'block';
-            }
-        });
-    });
-}
 
 /**
  * Update the tropical weather outlook section

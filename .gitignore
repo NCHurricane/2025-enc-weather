@@ -68,3 +68,5 @@ js/modules/cache/tropical_two_at.json
 js/modules/cache/tropical_two_sat.json
 js/modules/logs/cron_tropical.log
 js/modules/logs/debug_tropical.log
+.DS_Store
+Weather 2025.zip

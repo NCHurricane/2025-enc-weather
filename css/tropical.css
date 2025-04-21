@@ -141,18 +141,26 @@ input[name="textTab"] {
     max-width: 100%;
     height: auto;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.image-timestamp {
+.tropical-satellite-timestamp {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
     background-color: rgba(0, 0, 0, 0.7);
     color: white;
     padding: 5px 10px;
     border-radius: 3px;
-    font-size: 0.8rem;
+    font-size: 0.6rem;
+}
+
+.image-timestamp {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.6rem;
 }
 
 /* ------------------------ */
@@ -277,5 +285,12 @@ input[name="textTab"] {
     .tropical-graphics-tab,
     .tropical-text-tab {
         text-align: center;
+    }
+
+    .tropical-satellite-timestamp,
+    .image-timestamp {
+        font-size: 0.4rem;
+        bottom: -10px;
+        right: -10px;
     }
 }
