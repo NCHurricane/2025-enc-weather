@@ -70,3 +70,5 @@ js/modules/logs/cron_tropical.log
 js/modules/logs/debug_tropical.log
 .DS_Store
 Weather 2025.zip
+js/modules/logs/update_tropical.log
+js/modules/logs/cron_trop_update.log
