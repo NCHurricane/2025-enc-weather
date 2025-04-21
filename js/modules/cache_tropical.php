@@ -2,9 +2,9 @@
 // cache_tropical.php - Fetches and caches NHC tropical data from XML sources
 
 // Add debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-file_put_contents('logs/debug_tropical.log', 'Script started at ' . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// file_put_contents('logs/debug_tropical.log', 'Script started at ' . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
 
 // Configuration
 $cacheDir = 'cache/';
@@ -537,9 +537,7 @@ function processXmlProducts()
 
                 // If we got XML data but no actual content, try to fetch from the web page
                 if (empty($parsedData['outlooks']) && !empty($parsedData['issueTime'])) {
-                    $nhcUrl = $productKey === 'twoat' ?
-                        "https://www.nhc.noaa.gov/text/MIATWOAT.shtml" :
-                        "https://www.nhc.noaa.gov/text/MIATWOEP.shtml";
+                    $nhcUrl = "https://www.nhc.noaa.gov/text/MIATWOAT.shtml";
 
                     writeLog("Fetching TWO content directly from NHC website", 'info');
                     file_put_contents('logs/debug_tropical.log', "Fetching TWO content from: $nhcUrl\n", FILE_APPEND);
@@ -575,12 +573,14 @@ function processXmlProducts()
 
                 // If we got XML data but no actual discussion content, try to fetch from the web page
                 if (empty($parsedData['discussion']) && !empty($parsedData['issueTime'])) {
-                    $nhcUrl = ($productKey === 'twdat') ?
-                        "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
-                        "https://www.nhc.noaa.gov/text/MIATWSAT.shtml";
+                    $nhcUrl = "https://www.nhc.noaa.gov/text/MIATWDAT.shtml";
 
-                    writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
-                    file_put_contents('logs/debug_tropical.log', "Fetching discussion content from: $nhcUrl\n", FILE_APPEND);
+                    writeLog("Fetching TWO-DAT content directly from NHC website", 'info');
+                    file_put_contents(
+                        'logs/debug_tropical.log',
+                        "Fetching discussion content from: $nhcUrl\n",
+                        FILE_APPEND
+                    );
 
                     $htmlContent = fetchData($nhcUrl, $userAgent);
 
