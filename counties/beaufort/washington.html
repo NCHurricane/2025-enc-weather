@@ -1,29 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
    <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta
-         name="description"
+      <meta name="description"
          content="Up-to-date weather information for Windsor, Bertie County, North Carolina using the National Weather Service API." />
       <!-- CHANGE THE PLACE NAME -->
       <title>Beaufort County, North Carolina Weather - NCHurricane.com</title>
       <link
          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
          rel="stylesheet" />
-      <link
-         rel="stylesheet"
-         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-         crossorigin="" />
-      <script
-         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-         crossorigin=""
-         defer></script>
-      <script
-         src="https://kit.fontawesome.com/04fcf90301.js"
-         crossorigin="anonymous"></script>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+      <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION NUMBER TO DATE -->
       <link rel="stylesheet" href="../../css/styles.css?v=3.24.2" />
@@ -39,24 +31,17 @@
       <!-- Header -->
       <header class="header">
          <div class="header-container">
-            <img
-               src="../../images/2025_banner.png"
-               alt="NCHurricane.com Logo" />
+            <img src="../../images/2025_banner.png" alt="NCHurricane.com Logo" />
             <nav class="nav" aria-label="Main navigation">
                <ul class="nav-menu">
                   <li><a href="../../index.html">Home</a></li>
-                  <li><a href="counties.html">Counties</a></li>
-                  <li><a href="hazards.html">Hazards</a></li>
-                  <li><a href="tropical.html">Tropical</a></li>
-                  <li><a href="links.html">Links</a></li>
+                  <li><a href="../../counties.html">Counties</a></li>
+                  <li><a href="../../hazards.html">Hazards</a></li>
+                  <li><a href="../../tropical.html">Tropical</a></li>
+                  <li><a href="../../links.html">Links</a></li>
                </ul>
             </nav>
-            <button
-               class="hamburger"
-               id="hamburger"
-               aria-label="Menu"
-               aria-expanded="false"
-               aria-controls="nav-menu">
+            <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
                <i class="fa-solid fa-bars" aria-hidden="true"></i>
             </button>
          </div>
@@ -67,9 +52,7 @@
          <h1 class="main-title">Beaufort County</h1>
 
          <!-- Current Weather Section -->
-         <section
-            class="current-container"
-            aria-labelledby="current-weather-heading">
+         <section class="current-container" aria-labelledby="current-weather-heading">
             <div class="weather-card" id="weather-background">
                <div class="weather-desc">
                   <div class="weather-temp" id="current-temp"></div>
@@ -83,14 +66,9 @@
                      <br />
                      <p id="current-location"></p>
                      <p id="current-obs-time"></p>
-                     <button
-                        id="global-refresh"
-                        class="global-refresh-btn"
-                        title="Refresh All Data"
+                     <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
                         aria-label="Refresh weather data">
-                        <i
-                           class="fa-solid fa-rotate-right"
-                           aria-hidden="true"></i>
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
                      </button>
                   </div>
                </div>
@@ -105,37 +83,22 @@
          <hr />
 
          <!-- 5-Day Forecast Section -->
-         <section
-            class="forecast-container section-title"
-            aria-labelledby="forecast-heading">
+         <section class="forecast-container section-title" aria-labelledby="forecast-heading">
             <div>
-               <i
-                  class="fa-solid fa-temperature-full fa-xl fontawesome-icon"></i
-               >CURRENT FORECAST
+               <i class="fa-solid fa-temperature-full fa-xl fontawesome-icon"></i>CURRENT FORECAST
             </div>
             <div id="forecast" role="region" aria-live="polite"></div>
          </section>
 
          <!-- Detailed Forecast Section -->
          <section class="detailed-container" aria-labelledby="detailed-heading">
-            <input
-               type="checkbox"
-               id="detailed-toggle"
-               class="detailed-toggle" />
-            <label
-               for="detailed-toggle"
-               class="detailed-title"
-               id="detailed-heading">
-               <i
-                  class="fa-solid fa-calendar fa-xl fontawesome-icon"
-                  aria-hidden="true"></i>
+            <input type="checkbox" id="detailed-toggle" class="detailed-toggle" />
+            <label for="detailed-toggle" class="detailed-title" id="detailed-heading">
+               <i class="fa-solid fa-calendar fa-xl fontawesome-icon" aria-hidden="true"></i>
                Detailed Forecast
             </label>
             <div class="detailed-tabs">
-               <div
-                  id="detailed-forecast"
-                  role="region"
-                  aria-live="polite"></div>
+               <div id="detailed-forecast" role="region" aria-live="polite"></div>
             </div>
          </section>
 
@@ -143,61 +106,40 @@
          <section class="radar-container" aria-labelledby="radar-heading">
             <input type="checkbox" id="radar-toggle" class="radar-toggle" />
             <label for="radar-toggle" class="radar-title" id="radar-heading">
-               <i
-                  class="fa-solid fa-satellite-dish fa-xl fontawesome-icon"
-                  aria-hidden="true"></i>
+               <i class="fa-solid fa-satellite-dish fa-xl fontawesome-icon" aria-hidden="true"></i>
                Radar Imagery
             </label>
             <div class="radar-tabs">
                <div class="radar-controls">
                   <div class="radar-select-container">
-                     <label for="radar-product-select" class="radar-label"
-                        >Radar:</label
-                     >
+                     <label for="radar-product-select" class="radar-label">Radar:</label>
                      <select id="radar-product-select" class="radar-select">
                         <option value="KMHX">Newport, NC</option>
                         <option value="KAKQ">Wakefield, VA</option>
                         <option value="KRAX">Raleigh, NC</option>
                         <option value="KLTX">Wilmington, NC</option>
                      </select>
-                     <button
-                        id="radar-play-pause"
-                        class="radar-button"
-                        aria-label="Play radar animation">
+                     <button id="radar-play-pause" class="radar-button" aria-label="Play radar animation">
                         <i class="fa-solid fa-play" aria-hidden="true"></i>
                      </button>
                   </div>
                </div>
                <div class="radar-content">
                   <div id="radar-loading" class="radar-loading">
-                     <i
-                        class="fa-solid fa-spinner fa-spin"
-                        aria-hidden="true"></i>
+                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading radar imagery...</span>
-                     <small
-                        >This may take a moment depending on your connection
-                        speed.</small
-                     >
+                     <small>This may take a moment depending on your connection
+                        speed.</small>
                   </div>
-                  <div
-                     id="radar-error"
-                     class="radar-error"
-                     style="display: none">
-                     <i
-                        class="fa-solid fa-exclamation-triangle"
-                        aria-hidden="true"></i>
+                  <div id="radar-error" class="radar-error" style="display: none">
+                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load radar imagery</span>
-                     <small
-                        >This could be due to a connection issue or server
+                     <small>This could be due to a connection issue or server
                         maintenance. Please try a different region, or check
-                        back later.</small
-                     >
+                        back later.</small>
                   </div>
                   <div id="radar-image-container" class="radar-image-container">
-                     <img
-                        id="radar-image"
-                        class="radar-image"
-                        alt="NWS Radar" />
+                     <img id="radar-image" class="radar-image" alt="NWS Radar" />
                      <div id="radar-timestamp" class="radar-timestamp"></div>
                   </div>
                </div>
@@ -205,187 +147,100 @@
          </section>
 
          <!-- Satellite Imagery Section -->
-         <section
-            class="satellite-container"
-            aria-labelledby="satellite-heading">
-            <input
-               type="checkbox"
-               id="satellite-toggle"
-               class="satellite-toggle" />
-            <label
-               for="satellite-toggle"
-               class="satellite-title"
-               id="satellite-heading">
-               <i
-                  class="fa-solid fa-satellite fa-xl fontawesome-icon"
-                  aria-hidden="true"></i>
+         <section class="satellite-container" aria-labelledby="satellite-heading">
+            <input type="checkbox" id="satellite-toggle" class="satellite-toggle" />
+            <label for="satellite-toggle" class="satellite-title" id="satellite-heading">
+               <i class="fa-solid fa-satellite fa-xl fontawesome-icon" aria-hidden="true"></i>
                Satellite Imagery
             </label>
             <div class="satellite-tabs">
                <div class="satellite-controls">
                   <div class="satellite-select-container">
-                     <label
-                        for="satellite-product-select"
-                        class="satellite-label"
-                        >Product:</label
-                     >
-                     <select
-                        id="satellite-product-select"
-                        class="satellite-select">
+                     <label for="satellite-product-select" class="satellite-label">Product:</label>
+                     <select id="satellite-product-select" class="satellite-select">
                         <option value="GEOCOLOR">GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                     <button
-                        id="satellite-play-pause"
-                        class="satellite-button"
-                        aria-label="Play satellite animation">
+                     <button id="satellite-play-pause" class="satellite-button" aria-label="Play satellite animation">
                         <i class="fa-solid fa-play" aria-hidden="true"></i>
                      </button>
                   </div>
                </div>
                <div class="satellite-content">
                   <div id="satellite-loading" class="satellite-loading">
-                     <i
-                        class="fa-solid fa-spinner fa-spin"
-                        aria-hidden="true"></i>
+                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading satellite imagery...</span>
-                     <small
-                        >This may take a moment depending on your connection
-                        speed.</small
-                     >
+                     <small>This may take a moment depending on your connection
+                        speed.</small>
                   </div>
-                  <div
-                     id="satellite-error"
-                     class="satellite-error"
-                     style="display: none">
-                     <i
-                        class="fa-solid fa-exclamation-triangle"
-                        aria-hidden="true"></i>
+                  <div id="satellite-error" class="satellite-error" style="display: none">
+                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load satellite imagery</span>
-                     <small
-                        >This could be due to a connection issue or NOAA server
+                     <small>This could be due to a connection issue or NOAA server
                         maintenance. Please try a different sector or product,
-                        or check back later.</small
-                     >
+                        or check back later.</small>
                   </div>
-                  <div
-                     id="satellite-image-container"
-                     class="satellite-image-container">
-                     <img
-                        id="satellite-image"
-                        class="satellite-image"
-                        alt="GOES-16 Satellite" />
-                     <div
-                        id="satellite-timestamp"
-                        class="satellite-timestamp"></div>
+                  <div id="satellite-image-container" class="satellite-image-container">
+                     <img id="satellite-image" class="satellite-image" alt="GOES-16 Satellite" />
+                     <div id="satellite-timestamp" class="satellite-timestamp"></div>
                   </div>
                </div>
             </div>
          </section>
 
          <!-- Forecast Meteograms Section -->
-         <section
-            class="meteogram-container"
-            aria-labelledby="meteogram-heading">
-            <input
-               type="checkbox"
-               id="meteogram-toggle"
-               class="meteogram-toggle" />
-            <label
-               for="meteogram-toggle"
-               class="meteogram-title"
-               id="meteogram-heading">
-               <i
-                  class="fa-solid fa-chart-line fa-xl fontawesome-icon"
-                  aria-hidden="true"></i>
+         <section class="meteogram-container" aria-labelledby="meteogram-heading">
+            <input type="checkbox" id="meteogram-toggle" class="meteogram-toggle" />
+            <label for="meteogram-toggle" class="meteogram-title" id="meteogram-heading">
+               <i class="fa-solid fa-chart-line fa-xl fontawesome-icon" aria-hidden="true"></i>
                Forecast Meteograms
             </label>
             <div class="meteogram-tabs">
-               <input
-                  type="radio"
-                  name="meteogramTime"
-                  id="meteogram-now"
-                  checked />
+               <input type="radio" name="meteogramTime" id="meteogram-now" checked />
                <input type="radio" name="meteogramTime" id="meteogram-24" />
                <input type="radio" name="meteogramTime" id="meteogram-48" />
                <input type="radio" name="meteogramTime" id="meteogram-72" />
                <input type="radio" name="meteogramTime" id="meteogram-96" />
 
                <div class="meteogram-tab-labels" role="tablist">
-                  <label
-                     for="meteogram-now"
-                     class="meteogram-tab"
-                     role="tab"
-                     aria-selected="true"
-                     >24H</label
-                  >
-                  <label for="meteogram-24" class="meteogram-tab" role="tab"
-                     >48H</label
-                  >
-                  <label for="meteogram-48" class="meteogram-tab" role="tab"
-                     >72H</label
-                  >
-                  <label for="meteogram-72" class="meteogram-tab" role="tab"
-                     >96H</label
-                  >
-                  <label for="meteogram-96" class="meteogram-tab" role="tab"
-                     >120H</label
-                  >
+                  <label for="meteogram-now" class="meteogram-tab" role="tab" aria-selected="true">24H</label>
+                  <label for="meteogram-24" class="meteogram-tab" role="tab">48H</label>
+                  <label for="meteogram-48" class="meteogram-tab" role="tab">72H</label>
+                  <label for="meteogram-72" class="meteogram-tab" role="tab">96H</label>
+                  <label for="meteogram-96" class="meteogram-tab" role="tab">120H</label>
                </div>
 
                <div class="meteogram-tab-content">
                   <div class="meteogram-param-container">
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-temperature"
-                           class="meteogram-param-checkbox"
-                           checked />
+                        <input type="checkbox" id="param-temperature" class="meteogram-param-checkbox" checked />
                         <label for="param-temperature">Temp</label>
                      </div>
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-dewpoint"
-                           class="meteogram-param-checkbox" />
+                        <input type="checkbox" id="param-dewpoint" class="meteogram-param-checkbox" />
                         <label for="param-dewpoint">DP</label>
                      </div>
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-humidity"
-                           class="meteogram-param-checkbox" />
+                        <input type="checkbox" id="param-humidity" class="meteogram-param-checkbox" />
                         <label for="param-humidity">Hum</label>
                      </div>
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-wind"
-                           class="meteogram-param-checkbox" />
+                        <input type="checkbox" id="param-wind" class="meteogram-param-checkbox" />
                         <label for="param-wind">Wind</label>
                      </div>
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-precipitation"
-                           class="meteogram-param-checkbox" />
+                        <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
                         <label for="param-precipitation">Precip</label>
                      </div>
                      <div class="meteogram-param-item">
-                        <input
-                           type="checkbox"
-                           id="param-skycover"
-                           class="meteogram-param-checkbox" />
+                        <input type="checkbox" id="param-skycover" class="meteogram-param-checkbox" />
                         <label for="param-skycover">Sky</label>
                      </div>
                   </div>
-                  <div
-                     id="meteogram-chart-container"
-                     class="meteogram-content"
-                     role="tabpanel">
+                  <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
                      <canvas id="meteogramChart"></canvas>
                   </div>
                </div>
@@ -396,9 +251,7 @@
          <section class="afd-container" aria-labelledby="afd-heading">
             <input type="checkbox" id="afd-toggle" class="afd-toggle" />
             <label for="afd-toggle" class="afd-title" id="afd-heading">
-               <i
-                  class="fa-solid fa-file-lines fa-xl fontawesome-icon"
-                  aria-hidden="true"></i>
+               <i class="fa-solid fa-file-lines fa-xl fontawesome-icon" aria-hidden="true"></i>
                Area Forecast Discussion
             </label>
             <div class="afd-content" id="afd-content"></div>
@@ -409,46 +262,25 @@
       <footer class="footer">
          <div class="footer-content">
             <div class="social-media">
-               <a
-                  href="https://bsky.app/profile/nchurricane.com"
-                  target="_blank"
-                  title="Bluesky">
+               <a href="https://bsky.app/profile/nchurricane.com" target="_blank" title="Bluesky">
                   <i class="fa-brands fa-bluesky" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://twitter.com/chuckcopelandwx"
-                  target="_blank"
-                  title="X">
+               <a href="https://twitter.com/chuckcopelandwx" target="_blank" title="X">
                   <i class="fab fa-x-twitter" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://www.youtube.com/@nchurricane"
-                  target="_blank"
-                  title="YouTube">
+               <a href="https://www.youtube.com/@nchurricane" target="_blank" title="YouTube">
                   <i class="fab fa-youtube" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://www.instagram.com/chuck_copeland_wx/"
-                  target="_blank"
-                  title="Instagram">
+               <a href="https://www.instagram.com/chuck_copeland_wx/" target="_blank" title="Instagram">
                   <i class="fab fa-instagram" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://www.threads.net/@chuck_copeland_wx"
-                  target="_blank"
-                  title="Threads">
+               <a href="https://www.threads.net/@chuck_copeland_wx" target="_blank" title="Threads">
                   <i class="fab fa-threads" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://www.facebook.com/chuckcopelandwx/"
-                  target="_blank"
-                  title="Facebook">
+               <a href="https://www.facebook.com/chuckcopelandwx/" target="_blank" title="Facebook">
                   <i class="fab fa-facebook" aria-hidden="true"></i>
                </a>
-               <a
-                  href="https://www.tiktok.com/@chuck_copeland_wx"
-                  target="_blank"
-                  title="TikTok">
+               <a href="https://www.tiktok.com/@chuck_copeland_wx" target="_blank" title="TikTok">
                   <i class="fab fa-tiktok" aria-hidden="true"></i>
                </a>
             </div>
@@ -458,18 +290,14 @@
                your life and/or personal property. Rely only on information from
                official sources of information, such as your
                <a href="https://weather.gov" target="_blank">
-                  <strong>local NWS office</strong> </a
-               >,
+                  <strong>local NWS office</strong> </a>,
                <a href="https://nhc.noaa.gov" target="_blank">
-                  <strong>the NHC</strong> </a
-               >, your local AMS certified meteorologists to make such decisions
+                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions
                in a severe weather event.
             </p>
             <p class="copyright">
                Copyright ©2003, 2025 NCHurricane.<br />Website design by
-               <a href="https://chuckcopeland.com" target="_blank"
-                  >ChuckCopeland.com</a
-               >.
+               <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>.
             </p>
          </div>
       </footer>
@@ -490,4 +318,5 @@
       <!-- CHANGE VERSION NUMBER TO DATE -->
       <script type="module" src="../../js/main.js?v=3.24.2"></script>
    </body>
+
 </html>
