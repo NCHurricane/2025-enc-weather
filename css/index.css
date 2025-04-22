@@ -52,19 +52,11 @@
     .county-map-container {
         height: 400px;
     }
-
-    .main-title {
-        font-size: 1.5rem;
-    }
 }
 
 @media (max-width: 600px) {
     .county-map-container {
         height: 300px;
-    }
-
-    .main-title {
-        font-size: 1rem;
     }
 
     .county-label,

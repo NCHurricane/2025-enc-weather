@@ -168,10 +168,14 @@ input[name="textTab"] {
 /* Text content styling */
 /* ------------------------ */
 .tropical-text-content {
-    font-family: 'Fira_Code', monospace;
     font-size: 1rem;
+    font-weight: 600;
     line-height: 1.5;
     white-space: pre-wrap;
+}
+
+.tropical-text-content pre {
+    font-family: 'Roboto', Arial, sans-serif;
 }
 
 .tropical-text-timestamp {
@@ -291,7 +295,7 @@ input[name="textTab"] {
         text-align: center;
     }
 
-    .tropical-text-panel pre {
+    .tropical-text-content pre {
         font-size: 0.8rem;
     }
 
