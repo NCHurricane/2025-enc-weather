@@ -17,9 +17,14 @@
     position: relative;
     overflow: hidden;
     display: flex;
+    /* Add this */
     justify-content: center;
+    /* Add this */
     align-items: center;
+    /* Add this */
 }
+
+
 
 /* Weather markers */
 .weather-marker text {
@@ -46,6 +51,7 @@
 .counties path:hover {
     opacity: 0.8;
 }
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
