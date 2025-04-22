@@ -504,6 +504,7 @@ function parseTwdXml($xmlData, $type = 'twdat')
 
         file_put_contents('logs/debug_tropical.log', "Processing " . strtoupper($type) . " XML, length: " . strlen($xmlData) . " bytes\n", FILE_APPEND);
 
+        // Attempt to parse as XML
         $xml = new SimpleXMLElement($xmlData);
 
         // For RSS format (current NHC format)
@@ -521,15 +522,54 @@ function parseTwdXml($xmlData, $type = 'twdat')
                 }
             }
 
-            // Clean up CDATA content
+            // If description is empty or not found, check for link to direct content
+            if (empty($discussion) && isset($xml->channel->item->link)) {
+                $directUrl = (string)$xml->channel->item->link;
+
+                // If we have a direct link, try to fetch the actual content
+                if (!empty($directUrl)) {
+                    writeLog("XML description empty, trying direct URL: " . $directUrl, 'info');
+                    file_put_contents('logs/debug_tropical.log', "Trying direct URL: " . $directUrl . "\n", FILE_APPEND);
+
+                    // Fetch from direct URL
+                    global $userAgent;
+                    $directContent = fetchData($directUrl, $userAgent);
+
+                    if ($directContent) {
+                        // For TWDAT, find the text content
+                        if ($type == 'twdat') {
+                            if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $directContent, $matches)) {
+                                $discussion = $matches[1];
+                            } else {
+                                // Try a more direct approach - check if it's plain text
+                                $discussion = strip_tags($directContent);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Strip CDATA markers
             $discussion = str_replace('<![CDATA[', '', $discussion);
             $discussion = str_replace(']]>', '', $discussion);
 
-            // Replace HTML line breaks with newlines
-            $discussion = str_replace('&lt;br /&gt;', "\n", $discussion);
-            $discussion = str_replace('<br />', "\n", $discussion);
+            // ----- preserve paragraph breaks -----
+            // 1) Any time two or more <br>‑variants occur in a row, turn them into a blank line:
+            //    this captures &lt;br /&gt;&lt;br /&gt; as well as "<br/><br />" etc.
+            $discussion = preg_replace(
+                '/(?:&lt;br\s*\/&gt;\s*|<br\s*\/?>\s*){2,}/i',
+                "\n\n",
+                $discussion
+            );
 
-            // Format the text content for better readability
+            // 2) Now convert *any remaining* single <br> (escaped or raw) into a single newline
+            $discussion = preg_replace(
+                '/(?:&lt;br\s*\/&gt;|<br\s*\/?>)/i',
+                "\n",
+                $discussion
+            );
+
+            // Finally, hand off to your formatter
             $formattedText = formatNhcText($discussion);
 
             file_put_contents('logs/debug_tropical.log', strtoupper($type) . " parse successful (RSS format), issueTime: $issueTime\n", FILE_APPEND);
@@ -571,14 +611,145 @@ function parseTwdXml($xmlData, $type = 'twdat')
             ];
         }
 
+        // Failed to parse XML - let's try direct access to text product
+        writeLog("Could not find " . strtoupper($type) . " content in XML, trying direct URL", 'info');
+
+        // Direct URLs for specific products
+        $directUrls = [
+            'twdat' => 'https://www.nhc.noaa.gov/text/MIATWDAT.shtml',
+            'twsat' => 'https://www.nhc.noaa.gov/text/MIATWOSAT.shtml',
+            'twoat' => 'https://www.nhc.noaa.gov/text/MIATWOAT.shtml'
+        ];
+
+        if (isset($directUrls[$type])) {
+            global $userAgent;
+            $directUrl = $directUrls[$type];
+
+            file_put_contents('logs/debug_tropical.log', "Trying direct URL: " . $directUrl . "\n", FILE_APPEND);
+            $directContent = fetchData($directUrl, $userAgent);
+
+            if ($directContent && !empty($directContent)) {
+                // Extract content from HTML
+                if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $directContent, $matches)) {
+                    $discussion = $matches[1];
+                    // Format for display
+                    $formattedText = formatNhcText($discussion);
+
+                    file_put_contents('logs/debug_tropical.log', "Successfully extracted content from direct URL\n", FILE_APPEND);
+
+                    return [
+                        'issueTime' => date('Y-m-d\TH:i:s\Z'),
+                        'productID' => strtoupper($type) . '_DIRECT',
+                        'discussion' => $formattedText,
+                        'rawContent' => $discussion,
+                        'timestamp' => time()
+                    ];
+                }
+            }
+        }
+
         // Could not find content in any expected format
-        file_put_contents('logs/debug_tropical.log', "Could not find " . strtoupper($type) . " content in expected XML format\n", FILE_APPEND);
+        file_put_contents('logs/debug_tropical.log', "Could not find " . strtoupper($type) . " content in expected XML format or direct URL\n", FILE_APPEND);
         return [];
     } catch (Exception $e) {
         writeLog("Error parsing " . strtoupper($type) . " XML: " . $e->getMessage(), 'error');
         file_put_contents('logs/debug_tropical.log', "Error parsing " . strtoupper($type) . " XML: " . $e->getMessage() . "\n", FILE_APPEND);
-        return [];
+
+        // Try direct URL as fallback in case of XML parsing error
+        try {
+            global $userAgent;
+            $directUrl = ($type == 'twdat') ? 'https://www.nhc.noaa.gov/text/MIATWDAT.shtml' : (($type == 'twsat') ? 'https://www.nhc.noaa.gov/text/MIATWOSAT.shtml' : '');
+
+            if (!empty($directUrl)) {
+                file_put_contents('logs/debug_tropical.log', "Trying direct URL after XML parse error: " . $directUrl . "\n", FILE_APPEND);
+                $directContent = fetchData($directUrl, $userAgent);
+
+                if ($directContent && !empty($directContent)) {
+                    // Extract content from HTML
+                    if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $directContent, $matches)) {
+                        $discussion = $matches[1];
+                        // Format for display
+                        $formattedText = formatNhcText($discussion);
+
+                        file_put_contents('logs/debug_tropical.log', "Successfully extracted content from direct URL\n", FILE_APPEND);
+
+                        return [
+                            'issueTime' => date('Y-m-d\TH:i:s\Z'),
+                            'productID' => strtoupper($type) . '_DIRECT',
+                            'discussion' => $formattedText,
+                            'rawContent' => $discussion,
+                            'timestamp' => time()
+                        ];
+                    }
+                }
+            }
+
+            return [];
+        } catch (Exception $innerEx) {
+            writeLog("Error retrieving direct URL: " . $innerEx->getMessage(), 'error');
+            return [];
+        }
     }
+}
+
+/**
+ * Alternative method to fetch tropical weather discussion from direct URL
+ * This can be used as a fallback when XML parsing fails
+ * @return array Discussion data or empty array on failure
+ */
+function fetchTwdDirectly()
+{
+    global $userAgent;
+    $urls = [
+        'primary' => 'https://www.nhc.noaa.gov/text/MIATWDAT.shtml',
+        'backup' => 'https://www.nhc.noaa.gov/ftp/pub/forecasts/discussion/MIATWDAT'
+    ];
+
+    writeLog("Attempting to fetch TWD directly from NHC text products", 'info');
+
+    foreach ($urls as $label => $url) {
+        try {
+            $content = fetchData($url, $userAgent);
+            if ($content) {
+                // Try to extract pre-formatted text (common format for NHC products)
+                if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $content, $matches)) {
+                    $text = $matches[1];
+                } else {
+                    // Might be plain text already
+                    $text = strip_tags($content);
+                }
+
+                // Clean up text
+                $text = trim($text);
+                if (!empty($text)) {
+                    // Format for display
+                    $formattedText = formatNhcText($text);
+
+                    writeLog("Successfully fetched TWD directly from {$label} URL", 'info');
+
+                    // Extract date if possible - typical format includes a date line
+                    $issueTime = date('Y-m-d\TH:i:s\Z'); // Default current time
+                    if (preg_match('/(\d{4}) UTC ([A-Za-z]{3} [A-Za-z]{3} \d{1,2} \d{4})/', $text, $dateParts)) {
+                        $issueTime = date('Y-m-d\TH:i:s\Z', strtotime($dateParts[2] . ' ' . $dateParts[1]));
+                    }
+
+                    return [
+                        'issueTime' => $issueTime,
+                        'productID' => 'TWDAT_DIRECT',
+                        'discussion' => $formattedText,
+                        'rawContent' => $text,
+                        'timestamp' => time()
+                    ];
+                }
+            }
+        } catch (Exception $e) {
+            writeLog("Error fetching TWD from {$label} URL: " . $e->getMessage(), 'error');
+            continue; // Try next URL
+        }
+    }
+
+    writeLog("All direct TWD fetch attempts failed", 'error');
+    return [];
 }
 
 /**
@@ -816,32 +987,49 @@ function processXmlProducts()
                 } elseif ($productKey === 'twsat') {
                     $parsedData = parseTwdXml($xmlData, 'twsat');
 
-                // If we got XML data but no actual discussion content, try to fetch from the web page
-                if (empty($parsedData['discussion']) && !empty($parsedData['issueTime'])) {
-                    $nhcUrl = ($productKey === 'twdat') ?
-                        "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
-                        "https://www.nhc.noaa.gov/text/refresh/MIATWDAT+shtml/";
+                    // If we got XML data but no actual discussion content, try to fetch from the web page
+                    if (empty($parsedData['discussion']) && !empty($parsedData['issueTime'])) {
+                        $nhcUrl = ($productKey === 'twdat') ?
+                            "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
+                            "https://www.nhc.noaa.gov/text/refresh/MIATWDAT+shtml/";
 
-                    writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
-                    file_put_contents('logs/debug_tropical.log', "Fetching discussion content from: $nhcUrl\n", FILE_APPEND);
+                        writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
+                        file_put_contents('logs/debug_tropical.log', "Fetching discussion content from: $nhcUrl\n", FILE_APPEND);
 
-                    $htmlContent = fetchData($nhcUrl, $userAgent);
+                        $htmlContent = fetchData($nhcUrl, $userAgent);
 
-                    if ($htmlContent) {
-                        // Find pre-formatted text - be more flexible with the regex
-                        if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
-                            $textContent = $matches[1];
-                            // Clean up HTML entities
-                            $textContent = html_entity_decode($textContent);
-                            $parsedData['rawContent'] = $textContent;
-                            $parsedData['discussion'] = formatNhcText($textContent);
-                            writeLog("Successfully extracted content from web page", 'info');
-                            file_put_contents('logs/debug_tropical.log', "Successfully extracted discussion content\n", FILE_APPEND);
-                        } else {
-                            writeLog("Could not find pre-formatted text in NHC webpage", 'warning');
-                            file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
+                        if ($htmlContent) {
+                            // Find pre-formatted text - be more flexible with the regex
+                            if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
+                                $textContent = $matches[1];
+                                // Clean up HTML entities
+                                $textContent = html_entity_decode($textContent);
+                                $parsedData['rawContent'] = $textContent;
+                                $parsedData['discussion'] = formatNhcText($textContent);
+                                writeLog("Successfully extracted content from web page", 'info');
+                                file_put_contents('logs/debug_tropical.log', "Successfully extracted discussion content\n", FILE_APPEND);
+                            } else {
+                                writeLog("Could not find pre-formatted text in NHC webpage", 'warning');
+                                file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
+                            }
                         }
                     }
+                }
+            }
+
+            if ($productKey === 'twdat' && (empty($parsedData) ||
+                (empty($parsedData['discussion']) && empty($parsedData['rawContent'])))) {
+
+                writeLog("TWD XML parsing failed or returned empty content, trying direct fetch", 'info');
+                $directData = fetchTwdDirectly();
+
+                if (
+                    !empty($directData) &&
+                    (!empty($directData['discussion']) || !empty($directData['rawContent']))
+                ) {
+                    // We got valid data from direct fetch
+                    $parsedData = $directData;
+                    writeLog("Successfully retrieved TWD via direct fetch", 'info');
                 }
             }
 
