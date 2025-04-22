@@ -270,6 +270,19 @@
       <script src="js/siteConfig.js?v=3.24.2"></script>
       <script type="module" src="js/main.js?v=3.24.2"></script>
       <script type="module" src="js/modules/tropical.js?v=3.24.2"></script>
+
+      <!-- Back to Top Button -->
+      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
+         <i class="fa-solid fa-up-long"></i>
+      </a>
+
+      <script>
+         const btn = document.querySelector('.back-to-top');
+         window.addEventListener('scroll', () => {
+            // if at very top → hide; otherwise → show
+            btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+         });
+      </script>
    </body>
 
 </html>

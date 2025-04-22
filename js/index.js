@@ -69,20 +69,20 @@ function setupEventHandlers() {
     }
 
     // Setup hamburger menu
-    const hamburger = document.getElementById('hamburger');
-    const nav = document.querySelector('.nav');
-    if (hamburger && nav) {
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            nav.classList.toggle('active');
+    // const hamburger = document.getElementById('hamburger');
+    // const nav = document.querySelector('.nav');
+    // if (hamburger && nav) {
+    //     hamburger.addEventListener('click', () => {
+    //         hamburger.classList.toggle('active');
+    //         nav.classList.toggle('active');
 
-            const icon = hamburger.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('fa-bars');
-                icon.classList.toggle('fa-xmark');
-            }
-        });
-    }
+    //         const icon = hamburger.querySelector('i');
+    //         if (icon) {
+    //             icon.classList.toggle('fa-bars');
+    //             icon.classList.toggle('fa-xmark');
+    //         }
+    //     });
+    // }
 }
 
 // Initialize when DOM is loaded

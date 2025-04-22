@@ -341,48 +341,14 @@ function renderTwoText(data) {
 
     let html = '<h3>Atlantic Tropical Weather Outlook</h3>';
 
-    if (data.outlooks && data.outlooks.length > 0) {
-        data.outlooks.forEach(outlook => {
-            html += `<div class="outlook-section">`;
-            html += `<h4>${outlook.timeframe}</h4>`;
-            html += `<p>${outlook.text}</p>`;
-
-            if (outlook.areas && outlook.areas.length > 0) {
-                outlook.areas.forEach(area => {
-                    html += `<div class="disturbance-area">`;
-                    html += `<p><strong>Area ${area.id}:</strong> ${area.location}</p>`;
-                    html += `<p>${area.text}</p>`;
-                    html += `<p><strong>Formation Chance:</strong><br>`;
-                    html += `48-Hour: ${area.formation_chance['48hour']}<br>`;
-                    html += `5-Day: ${area.formation_chance['5day']}</p>`;
-                    html += `</div>`;
-                });
-            } else {
-                html += `<p><em>No disturbances currently being monitored.</em></p>`;
-            }
-
-            html += `</div>`;
-        });
-    } else if (data.areas && data.areas.length > 0) {
-        // Alternative data structure
-        html += `<div class="outlook-section">`;
-        html += `<h4>Current Outlook</h4>`;
-
-        data.areas.forEach(area => {
-            html += `<div class="disturbance-area">`;
-            html += `<p><strong>${area.location}</strong></p>`;
-            html += `<p>${area.text}</p>`;
-            if (area.formation_chance) {
-                html += `<p><strong>Formation Chance:</strong><br>`;
-                html += `48-Hour: ${area.formation_chance['48hour']}%<br>`;
-                html += `5-Day: ${area.formation_chance['7day'] || area.formation_chance['5day']}%</p>`;
-            }
-            html += `</div>`;
-        });
-
-        html += `</div>`;
+    // Add the discussion content which is already pre-formatted
+    if (data.discussion) {
+        html += data.discussion;
+    } else if (data.rawContent) {
+        // Fallback to simple pre-formatting if no processed discussion
+        html += '<pre>' + data.rawContent + '</pre>';
     } else {
-        html += `<p>No tropical weather outlook data available.</p>`;
+        html += '<p>No tropical weather outlook data available.</p>';
     }
 
     twoTextContent.innerHTML = html;
@@ -406,48 +372,14 @@ function renderTwoSpanishText(data) {
 
     let html = '<h3>Perspectiva del Tiempo Tropical del Atlántico</h3>';
 
-    if (data.outlooks && data.outlooks.length > 0) {
-        data.outlooks.forEach(outlook => {
-            html += `<div class="outlook-section">`;
-            html += `<h4>${outlook.timeframe}</h4>`;
-            html += `<p>${outlook.text}</p>`;
-
-            if (outlook.areas && outlook.areas.length > 0) {
-                outlook.areas.forEach(area => {
-                    html += `<div class="disturbance-area">`;
-                    html += `<p><strong>Área ${area.id}:</strong> ${area.location}</p>`;
-                    html += `<p>${area.text}</p>`;
-                    html += `<p><strong>Probabilidad de Formación:</strong><br>`;
-                    html += `48 Horas: ${area.formation_chance['48hour']}<br>`;
-                    html += `5 Días: ${area.formation_chance['5day']}</p>`;
-                    html += `</div>`;
-                });
-            } else {
-                html += `<p><em>No hay perturbaciones bajo vigilancia actualmente.</em></p>`;
-            }
-
-            html += `</div>`;
-        });
-    } else if (data.areas && data.areas.length > 0) {
-        // Alternative data structure
-        html += `<div class="outlook-section">`;
-        html += `<h4>Perspectiva Actual</h4>`;
-
-        data.areas.forEach(area => {
-            html += `<div class="disturbance-area">`;
-            html += `<p><strong>${area.location}</strong></p>`;
-            html += `<p>${area.text}</p>`;
-            if (area.formation_chance) {
-                html += `<p><strong>Probabilidad de Formación:</strong><br>`;
-                html += `48 Horas: ${area.formation_chance['48hour']}%<br>`;
-                html += `5 Días: ${area.formation_chance['7day'] || area.formation_chance['5day']}%</p>`;
-            }
-            html += `</div>`;
-        });
-
-        html += `</div>`;
+    // Add the discussion content which is already pre-formatted
+    if (data.discussion) {
+        html += data.discussion;
+    } else if (data.rawContent) {
+        // Fallback to simple pre-formatting if no processed discussion
+        html += '<pre>' + data.rawContent + '</pre>';
     } else {
-        html += `<p>No hay datos disponibles de la perspectiva del tiempo tropical.</p>`;
+        html += '<p>No hay datos disponibles de la perspectiva del tiempo tropical.</p>';
     }
 
     twoSpanishContent.innerHTML = html;

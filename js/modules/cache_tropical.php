@@ -232,11 +232,8 @@ function parseTwoXml($xmlData)
             file_put_contents('logs/debug_tropical.log', "Cleaned XML data, removed " . $xmlStart . " bytes\n", FILE_APPEND);
         }
 
-        // Save raw XML for debugging
-        file_put_contents('logs/debug_tropical.log', "XML Sample (first 200 chars): " .
-            substr($xmlData, 0, 200) . "...\n", FILE_APPEND);
-
         $xml = new SimpleXMLElement($xmlData);
+        $parsedData = [];
 
         // Check if we have an RSS format (new XML structure)
         if (isset($xml->channel) && isset($xml->channel->item)) {
@@ -245,7 +242,6 @@ function parseTwoXml($xmlData)
             // Extract header information
             $issueTime = (string)$xml->channel->pubDate;
             $productID = "TWO" . (strpos((string)$xml->channel->title, "Spanish") !== false ? "S" : "");
-            $basin = "Atlantic";
 
             // Get the description content from CDATA
             $rawContent = "";
@@ -260,90 +256,37 @@ function parseTwoXml($xmlData)
             $rawContent = str_replace('<![CDATA[', '', $rawContent);
             $rawContent = str_replace(']]>', '', $rawContent);
 
-            // Replace HTML line breaks with newlines
-            $rawContent = str_replace('&lt;br /&gt;', "\n", $rawContent);
-            $rawContent = str_replace('<br />', "\n", $rawContent);
-
-            file_put_contents('logs/debug_tropical.log', "Successfully extracted TWO content from RSS format\n", FILE_APPEND);
-
-            // Try to parse out the structured data from the raw content
-            $parsedOutlook = parseOutlookContentFromText($rawContent);
+            // Format the raw content
+            $discussion = formatNhcText($rawContent);
 
             $parsedData = [
                 'issueTime' => $issueTime,
                 'productID' => $productID,
-                'basin' => $basin,
+                'discussion' => $discussion,
                 'rawContent' => $rawContent,
                 'timestamp' => time()
             ];
-
-            // Add the parsed outlook areas if available
-            if (!empty($parsedOutlook['areas'])) {
-                $parsedData['areas'] = $parsedOutlook['areas'];
-            }
-
-            // Add active systems if available
-            if (!empty($parsedOutlook['active_systems'])) {
-                $parsedData['active_systems'] = $parsedOutlook['active_systems'];
-            }
 
             return $parsedData;
         }
         // Original format parsing (legacy format)
         else {
-            // Extract header information
             $issueTime = (string)$xml->issueTime;
             $productID = (string)$xml->productID;
-            $basin = (string)$xml->basin;
-
-            file_put_contents('logs/debug_tropical.log', "Parsed XML header: IssueTime=$issueTime, ProductID=$productID, Basin=$basin\n", FILE_APPEND);
-
-            // Extract outlook sections (usually 2: 48-hour and 5-day)
-            $outlooks = [];
-            if (isset($xml->outlooksection)) {
-                foreach ($xml->outlooksection as $section) {
-                    $outlook = [
-                        'timeframe' => (string)$section->timeframe,
-                        'text' => (string)$section->text,
-                        'areas' => []
-                    ];
-
-                    // Extract disturbance areas
-                    if (isset($section->areatype)) {
-                        foreach ($section->areatype as $area) {
-                            $areaInfo = [
-                                'id' => (string)$area->id,
-                                'location' => (string)$area->location,
-                                'text' => (string)$area->text,
-                                'formation_chance' => [
-                                    '48hour' => (string)$area->{"48hourprob"},
-                                    '5day' => (string)$area->{"5dayprob"}
-                                ]
-                            ];
-
-                            $outlook['areas'][] = $areaInfo;
-                        }
-                    }
-
-                    $outlooks[] = $outlook;
-                }
-
-                file_put_contents('logs/debug_tropical.log', "Parsed " . count($outlooks) . " outlook sections\n", FILE_APPEND);
-            } else {
-                file_put_contents('logs/debug_tropical.log', "No <outlooksection> elements found in XML\n", FILE_APPEND);
-            }
-
-            // Try to extract the raw text content if available
             $rawContent = '';
+
+            // Try to extract the raw text content
             if (isset($xml->product)) {
                 $rawContent = (string)$xml->product;
             }
 
+            // Format the raw content
+            $discussion = formatNhcText($rawContent);
+
             return [
                 'issueTime' => $issueTime,
                 'productID' => $productID,
-                'basin' => $basin,
-                'outlooks' => $outlooks,
+                'discussion' => $discussion,
                 'rawContent' => $rawContent,
                 'timestamp' => time()
             ];
@@ -361,45 +304,95 @@ function parseTwoXml($xmlData)
 /**
  * Parse outlook content from NHC text format
  * @param string $textContent Raw text content from NHC
- * @return array Structured array of outlooks
+ * @param bool $isSpanish Whether the content is in Spanish
+ * @return array Structured array of outlook information
  */
-function parseOutlookContentFromText($textContent)
+function parseOutlookContentFromText($textContent, $isSpanish = false)
 {
     // Initialize return array
-    $outlooks = [];
+    $result = [
+        'active_systems' => [],
+        'areas' => [],
+        'formation_chances' => [],
+        'outlookText' => '',
+        'season_info' => ''
+    ];
 
-    file_put_contents('logs/debug_tropical.log', "Parsing text content, length: " . strlen($textContent) . " bytes\n", FILE_APPEND);
+    file_put_contents('logs/debug_tropical.log', "Parsing TWO text content, length: " . strlen($textContent) . " bytes\n", FILE_APPEND);
+    file_put_contents('logs/debug_tropical.log', "Is Spanish: " . ($isSpanish ? "Yes" : "No") . "\n", FILE_APPEND);
 
-    // Remove headers and footers
-    $textContent = preg_replace('/^.*?For the North Atlantic...Caribbean Sea and the Gulf of Mexico:/s', '', $textContent);
-    $textContent = preg_replace('/\$\$.*$/s', '', $textContent);
+    // Get the main outlook text
+    if (preg_match('/For the (North Atlantic|Atlántico Norte).*?:(.*?)(?:Active Systems|Sistemas Activos|\$\$|$)/si', $textContent, $matches)) {
+        $result['outlookText'] = trim($matches[2]);
+        file_put_contents('logs/debug_tropical.log', "Found main outlook text\n", FILE_APPEND);
+    }
 
-    // Split into sections - typically there are 48-hour and 5-day (or 7-day) outlooks
-    // First, check if we have "Active Systems" section
-    $hasActiveSystems = (stripos($textContent, 'Active Systems:') !== false);
-    file_put_contents('logs/debug_tropical.log', "Has active systems section: " . ($hasActiveSystems ? "yes" : "no") . "\n", FILE_APPEND);
+    // Check for formation probability information
+    $formationPatterns = $isSpanish ?
+        [
+            '48h' => '/(?:48 Horas|48 horas).*?(\d+)%/si',
+            '5d' => '/(?:5 [Dd]ías?).*?(\d+|undefined)%/si'
+        ] :
+        [
+            '48h' => '/(?:48-Hour|48 Hour|48-hour|48 hour).*?(\d+)%/si',
+            '5d' => '/(?:5-Day|5 Day|5-day|5 day).*?(\d+|undefined)%/si'
+        ];
 
-    // Extract active systems if present
-    $activeSystems = [];
-    if ($hasActiveSystems) {
-        if (preg_match('/Active Systems:(.*?)(?=\n\n)/s', $textContent, $matches)) {
-            $activeSystemsText = trim($matches[1]);
-            // Parse out each system
-            if (preg_match_all('/The National Hurricane Center is issuing advisories on (.*?)(?:,|\.)/s', $activeSystemsText, $sysMatches)) {
-                foreach ($sysMatches[1] as $system) {
-                    $activeSystems[] = trim($system);
-                }
-            }
-
-            file_put_contents('logs/debug_tropical.log', "Found " . count($activeSystems) . " active systems\n", FILE_APPEND);
-
-            // Remove active systems section from content to process the rest
-            $textContent = preg_replace('/Active Systems:.*?\n\n/s', '', $textContent);
+    $formationChances = [];
+    if (preg_match($formationPatterns['48h'], $textContent, $matches)) {
+        $formationChances['48hour'] = $matches[1];
+        file_put_contents('logs/debug_tropical.log', "Found 48-hour formation chance: {$matches[1]}%\n", FILE_APPEND);
+    } else {
+        // Check for "Formation chance" followed by line with percentage
+        if (preg_match('/(?:Formation [Cc]hance|Probabilidad de Formación).*?(?:\n|<br>)(.*?)(\d+)%/si', $textContent, $matches)) {
+            $formationChances['48hour'] = $matches[2];
+            file_put_contents('logs/debug_tropical.log', "Found alternate 48-hour formation chance: {$matches[2]}%\n", FILE_APPEND);
         }
     }
 
-    // Now find disturbance areas by looking for numbered identifiers or regional identifiers
-    $areaPattern = '/(?:(\d+)\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?\n(.*?)(?=(?:\d+\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)|$)/s';
+    if (preg_match($formationPatterns['5d'], $textContent, $matches)) {
+        $formationChances['5day'] = $matches[1];
+        file_put_contents('logs/debug_tropical.log', "Found 5-day formation chance: {$matches[1]}%\n", FILE_APPEND);
+    }
+
+    if (!empty($formationChances)) {
+        $result['formation_chances'] = $formationChances;
+    }
+
+    // Check for "not expected" text to set formation chances to 0%
+    if (
+        stripos($textContent, 'not expected') !== false ||
+        stripos($textContent, 'no se espera') !== false
+    ) {
+        file_put_contents('logs/debug_tropical.log', "Found 'not expected' text, setting formation chances to 0%\n", FILE_APPEND);
+        if (empty($result['formation_chances']['48hour'])) {
+            $result['formation_chances']['48hour'] = '0';
+        }
+        if (empty($result['formation_chances']['5day'])) {
+            $result['formation_chances']['5day'] = '0';
+        }
+    }
+
+    // Check for season information (typically included in off-season TWOs)
+    if (preg_match('/(?:Routine issuance|La emisión rutinaria).*?\.(.*?)(?:\$\$|$)/s', $textContent, $matches)) {
+        $result['season_info'] = trim($matches[1]);
+        file_put_contents('logs/debug_tropical.log', "Found season information\n", FILE_APPEND);
+    }
+
+    // Check for active systems
+    if (preg_match('/(?:Active Systems|Sistemas Activos):(.*?)(?:For the|Para el|\$\$|$)/si', $textContent, $matches)) {
+        $activeSystemsText = trim($matches[1]);
+        // Parse out each system
+        if (preg_match_all('/(?:issuing advisories on|emitiendo avisos sobre) (.*?)(?:,|\.|$)/si', $activeSystemsText, $sysMatches)) {
+            foreach ($sysMatches[1] as $system) {
+                $result['active_systems'][] = trim($system);
+            }
+            file_put_contents('logs/debug_tropical.log', "Found " . count($result['active_systems']) . " active systems\n", FILE_APPEND);
+        }
+    }
+
+    // Find disturbance areas by looking for numbered identifiers or regional identifiers
+    $areaPattern = '/(?:(\d+)\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico|Este|Centro|Oeste|Noroeste|Suroeste|Norte|Sur|Golfo de México)[^\n]*?:?\n(.*?)(?=(?:\d+\. |Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico|Este|Centro|Oeste|Noroeste|Suroeste|Norte|Sur|Golfo de México)|$)/si';
 
     if (preg_match_all($areaPattern, $textContent, $matches, PREG_SET_ORDER)) {
         file_put_contents('logs/debug_tropical.log', "Found " . count($matches) . " disturbance areas\n", FILE_APPEND);
@@ -411,17 +404,21 @@ function parseOutlookContentFromText($textContent)
             // Check if we have a numbered identifier or a regional identifier
             if (!empty($match[1])) {
                 // Numbered identifier
-                $location = "Area {$match[1]}";
+                $location = $isSpanish ? "Área {$match[1]}" : "Area {$match[1]}";
                 $text = trim($match[2]);
             } else {
                 // Regional identifier - extract it from the match
-                if (preg_match('/(Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?/s', $match[0], $locMatch)) {
+                $regionPattern = $isSpanish ?
+                    '/(Este|Centro|Oeste|Noroeste|Suroeste|Norte|Sur|Golfo de México)[^\n]*?:?/si' :
+                    '/(Eastern|Central|Western|Northwestern|Southwestern|Northern|Southern|Gulf of Mexico)[^\n]*?:?/si';
+
+                if (preg_match($regionPattern, $match[0], $locMatch)) {
                     $location = trim($locMatch[0]);
                     // Remove the location from the text
                     $text = trim(str_replace($locMatch[0], '', $match[0]));
                 } else {
                     // Fallback if no clear identifier
-                    $location = "Unnamed Area";
+                    $location = $isSpanish ? "Área Sin Nombre" : "Unnamed Area";
                     $text = trim($match[0]);
                 }
             }
@@ -430,21 +427,25 @@ function parseOutlookContentFromText($textContent)
             $formation48 = 0;
             $formation7day = 0;
 
-            if (preg_match('/\* Formation chance through 48 hours.*?(\d+)\s+percent/s', $text, $chance48)) {
+            if (preg_match('/Formation chance through (?:48 hours|48 horas).*?(\d+)\s*percent/si', $text, $chance48)) {
+                $formation48 = (int)$chance48[1];
+            } elseif (preg_match('/Probabilidad de formación durante 48 horas.*?(\d+)\s*por ciento/si', $text, $chance48)) {
                 $formation48 = (int)$chance48[1];
             }
 
-            if (preg_match('/\* Formation chance through (?:5|7) days.*?(\d+)\s+percent/s', $text, $chance7)) {
+            if (preg_match('/Formation chance through (?:5|7) days.*?(\d+)\s*percent/si', $text, $chance7)) {
+                $formation7day = (int)$chance7[1];
+            } elseif (preg_match('/Probabilidad de formación durante (?:5|7) días.*?(\d+)\s*por ciento/si', $text, $chance7)) {
                 $formation7day = (int)$chance7[1];
             }
 
             // Check if this area has an ID (e.g., AL91, etc.)
             $areaId = '';
-            if (preg_match('/\(([A-Z]{2}\d{2})\)/s', $text, $idMatch)) {
+            if (preg_match('/\(([A-Z]{2}\d{2})\)/si', $text, $idMatch)) {
                 $areaId = $idMatch[1];
             }
 
-            // Add this area to our outlook
+            // Add this area to our result
             $area = [
                 'id' => $areaId,
                 'location' => $location,
@@ -455,30 +456,32 @@ function parseOutlookContentFromText($textContent)
                 ]
             ];
 
-            $outlooks[] = $area;
+            $result['areas'][] = $area;
         }
-    } else if (stripos($textContent, 'tropical cyclone formation is not expected') !== false) {
+    } else if (
+        stripos($textContent, 'tropical cyclone formation is not expected') !== false ||
+        stripos($textContent, 'no se espera la formación de ciclones tropicales') !== false
+    ) {
         // No active disturbances
         file_put_contents('logs/debug_tropical.log', "No active disturbances found\n", FILE_APPEND);
 
-        $outlooks[] = [
+        // Add a generic area for "no formation expected"
+        $result['areas'][] = [
             'id' => '',
-            'location' => 'Atlantic Basin',
-            'text' => 'Tropical cyclone formation is not expected during the next 7 days.',
+            'location' => $isSpanish ? 'Cuenca Atlántica' : 'Atlantic Basin',
+            'text' => $isSpanish ?
+                'No se espera la formación de ciclones tropicales durante los próximos 7 días.' :
+                'Tropical cyclone formation is not expected during the next 7 days.',
             'formation_chance' => [
                 '48hour' => 0,
                 '7day' => 0
             ]
         ];
     } else {
-        file_put_contents('logs/debug_tropical.log', "Could not parse outlooks from text content\n", FILE_APPEND);
+        file_put_contents('logs/debug_tropical.log', "Could not parse areas from text content\n", FILE_APPEND);
     }
 
-    // Add active systems to the return data
-    return [
-        'active_systems' => $activeSystems,
-        'areas' => $outlooks
-    ];
+    return $result;
 }
 
 /**
@@ -753,33 +756,48 @@ function fetchTwdDirectly()
 }
 
 /**
- * Format NHC text content for better display
+ * Format NHC text content for display, preserving exact spacing
  * @param string $text Raw text content
  * @return string Formatted text
  */
 function formatNhcText($text)
 {
-    // Replace multiple consecutive spaces with a single space
-    $text = preg_replace('/\s+/', ' ', $text);
+    // Decode HTML entities
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
 
-    // Replace $$ with paragraph breaks
-    $text = str_replace('$$', "\n\n", $text);
+    // Convert HTML line breaks to newlines
+    $text = str_replace(['<br />', '<br/>', '<br>', '&lt;br /&gt;', '&lt;br/&gt;', '&lt;br&gt;'], "\n", $text);
 
-    // Clean up extra whitespace around newlines
-    $text = preg_replace('/\s*\n\s*/', "\n", $text);
+    // Remove any leading/trailing whitespace
+    $text = trim($text);
 
-    // Add paragraph tags for HTML formatting
-    $paragraphs = explode("\n\n", $text);
-    $formattedParagraphs = [];
+    // Filter out WMO headers and bulletin markers
+    $lines = explode("\n", $text);
+    $filteredLines = [];
 
-    foreach ($paragraphs as $paragraph) {
-        if (trim($paragraph) !== '') {
-            $formattedParagraphs[] = "<p>" . htmlspecialchars(trim($paragraph)) . "</p>";
+    foreach ($lines as $line) {
+        // Skip these specific metadata lines
+        if (
+            preg_match('/^[0-9]{3,4}$/', trim($line)) ||
+            preg_match('/^A[A-Z]{3}[0-9]{2}/', trim($line)) ||
+            preg_match('/^ZCZC/', trim($line)) ||
+            preg_match('/^TTAA00/', trim($line)) ||
+            trim($line) === '$$' ||
+            trim($line) === 'NNNN'
+        ) {
+            continue;
         }
+
+        $filteredLines[] = $line;
     }
 
-    return implode("\n", $formattedParagraphs);
+    // Rejoin the lines preserving exact spacing
+    $filteredText = implode("\n", $filteredLines);
+
+    // Return pre-formatted text
+    return '<pre>' . htmlspecialchars($filteredText) . '</pre>';
 }
+
 
 /**
  * Check if cache is stale
@@ -915,17 +933,13 @@ function createDefaultCacheFile($productKey, $cacheFile, $url, $isHurricaneSeaso
     }
 }
 
+
 /**
  * Process each XML product and update cache
  */
 function processXmlProducts()
 {
-    global $xmlEndpoints, $cacheFiles, $cacheDir, $userAgent, $hurricaneSeasonStart, $hurricaneSeasonEnd;
-
-    // Check if we're in hurricane season
-    $isHurricaneSeason = isDateInHurricaneSeason(null, $hurricaneSeasonStart, $hurricaneSeasonEnd);
-    file_put_contents('logs/debug_tropical.log', "Current status: " .
-        ($isHurricaneSeason ? "In hurricane season" : "Off season") . "\n", FILE_APPEND);
+    global $xmlEndpoints, $cacheFiles, $cacheDir, $userAgent;
 
     foreach ($xmlEndpoints as $productKey => $url) {
         $cacheFile = $cacheDir . $cacheFiles[$productKey];
@@ -939,106 +953,23 @@ function processXmlProducts()
 
             $xmlData = fetchData($url, $userAgent);
             if ($xmlData === false) {
-                writeLog("Failed to fetch XML data for $productKey", 'error');
+                writeLog("Failed to fetch XML data for $productKey, skipping cache update", 'error');
                 file_put_contents('logs/debug_tropical.log', "Failed to fetch XML data for $productKey\n", FILE_APPEND);
-                createDefaultCacheFile($productKey, $cacheFile, $url, $isHurricaneSeason);
                 continue;
             }
 
             // Parse XML data based on product type
             $parsedData = [];
-            if ($productKey === 'twdat') {
-                $parsedData = parseTwdXml($xmlData, 'twdat');
-
-                // If we got XML data but no actual content, try to fetch from the web page
-                if (empty($parsedData['outlooks']) && !empty($parsedData['issueTime'])) {
-                    $nhcUrl = $productKey === 'twoat' ?
-                        "https://www.nhc.noaa.gov/text/MIATWOAT.shtml" :
-                        "https://www.nhc.noaa.gov/text/refresh/MIATWOAT+shtml/";
-
-                    writeLog("Fetching TWO content directly from NHC website", 'info');
-                    file_put_contents('logs/debug_tropical.log', "Fetching TWO content from: $nhcUrl\n", FILE_APPEND);
-
-                    $htmlContent = fetchData($nhcUrl, $userAgent);
-
-                    if ($htmlContent) {
-                        // Extract the text product with a more flexible pattern
-                        if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
-                            $textContent = $matches[1];
-                            $textContent = strip_tags($textContent); // Remove any HTML tags within pre
-                            $parsedData['rawContent'] = $textContent;
-
-                            file_put_contents('logs/debug_tropical.log', "Successfully extracted text content, length: " .
-                                strlen($textContent) . " bytes\n", FILE_APPEND);
-
-                            // Add the parsed outlook content
-                            $parsedOutlook = parseOutlookContentFromText($textContent);
-                            if (!empty($parsedOutlook)) {
-                                writeLog("Successfully parsed outlook content from web page", 'info');
-                                file_put_contents('logs/debug_tropical.log', "Successfully parsed outlooks from text content\n", FILE_APPEND);
-                                $parsedData['active_systems'] = $parsedOutlook['active_systems'] ?? [];
-                                $parsedData['areas'] = $parsedOutlook['areas'] ?? [];
-                            }
-                        } else {
-                            writeLog("Could not find text product in NHC webpage", 'warning');
-                            file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
-                        }
-                    }
-                } elseif ($productKey === 'twsat') {
-                    $parsedData = parseTwdXml($xmlData, 'twsat');
-
-                    // If we got XML data but no actual discussion content, try to fetch from the web page
-                    if (empty($parsedData['discussion']) && !empty($parsedData['issueTime'])) {
-                        $nhcUrl = ($productKey === 'twdat') ?
-                            "https://www.nhc.noaa.gov/text/MIATWDAT.shtml" :
-                            "https://www.nhc.noaa.gov/text/refresh/MIATWDAT+shtml/";
-
-                        writeLog("Fetching " . ($productKey === 'twdat' ? "TWD" : "Monthly Summary") . " content directly from NHC website", 'info');
-                        file_put_contents('logs/debug_tropical.log', "Fetching discussion content from: $nhcUrl\n", FILE_APPEND);
-
-                        $htmlContent = fetchData($nhcUrl, $userAgent);
-
-                        if ($htmlContent) {
-                            // Find pre-formatted text - be more flexible with the regex
-                            if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $htmlContent, $matches)) {
-                                $textContent = $matches[1];
-                                // Clean up HTML entities
-                                $textContent = html_entity_decode($textContent);
-                                $parsedData['rawContent'] = $textContent;
-                                $parsedData['discussion'] = formatNhcText($textContent);
-                                writeLog("Successfully extracted content from web page", 'info');
-                                file_put_contents('logs/debug_tropical.log', "Successfully extracted discussion content\n", FILE_APPEND);
-                            } else {
-                                writeLog("Could not find pre-formatted text in NHC webpage", 'warning');
-                                file_put_contents('logs/debug_tropical.log', "Could not find <pre> tag in HTML content\n", FILE_APPEND);
-                            }
-                        }
-                    }
-                }
+            if ($productKey === 'twoat' || $productKey === 'twosat') {
+                $parsedData = parseTwoXml($xmlData);
+            } else if ($productKey === 'twdat' || $productKey === 'twsat') {
+                $parsedData = parseTwdXml($xmlData, $productKey);
             }
 
-            if ($productKey === 'twdat' && (empty($parsedData) ||
-                (empty($parsedData['discussion']) && empty($parsedData['rawContent'])))) {
-
-                writeLog("TWD XML parsing failed or returned empty content, trying direct fetch", 'info');
-                $directData = fetchTwdDirectly();
-
-                if (
-                    !empty($directData) &&
-                    (!empty($directData['discussion']) || !empty($directData['rawContent']))
-                ) {
-                    // We got valid data from direct fetch
-                    $parsedData = $directData;
-                    writeLog("Successfully retrieved TWD via direct fetch", 'info');
-                }
-            }
-
-            // Check if we have valid data
-            if (empty($parsedData) || (empty($parsedData['outlooks']) && empty($parsedData['discussion']) &&
-                empty($parsedData['rawContent']) && empty($parsedData['areas']))) {
-                writeLog("No valid data found for $productKey, creating default", 'warning');
-                file_put_contents('logs/debug_tropical.log', "No valid data found for $productKey, creating default\n", FILE_APPEND);
-                createDefaultCacheFile($productKey, $cacheFile, $url, $isHurricaneSeason);
+            // Check if we have valid data (even if minimal)
+            if (empty($parsedData)) {
+                writeLog("No valid data found for $productKey, skipping cache update", 'warning');
+                file_put_contents('logs/debug_tropical.log', "No valid data found for $productKey, skipping cache update\n", FILE_APPEND);
                 continue;
             }
 

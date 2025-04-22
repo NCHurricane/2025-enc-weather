@@ -122,6 +122,8 @@ input[name="textTab"] {
     color: var(--color-text);
     padding: 15px;
     border-radius: var(--border-radius);
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 .tropical-graphics-panel h3,
@@ -169,7 +171,7 @@ input[name="textTab"] {
 /* ------------------------ */
 .tropical-text-content {
     font-family: 'Fira_Code', monospace;
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.5;
     white-space: pre-wrap;
 }
@@ -273,10 +275,6 @@ input[name="textTab"] {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
-
-    .tropical-text-content {
-        font-size: 0.8rem;
-    }
 }
 
 @media (max-width: 600px) {
@@ -297,8 +295,14 @@ input[name="textTab"] {
         text-align: center;
     }
 
-    .tropical-text-content h3 {
+    .tropical-text-panel pre {
+        font-size: 0.8rem;
+    }
+
+    .tropical-graphics-panel h3,
+    .tropical-text-panel h3 {
         font-size: 0.9rem;
+        font-weight: 900;
     }
 
     .tropical-satellite-label,
