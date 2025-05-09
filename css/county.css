@@ -26,21 +26,22 @@
 .weather-desc {
     border-radius: var(--border-radius);
     color: var(--color-text-light);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
     padding: 10px;
     width: 65%;
 }
 
 .weather-desc .desc {
-    font-family: 'Roboro', Arial, sans-serif;
-    text-shadow: 3px 3px 1px rgba(0, 0, 0, 1);
+    font-family: 'Roboto', Arial, sans-serif;
+    text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
     font-weight: 700;
     font-size: 1.8rem;
     margin-bottom: 10px;
 }
 
 .weather-desc .details p {
-    font-family: 'Fira_Code', monospace;
-    text-shadow: 3px 3px 1px rgba(0, 0, 0, 1);
+    font-family: 'Roboto', Arial, sans-serif;
+    text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
     color: var(--color-accent);
     font-weight: 600;
     margin: 3px 0;
@@ -48,7 +49,7 @@
 
 .weather-temp {
     color: var(--color-accent);
-    text-shadow: 3px 3px 1px rgba(0, 0, 0, 1);
+    text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
     font-family: 'Montserrat', Arial, sans-serif;
     font-size: 4rem;
     border-radius: var(--border-radius);
@@ -82,7 +83,7 @@
 
 /* Property references with data attributes */
 [id^="current-"] strong {
-    font-family: 'Fira_Code', monospace;
+    font-family: 'Roboto', Arial, sans-serif;
     font-weight: bold;
     color: var(--color-text-light);
 }

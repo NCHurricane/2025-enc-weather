@@ -140,6 +140,7 @@ input[name="textTab"] {
 }
 
 .tropical-image-container img {
+    width: 650px;
     max-width: 100%;
     height: auto;
     border-radius: 5px;
@@ -204,6 +205,92 @@ input[name="textTab"] {
 .error {
     color: #d9534f;
     display: none;
+}
+
+/* ------------------------ */
+/* Active Storms section */
+/* ------------------------ */
+.no-active-systems {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    background-color: #eefaff;
+    color: #007700;
+    padding: 8px 0 8px 10px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px 0 10px;
+}
+
+.no-active-systems i {
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+.active-storms-section {
+    margin-bottom: 20px 0 10px;
+}
+
+.active-systems-header {
+    font-size: 0.9rem;
+    background-color: #940000;
+    color: #ffffff;
+    padding: 8px 0 8px 10px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.active-systems-header i {
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+.active-systems-container {
+    background-color: var(--color-primary);
+    padding: var(--padding-section);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.active-system-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 8px 12px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.active-system-item i {
+    color: #940000;
+    font-size: 1.2rem;
+}
+
+.active-system-link {
+    color: #0077cc;
+    text-decoration: none;
+}
+
+.active-system-link:hover {
+    text-decoration: underline;
+}
+
+.system-location {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 5px;
 }
 
 /* ------------------------ */
@@ -278,6 +365,9 @@ input[name="textTab"] {
 }
 
 @media (max-width: 600px) {
+    .active-systems-container {
+        flex-direction: column;
+    }
 
     .tropical-satellite-title,
     .tropical-text-title,

@@ -207,6 +207,81 @@ input[name="textTab"] {
 }
 
 /* ------------------------ */
+/* Active Storms section */
+/* ------------------------ */
+.tropical-alert-banner {
+    background-color: #940000;
+    color: #ffffff;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 100;
+}
+
+.tropical-alert-banner i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.tropical-alert-link {
+    color: #fff200;
+    margin-left: 5px;
+    text-decoration: underline;
+}
+
+.tropical-alert-close {
+    background: none;
+    border: none;
+    color: #ffffff;
+    margin-left: auto;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.active-storms-list {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+}
+
+.active-storms-list h3 {
+    margin-top: 0;
+    color: #940000;
+}
+
+.active-storms-list ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.active-storms-list li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.active-storms-list li:before {
+    content: '\f5f2';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: #940000;
+}
+
+.storm-nhc-link {
+    color: #0077cc;
+    margin-left: 10px;
+    text-decoration: underline;
+}
+
+/* ------------------------ */
 /* Satellite section */
 /* ------------------------ */
 #tropical-satellite-image-container {
