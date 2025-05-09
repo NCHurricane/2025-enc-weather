@@ -19,7 +19,8 @@ if (!is_dir($cacheDir)) {
  * @param int $retries Number of retries on failure
  * @return string|false Response body or false on failure
  */
-function fetchData($url, $userAgent, $retries = 3) {
+function fetchData($url, $userAgent, $retries = 3)
+{
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -28,39 +29,39 @@ function fetchData($url, $userAgent, $retries = 3) {
     ]);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    
+
     // Track rate limiting metrics
     static $requestCount = 0;
     static $lastRequestTime = 0;
     static $rateLimitHits = 0;
-    
+
     // Ensure we're not making requests too quickly
     $currentTime = microtime(true);
     $timeSinceLastRequest = $currentTime - $lastRequestTime;
-    
+
     // If making requests too quickly (more than 5 per second), add delay
     if ($timeSinceLastRequest < 0.2 && $lastRequestTime > 0) {
         $delay = 0.2 - $timeSinceLastRequest;
         usleep($delay * 1000000); // Convert to microseconds
     }
-    
+
     // Update tracking variables
     $requestCount++;
     $lastRequestTime = microtime(true);
-    
+
     // Execute request
     $result = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
+
     // Handle rate limiting responses (429)
     if ($httpCode === 429) {
         $rateLimitHits++;
-        
+
         // If we've been rate limited multiple times, increase backoff time
         $backoffSeconds = min(30, pow(2, $rateLimitHits));
-        
+
         error_log("Rate limit hit for URL {$url}. Backing off for {$backoffSeconds} seconds.");
-        
+
         // If we have retries left, wait and try again
         if ($retries > 0) {
             curl_close($ch);
@@ -68,29 +69,30 @@ function fetchData($url, $userAgent, $retries = 3) {
             return fetchData($url, $userAgent, $retries - 1);
         }
     }
-    
+
     // Handle other errors
     if (curl_errno($ch) || ($httpCode !== 200 && $httpCode !== 304)) {
         $error = curl_error($ch);
         curl_close($ch);
-        
+
         error_log("API request failed for URL {$url}: HTTP {$httpCode}, Error: {$error}");
-        
+
         // If we have retries left and this is a 5xx error (server error), try again
         if ($retries > 0 && $httpCode >= 500) {
             sleep(1); // Brief pause before retry
             return fetchData($url, $userAgent, $retries - 1);
         }
-        
+
         return false;
     }
-    
+
     curl_close($ch);
     return $result;
 }
 
 // Function to read county configuration
-function getCountyConfig() {
+function getCountyConfig()
+{
     $countiesFile = '../../counties/counties.json';
     if (file_exists($countiesFile)) {
         $jsonContent = file_get_contents($countiesFile);
@@ -106,44 +108,48 @@ function getCountyConfig() {
     }
 }
 
-// Function to map alert geometry to county names
-function mapAlertToCounties($alert, $counties) {
+/**
+ * Enhanced function to map alert geometry to county names
+ * @param array $alert The alert data
+ * @param array $counties County configuration
+ * @return array List of affected county names
+ */
+function mapAlertToCounties($alert, $counties)
+{
     $affectedCounties = [];
-    
+
     // Check if the alert has explicitly listed counties
     if (isset($alert['properties']['affectedZones'])) {
         foreach ($alert['properties']['affectedZones'] as $zone) {
             // Extract county name from zone URL if possible
             if (preg_match('/\/zones\/county\/([A-Z]{2})C(\d+)/', $zone, $matches)) {
-                // Map NWS zone code to county name if needed
-                // This would need a lookup table matching zone codes to county names
-                // For now, we'll check against our county list
+                // For debugging
+                error_log("Found zone code: " . $matches[1] . 'C' . $matches[2]);
+
+                // Look for this county in our counties array
+                // This could be enhanced with a lookup table of NWS zone codes to county names
                 foreach ($counties as $county) {
-                    if (isset($county['zoneCode']) && $county['zoneCode'] === $matches[1] . 'C' . $matches[2]) {
-                        $affectedCounties[] = $county['name'];
-                    }
+                    // For now, append county name to affected counties if we find NWS data
+                    // This ensures we don't miss any alerts
+                    $affectedCounties[] = $county['name'];
                 }
             }
         }
     }
-    
-    // If no counties found via zones, check geographic area
-    if (empty($affectedCounties) && isset($alert['geometry'])) {
-        // This is a simplification. In a real implementation, you would:
-        // 1. Parse the GeoJSON geometry from the alert
-        // 2. Check if each county's coordinates fall within the geometry
-        // 3. Add matching counties to the affectedCounties array
-        
-        // For now, we'll use a simple approach - check all counties
+
+    // If the alert has a geometry, check if any county coordinates fall within it
+    // This would require a proper geospatial library to implement fully
+
+    // For now, as a fallback, include all counties if we couldn't determine specific ones
+    // This ensures we don't miss any alerts
+    if (empty($affectedCounties)) {
         foreach ($counties as $county) {
-            // Add logic to check if county is in the alert's geometry
-            // This requires a proper geometric intersection check
-            // As a placeholder, we'll just include all counties for now
             $affectedCounties[] = $county['name'];
         }
     }
-    
-    return $affectedCounties;
+
+    // Remove duplicates and return
+    return array_unique($affectedCounties);
 }
 
 // Get counties configuration
@@ -172,7 +178,7 @@ if ($alertsResponse) {
     if (isset($alertsData['features']) && !empty($alertsData['features'])) {
         $alertFeatures = $alertsData['features'];
         error_log("Found " . count($alertFeatures) . " active alerts in the region");
-        
+
         // Process each alert
         foreach ($alertFeatures as $alert) {
             // Extract alert data
@@ -187,10 +193,10 @@ if ($alertsResponse) {
             $alertSent = $alert['properties']['sent'] ?? null;
             $alertEffective = $alert['properties']['effective'] ?? null;
             $alertExpires = $alert['properties']['expires'] ?? null;
-            
+
             // Map alert to affected counties
             $affectedCounties = mapAlertToCounties($alert, $counties);
-            
+
             // Add to master alerts list
             $masterAlerts['alerts'][] = [
                 'id' => $alertId,
@@ -206,11 +212,11 @@ if ($alertsResponse) {
                 'expires' => $alertExpires,
                 'affectedCounties' => $affectedCounties
             ];
-            
+
             // Create county-specific alert entries
             foreach ($affectedCounties as $countyName) {
                 $countyFile = $cacheDir . strtolower($countyName) . '_alerts.json';
-                
+
                 // Read existing alerts if file exists
                 $countyAlerts = [];
                 if (file_exists($countyFile)) {
@@ -220,7 +226,7 @@ if ($alertsResponse) {
                         $countyAlerts = $countyData['alerts'];
                     }
                 }
-                
+
                 // Add this alert to county's alerts
                 $countyAlerts[] = [
                     'id' => $alertId,
@@ -235,14 +241,14 @@ if ($alertsResponse) {
                     'effective' => $alertEffective,
                     'expires' => $alertExpires
                 ];
-                
+
                 // Save county-specific alerts file
                 $countyData = [
                     'timestamp' => time(),
                     'lastUpdated' => date('Y-m-d H:i:s'),
                     'alerts' => $countyAlerts
                 ];
-                
+
                 file_put_contents($countyFile, json_encode($countyData));
                 error_log("Alert cache updated for {$countyName}: {$alertEvent}");
             }
@@ -250,11 +256,10 @@ if ($alertsResponse) {
     } else {
         error_log("No active alerts found in the region");
     }
-    
+
     // Save master alerts file
     file_put_contents($cacheDir . $masterAlertsFile, json_encode($masterAlerts));
     error_log("Master alerts file updated with " . count($masterAlerts['alerts']) . " alerts");
 } else {
     error_log("Failed to fetch alerts for the region");
 }
-?>

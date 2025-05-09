@@ -24,7 +24,12 @@ let observationTime = null;
  * @returns {string|null} County name or null if not found
  */
 function findCountyByCoordinates(lat, lon) {
-    const counties = window.siteConfig?.counties || [];
+    // First, check if there's a direct configuration match from the page
+    const config = window.weatherConfig || {};
+    if (config.location && config.location.countyName) {
+        console.log("Found county name from weatherConfig:", config.location.countyName);
+        return config.location.countyName.toLowerCase();
+    }
     return counties.find(county =>
         Math.abs(county.lat - lat) < 0.1 &&
         Math.abs(county.lon - lon) < 0.1
@@ -578,7 +583,21 @@ export function setWeatherBackground(weatherData, containerId = 'weather-backgro
  */
 export async function fetchAlerts(lat, lon) {
     try {
-        const countyName = findCountyByCoordinates(lat, lon);
+        // Try multiple methods to determine the county name
+        let countyName = findCountyByCoordinates(lat, lon);
+
+        // If coordinates lookup fails, try to get from weatherConfig
+        if (!countyName && window.weatherConfig && window.weatherConfig.location) {
+            countyName = window.weatherConfig.location.countyName;
+        }
+
+        // If still no county, try extracting from URL
+        if (!countyName) {
+            const path = window.location.pathname;
+            const match = path.match(/\/counties\/(\w+)\//);
+            countyName = match ? match[1] : null;
+        }
+
         if (!countyName) {
             console.warn('No county found for coordinates:', { lat, lon });
             return [];
