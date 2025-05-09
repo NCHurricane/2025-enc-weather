@@ -57,10 +57,14 @@
                </div>
 
                <div class="current-content">
-
-                  <!-- Replace the SVG container with the county map container -->
+                  <!-- Map container remains the same -->
                   <div id="nc-county-map" class="county-map-container">
                      <!-- Map will be dynamically inserted here -->
+                  </div>
+
+                  <!-- Move map legend here, outside the map container -->
+                  <div id="map-alerts-legend" class="map-legend" style="display: none;">
+                     <!-- Legend content will be dynamically populated -->
                   </div>
 
                   <div class="refresh-container" style="text-align: right;">
@@ -69,7 +73,6 @@
                         <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
                      </button>&
                   </div>
-
                </div>
             </div>
          </section>

@@ -213,7 +213,7 @@ input[name="textTab"] {
 .no-active-systems {
     font-size: 0.9rem;
     text-transform: uppercase;
-    background-color: #eefaff;
+    background-color: #f2ff00;
     color: #007700;
     padding: 8px 0 8px 10px;
     border-radius: 2px;
@@ -221,13 +221,9 @@ input[name="textTab"] {
     align-items: center;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px 0 10px;
+    margin: 0 5px;
 }
 
-.no-active-systems i {
-    margin-right: 10px;
-    font-size: 0.9rem;
-}
 
 .active-storms-section {
     margin-bottom: 20px 0 10px;
@@ -371,7 +367,8 @@ input[name="textTab"] {
 
     .tropical-satellite-title,
     .tropical-text-title,
-    .tropical-graphics-title {
+    .tropical-graphics-title,
+    .no-active-systems {
         font-size: 0.8rem;
     }
 

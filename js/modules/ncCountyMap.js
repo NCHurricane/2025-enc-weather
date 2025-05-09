@@ -645,6 +645,7 @@ export class NCCountyMap {
      * Creates or updates the warning legend at the bottom of the map
      * Only displays warnings that are currently active on the map
      */
+    // In the createWarningLegend method of NCCountyMap class
     createWarningLegend() {
         // Remove any existing legend first
         const existingLegend = document.querySelector('.map-legend');
@@ -667,32 +668,44 @@ export class NCCountyMap {
             }
         });
 
-        // If no active warnings, no need for a legend
+        // If no active warnings, hide the legend container and return
+        const legendContainer = document.getElementById('map-alerts-legend');
         if (activeWarnings.size === 0) {
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
             return;
         }
 
-        // Create legend container
-        const legend = document.createElement('div');
-        legend.className = 'map-legend';
-        legend.style.position = 'absolute';
-        legend.style.bottom = '10px';
-        legend.style.left = '10px';
-        legend.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-        legend.style.padding = '8px';
-        legend.style.borderRadius = '4px';
-        legend.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
-        legend.style.maxWidth = '80%';
-        legend.style.fontSize = '0.8rem';
-        legend.style.textTransform = 'uppercase';
-        legend.style.zIndex = '1000';
+        // Create legend container if it doesn't exist
+        let legend = legendContainer;
+        if (!legend) {
+            legend = document.createElement('div');
+            legend.id = 'map-alerts-legend';
+            legend.className = 'map-legend';
+            // Find the current-content and append the legend after the map
+            const currentContent = document.querySelector('.current-content');
+            const mapContainer = document.getElementById('nc-county-map');
+            if (currentContent && mapContainer) {
+                currentContent.insertBefore(legend, mapContainer.nextSibling);
+            } else {
+                // Fallback: append to container
+                this.container.parentNode.appendChild(legend);
+            }
+        }
+
+        // Show the legend
+        legend.style.display = 'block';
+
+        // Clear existing content
+        legend.innerHTML = '';
 
         // Create legend title
         const title = document.createElement('div');
+        title.id = 'legend-title';
         title.textContent = 'Active Alerts';
+        title.style.color = '#fff000';
         title.style.fontWeight = 'bold';
-        title.style.marginBottom = '3px';
-        // title.style.borderBottom = '1px solid #ccc';
         legend.appendChild(title);
 
         // Create a flex container for warning items
@@ -720,22 +733,13 @@ export class NCCountyMap {
             // Warning text
             const warningText = document.createElement('span');
             warningText.textContent = warningName;
+            warningText.style.fontWeight = 'bold';
 
             warningItem.appendChild(colorBox);
             warningItem.appendChild(warningText);
             warningContainer.appendChild(warningItem);
         });
-
-        // Add legend to the map container
-        this.container.appendChild(legend);
-
-        // Add responsive styling for smaller screens
-        if (window.innerWidth <= 600) {
-            legend.style.fontSize = '0.7rem';
-            legend.style.padding = '5px';
-        }
     }
-
     // Modify the updateCountyAlertStatus method to track active warnings
     updateCountyAlertStatus(countyName, alerts) {
         const normalizedName = countyName.toLowerCase();

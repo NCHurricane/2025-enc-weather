@@ -21,6 +21,26 @@
     align-items: center;
 }
 
+.map-legend {
+    background-color: rgba(75, 100, 199, 1);
+    color: ivory;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    box-sizing: border-box;
+}
+
+#legend-title {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+}
+
 /* Weather markers */
 .weather-marker text {
     transition: transform 0.2s ease;
@@ -162,6 +182,15 @@
 }
 
 @media (max-width: 600px) {
+    .map-legend {
+        font-size: 0.7rem;
+        padding: 5px;
+    }
+
+    #legend-title {
+        font-size: 0.7rem;
+        margin-bottom: 2px;
+    }
 
     .tropical-title h2,
     .current-title h2 {

@@ -17,12 +17,7 @@ import {
 
 let observationTime = null;
 
-/**
- * Extract county name from coordinates by matching with counties.json
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @returns {string|null} County name or null if not found
- */
+// Modified findCountyByCoordinates function in weatherData.js
 function findCountyByCoordinates(lat, lon) {
     // First, check if there's a direct configuration match from the page
     const config = window.weatherConfig || {};
@@ -30,10 +25,29 @@ function findCountyByCoordinates(lat, lon) {
         console.log("Found county name from weatherConfig:", config.location.countyName);
         return config.location.countyName.toLowerCase();
     }
-    return counties.find(county =>
+
+    // If no direct match, try to find by coordinates using window.siteConfig.counties
+    const counties = window.siteConfig?.counties || [];
+    const matchedCounty = counties.find(county =>
         Math.abs(county.lat - lat) < 0.1 &&
         Math.abs(county.lon - lon) < 0.1
-    )?.name || null;
+    );
+
+    if (matchedCounty) {
+        console.log("Found county by coordinates:", matchedCounty.name);
+        return matchedCounty.name.toLowerCase();
+    }
+
+    // Last attempt - try to extract county from current URL path
+    const path = window.location.pathname;
+    const countyMatch = path.match(/\/counties\/(\w+)\//);
+    if (countyMatch && countyMatch[1]) {
+        console.log("Extracted county from URL path:", countyMatch[1]);
+        return countyMatch[1].toLowerCase();
+    }
+
+    console.error("Could not determine county name from any source");
+    return null;
 }
 
 /**
