@@ -5,6 +5,7 @@
 
 import { updateTropicalOutlook, checkActiveSystemsStatus, updateTropicalAlertBanner } from './modules/tropical.js';
 import { initCountyMap } from './modules/ncCountyMap.js';
+import { initTropicalBanner } from './modules/tropical-banner.js';
 
 async function initIndexPage() {
     // Initialize the NC County Map
@@ -15,6 +16,9 @@ async function initIndexPage() {
 
     // Load tropical outlook
     updateTropicalOutlook();
+
+    // Initialize tropical banner system
+    initTropicalBanner();
 
     // Check for active tropical systems
     const hasActiveSystems = await checkActiveSystemsStatus();

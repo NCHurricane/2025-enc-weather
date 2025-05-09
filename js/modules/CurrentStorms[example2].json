@@ -1,0 +1,58 @@
+{
+    "activeStorms": [
+        {
+            "id": "al092024",
+            "binNumber": "AT4",
+            "name": "Helene",
+            "classification": "TS",
+            "intensity": "60",
+            "pressure": "968",
+            "latitude": "32.8N",
+            "longitude": "83.0W",
+            "latitudeNumeric": 32.8,
+            "longitudeNumeric": -83.0,
+            "movementDir": 360,
+            "movementSpeed": 30,
+            "lastUpdate": "2024-09-27T09:00:00.000Z",
+            "publicAdvisory": {
+                "advNum": "016",
+                "issuance": "2024-09-27T09:00:00.000Z",
+                "fileUpdateTime": "2024-09-27T08:53:53.271Z",
+                "url": "https://www.nhc.noaa.gov/text/MIATCPAT4.shtml"
+            },
+            "forecastGraphics": {
+                "advNum": "016",
+                "issuance": "2024-09-27T09:00:00.000Z",
+                "fileUpdateTime": "2024-09-27T09:00:13.793Z",
+                "url": "https://www.nhc.noaa.gov/graphics_at4.shtml"
+            }
+        },
+        {
+            "id": "al102024",
+            "binNumber": "AT5",
+            "name": "Isaac",
+            "classification": "HU",
+            "intensity": "65",
+            "pressure": "981",
+            "latitude": "37.0N",
+            "longitude": "48.5W",
+            "latitudeNumeric": 37.0,
+            "longitudeNumeric": -48.5,
+            "movementDir": 90,
+            "movementSpeed": 12,
+            "lastUpdate": "2024-09-27T09:00:00.000Z",
+            "publicAdvisory": {
+                "advNum": "006",
+                "issuance": "2024-09-27T09:00:00.000Z",
+                "fileUpdateTime": "2024-09-27T08:50:58.798Z",
+                "url": "https://www.nhc.noaa.gov/text/MIATCPAT5.shtml"
+            },
+            "forecastGraphics": {
+                "advNum": "006",
+                "issuance": "2024-09-27T09:00:00.000Z",
+                "fileUpdateTime": "2024-09-27T08:54:34.703Z",
+                "url": "https://www.nhc.noaa.gov/graphics_at5.shtml"
+            }
+        }
+    ]
+}

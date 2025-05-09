@@ -184,6 +184,125 @@
     text-decoration: underline;
 }
 
+/* Tropical Alert Banner */
+.tropical-alert-banner {
+    background-color: #940000;
+    color: #ffffff;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 9999;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* In-content tropical alert banner */
+.tropical-alert-banner.in-content {
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.tropical-alert-banner i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.tropical-alert-banner a {
+    color: #fff200;
+    margin-left: 5px;
+    text-decoration: underline;
+}
+
+.tropical-alert-banner button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    margin-left: auto;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+/* Active storms section styling */
+.active-storms-section {
+    margin-bottom: 20px;
+}
+
+.active-systems-header {
+    font-size: 0.9rem;
+    background-color: #940000;
+    color: #ffffff;
+    padding: 8px 0 8px 10px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.active-systems-container {
+    background-color: var(--color-primary);
+    padding: 10px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.active-system-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 8px 12px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.active-system-item i {
+    color: #940000;
+    font-size: 1.2rem;
+}
+
+.active-system-link {
+    color: #0077cc;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.active-system-link:hover {
+    text-decoration: underline;
+}
+
+.no-active-systems {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    background-color: #eefaff;
+    color: #007700;
+    padding: 8px 0 8px 10px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.no-active-systems i {
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
 /* Media queries for responsive design */
 @media (max-width: 768px) {
 
@@ -242,5 +361,14 @@
 
     .tropical-disclaimer {
         font-size: .9rem;
+    }
+
+    .tropical-alert-banner {
+        font-size: 0.9rem;
+        padding: 8px 10px;
+    }
+
+    .active-systems-container {
+        flex-direction: column;
     }
 }
