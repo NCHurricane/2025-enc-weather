@@ -48,21 +48,21 @@
       <main class="container">
          <h1 class="main-title">Eastern North Carolina Weather</h1>
 
-         <!-- Current Weather Map Section -->
-         <section aria-labelledby="current-conditions-heading">
-            <div class="section-container">
+         <div class="dashboard-layout">
+            <!-- Map Section (map-container) -->
+            <section aria-labelledby="current-conditions-heading" class="map-container">
                <div class="current-title">
                   <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>
                   <h2 id="current-conditions-heading">Current Temperatures</h2>
                </div>
 
                <div class="current-content">
-                  <!-- Map container remains the same -->
+                  <!-- Replace the SVG container with the county map container -->
                   <div id="nc-county-map" class="county-map-container">
                      <!-- Map will be dynamically inserted here -->
                   </div>
 
-                  <!-- Move map legend here, outside the map container -->
+                  <!-- Map legend outside the map container -->
                   <div id="map-alerts-legend" class="map-legend" style="display: none;">
                      <!-- Legend content will be dynamically populated -->
                   </div>
@@ -71,15 +71,13 @@
                      <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
                         aria-label="Refresh weather data">
                         <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
-                     </button>&
+                     </button>
                   </div>
                </div>
-            </div>
-         </section>
+            </section>
 
-         <!-- Tropical Weather Section -->
-         <section aria-labelledby="tropical-weather-heading">
-            <div class="tropical-section">
+            <!-- Tropical Weather Section (tropical-container) -->
+            <section aria-labelledby="tropical-weather-heading" class="tropical-container">
                <div class="tropical-title">
                   <i class="fa-solid fa-hurricane fa-xl" aria-hidden="true"></i>
                   <h2 id="tropical-weather-heading">
@@ -95,12 +93,11 @@
                   <p class="tropical-disclaimer">
                      Data courtesy of the National Hurricane Center. For
                      official information, visit
-
                      <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">nhc.noaa.gov</a>.
                   </p>
                </div>
-            </div>
-         </section>
+            </section>
+         </div>
       </main>
 
       <!-- Footer -->

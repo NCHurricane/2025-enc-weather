@@ -82,8 +82,8 @@ pre {
 /*--------------------*/
 .container {
     margin: auto;
-    max-width: 1200px;
-    width: 90%;
+    max-width: 1400px;
+    width: 95%;
 }
 
 .main-title {
@@ -165,7 +165,6 @@ pre {
 /*--------------------*/
 
 /* Section containers */
-.section-container,
 .afd-container,
 .forecast-container,
 .detailed-container,
@@ -182,7 +181,7 @@ pre {
 }
 
 /* Section titles */
-.section-title,
+.map-title,
 .afd-title,
 .radar-title,
 .satellite-title,
@@ -358,10 +357,7 @@ pre {
 .footer {
     background: var(--gradient-header);
     color: var(--color-text-light);
-    width: 80%;
-    max-width: 1200px;
     padding: 20px;
-    border-radius: 8px;
     margin: 0 auto;
     text-align: center;
     font-size: 0.9rem;

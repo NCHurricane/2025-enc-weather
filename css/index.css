@@ -2,9 +2,29 @@
 /* INDEX PAGE STYLES */
 /*--------------------*/
 
+.dashboard-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
 /* ------------------------ */
 /* Current weather section */
 /* ------------------------ */
+/* Map container styling */
+.map-container {
+    background-color: var(--color-primary);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin: 0;
+    color: var(--color-text-light);
+    box-shadow: var(--shadow-standard);
+    flex: 1;
+    min-width: 300px;
+    /* Ensure minimum width for readability */
+}
+
 /* County map container */
 .county-map-container {
     height: 450px;
@@ -92,13 +112,17 @@
 /* ------------------------ */
 /* Tropical weather section */
 /* ------------------------ */
-.tropical-section {
+/* Tropical container styling */
+.tropical-container {
     background-color: var(--color-primary);
     border-radius: var(--border-radius);
     padding: 15px;
-    margin: var(--margin-section);
+    margin: 0;
     color: var(--color-text-light);
     box-shadow: var(--shadow-standard);
+    flex: 1;
+    min-width: 300px;
+    /* Ensure minimum width for readability */
 }
 
 .tropical-title,
@@ -162,6 +186,16 @@
 
 /* Media queries for responsive design */
 @media (max-width: 768px) {
+
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .map-container,
+    .tropical-container {
+        width: 100%;
+        margin-bottom: 20px;
+    }
 
     .tropical-title h2,
     .current-title h2 {
