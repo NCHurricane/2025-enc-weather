@@ -8,26 +8,29 @@ import { initCountyMap } from './modules/ncCountyMap.js';
 import { initTropicalBanner } from './modules/tropical-banner.js';
 
 async function initIndexPage() {
+    console.log('Initializing index page...');
+
     // Initialize the NC County Map
     const countyMap = initCountyMap();
 
     // Store the map instance globally for debugging or future access
     window.countyMap = countyMap;
 
+    // Initialize tropical banner system - this will handle both 
+    // active systems and "No Active Systems" display
+    initTropicalBanner();
+
     // Load tropical outlook
     updateTropicalOutlook();
 
-    // Initialize tropical banner system
-    initTropicalBanner();
-
-    // Check for active tropical systems
+    // Check for active tropical systems for the full-page banner
     const hasActiveSystems = await checkActiveSystemsStatus();
     updateTropicalAlertBanner(hasActiveSystems);
 
     // Set up event handlers
     setupEventHandlers();
 
-    // Set up auto-refresh (new code)
+    // Set up auto-refresh
     setInterval(() => {
         console.log('Auto-refreshing weather data');
 
@@ -36,12 +39,15 @@ async function initIndexPage() {
             window.countyMap.refresh();
         }
 
+        // Refresh tropical banner
+        initTropicalBanner();
+
         // Refresh tropical data
         updateTropicalOutlook();
         checkActiveSystemsStatus().then(hasActiveSystems => {
             updateTropicalAlertBanner(hasActiveSystems);
         });
-    }, 300000);
+    }, 300000); // Refresh every 5 minutes
 }
 
 /**

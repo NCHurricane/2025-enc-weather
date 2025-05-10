@@ -287,20 +287,24 @@
 .no-active-systems {
     font-size: 0.9rem;
     text-transform: uppercase;
-    background-color: #eefaff;
+    background-color: #f2ff00;
     color: #007700;
     padding: 8px 0 8px 10px;
-    border-radius: 2px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
+    justify-content: center;
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0 0 15px 0;
+    width: 100%;
+    min-height: 40px;
 }
 
 .no-active-systems i {
     margin-right: 10px;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    color: #007700;
 }
 
 /* Media queries for responsive design */
