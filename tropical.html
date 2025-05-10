@@ -42,7 +42,7 @@
 
          <!-- Active Storm Alert Section - Insert this code -->
          <section id="active-storms-section" class="active-storms-section">
-            <!-- Alert content will be dynamically inserted here by JavaScript -->
+            <div class="tropical-banner"></div>
          </section>
 
          <!-- Tropical Graphics Container -->
@@ -69,37 +69,37 @@
                <div class="tropical-graphics-tab-content">
                   <!-- Current Activity Tab -->
                   <div class="tropical-graphics-panel" id="current-activity-panel" role="tabpanel">
+                     <div class="image-timestamp" id="current-activity-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="current-activity-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
                            alt="Current Tropical Activity" />
-                        <div class="image-timestamp" id="current-activity-timestamp"></div>
                      </div>
                   </div>
 
                   <!-- Two-Day Outlook Tab -->
                   <div class="tropical-graphics-panel" id="two-day-panel" role="tabpanel">
+                     <div class="image-timestamp" id="two-day-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="two-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png"
                            alt="Two-Day Tropical Weather Outlook" />
-                        <div class="image-timestamp" id="two-day-timestamp"></div>
                      </div>
                   </div>
 
                   <!-- Seven-Day Outlook Tab -->
                   <div class="tropical-graphics-panel" id="seven-day-panel" role="tabpanel">
+                     <div class="image-timestamp" id="seven-day-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="seven-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png"
                            alt="Seven-Day Tropical Weather Outlook" />
-                        <div class="image-timestamp" id="seven-day-timestamp"></div>
                      </div>
                   </div>
 
                   <!-- Surface Analysis Tab -->
                   <div class="tropical-graphics-panel" id="surface-panel" role="tabpanel">
+                     <div class="image-timestamp" id="surface-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="surface-img" src="https://ocean.weather.gov/A_sfc_full_ocean_color.png"
                            alt="Atlantic Surface Analysis" />
-                        <div class="image-timestamp" id="surface-timestamp"></div>
                      </div>
                   </div>
                </div>
@@ -135,6 +135,7 @@
                <div class="tropical-text-tab-content">
                   <!-- TWO Text Tab -->
                   <div class="tropical-text-panel" id="two-text-panel" role="tabpanel">
+                     <div class="tropical-text-timestamp" id="two-text-timestamp"></div>
                      <div class="loading" id="two-text-loading">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         <span>Loading Tropical Weather Outlook...</span>
@@ -144,11 +145,12 @@
                         <span>Unable to load Tropical Weather Outlook</span>
                      </div>
                      <div class="tropical-text-content" id="two-text-content"></div>
-                     <div class="tropical-text-timestamp" id="two-text-timestamp"></div>
                   </div>
 
                   <!-- TWO Spanish Tab -->
                   <div class="tropical-text-panel" id="two-spanish-panel" role="tabpanel">
+                     <div class="tropical-text-timestamp" id="two-spanish-timestamp"></div>
+                     <div class="tropical-text-content" id="two-spanish-content"></div>
                      <div class="loading" id="two-spanish-loading">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         <span>Cargando Perspectiva del Tiempo Tropical...</span>
@@ -158,12 +160,11 @@
                         <span>No se pudo cargar la Perspectiva del Tiempo
                            Tropical</span>
                      </div>
-                     <div class="tropical-text-content" id="two-spanish-content"></div>
-                     <div class="tropical-text-timestamp" id="two-spanish-timestamp"></div>
                   </div>
 
                   <!-- Tropical Discussion Tab -->
                   <div class="tropical-text-panel" id="discussion-panel" role="tabpanel">
+                     <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
                      <div class="loading" id="discussion-loading">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         <span>Loading Tropical Weather Discussion...</span>
@@ -173,7 +174,6 @@
                         <span>Unable to load Tropical Weather Discussion</span>
                      </div>
                      <div class="tropical-text-content" id="discussion-content"></div>
-                     <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
                   </div>
                </div>
             </div>
@@ -187,6 +187,7 @@
                Tropical Satellite Imagery
             </label>
             <div class="tropical-satellite-tabs">
+
                <div class="tropical-satellite-controls">
                   <div class="tropical-satellite-select-container">
                      <label for="tropical-satellite-product-select" class="tropical-satellite-label">Product:</label>
@@ -204,6 +205,7 @@
                   </div>
                </div>
                <div class="tropical-satellite-content">
+                  <div id="tropical-satellite-timestamp" class="tropical-satellite-timestamp"></div>
                   <div id="tropical-satellite-loading" class="tropical-satellite-loading">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading satellite imagery...</span>
@@ -220,7 +222,6 @@
                   <div id="tropical-satellite-image-container" class="tropical-satellite-image-container">
                      <img id="tropical-satellite-image" class="tropical-satellite-image"
                         alt="GOES-16 Tropical Atlantic Satellite" />
-                     <div id="tropical-satellite-timestamp" class="tropical-satellite-timestamp"></div>
                   </div>
                </div>
             </div>
@@ -275,8 +276,14 @@
       <script src="js/siteConfig.js?v=4.22.25"></script>
       <script type="module" src="js/main.js?v=4.22.25"></script>
       <script type="module" src="js/modules/tropical.js?v=4.22.25"></script>
-      <script src="js/modules/active_tropical.js"></script>
+      <script type="module">
+         import { initTropicalBanner } from './js/modules/tropical-banner.js';
 
+         // Initialize the tropical banner when the page loads
+         document.addEventListener('DOMContentLoaded', function () {
+            initTropicalBanner();
+         });
+      </script>
       <!-- Back to Top Button -->
       <script>
          document.addEventListener('DOMContentLoaded', function () {

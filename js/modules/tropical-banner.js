@@ -29,7 +29,7 @@ function runTestWithExampleData() {
     console.log("Running in TEST MODE with example data");
 
     // Fetch the local JSON file
-    fetch('./js/modules/CurrentStorms[example2].json')
+    fetch('./js/data/CurrentStorms.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -68,7 +68,7 @@ function checkActiveSystemsAndShowBanner() {
     // Use example data if test mode is enabled
     if (USE_TEST_DATA) {
         console.log("TEST MODE: Using example data");
-        fetchStormData('./js/modules/CurrentStorms[example2].json')
+        fetchStormData('./js/data/CurrentStorms.json')
             .then(handleStormData)
             .catch(error => {
                 console.error("Error loading test data:", error);
@@ -83,7 +83,7 @@ function checkActiveSystemsAndShowBanner() {
         .catch(error => {
             console.warn("Could not load from cache, trying example/fallback data:", error);
             // Fall back to example data if cache fails
-            fetchStormData('./js/modules/CurrentStorms[example2].json')
+            fetchStormData('./js/data/CurrentStorms.json')
                 .then(handleStormData)
                 .catch(fallbackError => {
                     console.error("All data sources failed:", fallbackError);
@@ -127,6 +127,7 @@ function displayNoActiveSystems() {
 
     const message = document.createElement('span');
     message.textContent = ' No active systems';
+    message.style.paddingLeft = '10px';
 
     noSystemsContainer.appendChild(icon);
     noSystemsContainer.appendChild(message);
@@ -190,14 +191,19 @@ function displayTropicalBanner(storms) {
 
         // Create link with storm info
         const stormLink = document.createElement('a');
-        stormLink.href = `${storm.binNumber.toLowerCase()}.html`;
+        stormLink.href = `active/${storm.binNumber.toLowerCase()}.html`;
         stormLink.className = 'active-system-link';
 
         // Get classification text and set link text
         const classification = STORM_CLASSIFICATIONS[storm.classification] || 'Tropical Cyclone';
         const intensityDisplay = storm.intensity ? ` (${storm.intensity} kt)` : '';
-        stormLink.innerHTML = `<strong>${classification} ${storm.name}</strong>${intensityDisplay}`;
-
+        stormLink.innerHTML = `
+        <span class="storm-classification" style="font-weight: 900;">${classification}</span>
+        <br>
+        <span class="storm-name" style="font-weight: 700;">${storm.name}</span>
+        <br>
+        <span class="storm-intensity" style="font-weight: 400; font-size: 0.9em;">${intensityDisplay}</span>
+    `;
         // Assemble storm div
         stormDiv.appendChild(stormIcon);
         stormDiv.appendChild(stormLink);
