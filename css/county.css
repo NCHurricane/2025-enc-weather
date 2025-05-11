@@ -169,7 +169,7 @@
 
 .forecast-icon img {
     border-radius: 10px;
-    height: 90px;
+    height: auto;
     margin-bottom: 5px;
     object-fit: contain;
     width: 90px;
@@ -198,7 +198,7 @@
 
 .detailed-icon img {
     width: 200px;
-    height: 200px;
+    height: auto;
     object-fit: contain;
     margin: 10px 0;
     border-radius: 15px;
@@ -266,7 +266,7 @@
 #meteogram-72:checked~.meteogram-tab-content #meteogram-chart-container,
 #meteogram-96:checked~.meteogram-tab-content #meteogram-chart-container {
     display: block;
-    background-color: white;
+    background-color: var(--color-text-light);
     padding: 15px;
     border-radius: var(--border-radius);
     min-height: 400px;
@@ -368,6 +368,7 @@ canvas#meteogramChart {
 .satellite-select-container {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
 }
 
@@ -379,7 +380,7 @@ canvas#meteogramChart {
     font-family: 'Roboto', Arial, sans-serif;
     font-size: 0.9rem;
     text-transform: uppercase;
-    background-color: white;
+    background-color: var(--color-text-light);
 }
 
 .radar-label,
@@ -422,7 +423,8 @@ canvas#meteogramChart {
 }
 
 .radar-image {
-    width: 50%;
+    width: 600px;
+    max-width: 100%;
     height: auto;
     object-fit: contain;
     display: block;
@@ -517,6 +519,20 @@ canvas#meteogramChart {
     .weather-desc {
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
         width: 100%;
+    }
+
+    .detailed-icon img {
+        width: 150px;
+        height: auto
+    }
+
+    .detailed-forecast {
+        font-size: 0.7rem;
+    }
+
+    .radar-select,
+    .satellite-select {
+        font-size: 0.7rem;
     }
 
     .meteogram-param-container {

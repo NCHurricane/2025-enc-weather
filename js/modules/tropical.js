@@ -555,15 +555,14 @@ function updateOffSeasonDisplay(container) {
     const lastYear = currentYear - 1;
 
     container.innerHTML = `
-        <h3>Previous Hurricane Season (${lastYear})</h3>
-        <p>The ${lastYear} Atlantic hurricane season is now closed. New season begins May 15, ${currentYear}.</p>
-        <p>Prepare for the upcoming season! Review evacuation routes and emergency plans.</p>
+        <h3>The Atlantic Hurricane Season begins May 15, ${currentYear}.</h3>
+        <span style="font-size: 0.8rem; font-weight: bold;">Prepare for the upcoming season!<br>
+        Review evacuation routes and emergency plans.</span>
         <img src="https://www.nhc.noaa.gov/data/tracks/tracks-at-${lastYear}.png" 
              alt="${lastYear} Atlantic Hurricane Season Summary" 
              title="${lastYear} Hurricane Season Summary">
     `;
 }
-
 /**
  * Check for active tropical systems
  * @returns {Promise<boolean>} Whether there are active systems
@@ -679,7 +678,7 @@ const STORM_CLASSIFICATIONS = {
 async function fetchActiveAtlanticStorms() {
     try {
         // URL to NHC active cyclones JSON
-        const nhcJsonUrl = 'https://www.nhc.noaa.gov/CurrentStorms.json';
+        const nhcJsonUrl = './js/modules/cache/nhc_current_storms.json';
 
         // Fetch the JSON data with a cache-busting parameter
         const response = await fetch(`${nhcJsonUrl}?t=${Date.now()}`);
@@ -863,6 +862,5 @@ export {
     loadTropicalDiscussion,
     updateGraphicsTimestamps,
     updateActiveSeasonDisplay,
-    updateOffSeasonDisplay,
-    checkActiveStorms
+    updateOffSeasonDisplay
 };

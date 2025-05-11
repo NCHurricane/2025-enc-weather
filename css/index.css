@@ -144,9 +144,17 @@
     font-size: 1.5rem;
 }
 
-.tropical-content,
+.tropical-content {
+    background-color: var(--color-text-light);
+    text-align: center;
+    padding: 15px;
+    border-radius: 5px;
+    color: var(--color-text);
+}
+
+
 .current-content {
-    background-color: white;
+    background-color: var(--color-text-light);
     padding: 15px;
     border-radius: 5px;
     color: var(--color-text);
@@ -290,15 +298,13 @@
     background-color: #f2ff00;
     color: #007700;
     padding: 8px 0 8px 10px;
-    border-radius: 5px;
+    border-radius: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin: 0 0 15px 0;
-    width: 100%;
-    min-height: 40px;
+    margin: 0 5px 10px;
 }
 
 .no-active-systems i {

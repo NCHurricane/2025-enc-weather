@@ -118,7 +118,7 @@ input[name="textTab"] {
 .tropical-graphics-panel,
 .tropical-text-panel {
     display: none;
-    background-color: white;
+    background-color: var(--color-text-light);
     color: var(--color-text);
     padding: 15px;
     border-radius: var(--border-radius);

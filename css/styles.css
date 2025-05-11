@@ -6,7 +6,7 @@
     --color-primary: #0077cc;
     --color-secondary: #262626;
     --color-text: #333;
-    --color-text-light: #fff;
+    --color-text-light: #fff5ee;
     --color-accent: #fff200;
     --color-alert: #940000;
     --color-background: #d0d0d0;
@@ -146,6 +146,29 @@ pre {
 .nav-menu li a:hover {
     color: var(--color-accent);
     transform: scale(1.2);
+}
+
+.nav-menu .submenu {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    background-color: var(--color-text-light);
+    ;
+    /* or as needed */
+}
+
+.submenu li {
+    padding: 10px;
+    color: #000;
+    text-align: left;
+    width: 50px;
+}
+
+.has-submenu:hover .submenu,
+.has-submenu:focus-within .submenu {
+    display: block;
 }
 
 .hamburger {

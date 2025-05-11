@@ -67,7 +67,8 @@ export class NCCountyMap {
         try {
             // Create SVG element with responsive viewBox
             this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            this.svg.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+            const padding = 20; // Adjust as needed
+            this.svg.setAttribute('viewBox', `-${padding} -${padding} ${this.width - padding * 2} ${this.height + padding * 2}`);
             this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             this.svg.style.width = '100%';
             this.svg.style.height = '100%';

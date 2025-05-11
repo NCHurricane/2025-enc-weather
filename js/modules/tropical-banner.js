@@ -5,7 +5,7 @@
 
 // ===== TEST MODE SETTINGS =====
 // Set to TRUE to use example data, FALSE to use real data
-const USE_TEST_DATA = true; // Change this to true for testing
+const USE_TEST_DATA = false; // Change this to true for testing
 // =============================
 
 /**
