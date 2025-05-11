@@ -154,6 +154,52 @@ function renderAlerts(alerts) {
         alertsElement.innerHTML = '<div class="alert"><p><b>Unable to render alerts. Please try again later.</b></p></div>';
     }
 }
+// Setup submenu toggle for mobile/tablet
+function setupSubmenuToggle() {
+    // Get all menu items with submenus
+    const menuItemsWithSubmenu = document.querySelectorAll('.nav-menu .has-submenu > a');
+
+    // Add click handler to each menu item with submenu
+    menuItemsWithSubmenu.forEach(function (menuItem) {
+        menuItem.addEventListener('click', function (e) {
+            // Only apply this behavior on mobile/tablet
+            if (window.innerWidth <= 768) {
+                // Prevent the link from navigating
+                e.preventDefault();
+
+                // Toggle 'active' class on the parent li element
+                this.parentElement.classList.toggle('submenu-active');
+
+                // Toggle aria-expanded attribute for accessibility
+                const isExpanded = this.parentElement.classList.contains('submenu-active');
+                this.setAttribute('aria-expanded', isExpanded);
+            }
+        });
+    });
+
+    // Close submenus when clicking outside
+    document.addEventListener('click', function (e) {
+        if (window.innerWidth <= 768) {
+            // If click is outside the navigation
+            if (!e.target.closest('.nav-menu') && !e.target.closest('.hamburger')) {
+                // Remove active class from all submenus
+                document.querySelectorAll('.submenu-active').forEach(function (item) {
+                    item.classList.remove('submenu-active');
+                });
+            }
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 768) {
+            // Reset submenus when returning to desktop view
+            document.querySelectorAll('.submenu-active').forEach(function (item) {
+                item.classList.remove('submenu-active');
+            });
+        }
+    });
+}
 
 function setupEventHandlers() {
     const refreshButton = document.getElementById('global-refresh');
@@ -182,6 +228,8 @@ function setupEventHandlers() {
             }
         });
     }
+    // Call the submenu toggle setup function
+    setupSubmenuToggle();
 }
 
 function initializeWeatherApp() {

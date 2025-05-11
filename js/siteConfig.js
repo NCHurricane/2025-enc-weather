@@ -34,28 +34,28 @@ window.siteConfig = {
             city: "Windsor",
             lat: 35.9985,
             lon: -76.9461,
-            url: "counties/bertie/windsor.html"
+            url: "counties/bertie/index.html"
         },
         {
             name: "Pitt",
             city: "Greenville",
             lat: 35.6115,
             lon: -77.3752,
-            url: "counties/pitt/greenville.html"
+            url: "counties/pitt/index.html"
         },
         {
             name: "Beaufort",
             city: "Washington",
             lat: 35.5465,
             lon: -77.0519,
-            url: "counties/beaufort/washington.html"
+            url: "counties/beaufort/index.html"
         },
         {
             name: "Martin",
             city: "Williamston",
             lat: 35.86,
             lon: -77.18,
-            url: "counties/martin/williamston.html",
+            url: "counties/martin/index.html",
             station: "KMCZ"
         },
         {
@@ -63,28 +63,28 @@ window.siteConfig = {
             city: "Manteo",
             lat: 35.9082,
             lon: -75.6757,
-            url: "counties/dare/manteo.html"
+            url: "counties/dare/index.html"
         },
         {
             name: "Washington",
             city: "Plymouth",
             lat: 35.8668,
             lon: -76.7488,
-            url: "counties/washington/plymouth.html"
+            url: "counties/washington/index.html"
         },
         {
             name: "Tyrrell",
             city: "Columbia",
             lat: 35.9177,
             lon: -76.2522,
-            url: "counties/tyrrell/columbia.html"
+            url: "counties/tyrrell/index.html"
         },
         {
             name: "Hyde",
             city: "Swan Quarter",
             lat: 35.4085,
             lon: -76.3302,
-            url: "counties/hyde/swanquarter.html"
+            url: "counties/hyde/index.html"
         }
     ],
 

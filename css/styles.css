@@ -148,27 +148,122 @@ pre {
     transform: scale(1.2);
 }
 
+/* Submenu styling - Add to styles.css */
+
+/* Base submenu styling */
 .nav-menu .submenu {
-    display: none;
-    list-style: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 200px;
     margin: 0;
     padding: 0;
-    position: absolute;
+    list-style: none;
     background-color: var(--color-text-light);
-    ;
-    /* or as needed */
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-standard);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1001;
 }
 
-.submenu li {
-    padding: 10px;
-    color: #000;
-    text-align: left;
-    width: 50px;
+/* Position parent menu items that have submenus */
+.nav-menu .has-submenu {
+    position: relative;
 }
 
-.has-submenu:hover .submenu,
-.has-submenu:focus-within .submenu {
+/* Submenu items styling */
+.nav-menu .submenu li {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.nav-menu .submenu li a {
     display: block;
+    padding: 10px 15px;
+    color: var(--color-text);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    transition: background-color 0.2s, color 0.2s;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.nav-menu .submenu li:last-child a {
+    border-bottom: none;
+}
+
+.nav-menu .submenu li a:hover {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    transform: none;
+    /* Override the transform scale from parent menu */
+}
+
+/* Show submenu on hover and focus */
+.nav-menu .has-submenu:hover>.submenu,
+.nav-menu .has-submenu:focus-within>.submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Add a small arrow indicator to parent menu items */
+.nav-menu .has-submenu>a::after {
+    content: '\f107';
+    /* Font Awesome down arrow */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-left: 5px;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-menu .has-submenu:hover>a::after,
+.nav-menu .has-submenu:focus-within>a::after {
+    transform: rotate(180deg);
+}
+
+/* Responsive styles for tablet */
+@media (max-width: 768px) {
+    .nav-menu .submenu {
+        position: static;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.1);
+        box-shadow: none;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: max-height 0.3s ease;
+    }
+
+    .nav-menu .has-submenu:hover>.submenu,
+    .nav-menu .has-submenu:focus-within>.submenu {
+        max-height: 300px;
+        /* Arbitrary height that should be enough for most submenus */
+    }
+
+    .nav-menu .submenu li a {
+        padding: 10px 20px;
+        color: var(--color-text-light);
+    }
+
+    /* Change arrow direction for mobile */
+    .nav-menu .has-submenu>a::after {
+        float: right;
+    }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 600px) {
+    .nav-menu .submenu li a {
+        padding: 8px 30px;
+        font-size: 0.75rem;
+    }
 }
 
 .hamburger {
@@ -495,17 +590,55 @@ pre {
     }
 
     .nav.active {
-        max-height: 300px;
+        max-height: 90vh;
+        /* Takes up to 90% of viewport height */
+        overflow-y: auto;
+        /* Ensures scrollability if content exceeds this height */
     }
 
     .nav-menu {
         flex-direction: column;
         gap: 10px;
         padding: 10px;
+
     }
 
     .hamburger {
         display: block;
+    }
+
+    /* Override the hover behavior on mobile */
+    .nav-menu .has-submenu:hover>.submenu,
+    .nav-menu .has-submenu:focus-within>.submenu {
+        /* Do nothing on hover - let the JS handle it */
+        max-height: 0;
+    }
+
+    /* Show submenu when parent has .submenu-active class */
+    .nav-menu .has-submenu.submenu-active>.submenu {
+        max-height: 500px;
+        /* Large enough to fit all items */
+    }
+
+    /* Rotate arrow when submenu is active */
+    .nav-menu .has-submenu.submenu-active>a::after {
+        transform: rotate(180deg);
+    }
+
+    .nav-menu li a:hover {
+        transform: none;
+    }
+
+    /* Override the parent hover transform */
+    .nav-menu li a {
+        transition: color 0.3s ease;
+        /* Keep only the color transition */
+    }
+
+    /* Special styling for active submenu parent */
+    .nav-menu .has-submenu.submenu-active>a {
+        color: var(--color-accent);
+        font-weight: bold;
     }
 
     .satellite-controls,

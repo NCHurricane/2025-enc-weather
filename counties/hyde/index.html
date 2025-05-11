@@ -5,12 +5,16 @@
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="description"
-         content="Up-to-date weather information for Greenville, Pitt County, North Carolina using the National Weather Service API." />
+         content="Up-to-date weather information for Windsor, Bertie County, North Carolina using the National Weather Service API." />
       <!-- CHANGE THE PLACE NAME -->
-      <title>Greenville, North Carolina Weather - NCHurricane.com</title>
+      <title>Hyde County, North Carolina Weather - NCHurricane.com</title>
       <link
          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
          rel="stylesheet" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
@@ -20,7 +24,7 @@
       <!-- CHANGE THE IMAGE -->
       <style>
          .current-container {
-            background-image: url("../../images/county/pitt.png");
+            background-image: url("../../images/county/hyde.png");
          }
       </style>
    </head>
@@ -33,7 +37,19 @@
             <nav class="nav" aria-label="Main navigation">
                <ul class="nav-menu">
                   <li><a href="../../index.html">Home</a></li>
-                  <li><a href="../../counties.html">Counties</a></li>
+                  <li class="has-submenu">
+                     <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
+                     <ul class="submenu">
+                        <li><a href="../beaufort/">Beaufort</a></li>
+                        <li><a href="../bertie/">Bertie</a></li>
+                        <li><a href="../dare/">Dare</a></li>
+                        <li><a href="index.html">Hyde</a></li>
+                        <li><a href="../martin/">Martin</a></li>
+                        <li><a href="../pitt/">Pitt</a></li>
+                        <li><a href="../tyrrell/">Tyrrell</a></li>
+                        <li><a href="../washington/">Washington</a></li>
+                     </ul>
+                  </li>
                   <li><a href="../../hazards.html">Hazards</a></li>
                   <li><a href="../../tropical.html">Tropical</a></li>
                   <li><a href="../../links.html">Links</a></li>
@@ -47,33 +63,31 @@
 
       <main class="container">
          <!-- CHANGE THE PLACE NAME -->
-         <h1 class="main-title">Greenville, NC</h1>
+         <h1 class="main-title">Hyde County</h1>
 
          <!-- Current Weather Section -->
-         <div class="current">
-            <section class="current-container" aria-labelledby="current-weather-heading">
-               <div class="weather-card" id="weather-background">
-                  <div class="weather-desc">
-                     <div class="weather-temp" id="current-temp"></div>
-                     <div class="desc" id="current-desc"></div>
-                     <div class="details">
-                        <p id="current-dewpoint"></p>
-                        <p id="current-humidity"></p>
-                        <p id="current-wind"></p>
-                        <p id="current-visibility"></p>
-                        <p id="current-pressure"></p>
-                        <br />
-                        <p id="current-location"></p>
-                        <p id="current-obs-time"></p>
-                        <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                           aria-label="Refresh weather data">
-                           <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                        </button>
-                     </div>
+         <section class="current-container" aria-labelledby="current-weather-heading">
+            <div class="weather-card" id="weather-background">
+               <div class="weather-desc">
+                  <div class="weather-temp" id="current-temp"></div>
+                  <div class="desc" id="current-desc"></div>
+                  <div class="details">
+                     <p id="current-dewpoint"></p>
+                     <p id="current-humidity"></p>
+                     <p id="current-wind"></p>
+                     <p id="current-visibility"></p>
+                     <p id="current-pressure"></p>
+                     <br />
+                     <p id="current-location"></p>
+                     <p id="current-obs-time"></p>
+                     <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
+                        aria-label="Refresh weather data">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                     </button>
                   </div>
                </div>
-            </section>
-         </div>
+            </div>
+         </section>
 
          <!-- Current Alerts Section -->
          <section class="alert-container" aria-labelledby="alerts-heading">
@@ -306,9 +320,9 @@
       <script>
          window.weatherConfig = {
             location: {
-               lat: 35.64,
-               lon: -77.39,
-               countyName: "pitt",
+               lat: 35.91667,
+               lon: -75.7,
+               countyName: "hyde",
                afdWFO: "MHX",
             },
          };
@@ -317,7 +331,6 @@
 
       <!-- CHANGE VERSION: -->
       <script type="module" src="../../js/main.js?v=4.22.25"></script>
-
       <!-- Back to Top Button -->
       <script>
          document.addEventListener('DOMContentLoaded', function () {
@@ -342,8 +355,7 @@
          });
       </script>
       <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
-         <i class="fa-solid fa-up-long"></i>
-      </a>
+         <i class="fa-solid fa-up-long"></i> </a>
    </body>
 
 </html>

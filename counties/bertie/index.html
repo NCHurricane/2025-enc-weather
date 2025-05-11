@@ -7,7 +7,7 @@
       <meta name="description"
          content="Up-to-date weather information for Windsor, Bertie County, North Carolina using the National Weather Service API." />
       <!-- CHANGE THE PLACE NAME -->
-      <title>Martin County, North Carolina Weather - NCHurricane.com</title>
+      <title>Bertie County, North Carolina Weather - NCHurricane.com</title>
       <link
          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
          rel="stylesheet" />
@@ -24,7 +24,7 @@
       <!-- CHANGE THE IMAGE -->
       <style>
          .current-container {
-            background-image: url("../../images/county/martin.png");
+            background-image: url("../../images/county/bertie.png");
          }
       </style>
    </head>
@@ -37,7 +37,19 @@
             <nav class="nav" aria-label="Main navigation">
                <ul class="nav-menu">
                   <li><a href="../../index.html">Home</a></li>
-                  <li><a href="../../counties.html">Counties</a></li>
+                  <li class="has-submenu">
+                     <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
+                     <ul class="submenu">
+                        <li><a href="../beaufort/">Beaufort</a></li>
+                        <li><a href="index.html">Bertie</a></li>
+                        <li><a href="../dare/">Dare</a></li>
+                        <li><a href="../hyde/">Hyde</a></li>
+                        <li><a href="../martin/">Martin</a></li>
+                        <li><a href="../pitt/">Pitt</a></li>
+                        <li><a href="../tyrrell/">Tyrrell</a></li>
+                        <li><a href="../washington/">Washington</a></li>
+                     </ul>
+                  </li>
                   <li><a href="../../hazards.html">Hazards</a></li>
                   <li><a href="../../tropical.html">Tropical</a></li>
                   <li><a href="../../links.html">Links</a></li>
@@ -51,7 +63,7 @@
 
       <main class="container">
          <!-- CHANGE THE PLACE NAME -->
-         <h1 class="main-title">Martin County</h1>
+         <h1 class="main-title">Bertie County</h1>
 
          <!-- Current Weather Section -->
          <section class="current-container" aria-labelledby="current-weather-heading">
@@ -308,10 +320,10 @@
       <script>
          window.weatherConfig = {
             location: {
-               lat: 35.8557,
-               lon: -77.056,
-               countyName: "martin",
-               afdWFO: "MHX",
+               lat: 35.9985,
+               lon: -76.9461,
+               countyName: "bertie",
+               afdWFO: "AKQ",
             },
          };
       </script>
