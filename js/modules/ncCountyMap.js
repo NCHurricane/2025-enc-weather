@@ -31,9 +31,39 @@ export class NCCountyMap {
     }
 
     // Add a new method to fetch alerts for a county
+    // async fetchCountyAlerts(county) {
+    //     try {
+    //         // For testing: Return mock data when in test mode
+    //         if (this.testModeEnabled) {
+    //             console.log(`Using test data for ${county.name}`);
+    //             return [{
+    //                 properties: {
+    //                     event: "Earthquake Warning", // Or any other warning type from your warningColors
+    //                     headline: "Current Warning",
+    //                     description: "This is a test alert for development purposes."
+    //                 }
+    //             }];
+    //         }
+
+    //         // Normal code for production
+    //         const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
+    //         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+    //         const data = await response.json();
+    //         return data.features || [];
+    //     } catch (error) {
+    //         console.error(`Error fetching alerts for ${county.name}:`, error);
+    //         return [];
+    //     }
+    // }
+
+    // Modified fetchCountyAlerts method for NCCountyMap class
+    // Updated fetchCountyAlerts method for NCCountyMap class
+    // This replaces the existing fetchCountyAlerts method with one that prioritizes cached alert data
+
     async fetchCountyAlerts(county) {
         try {
-            // For testing: Return mock data when in test mode
+            // For testing: Return mock data when in test mode (preserve existing functionality)
             if (this.testModeEnabled) {
                 console.log(`Using test data for ${county.name}`);
                 return [{
@@ -45,7 +75,99 @@ export class NCCountyMap {
                 }];
             }
 
-            // Normal code for production
+            // First try to fetch from county-specific cache file
+            const countyName = county.name.toLowerCase();
+            console.log(`Attempting to load alerts for ${county.name} from cache`);
+
+            try {
+                // Try with relative path first (for index page)
+                let response = await fetch(`js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`);
+
+                // If that fails, try alternative path (for county pages)
+                if (!response.ok) {
+                    response = await fetch(`../../js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`);
+                }
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`Loaded ${data.alerts?.length || 0} cached alerts for ${county.name}`);
+
+                    // Convert cached alerts format to match NWS API format for compatibility
+                    if (data.alerts && data.alerts.length > 0) {
+                        // Log the first alert to debug the structure
+                        console.log('Sample alert structure:', data.alerts[0]);
+
+                        // Convert cached alert format to format expected by existing code
+                        return data.alerts.map(alert => ({
+                            properties: {
+                                // Keep original properties that match expected names
+                                event: alert.event,
+                                headline: alert.headline,
+                                description: alert.description,
+                                severity: alert.severity,
+                                certainty: alert.certainty,
+                                urgency: alert.urgency,
+
+                                // Add any additional properties needed by the display logic
+                                id: alert.id,
+                                sent: alert.sent,
+                                effective: alert.effective,
+                                expires: alert.expires,
+
+                                // Add processed properties for display
+                                formattedEvent: alert.event.toUpperCase(), // Ensure consistent casing
+
+                                // Include original source properties for debugging
+                                _sourceFormat: 'cache'
+                            }
+                        }));
+                    }
+                    return []; // No alerts in cache
+                }
+
+                // Try master alerts cache as fallback
+                response = await fetch(`js/modules/cache/master_alerts.json?t=${Date.now()}`);
+                if (!response.ok) {
+                    response = await fetch(`../../js/modules/cache/master_alerts.json?t=${Date.now()}`);
+                }
+
+                if (response.ok) {
+                    const masterData = await response.json();
+                    console.log(`Checking master alerts cache for ${county.name}`);
+
+                    // Filter for alerts affecting this county
+                    if (masterData.alerts && masterData.alerts.length > 0) {
+                        const countyAlerts = masterData.alerts.filter(alert =>
+                            alert.affectedCounties &&
+                            alert.affectedCounties.includes(county.name)
+                        );
+
+                        if (countyAlerts.length > 0) {
+                            console.log(`Found ${countyAlerts.length} alerts for ${county.name} in master cache`);
+                            // Convert to expected format
+                            return countyAlerts.map(alert => ({
+                                properties: {
+                                    event: alert.event,
+                                    headline: alert.headline,
+                                    description: alert.description,
+                                    // Include other properties
+                                    severity: alert.severity,
+                                    certainty: alert.certainty,
+                                    urgency: alert.urgency
+                                }
+                            }));
+                        }
+                    }
+
+                    return []; // No alerts for this county in master cache
+                }
+            } catch (cacheError) {
+                console.warn(`Cache error for ${county.name}, falling back to API:`, cacheError);
+                // Continue to API fallback below
+            }
+
+            // Original code: Fetch directly from API as last resort
+            console.log(`Fetching alerts for ${county.name} from NWS API (fallback)`);
             const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
             if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
@@ -449,10 +571,50 @@ export class NCCountyMap {
     }
 
     // Add a new method to update county alert visualization
+    // updateCountyAlertStatus(countyName, alerts) {
+    //     const normalizedName = countyName.toLowerCase();
+    //     const countyPath = document.getElementById(`county-${normalizedName}`);
+    //     if (!countyPath) return;
+
+    //     // If no alerts, keep default fill
+    //     if (!alerts || alerts.length === 0) return;
+
+    //     // Find highest priority alert
+    //     let highestPriorityAlert = null;
+    //     let highestPriority = Infinity;
+
+    //     alerts.forEach(alert => {
+    //         const eventName = alert.properties.event;
+    //         // Use priority directly from the warningPriorities object
+    //         const priority = warningPriorities[eventName];
+
+    //         if (priority && priority < highestPriority) {
+    //             highestPriority = priority;
+    //             highestPriorityAlert = {
+    //                 name: eventName,
+    //                 color: warningColors[eventName]
+    //             };
+    //         }
+    //     });
+
+    //     // Update the county fill color if we found a warning
+    //     if (highestPriorityAlert) {
+    //         countyPath.setAttribute('fill', highestPriorityAlert.color);
+    //         // Optional: Add stroke highlighting for better visibility
+    //         countyPath.setAttribute('stroke-width', '3');
+    //         // Add a title with alert info for tooltip
+    //         countyPath.setAttribute('title', highestPriorityAlert.name);
+    //     }
+    // }
+
+    // In the updateCountyAlertStatus method in NCCountyMap.js
     updateCountyAlertStatus(countyName, alerts) {
         const normalizedName = countyName.toLowerCase();
         const countyPath = document.getElementById(`county-${normalizedName}`);
         if (!countyPath) return;
+
+        // Store the alerts in the alertData object
+        this.alertData[normalizedName] = alerts;
 
         // If no alerts, keep default fill
         if (!alerts || alerts.length === 0) return;
@@ -462,7 +624,17 @@ export class NCCountyMap {
         let highestPriority = Infinity;
 
         alerts.forEach(alert => {
-            const eventName = alert.properties.event;
+            // Get event name from different possible structures
+            const eventName =
+                // Handle various ways the event name might be stored
+                (alert.properties && alert.properties.event) || // NWS API format
+                alert.event || // Cache format
+                (alert.properties && alert.properties.parameter &&
+                    alert.properties.parameter.VTEC && alert.properties.parameter.VTEC[0]) || // Another possible format
+                'Unknown Alert';
+
+            console.log(`Alert for ${countyName}: ${eventName}`);
+
             // Use priority directly from the warningPriorities object
             const priority = warningPriorities[eventName];
 
@@ -470,19 +642,23 @@ export class NCCountyMap {
                 highestPriority = priority;
                 highestPriorityAlert = {
                     name: eventName,
-                    color: warningColors[eventName]
+                    color: warningColors[eventName] || '#FF0000' // Fallback to red if color not found
                 };
             }
         });
 
         // Update the county fill color if we found a warning
         if (highestPriorityAlert) {
+            console.log(`Setting ${countyName} to ${highestPriorityAlert.name} (${highestPriorityAlert.color})`);
             countyPath.setAttribute('fill', highestPriorityAlert.color);
             // Optional: Add stroke highlighting for better visibility
             countyPath.setAttribute('stroke-width', '3');
             // Add a title with alert info for tooltip
             countyPath.setAttribute('title', highestPriorityAlert.name);
         }
+
+        // Update the legend
+        this.createWarningLegend();
     }
 
     // Helper method to get warning priority
