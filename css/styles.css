@@ -156,11 +156,11 @@ pre {
     top: 100%;
     left: 0;
     width: 200px;
-    margin: 0;
+    margin: 5px 0 0 0;
     padding: 0;
     list-style: none;
-    background-color: var(--color-text-light);
-    border-radius: var(--border-radius);
+    background: var(--gradient-header);
+    /* border-radius: var(--border-radius); */
     box-shadow: var(--shadow-standard);
     opacity: 0;
     visibility: hidden;
@@ -184,23 +184,25 @@ pre {
 .nav-menu .submenu li a {
     display: block;
     padding: 10px 15px;
-    color: var(--color-text);
+    color: var(--color-text-light);
     font-size: 0.8rem;
     text-transform: uppercase;
-    transition: background-color 0.2s, color 0.2s;
+    transition: color 0.3s ease, transform 0.3s ease;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
+
 
 .nav-menu .submenu li:last-child a {
     border-bottom: none;
 }
 
 .nav-menu .submenu li a:hover {
-    background-color: var(--color-primary);
-    color: var(--color-text-light);
+    background: yellow;
+    color: var(--color-text);
     transform: none;
     /* Override the transform scale from parent menu */
 }
+
 
 /* Show submenu on hover and focus */
 .nav-menu .has-submenu:hover>.submenu,
@@ -235,6 +237,7 @@ pre {
         box-shadow: none;
         max-height: 0;
         overflow: hidden;
+        margin-top: 5px;
         opacity: 1;
         visibility: visible;
         transform: none;
