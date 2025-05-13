@@ -18,6 +18,7 @@ import {
 let observationTime = null;
 
 // Modified findCountyByCoordinates function in weatherData.js
+// Modified findCountyByCoordinates function in weatherData.js
 function findCountyByCoordinates(lat, lon) {
     // First, check if there's a direct configuration match from the page
     const config = window.weatherConfig || {};
@@ -28,14 +29,27 @@ function findCountyByCoordinates(lat, lon) {
 
     // If no direct match, try to find by coordinates using window.siteConfig.counties
     const counties = window.siteConfig?.counties || [];
-    const matchedCounty = counties.find(county =>
+
+    // First try to find an exact match
+    const exactMatch = counties.find(county =>
+        Math.abs(county.lat - lat) < 0.01 &&
+        Math.abs(county.lon - lon) < 0.01
+    );
+
+    if (exactMatch) {
+        console.log("Found exact county match by coordinates:", exactMatch.name);
+        return exactMatch.name.toLowerCase();
+    }
+
+    // If no exact match, try a broader match (within 0.1 degrees)
+    const broadMatch = counties.find(county =>
         Math.abs(county.lat - lat) < 0.1 &&
         Math.abs(county.lon - lon) < 0.1
     );
 
-    if (matchedCounty) {
-        console.log("Found county by coordinates:", matchedCounty.name);
-        return matchedCounty.name.toLowerCase();
+    if (broadMatch) {
+        console.log("Found broader county match by coordinates:", broadMatch.name);
+        return broadMatch.name.toLowerCase();
     }
 
     // Last attempt - try to extract county from current URL path
@@ -595,65 +609,208 @@ export function setWeatherBackground(weatherData, containerId = 'weather-backgro
  * @param {number} lon - Longitude
  * @returns {Promise<Array>} Array of alert objects
  */
+// export async function fetchAlerts(lat, lon) {
+//     try {
+//         // Try multiple methods to determine the county
+//         let countyName = findCountyByCoordinates(lat, lon);
+
+//         // If no county found, try directly from config
+//         if (!countyName && window.weatherConfig && window.weatherConfig.location) {
+//             countyName = window.weatherConfig.location.countyName?.toLowerCase();
+//         }
+
+//         // If still no county, log and return empty
+//         if (!countyName) {
+//             console.warn('No county found for coordinates:', { lat, lon });
+//             return [];
+//         }
+
+//         // Find county config - improve matching with partial name matching
+//         const countyConfig = (window.siteConfig?.counties || [])
+//             .find(c => {
+//                 const configName = c.name.toLowerCase();
+//                 return configName === countyName ||
+//                     configName.includes(countyName) ||
+//                     countyName.includes(configName);
+//             });
+
+//         if (!countyConfig) {
+//             console.warn('County config not found for:', countyName);
+//             return [];
+//         }
+
+//         try {
+//             // Try to fetch alerts from cache with better error handling
+//             const response = await fetch(`js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`);
+
+//             if (response.ok) {
+//                 const data = await response.json();
+//                 console.log(`Loaded ${data.alerts?.length || 0} alerts from cache for ${countyName}`);
+//                 return data.alerts || [];
+//             }
+
+//             // Try master alerts cache with improved filtering
+//             const masterResponse = await fetch(`js/modules/cache/master_alerts.json?t=${Date.now()}`);
+//             if (masterResponse.ok) {
+//                 const masterData = await masterResponse.json();
+
+//                 // Improved filtering logic - check by county name, zone, and UGC code
+//                 return (masterData.alerts || []).filter(alert => {
+//                     // Direct county name match in affectedCounties
+//                     if (alert.affectedCounties &&
+//                         alert.affectedCounties.some(county =>
+//                             county.toLowerCase() === countyName ||
+//                             county.toLowerCase().includes(countyName) ||
+//                             countyName.includes(county.toLowerCase()))) {
+//                         return true;
+//                     }
+
+//                     // UGC code match
+//                     if (countyConfig.ugcCode &&
+//                         alert.properties?.geocode?.UGC?.includes(countyConfig.ugcCode)) {
+//                         return true;
+//                     }
+
+//                     // Zone URL match
+//                     if (countyConfig.zoneURL &&
+//                         alert.properties?.affectedZones?.includes(countyConfig.zoneURL)) {
+//                         return true;
+//                     }
+
+//                     return false;
+//                 });
+//             }
+//         } catch (cacheError) {
+//             console.warn('Cache error, falling back to API:', cacheError);
+//         }
+
+//         // Fall back to direct NWS API fetch
+//         const response = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`);
+//         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+//         const data = await response.json();
+//         return data.features || [];
+//     } catch (error) {
+//         console.error('Alert retrieval failed:', error);
+//         return [];
+//     }
+// }
+
 export async function fetchAlerts(lat, lon) {
     try {
-        // Try multiple methods to determine the county name
+        // Add debugging for input coordinates
+        console.log(`fetchAlerts called with coordinates:`, { lat, lon });
+
+        // Try multiple methods to determine the county
         let countyName = findCountyByCoordinates(lat, lon);
+        console.log(`County name from coordinates:`, countyName);
 
-        // If coordinates lookup fails, try to get from weatherConfig
+        // If no county found, try directly from config
         if (!countyName && window.weatherConfig && window.weatherConfig.location) {
-            countyName = window.weatherConfig.location.countyName;
+            countyName = window.weatherConfig.location.countyName?.toLowerCase();
+            console.log(`County name from weatherConfig:`, countyName);
         }
 
-        // If still no county, try extracting from URL
-        if (!countyName) {
-            const path = window.location.pathname;
-            const match = path.match(/\/counties\/(\w+)\//);
-            countyName = match ? match[1] : null;
-        }
-
+        // If still no county, log and return empty
         if (!countyName) {
             console.warn('No county found for coordinates:', { lat, lon });
             return [];
         }
-        try {
-            const response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_alerts.json?t=${Date.now()}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-            const data = await response.json();
-            if (!data.alerts || !data.timestamp) {
-                throw new Error('Invalid alert cache format');
-            }
-            const cacheAge = Math.abs(Date.now() / 1000 - data.timestamp);
-            if (cacheAge > 600) {
-                throw new Error('Alert cache expired');
-            }
-            return data.alerts;
-        } catch (cacheError) {
-            console.warn(`Alert cache error for ${countyName}, attempting API:`, cacheError);
-            try {
-                const masterResponse = await fetch(`js/modules/cache/master_alerts.json?t=${Date.now()}`);
-                if (!masterResponse.ok) {
-                    throw new Error(`HTTP error: ${masterResponse.status}`);
-                }
-                const masterData = await masterResponse.json();
-                if (!masterData.alerts || !masterData.timestamp) {
-                    throw new Error('Invalid master alert cache format');
-                }
-                const cacheAge = Math.abs(Date.now() / 1000 - masterData.timestamp);
-                if (cacheAge > 600) {
-                    throw new Error('Master alert cache expired');
-                }
-                const countyAlerts = masterData.alerts.filter(alert =>
-                    alert.affectedCounties && alert.affectedCounties.includes(countyName)
-                );
-                return countyAlerts;
-            } catch (masterCacheError) {
-                console.warn('Master alert cache error, attempting NWS API:', masterCacheError);
-                return await fetchAlertsFromAPI(lat, lon);
-            }
+
+        // Find county config - improve matching with partial name matching
+        const countyConfig = (window.siteConfig?.counties || [])
+            .find(c => {
+                const configName = c.name.toLowerCase();
+                return configName === countyName ||
+                    configName.includes(countyName) ||
+                    countyName.includes(configName);
+            });
+
+        console.log(`County config found:`, countyConfig);
+
+        if (!countyConfig) {
+            console.warn('County config not found for:', countyName);
+            return [];
         }
+
+        try {
+            // Try to fetch alerts from cache with better error handling
+            const cachePath = `js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`;
+            console.log(`Attempting to fetch alerts from cache:`, cachePath);
+
+            const response = await fetch(cachePath);
+            console.log(`Cache response status:`, response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Loaded alerts from cache:`, data);
+                console.log(`${data.alerts?.length || 0} alerts found for ${countyName}`);
+
+                // Debug the actual alert structure
+                if (data.alerts && data.alerts.length > 0) {
+                    console.log(`First alert structure:`, data.alerts[0]);
+                }
+
+                return data.alerts || [];
+            }
+
+            // Try master alerts cache with improved filtering
+            const masterPath = `js/modules/cache/master_alerts.json?t=${Date.now()}`;
+            console.log(`Attempting to fetch from master cache:`, masterPath);
+
+            const masterResponse = await fetch(masterPath);
+            console.log(`Master cache response status:`, masterResponse.status);
+
+            if (masterResponse.ok) {
+                const masterData = await masterResponse.json();
+                console.log(`Master cache data:`, masterData);
+
+                // Additional debugging for matching logic
+                if (masterData.alerts && masterData.alerts.length > 0) {
+                    console.log(`Master cache has ${masterData.alerts.length} total alerts`);
+
+                    // Log counties associated with first few alerts
+                    masterData.alerts.slice(0, 3).forEach((alert, i) => {
+                        console.log(`Alert ${i} affected counties:`, alert.affectedCounties);
+                    });
+                }
+
+                // Improved filtering logic - check by county name, zone, and UGC code
+                return (masterData.alerts || []).filter(alert => {
+                    // Direct county name match in affectedCounties
+                    if (alert.affectedCounties &&
+                        alert.affectedCounties.some(county =>
+                            county.toLowerCase() === countyName ||
+                            county.toLowerCase().includes(countyName) ||
+                            countyName.includes(county.toLowerCase()))) {
+                        return true;
+                    }
+
+                    // UGC code match
+                    if (countyConfig.ugcCode &&
+                        alert.properties?.geocode?.UGC?.includes(countyConfig.ugcCode)) {
+                        return true;
+                    }
+
+                    // Zone URL match
+                    if (countyConfig.zoneURL &&
+                        alert.properties?.affectedZones?.includes(countyConfig.zoneURL)) {
+                        return true;
+                    }
+
+                    return false;
+                });
+            }
+        } catch (cacheError) {
+            console.warn('Cache error, falling back to API:', cacheError);
+        }
+
+        // Fall back to direct NWS API fetch
+        const response = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+        const data = await response.json();
+        return data.features || [];
     } catch (error) {
         console.error('Alert retrieval failed:', error);
         return [];

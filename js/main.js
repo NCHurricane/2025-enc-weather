@@ -33,7 +33,7 @@ function updateData() {
         console.warn('Invalid or missing location configuration. Using default coordinates.');
     }
 
-    // Function to fetch county-specific weather data from JSON cache
+    // Modify the fetchCountyWeatherData function in main.js
     async function fetchCountyWeatherData(countyName) {
         if (!countyName) {
             console.warn('No county name found. Cannot fetch county-specific weather data.');
@@ -41,20 +41,36 @@ function updateData() {
         }
 
         try {
-            // Try both relative and absolute paths
-            let response;
-            try {
-                response = await fetch(`../../js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
-                if (!response.ok) {
-                    response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
+            // Add fallback mechanism for paths and better error handling
+            let response = null;
+            let errors = [];
+
+            // Try multiple path patterns
+            const paths = [
+                `../../js/modules/cache/${countyName.toLowerCase()}_weather.json`,
+                `js/modules/cache/${countyName.toLowerCase()}_weather.json`,
+                `./js/modules/cache/${countyName.toLowerCase()}_weather.json`
+            ];
+
+            for (const path of paths) {
+                try {
+                    console.log(`Attempting to fetch weather data from: ${path}`);
+                    const result = await fetch(`${path}?t=${Date.now()}`);
+                    if (result.ok) {
+                        response = result;
+                        break;
+                    } else {
+                        errors.push(`HTTP error: ${result.status} for ${path}`);
+                    }
+                } catch (e) {
+                    errors.push(`Fetch error: ${e.message} for ${path}`);
                 }
-            } catch (e) {
-                response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
             }
 
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
+            if (!response) {
+                throw new Error(`Failed to fetch weather data: ${errors.join(', ')}`);
             }
+
             return await response.json();
         } catch (error) {
             console.error(`Error fetching weather data for ${countyName}:`, error);
@@ -84,8 +100,13 @@ function updateData() {
 
     // Fetch and display alerts
     if (document.getElementById('alerts')) {
+        console.log("Fetching alerts for coordinates:", { lat, lon });
         fetchAlerts(lat, lon).then(alerts => {
+            console.log(`fetchAlerts returned ${alerts?.length || 0} alerts`);
             renderAlerts(alerts);
+        }).catch(error => {
+            console.error("Error fetching alerts:", error);
+            renderAlerts([]); // Render with empty array as fallback
         });
     }
 
@@ -116,24 +137,48 @@ function updateData() {
 // Function to render alerts
 function renderAlerts(alerts) {
     const alertsElement = document.getElementById('alerts');
-    if (!alertsElement) return;
+    if (!alertsElement) {
+        console.error("Alerts container element not found");
+        return;
+    }
+
+    console.log("renderAlerts called with:", alerts);
 
     try {
         if (!alerts || alerts.length === 0) {
+            console.log("No alerts to display, showing 'No active alerts' message");
             alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
             return;
         }
 
+        console.log(`Rendering ${alerts.length} alerts`);
+
         let alertsHTML = '';
         alerts.forEach((alert, index) => {
-            if (!alert.properties) return;
+            console.log(`Processing alert ${index}:`, alert);
 
-            const eventName = alert.properties.event || 'Unknown Alert';
-            let description = alert.properties.description || 'No description available.';
+            // Debug alert structure - check if 'properties' exists or if alert has direct properties
+            const hasProperties = !!alert.properties;
+            const hasDirectProps = !!(alert.event || alert.headline || alert.description);
+
+            console.log(`Alert ${index} structure check:`, {
+                hasProperties,
+                hasDirectProps,
+                keys: Object.keys(alert)
+            });
+
+            // Determine event name based on structure
+            const eventName = alert.properties?.event || alert.event || 'Unknown Alert';
+            console.log(`Alert ${index} event name:`, eventName);
+
+            // Get description based on structure
+            let description = alert.properties?.description || alert.description || 'No description available.';
             description = description.replace(/\r\n/g, "\n");
+
             const paragraphs = description.split(/\n\s*\n/);
             const formattedDescription = paragraphs.map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join("");
 
+            // Add to HTML
             alertsHTML += `
               <div class="alert">
                 <input type="checkbox" id="alert-${index}" class="alert-toggle">
@@ -148,12 +193,16 @@ function renderAlerts(alerts) {
             `;
         });
 
+        console.log("Setting alerts HTML content");
         alertsElement.innerHTML = alertsHTML;
+        console.log("Alerts rendered successfully");
     } catch (error) {
         console.error('Error rendering alerts:', error);
+        console.error('Error stack:', error.stack);
         alertsElement.innerHTML = '<div class="alert"><p><b>Unable to render alerts. Please try again later.</b></p></div>';
     }
 }
+
 // Setup submenu toggle for mobile/tablet
 function setupSubmenuToggle() {
     // Get all menu items with submenus
