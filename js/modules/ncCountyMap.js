@@ -662,19 +662,19 @@ export class NCCountyMap {
     }
 
     // Helper method to get warning priority
-    getWarningPriority(warningName) {
-        // This would need to map to your priority system from warningColors.csv
-        // Example implementation:
-        const priorityMap = {
-            "Tornado Warning": 1,
-            "Severe Thunderstorm Warning": 2,
-            "Flash Flood Warning": 3,
-            "Extreme Wind Warning": 4,
-            // ... other warnings with their priorities
-        };
+    // getWarningPriority(warningName) {
+    //     // This would need to map to your priority system from warningColors.csv
+    //     // Example implementation:
+    //     const priorityMap = {
+    //         "Tornado Warning": 1,
+    //         "Severe Thunderstorm Warning": 2,
+    //         "Flash Flood Warning": 3,
+    //         "Extreme Wind Warning": 4,
+    //         // ... other warnings with their priorities
+    //     };
 
-        return priorityMap[warningName] || 999; // Default to low priority if not found
-    }
+    //     return priorityMap[warningName] || 999; // Default to low priority if not found
+    // }
 
     // Fetch and update weather data for counties
     async updateWeatherData() {
@@ -823,6 +823,105 @@ export class NCCountyMap {
      * Only displays warnings that are currently active on the map
      */
     // In the createWarningLegend method of NCCountyMap class
+    // createWarningLegend() {
+    //     // Remove any existing legend first
+    //     const existingLegend = document.querySelector('.map-legend');
+    //     if (existingLegend) {
+    //         existingLegend.remove();
+    //     }
+
+    //     // Check if there are any active alerts
+    //     const activeWarnings = new Map();
+
+    //     // Collect all unique warnings currently displayed on the map
+    //     Object.values(this.alertData).forEach(countyAlerts => {
+    //         if (countyAlerts && countyAlerts.length > 0) {
+    //             countyAlerts.forEach(alert => {
+    //                 const eventName = alert.properties.event;
+    //                 if (warningColors[eventName]) {
+    //                     activeWarnings.set(eventName, warningColors[eventName]);
+    //                 }
+    //             });
+    //         }
+    //     });
+
+    //     // If no active warnings, hide the legend container and return
+    //     const legendContainer = document.getElementById('map-alerts-legend');
+    //     if (activeWarnings.size === 0) {
+    //         if (legendContainer) {
+    //             legendContainer.style.display = 'none';
+    //         }
+    //         return;
+    //     }
+
+    //     // Create legend container if it doesn't exist
+    //     let legend = legendContainer;
+    //     if (!legend) {
+    //         legend = document.createElement('div');
+    //         legend.id = 'map-alerts-legend';
+    //         legend.className = 'map-legend';
+    //         // Find the current-content and append the legend after the map
+    //         const currentContent = document.querySelector('.current-content');
+    //         const mapContainer = document.getElementById('nc-county-map');
+    //         if (currentContent && mapContainer) {
+    //             currentContent.insertBefore(legend, mapContainer.nextSibling);
+    //         } else {
+    //             // Fallback: append to container
+    //             this.container.parentNode.appendChild(legend);
+    //         }
+    //     }
+
+    //     // Show the legend
+    //     legend.style.display = 'block';
+
+    //     // Clear existing content
+    //     legend.innerHTML = '';
+
+    //     // Create legend title
+    //     const title = document.createElement('div');
+    //     title.id = 'legend-title';
+    //     title.textContent = 'Active Alerts';
+    //     title.style.color = '#fff000';
+    //     title.style.fontWeight = 'bold';
+    //     legend.appendChild(title);
+
+    //     // Create a flex container for warning items
+    //     const warningContainer = document.createElement('div');
+    //     warningContainer.style.display = 'flex';
+    //     warningContainer.style.flexWrap = 'wrap';
+    //     warningContainer.style.gap = '5px';
+    //     legend.appendChild(warningContainer);
+
+    //     // Add each active warning to the legend
+    //     activeWarnings.forEach((color, warningName) => {
+    //         const warningItem = document.createElement('div');
+    //         warningItem.style.display = 'flex';
+    //         warningItem.style.alignItems = 'center';
+    //         warningItem.style.marginRight = '10px';
+
+    //         // Color box
+    //         const colorBox = document.createElement('div');
+    //         colorBox.style.width = '12px';
+    //         colorBox.style.height = '12px';
+    //         colorBox.style.backgroundColor = color;
+    //         colorBox.style.marginRight = '5px';
+    //         colorBox.style.border = '1px solid #333';
+
+    //         // Warning text
+    //         const warningText = document.createElement('span');
+    //         warningText.textContent = warningName;
+    //         warningText.style.fontWeight = 'bold';
+
+    //         warningItem.appendChild(colorBox);
+    //         warningItem.appendChild(warningText);
+    //         warningContainer.appendChild(warningItem);
+    //     });
+    // }
+
+    /**
+ * Creates or updates the warning legend at the bottom of the map
+ * Only displays warnings that are currently active on the map for the target counties
+ */
     createWarningLegend() {
         // Remove any existing legend first
         const existingLegend = document.querySelector('.map-legend');
@@ -830,18 +929,29 @@ export class NCCountyMap {
             existingLegend.remove();
         }
 
-        // Check if there are any active alerts
+        // Get the list of target counties from config
+        const targetCountyNames = (window.siteConfig?.counties || [])
+            .map(county => county.name.toLowerCase());
+
+        // Only collect warnings that affect our target counties
         const activeWarnings = new Map();
 
-        // Collect all unique warnings currently displayed on the map
-        Object.values(this.alertData).forEach(countyAlerts => {
-            if (countyAlerts && countyAlerts.length > 0) {
-                countyAlerts.forEach(alert => {
-                    const eventName = alert.properties.event;
-                    if (warningColors[eventName]) {
-                        activeWarnings.set(eventName, warningColors[eventName]);
+        // Check each county in our target list
+        targetCountyNames.forEach(countyName => {
+            // Get alerts for this specific county
+            const countyAlerts = this.alertData[countyName] || [];
+
+            // Process only if this county has alerts
+            if (countyAlerts.length > 0) {
+                // Check what alert is actually applied to this county (highest priority)
+                const countyPath = document.getElementById(`county-${countyName}`);
+                if (countyPath && countyPath.getAttribute('fill') !== this.options.defaultFill) {
+                    // Get the alert name from the title attribute
+                    const alertName = countyPath.getAttribute('title');
+                    if (alertName && warningColors[alertName]) {
+                        activeWarnings.set(alertName, warningColors[alertName]);
                     }
-                });
+                }
             }
         });
 
@@ -854,6 +964,7 @@ export class NCCountyMap {
             return;
         }
 
+        // Rest of the function remains the same...
         // Create legend container if it doesn't exist
         let legend = legendContainer;
         if (!legend) {
@@ -917,6 +1028,7 @@ export class NCCountyMap {
             warningContainer.appendChild(warningItem);
         });
     }
+
     // Modify the updateCountyAlertStatus method to track active warnings
     updateCountyAlertStatus(countyName, alerts) {
         const normalizedName = countyName.toLowerCase();

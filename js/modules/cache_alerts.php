@@ -291,7 +291,7 @@ $maxLon = -75.0;
 // Original:
 // $regionUrl = "https://api.weather.gov/alerts/active?status=actual&message_type=alert&region_type=land&area=NC";
 // Modified to include watches and all other alert types (removed message_type filter):
-$regionUrl = "https://api.weather.gov/alerts/active?status=actual&region_type=land&area=NC";
+$regionUrl = "https://api.weather.gov/alerts/active?status=actual&area=NC";
 // ===== MODIFIED URL (END) =====
 
 // ===== DEBUGGING ADDITION =====
