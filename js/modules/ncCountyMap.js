@@ -22,6 +22,16 @@ export class NCCountyMap {
             strokeWidth: 2,
             ...options
         };
+        this.zoneToCountyMap = {
+            // Hyde County zones
+            'NCZ081': 'Hyde',     // Mainland Hyde
+            'NCZ204': 'Hyde',     // Ocracoke Island
+
+            // Dare County zones
+            'NCZ047': 'Dare',     // Mainland Dare
+            'NCZ203': 'Dare',     // Northern OBX
+            'NCZ205': 'Dare',     // Hatteras Island
+        };
         this.alertData = {};
         this.testModeEnabled = false;
         this.targetCounties = new Set(
@@ -35,40 +45,10 @@ export class NCCountyMap {
         });
     }
 
-    // Add a new method to fetch alerts for a county
-    // async fetchCountyAlerts(county) {
-    //     try {
-    //         // For testing: Return mock data when in test mode
-    //         if (this.testModeEnabled) {
-    //             console.log(`Using test data for ${county.name}`);
-    //             return [{
-    //                 properties: {
-    //                     event: "Earthquake Warning", // Or any other warning type from your warningColors
-    //                     headline: "Current Warning",
-    //                     description: "This is a test alert for development purposes."
-    //                 }
-    //             }];
-    //         }
-
-    //         // Normal code for production
-    //         const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
-    //         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-
-    //         const data = await response.json();
-    //         return data.features || [];
-    //     } catch (error) {
-    //         console.error(`Error fetching alerts for ${county.name}:`, error);
-    //         return [];
-    //     }
-    // }
-
-    // Modified fetchCountyAlerts method for NCCountyMap class
-    // Updated fetchCountyAlerts method for NCCountyMap class
-    // This replaces the existing fetchCountyAlerts method with one that prioritizes cached alert data
 
     async fetchCountyAlerts(county) {
         try {
-            // For testing: Return mock data when in test mode (preserve existing functionality)
+            // For testing: Return mock data when in test mode
             if (this.testModeEnabled) {
                 console.log(`Using test data for ${county.name}`);
                 return [{
@@ -80,90 +60,174 @@ export class NCCountyMap {
                 }];
             }
 
+            // Get UGC code and zone URL for this county
+            const countyUGC = county.ugcCode;
+            const countyZoneURL = county.zoneURL;
+            console.log(`County ${county.name} metadata:`, { countyUGC, countyZoneURL });
+
             // First try to fetch from county-specific cache file
             const countyName = county.name.toLowerCase();
             console.log(`Attempting to load alerts for ${county.name} from cache`);
 
             try {
-                // Try with relative path first (for index page)
-                let response = await fetch(`js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`);
+                // Try multiple paths
+                const cachePaths = [
+                    `js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`,
+                    `../../js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`
+                ];
 
-                // If that fails, try alternative path (for county pages)
-                if (!response.ok) {
-                    response = await fetch(`../../js/modules/cache/${countyName}_alerts.json?t=${Date.now()}`);
+                let response = null;
+                let responseData = null;
+
+                // Try each path until one works
+                for (const path of cachePaths) {
+                    console.log(`Trying cache path: ${path}`);
+                    try {
+                        const tmpResponse = await fetch(path);
+                        console.log(`Response for ${path}:`, tmpResponse.status);
+
+                        if (tmpResponse.ok) {
+                            response = tmpResponse;
+                            responseData = await response.json();
+                            console.log(`Successfully loaded data from ${path}`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`Error with path ${path}:`, e.message);
+                    }
                 }
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log(`Loaded ${data.alerts?.length || 0} cached alerts for ${county.name}`);
+                if (responseData) {
+                    console.log(`Loaded alerts data:`, responseData);
 
-                    // Convert cached alerts format to match NWS API format for compatibility
-                    if (data.alerts && data.alerts.length > 0) {
-                        // Log the first alert to debug the structure
-                        console.log('Sample alert structure:', data.alerts[0]);
+                    if (responseData.alerts && responseData.alerts.length > 0) {
+                        console.log(`First alert in cache:`, responseData.alerts[0]);
 
-                        // Convert cached alert format to format expected by existing code
-                        return data.alerts.map(alert => ({
-                            properties: {
-                                // Keep original properties that match expected names
-                                event: alert.event,
-                                headline: alert.headline,
-                                description: alert.description,
-                                severity: alert.severity,
-                                certainty: alert.certainty,
-                                urgency: alert.urgency,
+                        // Convert cached alerts format to match NWS API format for compatibility
+                        return responseData.alerts.map(alert => {
+                            console.log(`Converting alert structure:`, alert);
 
-                                // Add any additional properties needed by the display logic
-                                id: alert.id,
-                                sent: alert.sent,
-                                effective: alert.effective,
-                                expires: alert.expires,
+                            // Create properties structure if needed
+                            const convertedAlert = {
+                                properties: {
+                                    // Handle both possible structures
+                                    event: alert.event || alert.properties?.event || 'Unknown',
+                                    headline: alert.headline || alert.properties?.headline || '',
+                                    description: alert.description || alert.properties?.description || '',
+                                    severity: alert.severity || alert.properties?.severity || 'Unknown',
+                                    certainty: alert.certainty || alert.properties?.certainty || 'Unknown',
+                                    urgency: alert.urgency || alert.properties?.urgency || 'Unknown',
+                                    // Add additional fields that might be needed
+                                    id: alert.id || alert.properties?.id || `generated-${Date.now()}`,
+                                    _sourceFormat: 'cache'
+                                }
+                            };
 
-                                // Add processed properties for display
-                                formattedEvent: alert.event.toUpperCase(), // Ensure consistent casing
-
-                                // Include original source properties for debugging
-                                _sourceFormat: 'cache'
-                            }
-                        }));
+                            console.log(`Converted alert:`, convertedAlert);
+                            return convertedAlert;
+                        });
                     }
+
+                    console.log(`No alerts found in cache for ${county.name}`);
                     return []; // No alerts in cache
                 }
 
                 // Try master alerts cache as fallback
-                response = await fetch(`js/modules/cache/master_alerts.json?t=${Date.now()}`);
-                if (!response.ok) {
-                    response = await fetch(`../../js/modules/cache/master_alerts.json?t=${Date.now()}`);
+                const masterPaths = [
+                    `js/modules/cache/master_alerts.json?t=${Date.now()}`,
+                    `../../js/modules/cache/master_alerts.json?t=${Date.now()}`
+                ];
+
+                console.log(`Trying master cache as fallback`);
+
+                // Try each master path
+                let masterResponse = null;
+                let masterData = null;
+
+                for (const path of masterPaths) {
+                    console.log(`Trying master path: ${path}`);
+                    try {
+                        const tmpResponse = await fetch(path);
+                        console.log(`Master response for ${path}:`, tmpResponse.status);
+
+                        if (tmpResponse.ok) {
+                            masterResponse = tmpResponse;
+                            masterData = await masterResponse.json();
+                            console.log(`Successfully loaded master data from ${path}`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`Error with master path ${path}:`, e.message);
+                    }
                 }
 
-                if (response.ok) {
-                    const masterData = await response.json();
-                    console.log(`Checking master alerts cache for ${county.name}`);
+                if (masterData) {
+                    console.log(`Master data loaded, checking for matching alerts`);
+                    console.log(`Master data contains ${masterData.alerts?.length || 0} total alerts`);
 
                     // Filter for alerts affecting this county
                     if (masterData.alerts && masterData.alerts.length > 0) {
-                        const countyAlerts = masterData.alerts.filter(alert =>
-                            alert.affectedCounties &&
-                            alert.affectedCounties.includes(county.name)
-                        );
+                        // Log some sample alerts
+                        masterData.alerts.slice(0, 2).forEach((alert, idx) => {
+                            console.log(`Sample master alert ${idx}:`, {
+                                event: alert.event,
+                                affectedCounties: alert.affectedCounties
+                            });
+                        });
 
-                        if (countyAlerts.length > 0) {
-                            console.log(`Found ${countyAlerts.length} alerts for ${county.name} in master cache`);
+                        // Try multiple matching approaches
+                        const matchedAlerts = masterData.alerts.filter(alert => {
+                            // Direct match by county name
+                            const nameMatch = alert.affectedCounties &&
+                                alert.affectedCounties.some(affectedCounty =>
+                                    affectedCounty.toLowerCase() === county.name.toLowerCase());
+
+                            // Match by UGC code
+                            const ugcMatch = countyUGC && alert.properties?.geocode?.UGC?.includes(countyUGC);
+
+                            // Match by zone URL
+                            const zoneMatch = countyZoneURL && alert.properties?.affectedZones?.includes(countyZoneURL);
+
+                            // Log matching results
+                            if (nameMatch || ugcMatch || zoneMatch) {
+                                console.log(`Alert match found for ${county.name}:`, {
+                                    nameMatch,
+                                    ugcMatch,
+                                    zoneMatch,
+                                    alertEvent: alert.event
+                                });
+                            }
+
+                            return nameMatch || ugcMatch || zoneMatch;
+                        });
+
+                        if (matchedAlerts.length > 0) {
+                            console.log(`Found ${matchedAlerts.length} matching alerts for ${county.name} in master cache`);
+
                             // Convert to expected format
-                            return countyAlerts.map(alert => ({
-                                properties: {
-                                    event: alert.event,
-                                    headline: alert.headline,
-                                    description: alert.description,
-                                    // Include other properties
-                                    severity: alert.severity,
-                                    certainty: alert.certainty,
-                                    urgency: alert.urgency
-                                }
-                            }));
+                            return matchedAlerts.map(alert => {
+                                console.log(`Converting matched alert:`, alert);
+
+                                return {
+                                    properties: {
+                                        event: alert.event,
+                                        headline: alert.headline,
+                                        description: alert.description,
+                                        severity: alert.severity,
+                                        certainty: alert.certainty,
+                                        urgency: alert.urgency,
+                                        geocode: alert.geocode,
+                                        affectedZones: alert.affectedZones,
+                                        _sourceFormat: 'master_cache'
+                                    }
+                                };
+                            });
+                        } else {
+                            console.log(`No matching alerts found for ${county.name} in master cache`);
                         }
                     }
 
+                    console.log(`No relevant alerts found in master cache for ${county.name}`);
                     return []; // No alerts for this county in master cache
                 }
             } catch (cacheError) {
@@ -174,9 +238,19 @@ export class NCCountyMap {
             // Original code: Fetch directly from API as last resort
             console.log(`Fetching alerts for ${county.name} from NWS API (fallback)`);
             const response = await fetch(`https://api.weather.gov/alerts/active?point=${county.lat},${county.lon}`);
+
+            console.log(`API response status:`, response.status);
+
             if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
             const data = await response.json();
+            console.log(`API returned ${data.features?.length || 0} alerts`);
+
+            // Debug the API response structure
+            if (data.features && data.features.length > 0) {
+                console.log(`Sample API alert:`, data.features[0]);
+            }
+
             return data.features || [];
         } catch (error) {
             console.error(`Error fetching alerts for ${county.name}:`, error);
@@ -826,107 +900,6 @@ export class NCCountyMap {
 
     // Add this method to the NCCountyMap class in ncCountyMap.js
 
-    /**
-     * Creates or updates the warning legend at the bottom of the map
-     * Only displays warnings that are currently active on the map
-     */
-    // In the createWarningLegend method of NCCountyMap class
-    // createWarningLegend() {
-    //     // Remove any existing legend first
-    //     const existingLegend = document.querySelector('.map-legend');
-    //     if (existingLegend) {
-    //         existingLegend.remove();
-    //     }
-
-    //     // Check if there are any active alerts
-    //     const activeWarnings = new Map();
-
-    //     // Collect all unique warnings currently displayed on the map
-    //     Object.values(this.alertData).forEach(countyAlerts => {
-    //         if (countyAlerts && countyAlerts.length > 0) {
-    //             countyAlerts.forEach(alert => {
-    //                 const eventName = alert.properties.event;
-    //                 if (warningColors[eventName]) {
-    //                     activeWarnings.set(eventName, warningColors[eventName]);
-    //                 }
-    //             });
-    //         }
-    //     });
-
-    //     // If no active warnings, hide the legend container and return
-    //     const legendContainer = document.getElementById('map-alerts-legend');
-    //     if (activeWarnings.size === 0) {
-    //         if (legendContainer) {
-    //             legendContainer.style.display = 'none';
-    //         }
-    //         return;
-    //     }
-
-    //     // Create legend container if it doesn't exist
-    //     let legend = legendContainer;
-    //     if (!legend) {
-    //         legend = document.createElement('div');
-    //         legend.id = 'map-alerts-legend';
-    //         legend.className = 'map-legend';
-    //         // Find the current-content and append the legend after the map
-    //         const currentContent = document.querySelector('.current-content');
-    //         const mapContainer = document.getElementById('nc-county-map');
-    //         if (currentContent && mapContainer) {
-    //             currentContent.insertBefore(legend, mapContainer.nextSibling);
-    //         } else {
-    //             // Fallback: append to container
-    //             this.container.parentNode.appendChild(legend);
-    //         }
-    //     }
-
-    //     // Show the legend
-    //     legend.style.display = 'block';
-
-    //     // Clear existing content
-    //     legend.innerHTML = '';
-
-    //     // Create legend title
-    //     const title = document.createElement('div');
-    //     title.id = 'legend-title';
-    //     title.textContent = 'Active Alerts';
-    //     title.style.color = '#fff000';
-    //     title.style.fontWeight = 'bold';
-    //     legend.appendChild(title);
-
-    //     // Create a flex container for warning items
-    //     const warningContainer = document.createElement('div');
-    //     warningContainer.style.display = 'flex';
-    //     warningContainer.style.flexWrap = 'wrap';
-    //     warningContainer.style.gap = '5px';
-    //     legend.appendChild(warningContainer);
-
-    //     // Add each active warning to the legend
-    //     activeWarnings.forEach((color, warningName) => {
-    //         const warningItem = document.createElement('div');
-    //         warningItem.style.display = 'flex';
-    //         warningItem.style.alignItems = 'center';
-    //         warningItem.style.marginRight = '10px';
-
-    //         // Color box
-    //         const colorBox = document.createElement('div');
-    //         colorBox.style.width = '12px';
-    //         colorBox.style.height = '12px';
-    //         colorBox.style.backgroundColor = color;
-    //         colorBox.style.marginRight = '5px';
-    //         colorBox.style.border = '1px solid #333';
-
-    //         // Warning text
-    //         const warningText = document.createElement('span');
-    //         warningText.textContent = warningName;
-    //         warningText.style.fontWeight = 'bold';
-
-    //         warningItem.appendChild(colorBox);
-    //         warningItem.appendChild(warningText);
-    //         warningContainer.appendChild(warningItem);
-    //     });
-    // }
-
-    // Modified createWarningLegend() function for NCCountyMap class
     createWarningLegend() {
         // Remove any existing legend first
         const existingLegend = document.querySelector('.map-legend');
@@ -954,6 +927,7 @@ export class NCCountyMap {
         const activeWarnings = new Map();
 
         // Process all alerts in the alertData object
+        // In the createWarningLegend method, add this when checking alerts
         Object.values(this.alertData).forEach(countyAlerts => {
             if (!countyAlerts || !countyAlerts.length) return;
 
@@ -962,13 +936,21 @@ export class NCCountyMap {
                 if (!alert.properties) return;
 
                 let matchesOurZones = false;
+                let affectedCounties = new Set(); // Track affected counties
 
                 // Check if alert affects our zones via UGC codes
                 if (alert.properties.geocode && alert.properties.geocode.UGC) {
                     for (const ugcCode of alert.properties.geocode.UGC) {
+                        // Direct zone match
                         if (targetUGCCodes.has(ugcCode)) {
                             matchesOurZones = true;
-                            break;
+                        }
+
+                        // Check if this zone maps to one of our counties
+                        const mappedCounty = this.zoneToCountyMap[ugcCode];
+                        if (mappedCounty) {
+                            matchesOurZones = true;
+                            affectedCounties.add(mappedCounty);
                         }
                     }
                 }
@@ -978,16 +960,35 @@ export class NCCountyMap {
                     for (const zoneURL of alert.properties.affectedZones) {
                         if (targetZoneURLs.has(zoneURL)) {
                             matchesOurZones = true;
-                            break;
+
+                            // Extract zone ID from URL
+                            const zoneMatch = zoneURL.match(/\/zones\/forecast\/(\w+)$/);
+                            if (zoneMatch && zoneMatch[1]) {
+                                const zoneId = zoneMatch[1];
+                                const mappedCounty = this.zoneToCountyMap[zoneId];
+                                if (mappedCounty) {
+                                    affectedCounties.add(mappedCounty);
+                                }
+                            }
                         }
                     }
                 }
 
-                // If this alert affects our zones, add it to activeWarnings
+                // If this alert affects our zones, update county visuals accordingly
                 if (matchesOurZones) {
                     const eventName = alert.properties.event;
                     if (warningColors[eventName]) {
                         activeWarnings.set(eventName, warningColors[eventName]);
+
+                        // Apply the warning color to affected counties
+                        affectedCounties.forEach(countyName => {
+                            const countyPath = document.getElementById(`county-${countyName.toLowerCase()}`);
+                            if (countyPath) {
+                                countyPath.setAttribute('fill', warningColors[eventName]);
+                                countyPath.setAttribute('stroke-width', '3');
+                                countyPath.setAttribute('title', eventName);
+                            }
+                        });
                     }
                 }
             });
@@ -1184,6 +1185,7 @@ export class NCCountyMap {
                     }
                 }
 
+                // Inside the fetchCountyAlerts method, within the part that checks master alerts cache
                 if (masterData) {
                     console.log(`Master data loaded, checking for matching alerts`);
                     console.log(`Master data contains ${masterData.alerts?.length || 0} total alerts`);
@@ -1200,7 +1202,7 @@ export class NCCountyMap {
 
                         // Try multiple matching approaches
                         const matchedAlerts = masterData.alerts.filter(alert => {
-                            // Direct match by county name
+                            // Direct county name match in affectedCounties
                             const nameMatch = alert.affectedCounties &&
                                 alert.affectedCounties.some(affectedCounty =>
                                     affectedCounty.toLowerCase() === county.name.toLowerCase());
@@ -1223,6 +1225,31 @@ export class NCCountyMap {
 
                             return nameMatch || ugcMatch || zoneMatch;
                         });
+
+                        // ADD THIS NEW SECTION HERE ↓↓↓
+                        // Check if there are any alerts for zones belonging to this county
+                        const countyZones = this.countyToZonesMap[county.name];
+                        if (countyZones) {
+                            console.log(`Checking alerts for zones belonging to ${county.name}: ${countyZones.join(', ')}`);
+                            for (const zone of countyZones) {
+                                // Check if any alerts affect this zone
+                                const zoneAlerts = masterData.alerts.filter(alert =>
+                                    alert.properties?.geocode?.UGC?.includes(zone)
+                                );
+
+                                if (zoneAlerts.length > 0) {
+                                    console.log(`Found ${zoneAlerts.length} alerts for zone ${zone} belonging to ${county.name}`);
+                                    // Add these alerts to the matched alerts if not already included
+                                    for (const zoneAlert of zoneAlerts) {
+                                        // Check if this alert is already in matchedAlerts
+                                        if (!matchedAlerts.some(alert => alert.id === zoneAlert.id)) {
+                                            matchedAlerts.push(zoneAlert);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // END OF NEW SECTION ↑↑↑
 
                         if (matchedAlerts.length > 0) {
                             console.log(`Found ${matchedAlerts.length} matching alerts for ${county.name} in master cache`);
@@ -1249,10 +1276,9 @@ export class NCCountyMap {
                             console.log(`No matching alerts found for ${county.name} in master cache`);
                         }
                     }
-
-                    console.log(`No relevant alerts found in master cache for ${county.name}`);
-                    return []; // No alerts for this county in master cache
                 }
+
+
             } catch (cacheError) {
                 console.warn(`Cache error for ${county.name}, falling back to API:`, cacheError);
                 // Continue to API fallback below

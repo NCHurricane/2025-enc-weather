@@ -146,11 +146,14 @@ addDebugLog("Starting alert cache process with " . count($counties) . " counties
 /**
  * Enhanced function to map alert geometry to county names
  */
+/**
+ * Enhanced function to map alert geometry to county names
+ * Improved to prevent false matches like "Martin" matching "Martinsville"
+ */
 function mapAlertToCounties($alert, $counties)
 {
-    // Function implementation remains the same
-    // ...
-
+    // Function for logging
+    global $debugLog;
     $affectedCounties = [];
 
     // Check if the alert has UGC codes from geocode
@@ -192,14 +195,53 @@ function mapAlertToCounties($alert, $counties)
             $matchFound = true;
         }
 
-        // As a fallback, check if alert affects this county by coordinates
+        // As a fallback, check if alert affects this county by area description
         if (!$matchFound && isset($alert['properties']['areaDesc'])) {
             $areaDesc = $alert['properties']['areaDesc'];
-            // Check if county name appears in the area description
-            if (stripos($areaDesc, $countyName) !== false) {
-                addDebugLog("Match found: County name $countyName found in area description");
-                $matchFound = true;
+
+            // ------------------------
+            // NEW PRECISE MATCHING CODE
+            // ------------------------
+
+            // 1. Check for exact county name with word boundaries
+            $countyNamePattern = '/\b' . preg_quote($countyName, '/') . '\b/i';
+            if (preg_match($countyNamePattern, $areaDesc)) {
+                // Further verify it's not part of a larger word or place name
+                $contextWordsPattern = '/\b' . preg_quote($countyName, '/') . 's?ville\b|\b' .
+                    preg_quote($countyName, '/') . 'boro\b|\bCity of ' .
+                    preg_quote($countyName, '/') . '\b/i';
+
+                // If it matches a known pattern for false positives, reject it
+                if (preg_match($contextWordsPattern, $areaDesc)) {
+                    addDebugLog("FALSE MATCH AVOIDED: '$countyName' found but appears to be part of place name like 'Martinsville'");
+                } else {
+                    addDebugLog("Match found: County name '$countyName' found in area description with word boundaries");
+                    $matchFound = true;
+                }
             }
+
+            // 2. Check for specific context patterns that confirm it's a county
+            if (!$matchFound) {
+                $countyContextPatterns = [
+                    '/' . preg_quote($countyName, '/') . '\s+County\b/i',  // "Martin County"
+                    '/\b' . preg_quote($countyName, '/') . ',/i',          // "Martin," (comma after)
+                    '/,\s+' . preg_quote($countyName, '/') . '\b/i',       // ", Martin" (comma before)
+                    '/counties.*?\b' . preg_quote($countyName, '/') . '\b/i', // "counties... Martin"
+                    '/\bareas.*?\b' . preg_quote($countyName, '/') . '\b/i'   // "areas... Martin"
+                ];
+
+                foreach ($countyContextPatterns as $pattern) {
+                    if (preg_match($pattern, $areaDesc)) {
+                        addDebugLog("Match found: County name '$countyName' found with confirming context pattern");
+                        $matchFound = true;
+                        break;
+                    }
+                }
+            }
+
+            // ------------------------
+            // END NEW MATCHING CODE
+            // ------------------------
         }
 
         // If we found a match, add this county to affected counties
@@ -214,17 +256,10 @@ function mapAlertToCounties($alert, $counties)
         addDebugLog("WARNING: Could not determine affected counties for alert: " .
             ($alert['properties']['id'] ?? 'unknown'));
 
-        // Check if we should use a fallback
+        // For debugging, extract the area description
         if (isset($alert['properties']['areaDesc'])) {
-            addDebugLog("Fallback: Area description is: " . $alert['properties']['areaDesc']);
-
-            // As a final fallback, include counties that might be mentioned in the area description
-            foreach ($counties as $county) {
-                if (stripos($alert['properties']['areaDesc'], $county['name']) !== false) {
-                    $affectedCounties[] = $county['name'];
-                    addDebugLog("Fallback match: Added {$county['name']} based on area description");
-                }
-            }
+            $areaDesc = $alert['properties']['areaDesc'];
+            addDebugLog("Area description is: " . $areaDesc);
         }
     }
 
