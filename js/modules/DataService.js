@@ -1,5 +1,5 @@
 /**
- * DataService.js
+ * dataService.js
  * Central module for weather data retrieval and caching with standardized data models
  */
 
@@ -783,5 +783,5 @@ class dataService {
 }
 
 // Create and export singleton instance
-const dataService = new DataService();
+const dataService = new dataService();
 export default dataService;

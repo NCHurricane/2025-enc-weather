@@ -1,5 +1,5 @@
 /**
- * ForecastModule.js
+ * forecastModule.js
  * Handles fetching, processing, and displaying forecast data
  * including both daily and detailed forecasts
  */

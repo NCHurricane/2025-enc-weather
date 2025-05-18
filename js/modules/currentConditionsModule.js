@@ -1,5 +1,5 @@
 /**
- * CurrentConditionsModule.js
+ * currentConditionsModule.js
  * Handles fetching, processing and displaying current weather conditions
  */
 
