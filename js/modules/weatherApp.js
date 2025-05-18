@@ -1,108 +1,176 @@
 /**
- * Load forecast data and update the DOM
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @param {string} county - County name
+ * weatherApp.js
+ * Main entry point for the weather application
+ */
+
+import dataService from './dataService.js';
+import CurrentConditionsModule from './currentConditionsModule.js';
+import ForecastModule from './forecastModule.js';
+
+// Module instances
+let currentConditionsModule = null;
+let forecastModule = null;
+let alertsModule = null;
+let radarModule = null;
+let satelliteModule = null;
+let tropicalModule = null;
+
+/**
+ * Initialize the weather application
+ * @param {Object} config - Configuration object from page
  * @returns {Promise<boolean>} - Success status
  */
-async function loadForecastData(lat, lon, county) {
+export async function initWeatherApp(config = {}) {
   try {
-    // Get forecast data using the data service
-    const forecastData = await dataService.getData('forecast', { lat, lon, county });
-    
-    // Render the forecast
-    renderForecast(forecastData.daily);
+    console.log('Initializing Weather App...');
+
+    // Extract configuration values with fallbacks
+    const location = config.location || {};
+    const lat = location.lat || 35.64;
+    const lon = location.lon || -77.39;
+    const countyName = location.countyName || extractCountyNameFromURL();
+    const wfo = location.afdWFO || "MHX";
+
+    // Store these for later use
+    window.weatherAppConfig = {
+      lat,
+      lon,
+      countyName,
+      wfo
+    };
+
+    // Initialize modules based on available DOM elements
+    const initPromises = [];
+
+    // Initialize current conditions if element exists
+    if (document.getElementById('current-temp')) {
+      console.log('Initializing Current Conditions Module...');
+      currentConditionsModule = new CurrentConditionsModule();
+
+      // Try to get any preloaded weather data from the page
+      const preloadedWeatherData = getPreloadedWeatherData();
+
+      initPromises.push(currentConditionsModule.init(lat, lon, countyName, preloadedWeatherData));
+    }
+
+    // Initialize forecast module if either forecast element exists
+    if (document.getElementById('forecast') || document.getElementById('detailed-forecast')) {
+      console.log('Initializing Forecast Module...');
+      forecastModule = new ForecastModule();
+
+      // Try to get any preloaded forecast data
+      const preloadedForecastData = getPreloadedForecastData();
+
+      initPromises.push(forecastModule.init(lat, lon, countyName, preloadedForecastData));
+    }
+
+    // Initialize alerts if element exists
+    if (document.getElementById('alerts')) {
+      console.log('Loading alerts data...');
+      initPromises.push(loadAlertsData(lat, lon, countyName));
+    }
+
+    // Initialize AFD if element exists
+    if (document.getElementById('afd-content')) {
+      console.log('Loading AFD data...');
+      initPromises.push(loadAFDData(wfo));
+    }
+
+    // Wait for all initializations to complete
+    await Promise.all(initPromises);
+
+    // Setup refresh button handler
+    setupRefreshButton();
+
+    // Setup other event handlers
+    setupEventHandlers();
+
+    console.log('Weather App initialization complete');
     return true;
   } catch (error) {
-    console.error('Error loading forecast data:', error);
-    const forecastElement = document.getElementById('forecast');
-    if (forecastElement) {
-      forecastElement.innerHTML = '<div class="forecast-item">Weather forecast unavailable. Please try again later.</div>';
-    }
+    console.error('Failed to initialize Weather App:', error);
     return false;
   }
 }
 
 /**
- * Render forecast data into the DOM
- * @param {Array} periods - Forecast periods
+ * Try to extract any preloaded weather data from the page
+ * @returns {Object|null} - Preloaded weather data or null
  */
-function renderForecast(periods) {
-  const forecastElement = document.getElementById('forecast');
-  if (!forecastElement || !periods || !periods.length) return;
-  
-  let forecastHTML = '';
-  periods.slice(0, 10).forEach(period => {
-    const tempColor = period.isDaytime ? 'red' : 'blue';
-    forecastHTML += `
-      <div class="forecast-item">
-        <div class="forecast-cell forecast-day">${period.name}</div>
-        <div class="forecast-cell forecast-icon">
-          <img src="${period.icon}" alt="${period.shortForecast}">
-        </div>
-        <div class="forecast-cell forecast-temp" style="color: ${tempColor};">
-          ${period.temperature}°
-        </div>
-      </div>
-    `;
-  });
-
-  forecastElement.innerHTML = forecastHTML;
-}
-
-/**
- * Load detailed forecast data and update the DOM
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @param {string} county - County name
- * @returns {Promise<boolean>} - Success status
- */
-async function loadDetailedForecastData(lat, lon, county) {
-  try {
-    // Get forecast data using the data service
-    const forecastData = await dataService.getData('forecast', { lat, lon, county });
-    
-    // Render the detailed forecast
-    renderDetailedForecast(forecastData.daily);
-    return true;
-  } catch (error) {
-    console.error('Error loading detailed forecast data:', error);
-    const detailedForecastElement = document.getElementById('detailed-forecast');
-    if (detailedForecastElement) {
-      detailedForecastElement.innerHTML = '<div class="detailed-item">Detailed forecast unavailable. Please try again later.</div>';
-    }
-    return false;
+function getPreloadedWeatherData() {
+  // If the page had PHP-generated data embedded, extract it
+  if (window.preloadedWeatherData) {
+    return window.preloadedWeatherData;
   }
+  return null;
 }
 
 /**
- * Render detailed forecast data into the DOM
- * @param {Array} periods - Forecast periods
+ * Try to extract any preloaded forecast data from the page
+ * @returns {Object|null} - Preloaded forecast data or null
  */
-function renderDetailedForecast(periods) {
-  const detailedForecastElement = document.getElementById('detailed-forecast');
-  if (!detailedForecastElement || !periods || !periods.length) return;
-  
-  let detailedHTML = '';
-  periods.slice(0, 10).forEach(period => {
-    detailedHTML += `
-      <div class="detailed-item">
-          <div class="detailed-row">
-              <div class="detailed-col-day">
-                  <div class="detailed-day">${period.name}</div>
-              </div>
-              <div class="detailed-col-icon">
-                  <div class="detailed-icon"><img src="${period.icon}" alt="${period.shortForecast}"></div>
-              </div>
-              <div class="detailed-col-forecast">
-                  <div class="detailed-forecast">${period.detailedForecast}</div>
-              </div>
-          </div>
-      </div>
-      `;
-  });
+function getPreloadedForecastData() {
+  // If the page had PHP-generated data embedded, extract it
+  if (window.preloadedForecastData) {
+    return window.preloadedForecastData;
+  }
+  return null;
+}
 
-  detailedForecastElement.innerHTML = detailedHTML;
+/**
+ * Extract county name from the current page URL
+ * @returns {string|null} - County name or null
+ */
+function extractCountyNameFromURL() {
+  const path = window.location.pathname;
+  const match = path.match(/\/counties\/(\w+)\//);
+  return match ? match[1] : null;
+}
+
+/**
+ * Set up refresh button functionality
+ */
+function setupRefreshButton() {
+  const refreshButton = document.getElementById('global-refresh');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', async function () {
+      // Add refreshing class for visual feedback
+      this.classList.add('refreshing');
+
+      // Create an array to hold all refresh promises
+      const refreshPromises = [];
+
+      // Refresh current conditions if module is active
+      if (currentConditionsModule) {
+        refreshPromises.push(currentConditionsModule.refresh());
+      }
+
+      // Refresh forecast if module is active
+      if (forecastModule) {
+        refreshPromises.push(forecastModule.refresh());
+      }
+
+      // Add refresh for alerts if that section exists
+      if (document.getElementById('alerts')) {
+        const config = window.weatherAppConfig || {};
+        refreshPromises.push(loadAlertsData(config.lat, config.lon, config.countyName));
+      }
+
+      // Add refresh for AFD if that section exists
+      if (document.getElementById('afd-content')) {
+        const config = window.weatherAppConfig || {};
+        refreshPromises.push(loadAFDData(config.wfo));
+      }
+
+      // Wait for all refreshes to complete
+      await Promise.all(refreshPromises);
+
+      // Remove refreshing class after animation
+      setTimeout(() => {
+        this.classList.remove('refreshing');
+      }, 2000);
+    });
+  }
 }
 
 /**
@@ -116,7 +184,7 @@ async function loadAlertsData(lat, lon, county) {
   try {
     // Get alerts data using the data service
     const alertsData = await dataService.getData('alerts', { lat, lon, county });
-    
+
     // Process alerts and update the DOM
     renderAlerts(alertsData.alerts);
     return true;
@@ -137,17 +205,17 @@ async function loadAlertsData(lat, lon, county) {
 function renderAlerts(alerts) {
   const alertsElement = document.getElementById('alerts');
   if (!alertsElement) return;
-  
+
   if (!alerts || alerts.length === 0) {
     alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
     return;
   }
-  
+
   let alertsHTML = '';
   alerts.forEach((alert, index) => {
     // Get event name based on structure
     const eventName = alert.properties?.event || alert.event || 'Unknown Alert';
-    
+
     // Get description based on structure
     let description = alert.properties?.description || alert.description || 'No description available.';
     description = description.replace(/\r\n/g, "\n");
@@ -182,13 +250,13 @@ async function loadAFDData(wfo) {
   try {
     // Get AFD data using the data service
     const afdData = await dataService.getData('afd', { wfo });
-    
+
     // Update the DOM
     const afdElement = document.getElementById('afd-content');
     if (afdElement && afdData.content) {
       afdElement.innerHTML = afdData.content;
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error loading AFD data:', error);
@@ -197,146 +265,6 @@ async function loadAFDData(wfo) {
       afdElement.innerHTML = "Error loading forecast discussion. Please try again later.";
     }
     return false;
-  }
-}/**
- * weatherApp.js
- * Main entry point for the weather application
- */
-
-import dataService from './DataService.js';
-import CurrentConditionsModule from './CurrentConditionsModule.js';
-
-// Module instances
-let currentConditionsModule = null;
-let forecastModule = null;
-let alertsModule = null;
-let radarModule = null;
-let satelliteModule = null;
-let tropicalModule = null;
-
-/**
- * Initialize the weather application
- * @param {Object} config - Configuration object from page
- * @returns {Promise<boolean>} - Success status
- */
-export async function initWeatherApp(config = {}) {
-  try {
-    console.log('Initializing Weather App...');
-    
-    // Extract configuration values with fallbacks
-    const location = config.location || {};
-    const lat = location.lat || 35.64;
-    const lon = location.lon || -77.39;
-    const countyName = location.countyName || extractCountyNameFromURL();
-    const wfo = location.afdWFO || "MHX";
-    
-    // Store these for later use
-    window.weatherAppConfig = {
-      lat, 
-      lon,
-      countyName,
-      wfo
-    };
-    
-    // Initialize modules based on available DOM elements
-    const initPromises = [];
-    
-    // Initialize current conditions if element exists
-    if (document.getElementById('current-temp')) {
-      console.log('Initializing Current Conditions Module...');
-      currentConditionsModule = new CurrentConditionsModule();
-      
-      // Try to get any preloaded weather data from the page
-      const preloadedData = getPreloadedWeatherData();
-      
-      initPromises.push(currentConditionsModule.init(lat, lon, countyName, preloadedData));
-    }
-    
-    // Initialize forecast if element exists
-    if (document.getElementById('forecast')) {
-      console.log('Loading forecast data...');
-      initPromises.push(loadForecastData(lat, lon, countyName));
-    }
-    
-    // Initialize detailed forecast if element exists
-    if (document.getElementById('detailed-forecast')) {
-      console.log('Loading detailed forecast data...');
-      initPromises.push(loadDetailedForecastData(lat, lon, countyName));
-    }
-    
-    // Initialize alerts if element exists
-    if (document.getElementById('alerts')) {
-      console.log('Loading alerts data...');
-      initPromises.push(loadAlertsData(lat, lon, countyName));
-    }
-    
-    // Initialize AFD if element exists
-    if (document.getElementById('afd-content')) {
-      console.log('Loading AFD data...');
-      initPromises.push(loadAFDData(wfo));
-    }
-    
-    // Wait for all initializations to complete
-    await Promise.all(initPromises);
-    
-    // Setup refresh button handler
-    setupRefreshButton();
-    
-    // Setup other event handlers
-    setupEventHandlers();
-    
-    console.log('Weather App initialization complete');
-    return true;
-  } catch (error) {
-    console.error('Failed to initialize Weather App:', error);
-    return false;
-  }
-}
-
-/**
- * Try to extract any preloaded weather data from the page
- * @returns {Object|null} - Preloaded weather data or null
- */
-function getPreloadedWeatherData() {
-  // If the page had PHP-generated data embedded, extract it
-  if (window.preloadedWeatherData) {
-    return window.preloadedWeatherData;
-  }
-  return null;
-}
-
-/**
- * Extract county name from the current page URL
- * @returns {string|null} - County name or null
- */
-function extractCountyNameFromURL() {
-  const path = window.location.pathname;
-  const match = path.match(/\/counties\/(\w+)\//);
-  return match ? match[1] : null;
-}
-
-/**
- * Set up refresh button functionality
- */
-function setupRefreshButton() {
-  const refreshButton = document.getElementById('global-refresh');
-  if (refreshButton) {
-    refreshButton.addEventListener('click', async function() {
-      // Add refreshing class for visual feedback
-      this.classList.add('refreshing');
-      
-      // Refresh current conditions if module is active
-      if (currentConditionsModule) {
-        await currentConditionsModule.refresh();
-      }
-      
-      // Add code here to refresh other modules as they are implemented
-      
-      // Remove refreshing class after animation
-      setTimeout(() => {
-        this.classList.remove('refreshing');
-      }, 2000);
-    });
   }
 }
 
@@ -362,7 +290,7 @@ function setupEventHandlers() {
 
   // Setup submenu toggle for mobile
   setupSubmenuToggle();
-  
+
   // Setup back-to-top button
   setupBackToTopButton();
 }
@@ -375,8 +303,8 @@ function setupSubmenuToggle() {
   const menuItemsWithSubmenu = document.querySelectorAll('.nav-menu .has-submenu > a');
 
   // Add click handler to each menu item with submenu
-  menuItemsWithSubmenu.forEach(function(menuItem) {
-    menuItem.addEventListener('click', function(e) {
+  menuItemsWithSubmenu.forEach(function (menuItem) {
+    menuItem.addEventListener('click', function (e) {
       // Only apply this behavior on mobile/tablet
       if (window.innerWidth <= 768) {
         // Prevent the link from navigating
@@ -393,12 +321,12 @@ function setupSubmenuToggle() {
   });
 
   // Close submenus when clicking outside
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (window.innerWidth <= 768) {
       // If click is outside the navigation
       if (!e.target.closest('.nav-menu') && !e.target.closest('.hamburger')) {
         // Remove active class from all submenus
-        document.querySelectorAll('.submenu-active').forEach(function(item) {
+        document.querySelectorAll('.submenu-active').forEach(function (item) {
           item.classList.remove('submenu-active');
         });
       }
@@ -406,10 +334,10 @@ function setupSubmenuToggle() {
   });
 
   // Handle window resize
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 768) {
       // Reset submenus when returning to desktop view
-      document.querySelectorAll('.submenu-active').forEach(function(item) {
+      document.querySelectorAll('.submenu-active').forEach(function (item) {
         item.classList.remove('submenu-active');
       });
     }
@@ -430,7 +358,7 @@ function setupBackToTopButton() {
     });
 
     // Add click handler
-    btn.addEventListener('click', function(e) {
+    btn.addEventListener('click', function (e) {
       e.preventDefault();
       window.scrollTo({
         top: 0,
@@ -446,13 +374,22 @@ function setupBackToTopButton() {
  */
 export async function refreshAll() {
   try {
+    // Create an array to hold all refresh promises
+    const refreshPromises = [];
+
     // Refresh current conditions if module is active
     if (currentConditionsModule) {
-      await currentConditionsModule.refresh();
+      refreshPromises.push(currentConditionsModule.refresh());
     }
-    
-    // Add code here to refresh other modules as they are implemented
-    
+
+    // Refresh forecast if module is active
+    if (forecastModule) {
+      refreshPromises.push(forecastModule.refresh());
+    }
+
+    // Wait for all refreshes to complete
+    await Promise.all(refreshPromises);
+
     return true;
   } catch (error) {
     console.error('Error refreshing weather data:', error);
@@ -468,10 +405,10 @@ export function clearCache() {
   try {
     // Clear the data service cache
     dataService.clearCache();
-    
+
     // Force refresh all modules
     refreshAll();
-    
+
     return true;
   } catch (error) {
     console.error('Error clearing cache:', error);
@@ -489,13 +426,13 @@ export function getConfig(key, defaultValue) {
   if (!window.weatherAppConfig) {
     return defaultValue;
   }
-  
-  return window.weatherAppConfig[key] !== undefined ? 
+
+  return window.weatherAppConfig[key] !== undefined ?
     window.weatherAppConfig[key] : defaultValue;
 }
 
 // Export module instances for potential access from other scripts
-export { 
+export {
   currentConditionsModule,
   forecastModule,
   alertsModule,

@@ -3,7 +3,7 @@
  * Central module for weather data retrieval and caching with standardized data models
  */
 
-class DataService {
+class dataService {
   constructor() {
     // Cache configuration - TTL in milliseconds
     this.cacheTTL = {
@@ -20,13 +20,13 @@ class DataService {
     // API configurations
     this.nwsApiBase = 'https://api.weather.gov';
     this.openMeteoApiBase = 'https://api.open-meteo.com/v1/forecast';
-    
+
     // Local cache paths
     this.localCachePaths = {
       base: './js/modules/cache/',
       alternate: '../../js/modules/cache/'
     };
-    
+
     // Initialize cache
     this.initCache();
   }
@@ -92,7 +92,7 @@ class DataService {
     try {
       const cache = JSON.parse(localStorage.getItem('weatherCache') || '{}');
       const cacheKey = this.getCacheKey(dataType, params);
-      
+
       if (cache[cacheKey]) {
         // Check if cache is still valid
         const now = Date.now();
@@ -119,12 +119,12 @@ class DataService {
     try {
       const cache = JSON.parse(localStorage.getItem('weatherCache') || '{}');
       const cacheKey = this.getCacheKey(dataType, params);
-      
+
       cache[cacheKey] = {
         data,
         timestamp: Date.now()
       };
-      
+
       localStorage.setItem('weatherCache', JSON.stringify(cache));
     } catch (error) {
       console.warn('Error saving to localStorage:', error);
@@ -143,7 +143,7 @@ class DataService {
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
       .map(([key, value]) => `${key}:${value}`)
       .join('_');
-    
+
     return `${dataType}_${paramString}`;
   }
 
@@ -157,7 +157,7 @@ class DataService {
     try {
       // Determine the cache file path based on data type and parameters
       const cacheFilePath = this.getServerCachePath(dataType, params);
-      
+
       // Try multiple path patterns to handle different directory structures
       for (const basePath of [this.localCachePaths.base, this.localCachePaths.alternate]) {
         try {
@@ -172,7 +172,7 @@ class DataService {
           // Continue to next path pattern
         }
       }
-      
+
       // If we've tried all paths and none worked
       return null;
     } catch (error) {
@@ -216,8 +216,8 @@ class DataService {
   async getFromApi(dataType, params) {
     try {
       let data = null;
-      
-      switch(dataType) {
+
+      switch (dataType) {
         case 'currentConditions':
           // Use Open-Meteo for current conditions as specified
           data = await this.fetchOpenMeteoCurrentConditions(params);
@@ -237,7 +237,7 @@ class DataService {
         default:
           throw new Error(`API fetch not implemented for data type: ${dataType}`);
       }
-      
+
       // Normalize the data to ensure consistent structure
       return this.normalizeData(dataType, data);
     } catch (error) {
@@ -253,13 +253,13 @@ class DataService {
    */
   async fetchOpenMeteoCurrentConditions(params) {
     const { lat, lon } = params;
-    
+
     // Construct the Open-Meteo API URL with required parameters
     const url = `${this.openMeteoApiBase}?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch`;
-    
+
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     return await response.json();
   }
 
@@ -270,28 +270,28 @@ class DataService {
    */
   async fetchNwsForecast(params) {
     const { lat, lon } = params;
-    
+
     // First call to get grid points
     const pointsResponse = await fetch(`${this.nwsApiBase}/points/${lat},${lon}`);
     if (!pointsResponse.ok) throw new Error(`HTTP error! status: ${pointsResponse.status}`);
-    
+
     const pointsData = await pointsResponse.json();
     const forecastUrl = pointsData.properties.forecast;
     const hourlyForecastUrl = pointsData.properties.forecastHourly;
-    
+
     // Get both daily and hourly forecasts
     const [forecastResponse, hourlyResponse] = await Promise.all([
       fetch(forecastUrl),
       fetch(hourlyForecastUrl)
     ]);
-    
+
     if (!forecastResponse.ok || !hourlyResponse.ok) {
       throw new Error('Failed to fetch forecast data');
     }
-    
+
     const forecastData = await forecastResponse.json();
     const hourlyData = await hourlyResponse.json();
-    
+
     // Combine both forecasts into one data structure
     return {
       daily: forecastData.properties.periods,
@@ -306,10 +306,10 @@ class DataService {
    */
   async fetchNwsAlerts(params) {
     const { lat, lon } = params;
-    
+
     const response = await fetch(`${this.nwsApiBase}/alerts/active?point=${lat},${lon}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     return await response.json();
   }
 
@@ -320,24 +320,24 @@ class DataService {
    */
   async fetchNwsAfd(params) {
     const { wfo } = params;
-    
+
     // This is more complex as it requires scraping HTML
     const url = `https://forecast.weather.gov/product.php?site=${wfo}&issuedby=${wfo}&product=AFD&format=txt&version=1&glossary=0`;
-    
+
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     const html = await response.text();
-    
+
     // Extract the pre tag content which contains the AFD
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     const preElement = doc.querySelector("pre");
-    
+
     if (!preElement) throw new Error('Could not find AFD content in page');
-    
+
     const afdText = preElement.innerText;
-    
+
     // Return in the format expected by the normalizer
     return {
       content: afdText,
@@ -353,14 +353,14 @@ class DataService {
   async fetchTropicalData(params) {
     // This is a placeholder - actual implementation would depend on what's available
     // Most tropical data is best consumed from caches due to complex formats
-    
+
     if (params.subType === 'stormInfo') {
       // For active storms, try NHC API directly
       const response = await fetch('https://www.nhc.noaa.gov/CurrentStorms.json');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
     }
-    
+
     throw new Error('Direct API fetch not implemented for this tropical data type');
   }
 
@@ -372,8 +372,8 @@ class DataService {
    */
   normalizeData(dataType, data) {
     if (!data) return null;
-    
-    switch(dataType) {
+
+    switch (dataType) {
       case 'currentConditions':
         return this.normalizeCurrentConditions(data);
       case 'forecast':
@@ -414,12 +414,12 @@ class DataService {
         iconUrl: w.iconUrl || null
       };
     }
-    
+
     // Handle data from Open-Meteo API
     if (data.current_weather) {
       const cw = data.current_weather;
       const condition = this.getWeatherCondition(cw.weathercode);
-      
+
       return {
         temp: this.formatTemperature(cw.temperature),
         condition: condition,
@@ -434,7 +434,7 @@ class DataService {
         iconUrl: null // Open-Meteo doesn't provide icons
       };
     }
-    
+
     // Fallback for unknown format
     return this.getFallbackData('currentConditions');
   }
@@ -475,7 +475,7 @@ class DataService {
       96: 'Thunderstorm with slight hail',
       99: 'Thunderstorm with heavy hail'
     };
-    
+
     return conditions[code] || 'Unknown';
   }
 
@@ -492,12 +492,12 @@ class DataService {
         hourly: data.forecast.hourly || []
       };
     }
-    
+
     // Direct from NWS API format - already handled in fetchNwsForecast
     if (data.daily && data.hourly) {
       return data;
     }
-    
+
     // If it's just the raw NWS API response
     if (data.properties && data.properties.periods) {
       // If we can't determine if it's daily or hourly, assume daily
@@ -506,7 +506,7 @@ class DataService {
         hourly: []
       };
     }
-    
+
     // Fallback
     return this.getFallbackData('forecast');
   }
@@ -537,14 +537,14 @@ class DataService {
         })
       };
     }
-    
+
     // From NWS API
     if (data.features && Array.isArray(data.features)) {
       return {
         alerts: data.features
       };
     }
-    
+
     // Fallback
     return this.getFallbackData('alerts');
   }
@@ -559,7 +559,7 @@ class DataService {
     if (data.content && data.timestamp) {
       return data;
     }
-    
+
     // If it's raw text from API
     if (typeof data === 'string') {
       return {
@@ -567,7 +567,7 @@ class DataService {
         timestamp: Date.now() / 1000
       };
     }
-    
+
     // Fallback
     return this.getFallbackData('afd');
   }
@@ -582,14 +582,14 @@ class DataService {
     if (data.activeStorms || data.outlook || data.discussion) {
       return data;
     }
-    
+
     // If it's from NHC CurrentStorms API
     if (data.activeStorms && Array.isArray(data.activeStorms)) {
       return {
         activeStorms: data.activeStorms
       };
     }
-    
+
     // Fallback
     return this.getFallbackData('tropical');
   }
@@ -723,7 +723,7 @@ class DataService {
    */
   formatTime(timestamp) {
     if (!timestamp) return 'Unknown';
-    
+
     const date = new Date(timestamp * 1000);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
@@ -735,12 +735,12 @@ class DataService {
    */
   degreesToCardinal(degrees) {
     if (degrees === undefined || degrees === null) return 'N/A';
-    
+
     // Ensure degrees is between 0-360
     degrees = ((degrees % 360) + 360) % 360;
-    
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 
-                         'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     return directions[Math.round(degrees / 22.5) % 16];
   }
 
@@ -767,13 +767,13 @@ class DataService {
         this.saveToLocalCache(dataType, params, serverCachedData);
         return serverCachedData;
       }
-      
+
       const apiData = await this.getFromApi(dataType, params);
       if (apiData) {
         this.saveToLocalCache(dataType, params, apiData);
         return apiData;
       }
-      
+
       throw new Error(`Could not refresh ${dataType} data`);
     } catch (error) {
       console.error(`Error refreshing ${dataType} data:`, error);

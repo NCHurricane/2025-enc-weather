@@ -3,7 +3,7 @@
  * Handles fetching, processing and displaying current weather conditions
  */
 
-import dataService from './DataService.js';
+import dataService from './dataService.js';
 import { safeSetText, safeSetHTML } from './utils.js';
 
 class CurrentConditionsModule {
@@ -128,7 +128,7 @@ class CurrentConditionsModule {
       } else {
         safeSetText(this.config.tempElementId, `N/A`);
       }
-      
+
       safeSetText(this.config.descElementId, this.weatherData.condition || 'Sky Conditions N/A');
       safeSetHTML(this.config.dewpointElementId, `<strong>Dew Point:</strong> ${this.weatherData.dewpoint !== 'N/A' ? `${this.weatherData.dewpoint}°F` : 'N/A'}`);
       safeSetHTML(this.config.humidityElementId, `<strong>Humidity:</strong> ${this.weatherData.humidity !== 'N/A' ? `${this.weatherData.humidity}%` : 'N/A'}`);
@@ -184,14 +184,14 @@ class CurrentConditionsModule {
       'weather-clear', 'weather-cloudy', 'weather-rain',
       'weather-snow', 'weather-storm', 'weather-fog'
     ];
-    
+
     weatherClasses.forEach(cls => {
       element.classList.remove(cls);
     });
 
     // Determine appropriate class based on condition
     const condition = this.weatherData.condition?.toLowerCase() || '';
-    
+
     if (condition.includes('clear') || condition.includes('sunny') || condition.includes('fair')) {
       element.classList.add('weather-clear');
     } else if (condition.includes('cloud') || condition.includes('overcast')) {
@@ -242,7 +242,7 @@ class CurrentConditionsModule {
    */
   updateLastUpdateTime() {
     if (!this.lastUpdateTime) return;
-    
+
     const lastUpdateElement = document.getElementById(this.config.lastUpdateElementId);
     if (!lastUpdateElement) return;
 
@@ -260,7 +260,7 @@ class CurrentConditionsModule {
     } else {
       const hours = Math.floor(diffMins / 60);
       const remainingMins = diffMins % 60;
-      
+
       if (hours === 1) {
         if (remainingMins === 0) {
           ageText = 'Data age: 1 hour';
@@ -305,7 +305,7 @@ class CurrentConditionsModule {
       clearInterval(this.refreshTimer);
       this.refreshTimer = null;
     }
-    
+
     if (this.updateTimer) {
       clearInterval(this.updateTimer);
       this.updateTimer = null;
