@@ -162,15 +162,113 @@
       </footer>
 
 
+      <script type="module" src="js/main.js?v=4.22.25"></script>
+      <script type="module" src="js/index.js?v=4.22.25"></script> -->
+
+      <!-- With this consolidated approach -->
+      <script src="js/siteConfig.js?v=4.22.25"></script>
       <script src="https://unpkg.com/topojson-client@3"></script>
       <script src="https://d3js.org/d3.v7.min.js"></script>
 
-      <!-- CHANGE VERSION: -->
-      <script src="js/siteConfig.js?v=4.22.25"></script>
-      <script type="module" src="js/main.js?v=4.22.25"></script>
-      <script type="module" src="js/index.js?v=4.22.25"></script>
+      <script type="module">
+         // Import all required functions from their source modules
+         import { initCountyMap } from './js/modules/ncCountyMap.js';
+         import {
+            updateTropicalOutlook,
+            checkActiveSystemsStatus,
+            updateTropicalAlertBanner
+         } from './js/modules/tropical.js';
+         import { initTropicalBanner } from './js/modules/tropical-banner.js';
+         import { initWeatherApp } from './js/modules/weatherApp.js';
 
-      <!-- Back to Top Button -->
+         // Main initialization function for index page
+         async function initIndexPage() {
+            console.log('Initializing index page...');
+
+            // Initialize the weather application
+            await initWeatherApp(window.weatherConfig || {});
+
+            // Initialize the NC County Map
+            const countyMap = initCountyMap();
+
+            // Store the map instance globally for debugging or future access
+            window.countyMap = countyMap;
+
+            // Initialize tropical banner system
+            initTropicalBanner();
+
+            // Load tropical outlook
+            updateTropicalOutlook();
+
+            // Check for active tropical systems for the full-page banner
+            const hasActiveSystems = await checkActiveSystemsStatus();
+            updateTropicalAlertBanner(hasActiveSystems);
+
+            // Set up event handlers
+            setupEventHandlers();
+
+            // Set up auto-refresh
+            setInterval(() => {
+               console.log('Auto-refreshing weather data');
+
+               // Refresh the county map if available
+               if (window.countyMap && typeof window.countyMap.refresh === 'function') {
+                  window.countyMap.refresh();
+               }
+
+               // Refresh tropical banner
+               initTropicalBanner();
+
+               // Refresh tropical data
+               updateTropicalOutlook();
+               checkActiveSystemsStatus().then(hasActiveSystems => {
+                  updateTropicalAlertBanner(hasActiveSystems);
+               });
+            }, 300000); // Refresh every 5 minutes
+         }
+
+         /**
+          * Set up event handlers for interactive elements
+          */
+         function setupEventHandlers() {
+            // Add refresh button functionality
+            const refreshButton = document.getElementById('global-refresh');
+            if (refreshButton) {
+               refreshButton.addEventListener('click', function () {
+                  this.classList.add('refreshing');
+
+                  // Refresh the county map if available
+                  if (window.countyMap && typeof window.countyMap.refresh === 'function') {
+                     window.countyMap.refresh();
+                  }
+
+                  // Refresh tropical data
+                  updateTropicalOutlook();
+                  checkActiveSystemsStatus().then(hasActiveSystems => {
+                     updateTropicalAlertBanner(hasActiveSystems);
+                  });
+
+                  // Remove refreshing class after animation
+                  setTimeout(() => {
+                     this.classList.remove('refreshing');
+                  }, 2000);
+               });
+            }
+         }
+
+         // Initialize when DOM is loaded
+         document.addEventListener('DOMContentLoaded', initIndexPage);
+
+         // Add window resize event listener to handle responsive adjustments
+         window.addEventListener('resize', function () {
+            // If the map has a resize handler, call it
+            if (window.countyMap && typeof window.countyMap.handleResize === 'function') {
+               window.countyMap.handleResize();
+            }
+         });
+      </script>
+
+      <!-- Back to Top Button handler remains -->
       <script>
          document.addEventListener('DOMContentLoaded', function () {
             const btn = document.querySelector('.back-to-top');
@@ -195,7 +293,6 @@
       </script>
       <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
          <i class="fa-solid fa-up-long"></i> </a>
-
    </body>
 
 </html>

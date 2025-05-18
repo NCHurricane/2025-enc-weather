@@ -6,6 +6,7 @@
 import dataService from './dataService.js';
 import CurrentConditionsModule from './currentConditionsModule.js';
 import ForecastModule from './forecastModule.js';
+import AlertsModule from './alertsModule.js';
 
 // Module instances
 let currentConditionsModule = null;
@@ -64,10 +65,11 @@ export async function initWeatherApp(config = {}) {
       initPromises.push(forecastModule.init(lat, lon, countyName, preloadedForecastData));
     }
 
-    // Initialize alerts if element exists
+    // Initialize alerts module if element exists
     if (document.getElementById('alerts')) {
-      console.log('Loading alerts data...');
-      initPromises.push(loadAlertsData(lat, lon, countyName));
+      console.log('Initializing Alerts Module...');
+      alertsModule = new AlertsModule();
+      initPromises.push(alertsModule.init(lat, lon, countyName));
     }
 
     // Initialize AFD if element exists
@@ -150,10 +152,9 @@ function setupRefreshButton() {
         refreshPromises.push(forecastModule.refresh());
       }
 
-      // Add refresh for alerts if that section exists
-      if (document.getElementById('alerts')) {
-        const config = window.weatherAppConfig || {};
-        refreshPromises.push(loadAlertsData(config.lat, config.lon, config.countyName));
+      // Refresh alerts if module is active
+      if (alertsModule) {
+        refreshPromises.push(alertsModule.refresh());
       }
 
       // Add refresh for AFD if that section exists
@@ -171,74 +172,6 @@ function setupRefreshButton() {
       }, 2000);
     });
   }
-}
-
-/**
- * Load alerts data and update the DOM
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @param {string} county - County name
- * @returns {Promise<boolean>} - Success status
- */
-async function loadAlertsData(lat, lon, county) {
-  try {
-    // Get alerts data using the data service
-    const alertsData = await dataService.getData('alerts', { lat, lon, county });
-
-    // Process alerts and update the DOM
-    renderAlerts(alertsData.alerts);
-    return true;
-  } catch (error) {
-    console.error('Error loading alerts data:', error);
-    const alertsElement = document.getElementById('alerts');
-    if (alertsElement) {
-      alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>Unable to load alerts</b></div></div>';
-    }
-    return false;
-  }
-}
-
-/**
- * Render alerts into the DOM
- * @param {Array} alerts - Alert objects
- */
-function renderAlerts(alerts) {
-  const alertsElement = document.getElementById('alerts');
-  if (!alertsElement) return;
-
-  if (!alerts || alerts.length === 0) {
-    alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
-    return;
-  }
-
-  let alertsHTML = '';
-  alerts.forEach((alert, index) => {
-    // Get event name based on structure
-    const eventName = alert.properties?.event || alert.event || 'Unknown Alert';
-
-    // Get description based on structure
-    let description = alert.properties?.description || alert.description || 'No description available.';
-    description = description.replace(/\r\n/g, "\n");
-
-    const paragraphs = description.split(/\n\s*\n/);
-    const formattedDescription = paragraphs.map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join("");
-
-    // Add to HTML
-    alertsHTML += `
-      <div class="alert">
-        <input type="checkbox" id="alert-${index}" class="alert-toggle">
-        <label for="alert-${index}" class="alert-title">
-          <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-          ${eventName}
-        </label>
-        <div class="alert-details">
-          ${formattedDescription}
-        </div>
-      </div>
-    `;
-  });
-
-  alertsElement.innerHTML = alertsHTML;
 }
 
 /**
@@ -385,6 +318,11 @@ export async function refreshAll() {
     // Refresh forecast if module is active
     if (forecastModule) {
       refreshPromises.push(forecastModule.refresh());
+    }
+
+    // Refresh alerts if module is active
+    if (alertsModule) {
+      refreshPromises.push(alertsModule.refresh());
     }
 
     // Wait for all refreshes to complete
