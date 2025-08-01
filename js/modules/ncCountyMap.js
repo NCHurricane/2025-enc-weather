@@ -63,11 +63,9 @@ export class NCCountyMap {
             // Get UGC code and zone URL for this county
             const countyUGC = county.ugcCode;
             const countyZoneURL = county.zoneURL;
-            console.log(`County ${county.name} metadata:`, { countyUGC, countyZoneURL });
 
             // First try to fetch from county-specific cache file
             const countyName = county.name.toLowerCase();
-            console.log(`Attempting to load alerts for ${county.name} from cache`);
 
             try {
                 // Try multiple paths

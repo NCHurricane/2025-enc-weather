@@ -3,7 +3,7 @@
  * Central module for weather data retrieval and caching with standardized data models
  */
 
-class dataService {
+class DataService {
   constructor() {
     // Cache configuration - TTL in milliseconds
     this.cacheTTL = {
@@ -783,5 +783,5 @@ class dataService {
 }
 
 // Create and export singleton instance
-const dataService = new dataService();
-export default dataService;
+const dataServiceInstance = new DataService();  // Changed class name to DataService (capitalized)
+export default dataServiceInstance;
