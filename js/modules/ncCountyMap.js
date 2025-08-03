@@ -1,5 +1,5 @@
 // North Carolina County Map Module
-import { fetchCurrentWeather, getWeatherIcon } from './weatherData.js';
+import { WeatherAPI } from '../weather.js';
 import { safeSetHTML, createElement } from './utils.js';
 import { warningColors, warningPriorities } from './warningColors.js';
 
@@ -25,24 +25,18 @@ export class NCCountyMap {
         this.zoneToCountyMap = {
             // Hyde County zones
             'NCZ081': 'Hyde',     // Mainland Hyde
-            'NCZ204': 'Hyde',     // Ocracoke Island
-
-            // Dare County zones
-            'NCZ047': 'Dare',     // Mainland Dare
-            'NCZ203': 'Dare',     // Northern OBX
-            'NCZ205': 'Dare',     // Hatteras Island
+            'NCZ095': 'Hyde',     // Outer Banks Hyde
+            // Add additional zone-to-county mappings here...
         };
-        this.alertData = {};
-        this.testModeEnabled = false;
-        this.targetCounties = new Set(
-            (window.siteConfig?.counties || []).map(c => c.name.toLowerCase())
-        );
-        this.targetUGCCodes = new Set();
-        this.targetZoneURLs = new Set();
-        (window.siteConfig?.counties || []).forEach(c => {
-            if (c.ugcCode) this.targetUGCCodes.add(c.ugcCode);
-            if (c.zoneURL) this.targetZoneURLs.add(c.zoneURL);
-        });
+    }
+
+    async loadWeatherForCounty(county) {
+        try {
+            const weatherData = await WeatherAPI.getCurrent(county.lat, county.lon);
+            this.weatherData[county.id] = weatherData;
+        } catch (err) {
+            console.error(`Failed to load weather for ${county.name}:`, err);
+        }
     }
 
 
