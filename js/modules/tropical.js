@@ -22,21 +22,24 @@ let discussionTimestamp = null;
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Tropical module initializing...');
 
-    // Initialize satellite imagery
+    // Always initialize satellite imagery
     initTropicalSatellite();
 
-    // Initialize text products
-    initTextProducts();
-
-    // Initialize graphics timestamps
-    updateGraphicsTimestamps();
+    // Guard text product and timestamp initialization: only run if at least one of the expected elements exists
+    if (document.getElementById('two-text-content') ||
+        document.getElementById('two-spanish-content') ||
+        document.getElementById('discussion-content')) {
+        initTextProducts();
+        updateGraphicsTimestamps();
+    } else {
+        console.log('Tropical text product elements missing, skipping their initialization on this page.');
+    }
 
     // Set up refresh button
     setupRefreshButton();
 
     // Initialize active storm checking
     checkActiveStorms();
-
 });
 
 /**
@@ -601,11 +604,10 @@ export async function checkActiveSystemsStatus() {
         }
 
         // Fallback - check NHC website directly
-        const nhcResponse = await fetch('https://www.nhc.noaa.gov/');
-        const text = await nhcResponse.text();
-        return text.includes('Active Cyclones') && !text.includes('No Active Cyclones');
-    } catch (error) {
-        console.error('Error checking tropical system status:', error);
+        const storms = await fetchActiveAtlanticStorms(); // now returns [] if anything went wrong
+        return Array.isArray(storms) && storms.length > 0;
+    } catch (e) {
+        console.error('Error checking tropical system status via JSON feed:', e);
         return false;
     }
 }
@@ -677,22 +679,46 @@ const STORM_CLASSIFICATIONS = {
  */
 async function fetchActiveAtlanticStorms() {
     try {
-        // URL to NHC active cyclones JSON
+        // URL to NHC active cyclones JSON cache (fallback to live if missing)
         const nhcJsonUrl = './js/modules/cache/nhc_current_storms.json';
 
-        // Fetch the JSON data with a cache-busting parameter
+        // Fetch the JSON data with cache-busting
         const response = await fetch(`${nhcJsonUrl}?t=${Date.now()}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
 
-        const data = await response.json();
+        const raw = await response.json();
 
-        // Filter for Atlantic storms only (binNumber starts with "AT")
-        const atlanticStorms = data.activeStorms.filter(storm =>
-            storm.binNumber && storm.binNumber.startsWith('AT')
-        );
+        if (!raw || typeof raw !== 'object') {
+            console.warn('Unexpected current storms payload (not an object):', raw);
+            return [];
+        }
+
+        // Drill into known nesting variations to locate the activeStorms array
+        let activeStorms = [];
+        if (Array.isArray(raw.activeStorms)) {
+            activeStorms = raw.activeStorms;
+        } else if (raw.data && Array.isArray(raw.data.activeStorms)) {
+            activeStorms = raw.data.activeStorms;
+        } else if (raw.data && Array.isArray(raw.data.storms)) {
+            // fallback if the property name differs
+            activeStorms = raw.data.storms;
+        } else {
+            console.warn('Unexpected CurrentStorms.json structure, full response:', raw);
+            return [];
+        }
+
+        // Debug: log all seen binNumbers for visibility when diagnosing misses
+        console.log('All active storm binNumbers:', activeStorms.map(s => s.binNumber));
+
+        // Filter for Atlantic basin storms — NHC uses "AL" prefix for Atlantic systems
+        const atlanticStorms = activeStorms.filter(storm => {
+            if (!storm.binNumber) return false;
+            const bin = storm.binNumber.toUpperCase();
+            return bin.startsWith('AL');
+        });
 
         console.log(`Found ${atlanticStorms.length} active Atlantic storms`);
         return atlanticStorms;
@@ -701,6 +727,7 @@ async function fetchActiveAtlanticStorms() {
         return [];
     }
 }
+
 
 /**
  * Creates a storm alert banner for display

@@ -404,8 +404,8 @@ export async function fetchCurrentWeather(lat, lon) {
             return getDefaultWeatherData();
         }
 
+        let cacheError = null;
         try {
-            // First try standard county file naming
             const response = await fetch(`js/modules/cache/${countyName.toLowerCase()}_weather.json?t=${Date.now()}`);
             if (response.ok) {
                 const data = await response.json();
@@ -413,11 +413,11 @@ export async function fetchCurrentWeather(lat, lon) {
                     return formatWeatherData(data.weather);
                 }
             }
-        } catch (error) {
-            console.log('Standard file naming failed, trying zone-based files...');
+        } catch (err) {
+            cacheError = err; // capture for later logging
         }
 
-        // If standard naming fails, try zone-based files
+        // zone-based
         try {
             const zoneData = await fetchFromZoneFiles(countyName, 'weather');
             if (zoneData && zoneData.weather) {
@@ -425,9 +425,10 @@ export async function fetchCurrentWeather(lat, lon) {
             }
         } catch (zoneError) {
             console.warn(`Zone-based cache error for ${countyName}:`, zoneError);
+            if (!cacheError) cacheError = zoneError;
         }
 
-        // Fall back to API
+        // fallback to API
         console.warn(`Cache failed for ${countyName}, attempting NWS API:`, cacheError);
         return await fetchWeatherFromAPI(lat, lon);
 
@@ -606,26 +607,6 @@ function formatTime(timestamp) {
     return timestamp
         ? new Date(timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : 'Unknown';
-}
-
-/**
- * Get default weather data when actual data can't be retrieved
- * @returns {Object} Default weather data object
- */
-function getDefaultWeatherData() {
-    return {
-        temp: 'N/A',
-        condition: 'Data Unavailable',
-        dewpoint: 'N/A',
-        humidity: 'N/A',
-        wind: 'N/A',
-        visibility: 'N/A',
-        pressure: 'N/A',
-        time: null,
-        formattedTime: 'N/A',
-        stationName: 'Unknown Station',
-        iconUrl: null
-    };
 }
 
 /**
@@ -1117,4 +1098,24 @@ export async function fetchCurrentConditions(lat, lon) {
     const weatherData = await fetchCurrentWeather(lat, lon);
     updateDOMWithObservation(weatherData);
     return weatherData;
+}
+
+export { fetchFromZoneFiles };
+
+export function getDefaultWeatherData() {
+    const now = new Date();
+    return {
+        temp: 'N/A',
+        condition: 'Unknown',
+        dewpoint: 'N/A',
+        humidity: 'N/A',
+        wind: 'Calm',
+        visibility: 'N/A',
+        pressure: 'N/A',
+        time: now,
+        formattedTime: 'Unknown',
+        stationName: 'Local Station',
+        iconUrl: null,
+        isFallback: true
+    };
 }

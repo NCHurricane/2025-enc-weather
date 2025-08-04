@@ -1,8 +1,46 @@
 // North Carolina County Map Module
 // FIXED: Removed broken weather.js import and integrated with weatherData.js
-import { fetchCurrentWeather, fetchAlerts } from './weatherData.js';
+import { fetchCurrentWeather, fetchAlerts, getDefaultWeatherData } from './weatherData.js';
 import { safeSetHTML, createElement } from './utils.js';
 import { warningColors, warningPriorities } from './warningColors.js';
+
+/**
+ * Resolve a display name (including zone-like names) to the canonical parent county name.
+ * Falls back gracefully to the original name if no mapping is found.
+ * Returns lowercase for consistent comparisons.
+ */
+function resolveDisplayNameToCountyName(displayName) {
+    const counties = window.siteConfig?.counties || [];
+    if (!displayName) return null;
+    const nameLower = displayName.toLowerCase();
+
+    // 1. Direct match on county name
+    const direct = counties.find(c => c.name.toLowerCase() === nameLower);
+    if (direct) return direct.name.toLowerCase();
+
+    // 2. Match against alternateZones entries (by name)
+    for (const county of counties) {
+        if (Array.isArray(county.alternateZones)) {
+            for (const alt of county.alternateZones) {
+                if (alt.name && alt.name.toLowerCase() === nameLower) {
+                    return county.name.toLowerCase();
+                }
+            }
+        }
+    }
+
+    // 3. Fuzzy containment (e.g., partial overlaps)
+    for (const county of counties) {
+        const candidate = county.name.toLowerCase();
+        if (nameLower.includes(candidate) || candidate.includes(nameLower)) {
+            return county.name.toLowerCase();
+        }
+    }
+
+    // 4. Fallback: return original normalized
+    return displayName.toLowerCase();
+}
+
 
 export class NCCountyMap {
     constructor(containerId, options = {}) {
@@ -438,7 +476,10 @@ export class NCCountyMap {
                     const weatherData = await fetchCurrentWeather(county.lat, county.lon);
 
                     if (!weatherData || weatherData.temp === 'N/A') {
-                        console.warn(`No valid weather data for ${county.name}:`, weatherData);
+                        console.log(`Weather data unavailable or incomplete for ${county.name}; using placeholder.`);
+                        const fallback = getDefaultWeatherData();
+                        this.weatherData[county.name.toLowerCase()] = fallback;
+                        this.addWeatherMarker(county, fallback);
                         return null;
                     }
 
@@ -484,6 +525,8 @@ export class NCCountyMap {
             return;
         }
 
+        const canonicalCountyName = resolveDisplayNameToCountyName(county.name);
+
         const countyFeature = this.countyFeatures.features.find(feature => {
             const featureName = (
                 feature.properties.name ||
@@ -493,9 +536,9 @@ export class NCCountyMap {
                 ""
             ).toLowerCase();
 
-            return featureName === county.name.toLowerCase() ||
-                featureName.includes(county.name.toLowerCase()) ||
-                county.name.toLowerCase().includes(featureName);
+            return featureName === canonicalCountyName ||
+                featureName.includes(canonicalCountyName) ||
+                canonicalCountyName.includes(featureName);
         });
 
         if (!countyFeature) {

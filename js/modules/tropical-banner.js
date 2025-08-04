@@ -25,38 +25,32 @@ export function initTropicalBanner() {
 /**
  * Run the tropical banner with example data from JSON file
  */
-function runTestWithExampleData() {
-    console.log("Running in TEST MODE with example data");
+async function runTestWithExampleData(raw) {
+    // Normalize shape (some responses might nest under .data)
+    let activeStorms = [];
+    if (Array.isArray(raw.activeStorms)) {
+        activeStorms = raw.activeStorms;
+    } else if (raw.data && Array.isArray(raw.data.activeStorms)) {
+        activeStorms = raw.data.activeStorms;
+    } else if (raw.data && Array.isArray(raw.data.storms)) {
+        activeStorms = raw.data.storms; // fallback variant if naming differs
+    } else {
+        console.warn('Unexpected structure in test storm data:', raw);
+    }
 
-    // Fetch the local JSON file
-    fetch('./js/data/CurrentStorms.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Successfully loaded example storm data:", data);
+    // Debug: show all seen binNumbers
+    console.log('Banner test saw activeStorms binNumbers:', activeStorms.map(s => s.binNumber));
 
-            // Filter for Atlantic storms only
-            const atlanticStorms = data.activeStorms.filter(storm =>
-                storm.binNumber && storm.binNumber.startsWith('AT')
-            );
+    const atlanticStorms = activeStorms.filter(storm => {
+        if (!storm.binNumber) return false;
+        return storm.binNumber.toUpperCase().startsWith('AL');
+    });
 
-            // Display the example data
-            if (atlanticStorms && atlanticStorms.length > 0) {
-                console.log(`[TEST] Found ${atlanticStorms.length} active Atlantic systems in example data`);
-                displayTropicalBanner(atlanticStorms);
-            } else {
-                console.log("[TEST] No active systems in example data");
-                displayNoActiveSystems();
-            }
-        })
-        .catch(error => {
-            console.error('Error loading example storm data:', error);
-            displayNoActiveSystems();
-        });
+    if (atlanticStorms.length > 0) {
+        displayTropicalBanner(atlanticStorms);
+    } else {
+        displayNoActiveSystems();
+    }
 }
 
 /**
@@ -219,19 +213,32 @@ function displayTropicalBanner(storms) {
  * Handle the storm data once retrieved
  * @param {Object} data - The storm data
  */
-function handleStormData(data) {
-    // Filter for Atlantic storms only
-    const atlanticStorms = data.activeStorms.filter(storm =>
-        storm.binNumber && storm.binNumber.startsWith('AT')
-    );
+function handleStormData(raw) {
+    // Normalize possible nesting; some versions may wrap in .data
+    let activeStorms = [];
+    if (Array.isArray(raw.activeStorms)) {
+        activeStorms = raw.activeStorms;
+    } else if (raw.data && Array.isArray(raw.data.activeStorms)) {
+        activeStorms = raw.data.activeStorms;
+    } else if (raw.data && Array.isArray(raw.data.storms)) {
+        activeStorms = raw.data.storms;
+    } else {
+        console.warn('Unexpected storm data structure in tropical-banner.js:', raw);
+    }
 
-    if (atlanticStorms && atlanticStorms.length > 0) {
+    // Debug: log all seen binNumbers when real data arrives
+    console.log('Banner saw activeStorms binNumbers:', activeStorms.map(s => s.binNumber));
+
+    const atlanticStorms = activeStorms.filter(storm => {
+        if (!storm.binNumber) return false;
+        return storm.binNumber.toUpperCase().startsWith('AL');
+    });
+
+    if (atlanticStorms.length > 0) {
         console.log(`Found ${atlanticStorms.length} active Atlantic systems`);
         displayTropicalBanner(atlanticStorms);
-        // Remove the displayStormList call if you don't need it
-        // displayStormList(atlanticStorms); 
     } else {
-        console.log("No active tropical systems found");
+        console.log('No active tropical systems found');
         displayNoActiveSystems();
     }
 }

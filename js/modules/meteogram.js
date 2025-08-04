@@ -2,7 +2,7 @@
 // FIXED: Removed duplicate data fetching, now uses weatherData.js for forecast data
 
 import { degreesToCardinal } from './utils.js';
-import { fetchWeatherForecast, fetchDetailedForecast } from './weatherData.js';
+import { fetchDetailedForecast, fetchFromZoneFiles } from './weatherData.js';
 
 function getCacheBasePath() {
   const path = window.location.pathname;
@@ -14,44 +14,6 @@ function getCacheBasePath() {
 
   // If we're at root level
   return 'js/modules/cache/';
-}
-
-/**
- * Try to fetch data from zone-based cache files with correct paths
- * @param {string} countyName - County name
- * @param {string} dataType - 'weather', 'forecast', or 'alerts'
- * @returns {Promise<Object|null>} - First successful data found
- */
-async function fetchFromZoneFiles(countyName, dataType) {
-  const cacheFiles = getCountyCacheFiles(countyName);
-  const fileNames = cacheFiles[dataType] || [];
-  const basePath = getCacheBasePath();
-
-  console.log(`Trying zone-based files for ${countyName} ${dataType}:`, fileNames);
-  console.log(`Using base path: ${basePath}`);
-
-  // Try each possible file name
-  for (const fileName of fileNames) {
-    const fullPath = `${basePath}${fileName}.json`;
-
-    try {
-      console.log(`Trying zone file: ${fullPath}`);
-      const response = await fetch(`${fullPath}?t=${Date.now()}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Successfully loaded ${dataType} data from: ${fullPath}`);
-        return data;
-      } else {
-        console.log(`Zone file not found: ${fullPath} (status: ${response.status})`);
-      }
-    } catch (error) {
-      console.log(`Failed to load ${fullPath}:`, error.message);
-    }
-  }
-
-  console.warn(`No zone-based ${dataType} files found for ${countyName}`);
-  return null;
 }
 
 // REMOVED: fetchForecastData - now uses weatherData.js functions
