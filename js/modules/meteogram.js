@@ -1,11 +1,69 @@
 // meteogram.js
+// FIXED: Removed duplicate data fetching, now uses weatherData.js for forecast data
 
 import { degreesToCardinal } from './utils.js';
+import { fetchWeatherForecast, fetchDetailedForecast } from './weatherData.js';
 
-// Define your own fetchForecastData function that works with the existing fetchWeatherForecast
-export async function fetchForecastData(lat, lon) {
+function getCacheBasePath() {
+  const path = window.location.pathname;
+
+  // If we're in a county subdirectory, go up to root
+  if (path.includes('/counties/')) {
+    return '../../js/modules/cache/';
+  }
+
+  // If we're at root level
+  return 'js/modules/cache/';
+}
+
+/**
+ * Try to fetch data from zone-based cache files with correct paths
+ * @param {string} countyName - County name
+ * @param {string} dataType - 'weather', 'forecast', or 'alerts'
+ * @returns {Promise<Object|null>} - First successful data found
+ */
+async function fetchFromZoneFiles(countyName, dataType) {
+  const cacheFiles = getCountyCacheFiles(countyName);
+  const fileNames = cacheFiles[dataType] || [];
+  const basePath = getCacheBasePath();
+
+  console.log(`Trying zone-based files for ${countyName} ${dataType}:`, fileNames);
+  console.log(`Using base path: ${basePath}`);
+
+  // Try each possible file name
+  for (const fileName of fileNames) {
+    const fullPath = `${basePath}${fileName}.json`;
+
+    try {
+      console.log(`Trying zone file: ${fullPath}`);
+      const response = await fetch(`${fullPath}?t=${Date.now()}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Successfully loaded ${dataType} data from: ${fullPath}`);
+        return data;
+      } else {
+        console.log(`Zone file not found: ${fullPath} (status: ${response.status})`);
+      }
+    } catch (error) {
+      console.log(`Failed to load ${fullPath}:`, error.message);
+    }
+  }
+
+  console.warn(`No zone-based ${dataType} files found for ${countyName}`);
+  return null;
+}
+
+// REMOVED: fetchForecastData - now uses weatherData.js functions
+// REMOVED: fetchForecastFromAPI - now uses weatherData.js fallbacks
+// REMOVED: getCountyNameFromCoordinates - now uses weatherData.js logic
+
+// UPDATED: Get forecast data using weatherData.js
+// In meteogram.js, replace getForecastDataForMeteogram with:
+export async function getForecastDataForMeteogram(lat, lon) {
   try {
-    // Get county name from coordinates or page configuration
+    console.log("Getting forecast data for meteogram using zone-based files...");
+
     const countyName = getCountyNameFromCoordinates(lat, lon);
 
     if (!countyName) {
@@ -13,78 +71,38 @@ export async function fetchForecastData(lat, lon) {
       return null;
     }
 
-    console.log(`Fetching forecast for ${countyName} county...`);
+    // Try standard naming first
+    const standardPaths = [
+      `../../js/modules/cache/${countyName}_forecast.json`,
+      `js/modules/cache/${countyName}_forecast.json`
+    ];
 
-    // Try both relative and absolute path patterns
-    let response;
-    try {
-      // Try relative path first (for county pages)
-      response = await fetch(`../../js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
-
-      if (!response.ok) {
-        // Try alternative path (for root pages)
-        response = await fetch(`js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
+    for (const path of standardPaths) {
+      try {
+        const response = await fetch(`${path}?t=${Date.now()}`);
+        if (response.ok) {
+          return await response.json();
+        }
+      } catch (error) {
+        console.log(`Standard path failed: ${path}`);
       }
-    } catch (pathError) {
-      // If first path fails, try alternative path
-      console.log("Trying alternative path for forecast data...");
-      response = await fetch(`js/modules/cache/${countyName}_forecast.json?t=${Date.now()}`);
     }
 
-    if (!response.ok) {
-      console.error(`Failed to fetch forecast data for ${countyName}: ${response.status}`);
-
-      // Fallback to API for meteorological data
-      console.log("Attempting fallback to direct API...");
-      return await fetchForecastFromAPI(lat, lon);
+    // Try zone-based files (copy the zone mapping from main.js)
+    const zoneData = await fetchFromZoneFiles(countyName, 'forecast');
+    if (zoneData) {
+      return zoneData;
     }
 
-    return await response.json();
+    console.error(`No forecast files found for ${countyName}`);
+    return null;
   } catch (error) {
-    console.error("Error fetching forecast data:", error);
+    console.error("Error fetching forecast data for meteogram:", error);
     return null;
   }
 }
 
-// Fallback function to get basic forecast data directly from API
-async function fetchForecastFromAPI(lat, lon) {
-  try {
-    console.log("Fetching meteorological data from API fallback");
-    // Get the forecast from NWS API
-    const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-    const pointsData = await pointsResponse.json();
-
-    if (!pointsData.properties || !pointsData.properties.forecastHourly) {
-      throw new Error("Invalid points data from API");
-    }
-
-    const forecastUrl = pointsData.properties.forecastHourly;
-    const forecastResponse = await fetch(forecastUrl);
-    const forecastData = await forecastResponse.json();
-
-    if (!forecastData.properties || !forecastData.properties.periods) {
-      throw new Error("Invalid forecast data from API");
-    }
-
-    // Structure data in the same format as our cache files
-    return {
-      timestamp: Math.floor(Date.now() / 1000),
-      lastUpdated: new Date().toISOString(),
-      location: "API Fallback",
-      coords: { lat, lon },
-      forecast: {
-        hourly: forecastData.properties.periods,
-        daily: []
-      }
-    };
-  } catch (apiError) {
-    console.error("API fallback failed:", apiError);
-    return null;
-  }
-}
-
-// Helper function to get county name from coordinates
-// Updated county detection function with more flexible matching
+// Helper function to get county name (temporarily kept until Phase 2 integration)
 function getCountyNameFromCoordinates(lat, lon) {
   // First, check if there's a direct configuration match from the page
   const config = window.weatherConfig || {};
@@ -308,6 +326,7 @@ export function processForecastData(rawData) {
   console.log("Successfully processed forecast data for chart");
   return processed;
 }
+
 // Helper function to parse wind speed from various formats
 function getWindSpeed(windSpeedText) {
   if (windSpeedText === null || windSpeedText === undefined) return null;
@@ -333,8 +352,6 @@ function getWindSpeed(windSpeedText) {
 
   return null;
 }
-
-
 
 // This function creates the meteogram chart with selected parameters
 export function createMeteogramChart(timeframeKey, processedData, selectedParams) {
@@ -712,11 +729,12 @@ function setupParameterCheckboxes(processedData) {
   updateChart();
 }
 
+// UPDATED: Use the new getForecastDataForMeteogram function
 export async function initMeteogram(lat, lon) {
   console.log("Initializing meteogram with coordinates:", lat, lon);
 
-  // Fetch and process data
-  const rawData = await fetchForecastData(lat, lon);
+  // Fetch and process data using the updated function
+  const rawData = await getForecastDataForMeteogram(lat, lon);
   if (!rawData) {
     console.error("Failed to fetch forecast data");
     return null;

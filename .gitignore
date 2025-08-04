@@ -72,3 +72,8 @@ js/modules/logs/debug_tropical.log
 Weather 2025.zip
 js/modules/logs/update_tropical.log
 js/modules/logs/cron_trop_update.log
+js/modules/cache/akq_afd.json
+js/modules/cache/beaufort_forecast.json
+.gitignore
+js/modules/cache/master_alerts.json
+js/modules/cache/beaufort_weather.json

@@ -1,4 +1,7 @@
-// main.js
+console.log("=== MAIN.JS LOADED - VERSION CHECK ===");
+console.log("If you see this, the file is loading");
+
+// main.js - Updated to handle zone-based cache files
 import {
     initWeather,
     fetchAlerts,
@@ -10,11 +13,129 @@ import { initMeteogram } from './modules/meteogram.js';
 import { initSatellite } from './modules/satellite.js';
 import { initRadar } from './modules/radar.js';
 
+/**
+ * Get the correct cache directory path based on current page location
+ * Always points to the root /js/modules/cache/ directory
+ */
+function getCacheBasePath() {
+    const path = window.location.pathname;
+
+    // If we're in a county subdirectory, go up to root
+    if (path.includes('/counties/')) {
+        return '../../js/modules/cache/';
+    }
+
+    // If we're at root level
+    return 'js/modules/cache/';
+}
+
+
 // Function to extract county name from the current page URL
 function extractCountyNameFromURL() {
     const path = window.location.pathname;
     const match = path.match(/\/counties\/(\w+)\//);
     return match ? match[1] : null;
+}
+
+/**
+ * Map county names to their actual cache file names (zone-based)
+ * This matches the zone-based files created by the PHP cache scripts
+ */
+function getCountyCacheFiles(countyName) {
+    const lowerCounty = countyName.toLowerCase();
+
+    const countyFileMap = {
+        'hyde': {
+            // Hyde County has separate files for different zones
+            weather: ['mainland_hyde_weather', 'hatteras_island_weather', 'ocracoke_island_weather'],
+            forecast: ['mainland_hyde_forecast', 'hatteras_island_forecast', 'ocracoke_island_forecast'],
+            alerts: ['mainland_hyde_alerts', 'hatteras_island_alerts', 'ocracoke_island_alerts']
+        },
+        'dare': {
+            // Dare County has separate files for different zones
+            weather: ['mainland_dare_weather', 'northern_obx_weather', 'hatteras_island_weather'],
+            forecast: ['mainland_dare_forecast', 'northern_obx_forecast', 'hatteras_island_forecast'],
+            alerts: ['mainland_dare_alerts', 'northern_obx_alerts', 'hatteras_island_alerts']
+        },
+        // Single-zone counties use standard naming
+        'pitt': {
+            weather: ['pitt_weather'],
+            forecast: ['pitt_forecast'],
+            alerts: ['pitt_alerts']
+        },
+        'bertie': {
+            weather: ['bertie_weather'],
+            forecast: ['bertie_forecast'],
+            alerts: ['bertie_alerts']
+        },
+        'beaufort': {
+            weather: ['beaufort_weather'],
+            forecast: ['beaufort_forecast'],
+            alerts: ['beaufort_alerts']
+        },
+        'martin': {
+            weather: ['martin_weather'],
+            forecast: ['martin_forecast'],
+            alerts: ['martin_alerts']
+        },
+        'washington': {
+            weather: ['washington_weather'],
+            forecast: ['washington_forecast'],
+            alerts: ['washington_alerts']
+        },
+        'tyrrell': {
+            weather: ['tyrrell_weather'],
+            forecast: ['tyrrell_forecast'],
+            alerts: ['tyrrell_alerts']
+        }
+    };
+
+    return countyFileMap[lowerCounty] || {
+        weather: [`${lowerCounty}_weather`],
+        forecast: [`${lowerCounty}_forecast`],
+        alerts: [`${lowerCounty}_alerts`]
+    };
+}
+
+/**
+ * Try to fetch data from zone-based cache files
+ * @param {string} countyName - County name
+ * @param {string} dataType - 'weather', 'forecast', or 'alerts'
+ * @returns {Promise<Object|null>} - First successful data found
+ */
+async function fetchFromZoneFiles(countyName, dataType) {
+    const cacheFiles = getCountyCacheFiles(countyName);
+    const fileNames = cacheFiles[dataType] || [];
+
+    console.log(`Trying zone-based files for ${countyName} ${dataType}:`, fileNames);
+
+    // Try each possible file name
+    for (const fileName of fileNames) {
+        const possiblePaths = [
+            `../../js/modules/cache/${fileName}.json`,
+            `js/modules/cache/${fileName}.json`,
+            `./js/modules/cache/${fileName}.json`
+        ];
+
+        for (const path of possiblePaths) {
+            try {
+                console.log(`Trying zone file: ${path}`);
+                const response = await fetch(`${path}?t=${Date.now()}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`Successfully loaded ${dataType} data from: ${path}`);
+                    return data;
+                }
+            } catch (error) {
+                // Continue to next path/file
+                console.log(`Failed to load ${path}:`, error.message);
+            }
+        }
+    }
+
+    console.warn(`No zone-based ${dataType} files found for ${countyName}`);
+    return null;
 }
 
 // Define the update data function
@@ -33,7 +154,7 @@ function updateData() {
         console.warn('Invalid or missing location configuration. Using default coordinates.');
     }
 
-    // Modify the fetchCountyWeatherData function in main.js
+    // UPDATED: Modified fetchCountyWeatherData function to handle zone-based files
     async function fetchCountyWeatherData(countyName) {
         if (!countyName) {
             console.warn('No county name found. Cannot fetch county-specific weather data.');
@@ -41,23 +162,26 @@ function updateData() {
         }
 
         try {
-            // Add fallback mechanism for paths and better error handling
+            console.log(`Fetching weather data for county: ${countyName}`);
+
+            // First try standard county file naming
             let response = null;
             let errors = [];
 
-            // Try multiple path patterns
-            const paths = [
+            const standardPaths = [
                 `../../js/modules/cache/${countyName.toLowerCase()}_weather.json`,
                 `js/modules/cache/${countyName.toLowerCase()}_weather.json`,
                 `./js/modules/cache/${countyName.toLowerCase()}_weather.json`
             ];
 
-            for (const path of paths) {
+            // Try standard naming first
+            for (const path of standardPaths) {
                 try {
-                    console.log(`Attempting to fetch weather data from: ${path}`);
+                    console.log(`Attempting standard file: ${path}`);
                     const result = await fetch(`${path}?t=${Date.now()}`);
                     if (result.ok) {
                         response = result;
+                        console.log(`Found standard weather file: ${path}`);
                         break;
                     } else {
                         errors.push(`HTTP error: ${result.status} for ${path}`);
@@ -67,11 +191,19 @@ function updateData() {
                 }
             }
 
+            // If standard naming failed, try zone-based files
             if (!response) {
-                throw new Error(`Failed to fetch weather data: ${errors.join(', ')}`);
+                console.log('Standard naming failed, trying zone-based files...');
+                const zoneData = await fetchFromZoneFiles(countyName, 'weather');
+                if (zoneData) {
+                    return zoneData;
+                }
+            } else {
+                return await response.json();
             }
 
-            return await response.json();
+            throw new Error(`Failed to fetch weather data: ${errors.join(', ')}`);
+
         } catch (error) {
             console.error(`Error fetching weather data for ${countyName}:`, error);
             return null;
@@ -90,7 +222,10 @@ function updateData() {
                     initWeather(lat, lon);
                 }
             })
-            .catch(() => initWeather(lat, lon));
+            .catch(error => {
+                console.error('Error initializing weather:', error);
+                initWeather(lat, lon);
+            });
     }
 
     // Fetch and display forecast data
