@@ -717,7 +717,7 @@ async function fetchActiveAtlanticStorms() {
         const atlanticStorms = activeStorms.filter(storm => {
             if (!storm.binNumber) return false;
             const bin = storm.binNumber.toUpperCase();
-            return bin.startsWith('AL');
+            return bin.startsWith('AL') || bin.startsWith('AT');
         });
 
         console.log(`Found ${atlanticStorms.length} active Atlantic storms`);

@@ -43,7 +43,8 @@ async function runTestWithExampleData(raw) {
 
     const atlanticStorms = activeStorms.filter(storm => {
         if (!storm.binNumber) return false;
-        return storm.binNumber.toUpperCase().startsWith('AL');
+        const bin = storm.binNumber.toUpperCase();
+        return bin.startsWith('AL') || bin.startsWith('AT');
     });
 
     if (atlanticStorms.length > 0) {

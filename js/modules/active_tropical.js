@@ -1,7 +1,7 @@
 // Fetch tropical storm data from NHC via our proxy
 function fetchActiveStormData() {
     // Use our PHP proxy instead of directly accessing NHC
-    fetch('./js/modules/nhc_proxy.php')
+    fetch('./js/modules/tropical_data.php')
         .then(response => {
             // Check if the response is ok
             if (!response.ok) {
@@ -14,7 +14,7 @@ function fetchActiveStormData() {
 
             // Filter for Atlantic storms only (binNumber starts with "AT")
             const atlanticStorms = data.activeStorms.filter(storm =>
-                storm.binNumber && storm.binNumber.startsWith('AT')
+                storm.binNumber && (storm.binNumber.startsWith('AL') || storm.binNumber.startsWith('AT'))
             );
 
             // This should be called regardless of whether atlanticStorms is empty
@@ -47,7 +47,7 @@ function loadFallbackStormData() {
             console.log("Loaded fallback storm data");
 
             const atlanticStorms = data.activeStorms.filter(storm =>
-                storm.binNumber && storm.binNumber.startsWith('AT')
+                storm.binNumber && (storm.binNumber.startsWith('AL') || storm.binNumber.startsWith('AT'))
             );
 
             displayActiveStorms(atlanticStorms);
