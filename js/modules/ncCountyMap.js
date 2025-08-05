@@ -63,10 +63,22 @@ export class NCCountyMap {
             ...options
         };
         this.zoneToCountyMap = {
-            // Hyde County zones
-            'NCZ081': 'Hyde',     // Mainland Hyde
-            'NCZ095': 'Hyde',     // Outer Banks Hyde
-            // Add additional zone-to-county mappings here...
+            // Dare County zones - use lowercase
+            'NCZ047': 'dare',        // Mainland Dare
+            'NCZ203': 'dare',        // Northern Outer Banks  
+            'NCZ205': 'dare',        // Hatteras Island
+
+            // Hyde County zones - use lowercase
+            'NCZ081': 'hyde',        // Mainland Hyde
+            'NCZ204': 'hyde',        // Ocracoke Island
+
+            // Single-zone counties - use lowercase
+            'NCZ029': 'pitt',        // Pitt County
+            'NCZ044': 'bertie',      // Bertie County
+            'NCZ045': 'beaufort',    // Beaufort County
+            'NCZ046': 'martin',      // Martin County
+            'NCZ043': 'washington',  // Washington County
+            'NCZ042': 'tyrrell'      // Tyrrell County
         };
     }
 
@@ -592,84 +604,37 @@ export class NCCountyMap {
     }
 
     // Create warning legend
+    // Simplified createWarningLegend method that uses already-processed alert data
+
     createWarningLegend() {
+        console.log('Creating warning legend...');
+        console.log('Alert data:', this.alertData);
+
         const existingLegend = document.querySelector('.map-legend');
         if (existingLegend) {
             existingLegend.remove();
         }
 
-        const countyConfigs = window.siteConfig?.counties || [];
-        const targetUGCCodes = new Set();
-        const targetZoneURLs = new Set();
-
-        countyConfigs.forEach(county => {
-            if (county.ugcCode) {
-                targetUGCCodes.add(county.ugcCode);
-            }
-            if (county.zoneURL) {
-                targetZoneURLs.add(county.zoneURL);
-            }
-        });
-
         const activeWarnings = new Map();
 
-        Object.values(this.alertData).forEach(countyAlerts => {
+        // Simply check what alerts are already assigned to counties
+        Object.entries(this.alertData).forEach(([countyName, countyAlerts]) => {
             if (!countyAlerts || !countyAlerts.length) return;
 
             countyAlerts.forEach(alert => {
                 if (!alert.properties) return;
 
-                let matchesOurZones = false;
-                let affectedCounties = new Set();
+                const eventName = alert.properties.event;
 
-                if (alert.properties.geocode && alert.properties.geocode.UGC) {
-                    for (const ugcCode of alert.properties.geocode.UGC) {
-                        if (targetUGCCodes.has(ugcCode)) {
-                            matchesOurZones = true;
-                        }
-
-                        const mappedCounty = this.zoneToCountyMap[ugcCode];
-                        if (mappedCounty) {
-                            matchesOurZones = true;
-                            affectedCounties.add(mappedCounty);
-                        }
-                    }
-                }
-
-                if (!matchesOurZones && alert.properties.affectedZones) {
-                    for (const zoneURL of alert.properties.affectedZones) {
-                        if (targetZoneURLs.has(zoneURL)) {
-                            matchesOurZones = true;
-
-                            const zoneMatch = zoneURL.match(/\/zones\/forecast\/(\w+)$/);
-                            if (zoneMatch && zoneMatch[1]) {
-                                const zoneId = zoneMatch[1];
-                                const mappedCounty = this.zoneToCountyMap[zoneId];
-                                if (mappedCounty) {
-                                    affectedCounties.add(mappedCounty);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (matchesOurZones) {
-                    const eventName = alert.properties.event;
-                    if (warningColors[eventName]) {
-                        activeWarnings.set(eventName, warningColors[eventName]);
-
-                        affectedCounties.forEach(countyName => {
-                            const countyPath = document.getElementById(`county-${countyName.toLowerCase()}`);
-                            if (countyPath) {
-                                countyPath.setAttribute('fill', warningColors[eventName]);
-                                countyPath.setAttribute('stroke-width', '3');
-                                countyPath.setAttribute('title', eventName);
-                            }
-                        });
-                    }
+                // If this event type has a color defined, add it to active warnings
+                if (eventName && warningColors[eventName]) {
+                    activeWarnings.set(eventName, warningColors[eventName]);
+                    console.log(`Added ${eventName} to legend from ${countyName}`);
                 }
             });
         });
+
+        console.log('Active warnings for legend:', activeWarnings);
 
         const legendContainer = document.getElementById('map-alerts-legend');
         if (activeWarnings.size === 0) {
@@ -730,6 +695,8 @@ export class NCCountyMap {
             warningItem.appendChild(warningText);
             warningContainer.appendChild(warningItem);
         });
+
+        console.log('Legend created successfully');
     }
 }
 
