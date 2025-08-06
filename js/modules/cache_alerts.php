@@ -129,6 +129,15 @@ function getCountyConfig()
         return [
             ["name" => "Bertie", "city" => "Windsor", "lat" => 35.9985, "lon" => -76.9461],
             ["name" => "Pitt", "city" => "Greenville", "lat" => 35.6115, "lon" => -77.3752],
+            ["name" => "Martin", "city" => "Williamston", "lat" => 35.8500, "lon" => -77.0600],
+            ["name" => "Beaufort", "city" => "Washington", "lat" => 35.57056, "lon" => -77.04972],
+            ["name" => "Mainland Dare", "city" => "Manteo", "lat" => 35.91667, "lon" => -77.7],
+            ["name" => "Northern OBX", "city" => "Kitty Hawk", "lat" => 36.0646, "lon" => -75.7057],
+            ["name" => "Hatteras Island", "city" => "Hatteras", "lat" => 35.2195, "lon" => -76.6903],
+            ["name" => "Washington", "city" => "Plymouth", "lat" => 35.8668, "lon" => -76.7488],
+            ["name" => "Tyrrell", "city" => "Columbia", "lat" => 35.9177, "lon" => -76.2522]
+            ,["name" => "Mainland Hyde", "city" => "Swan Quarter", "lat" => 35.4085, "lon" => -76.3302],
+            ["name" => "Ocracoke Island", "city" => "Ocracoke", "lat" => 35.1146, "lon" => -75.9810],
             // Add more hardcoded counties if needed
         ];
     }

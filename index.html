@@ -59,61 +59,116 @@
 
       <main class="container">
          <h1 class="main-title">Eastern North Carolina Weather</h1>
-
          <div class="dashboard-layout">
-            <!-- Map Section (map-container) -->
-            <section aria-labelledby="current-conditions-heading" class="map-container">
-               <div class="current-title">
-                  <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>
-                  <h2 id="current-conditions-heading">Current Temperatures</h2>
+            <!-- Row 1: Map and Rad/Sat sections -->
+            <div class="dashboard-row">
+               <!-- Map Section (unchanged) -->
+               <section aria-labelledby="current-conditions-heading" class="map-container">
+                  <div class="current-title">
+                     <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>
+                     <h2 id="current-conditions-heading">Current Temperatures</h2>
+                  </div>
+
+                  <div class="current-content">
+                     <div id="nc-county-map" class="county-map-container">
+                        <!-- Map will be dynamically inserted here -->
+                     </div>
+
+                     <!-- Map legend outside the map container -->
+                     <div id="map-alerts-legend" class="map-legend" style="display: none;">
+                        <!-- Legend content will be dynamically populated -->
+                     </div>
+
+                     <div class="refresh-container" style="text-align: right;">
+                        <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
+                           aria-label="Refresh weather data">
+                           <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
+                        </button>
+                     </div>
+                  </div>
+               </section>
+            </div>
+            <div class="dashboard-row">
+
+               <!-- Radar/Satellite Section -->
+               <section aria-labelledby="radsat-heading" class="radsat-container">
+                  <div class="radsat-title">
+                     <i class="fa-solid fa-satellite-dish fa-xl" aria-hidden="true"></i>
+                     <h2 id="radsat-heading">Radar / Satellite</h2>
+                  </div>
+                  <div class="radsat-tabs" role="tablist">
+                     <button class="tab-button active" role="tab" aria-selected="true" aria-controls="radar-panel"
+                        id="radar-tab">
+                        RADAR
+                     </button>
+                     <button class="tab-button" role="tab" aria-selected="false" aria-controls="satellite-panel"
+                        id="satellite-tab">
+                        SATELLITE
+                     </button>
+                  </div>
+                  <div class="radsat-image-container">
+
+                     <div class="radsat-content">
+                        <!-- Tab navigation -->
+
+
+
+                        <!-- Tab panels -->
+                        <div class="tab-panels">
+                           <!-- Radar Panel -->
+                           <div id="radar-panel" class="tab-panel active" role="tabpanel" aria-labelledby="radar-tab">
+                              <div class="image-container">
+                                 <img id="radar-image" src="https://radar.weather.gov/ridge/standard/KMHX_0.gif"
+                                    alt="KMHX Radar Image" class="weather-image" loading="lazy">
+                              </div>
+                           </div>
+
+                           <!-- Satellite Panel -->
+                           <div id="satellite-panel" class="tab-panel" role="tabpanel" aria-labelledby="satellite-tab"
+                              hidden>
+                              <div class="image-container">
+                                 <img id="satellite-image"
+                                    src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/se/GEOCOLOR/600x600.jpg"
+                                    alt="Southeast Satellite Image" class="weather-image" loading="lazy">
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </section>
+            </div>
+
+            <!-- Row 2: Tropical Section (full width) -->
+            <section aria-labelledby="tropical-weather-heading" class="tropical-container tropical-full">
+               <div class="tropical-title">
+                  <i class="fa-solid fa-hurricane fa-xl" aria-hidden="true"></i>
+                  <h2 id="tropical-weather-heading">Atlantic Tropical Weather</h2>
                </div>
 
-               <div class="current-content">
-                  <!-- Replace the SVG container with the county map container -->
-                  <div id="nc-county-map" class="county-map-container">
-                     <!-- Map will be dynamically inserted here -->
+               <div class="tropical-content">
+                  <!-- Tropical alert banner -->
+                  <div class="tropical-banner">
+                     <!-- Active systems or "No active systems" message will be inserted here by JS -->
                   </div>
 
-                  <!-- Map legend outside the map container -->
-                  <div id="map-alerts-legend" class="map-legend" style="display: none;">
-                     <!-- Legend content will be dynamically populated -->
-                  </div>
-
-                  <div class="refresh-container" style="text-align: right;">
-                     <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                        aria-label="Refresh weather data">
-                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
+                  <!-- Tropical outlook image -->
+                  <div class="tropical-image-container">
+                     <img id="tropical-outlook-image" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
+                        alt="Atlantic Tropical Weather Outlook" class="tropical-outlook-image" loading="lazy">
+                     <button class="expand-button" aria-label="Expand tropical outlook image">
+                        <i class="fa-solid fa-expand"></i>
                      </button>
                   </div>
                </div>
             </section>
+         </div>
 
-            <!-- Tropical Weather Section (tropical-container) -->
-            <section aria-labelledby="tropical-weather-heading" class="tropical-container">
-               <div class="tropical-title">
-                  <i class="fa-solid fa-hurricane fa-xl" aria-hidden="true"></i>
-                  <h2 id="tropical-weather-heading">
-                     Atlantic Tropical Weather
-                  </h2>
-               </div>
-               <div class="tropical-banner">
-                  <!-- Active systems or "No active systems" message will be inserted here by JS -->
-               </div>
-
-               <div class="tropical-content">
-                  <!-- This div will contain active storm information -->
-
-                  <div id="tropical-outlook">
-                     <!-- Tropical outlook content will be loaded here -->
-                  </div>
-
-                  <p class="tropical-disclaimer">
-                     Data courtesy of the National Hurricane Center. For
-                     official information, visit
-                     <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">nhc.noaa.gov</a>.
-                  </p>
-               </div>
-            </section>
+         <!-- Lightbox for expanded images -->
+         <div id="image-lightbox" class="lightbox" hidden>
+            <button class="lightbox-close" aria-label="Close expanded image">
+               <i class="fa-solid fa-times"></i>
+            </button>
+            <img class="lightbox-image" alt="">
          </div>
       </main>
 
@@ -177,6 +232,7 @@
          } from './js/modules/tropical.js';
          import { initTropicalBanner } from './js/modules/tropical-banner.js';
          import { initWeatherApp } from './js/modules/weatherApp.js';
+         import { initRadSat } from './js/modules/radSatModule.js';
 
          // Main initialization function for index page
          async function initIndexPage() {
@@ -193,6 +249,10 @@
 
             // Initialize tropical banner system
             initTropicalBanner();
+
+            // Initialize Radar/Satellite module
+            const radSat = initRadSat();
+            window.radSat = radSat;  // Store for debugging if needed
 
             // Load tropical outlook
             updateTropicalOutlook();
@@ -231,7 +291,7 @@
             // Add refresh button functionality
             const refreshButton = document.getElementById('global-refresh');
             if (refreshButton) {
-               refreshButton.addEventListener('click', function () {
+               refreshButton.addEventListener('click', async () => {
                   this.classList.add('refreshing');
 
                   // Refresh the county map if available
@@ -249,6 +309,8 @@
                   setTimeout(() => {
                      this.classList.remove('refreshing');
                   }, 2000);
+
+                  radSat.refreshImages();
                });
             }
          }

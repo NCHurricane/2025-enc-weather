@@ -2,111 +2,111 @@
 /* INDEX PAGE STYLES */
 /*--------------------*/
 
-.dashboard-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
 /* ------------------------ */
 /* Current weather section */
 /* ------------------------ */
 /* Map container styling */
 .map-container {
-    background-color: var(--color-primary);
-    border-radius: var(--border-radius);
-    padding: 15px;
-    margin: 0;
-    color: var(--color-text-light);
-    box-shadow: var(--shadow-standard);
-    flex: 1;
-    min-width: 300px;
-    /* Ensure minimum width for readability */
+  background-color: var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  margin: 0;
+  color: var(--color-text-light);
+  box-shadow: var(--shadow-standard);
+  flex: 1;
+  min-width: 300px;
+  /* Ensure minimum width for readability */
 }
 
 /* County map container */
 .county-map-container {
-    height: 450px;
-    width: 100%;
-    border-radius: var(--border-radius);
-    margin: 0 auto;
-    box-shadow: var(--shadow-standard);
-    background-color: #262626;
-    background: linear-gradient(180deg, var(--color-gradient-start) 20%, var(--color-gradient-end) 100%);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  height: 450px;
+  width: 100%;
+  border-radius: var(--border-radius);
+  margin: 0 auto;
+  box-shadow: var(--shadow-standard);
+  background-color: #262626;
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .map-legend {
-    background-color: rgba(75, 100, 199, 1);
-    color: ivory;
-    padding: 8px;
-    border-radius: 4px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-    width: 100%;
-    max-width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    box-sizing: border-box;
+  background-color: rgba(75, 100, 199, 1);
+  color: ivory;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  box-sizing: border-box;
 }
 
 #legend-title {
-    font-size: 0.9rem;
-    margin-bottom: 3px;
+  font-size: 0.9rem;
+  margin-bottom: 3px;
 }
 
 /* Weather markers */
-.weather-marker text {
-    transition: transform 0.2s ease;
-    text-shadow: 5px 5px 3px rgba(0, 0, 0, 0.7);
-    font-family: 'Montserrat', monospace;
-    font-size: 3rem;
-    font-weight: 800;
-    fill: yellow;
+.marker-temp {
+  transition: transform 0.2s ease;
+  text-shadow: 5px 5px 3px rgba(0, 0, 0, 0.7);
+  font-family: 'Montserrat', monospace;
+  font-size: 3rem;
+  font-weight: 800;
+  fill: yellow;
+  cursor: pointer;
 }
 
-.county-label {
-    text-transform: uppercase;
-    font-weight: 800;
-    text-shadow: 4px 4px 3px rgba(0, 0, 0, 1);
+.marker-label {
+  text-transform: uppercase;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-weight: 800;
+  text-shadow: 4px 4px 3px rgba(0, 0, 0, 1);
+  cursor: pointer
 }
 
 /* County paths */
 .counties path {
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
 .counties path:hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .county-map-container {
-        height: 400px;
-    }
+  .county-map-container {
+    height: 400px;
+  }
 }
 
 @media (max-width: 600px) {
-    .county-map-container {
-        height: 300px;
-    }
+  .county-map-container {
+    height: 300px;
+  }
 
-    .county-label,
-    .label-background {
-        display: none;
-    }
+  .county-label,
+  .label-background {
+    display: none;
+  }
 
-    .weather-marker text {
-        font-size: 4rem;
-    }
+  .weather-marker text {
+    font-size: 4rem;
+  }
 }
 
 /* ------------------------ */
@@ -114,271 +114,402 @@
 /* ------------------------ */
 /* Tropical container styling */
 .tropical-container {
-    background-color: var(--color-primary);
-    border-radius: var(--border-radius);
-    padding: 15px;
-    margin: 0;
-    color: var(--color-text-light);
-    box-shadow: var(--shadow-standard);
-    flex: 1;
-    min-width: 300px;
-    /* Ensure minimum width for readability */
+  background-color: var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  margin: 0;
+  color: var(--color-text-light);
+  box-shadow: var(--shadow-standard);
+  flex: 1;
+  min-width: 300px;
+  /* Ensure minimum width for readability */
 }
 
 .tropical-title,
 .current-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .tropical-title i,
 .current-title i {
-    margin-right: 15px;
-    color: var(--color-accent);
+  margin-right: 15px;
+  color: var(--color-accent);
 }
 
 .tropical-title h2,
 .current-title h2 {
-    margin: 0;
-    font-size: 1.5rem;
+  margin: 0;
+  font-size: 1.5rem;
 }
 
 .tropical-content {
-    background-color: var(--color-text-light);
-    text-align: center;
-    padding: 15px;
-    border-radius: 5px;
-    color: var(--color-text);
+  background-color: var(--color-text-light);
+  text-align: center;
+  padding: 15px;
+  border-radius: 5px;
+  color: var(--color-text);
 }
-
 
 .current-content {
-    background-color: var(--color-text-light);
-    padding: 15px;
-    border-radius: 5px;
-    color: var(--color-text);
-}
-
-.tropical-content h3,
-.current-content h3 {
-    color: var((--color-primary));
-    margin-top: 0;
-}
-
-.tropical-content img {
-    max-width: 80%;
-    height: auto;
-    border-radius: 5px;
-    display: block;
-    margin: 15px auto;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-}
-
-.tropical-disclaimer {
-    font-size: 0.8rem;
-    margin-top: 15px;
-    font-style: italic;
-    text-align: center;
-    color: #666;
-}
-
-.tropical-disclaimer a {
-    color: var(--color-primary);
-    text-decoration: none;
-}
-
-.tropical-disclaimer a:hover {
-    text-decoration: underline;
+  background-color: var(--color-text-light);
+  padding: 15px;
+  border-radius: 5px;
+  color: var(--color-text);
 }
 
 /* Tropical Alert Banner */
 .tropical-alert-banner {
-    background-color: #940000;
-    color: #ffffff;
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 9999;
-    width: 100%;
-    box-sizing: border-box;
+  background-color: #940000;
+  color: #ffffff;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 9999;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* In-content tropical alert banner */
 .tropical-alert-banner.in-content {
-    margin-bottom: 20px;
-    margin-top: 0;
+  margin-bottom: 20px;
+  margin-top: 0;
 }
 
 .tropical-alert-banner i {
-    margin-right: 10px;
-    font-size: 1.2rem;
+  margin-right: 10px;
+  font-size: 1.2rem;
 }
 
 .tropical-alert-banner a {
-    color: #fff200;
-    margin-left: 5px;
-    text-decoration: underline;
+  color: #fff200;
+  margin-left: 5px;
+  text-decoration: underline;
 }
 
 .tropical-alert-banner button {
-    background: none;
-    border: none;
-    color: #ffffff;
-    margin-left: auto;
-    cursor: pointer;
-    padding: 0 5px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  margin-left: auto;
+  cursor: pointer;
+  padding: 0 5px;
 }
 
 /* Active storms section styling */
 .active-storms-section {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .active-systems-header {
-    font-size: 0.9rem;
-    background-color: #940000;
-    color: #ffffff;
-    padding: 8px 0 8px 10px;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-transform: uppercase;
+  font-size: 0.9rem;
+  background-color: #940000;
+  color: #ffffff;
+  padding: 8px 0 8px 10px;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
 }
 
 .active-systems-container {
-    background-color: var(--color-primary);
-    padding: 0 3px 10px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-primary);
+  padding: 0 3px 10px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .active-system-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    padding: 8px 12px;
-    background-color: #ffff00;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #ffff00;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .active-system-item i {
-    color: #940000;
-    font-size: 1.2rem;
+  color: #940000;
+  font-size: 1.2rem;
 }
 
 .active-system-link {
-    color: #0077cc;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-size: 0.9rem;
+  color: #0077cc;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 0.9rem;
 }
 
 .active-system-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .no-active-systems {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    background-color: #f2ff00;
-    color: #007700;
-    padding: 8px 0 8px 10px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin: 0 5px 10px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  background-color: #f2ff00;
+  color: #007700;
+  padding: 8px 0 8px 10px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin: 0 5px 10px;
 }
 
 .no-active-systems i {
-    margin-right: 10px;
-    font-size: 1rem;
-    color: #007700;
+  margin-right: 10px;
+  font-size: 1rem;
+  color: #007700;
 }
 
 /* Media queries for responsive design */
 @media (max-width: 768px) {
+  .map-container,
+  .tropical-container {
+    width: 100%;
+    margin-bottom: 20px;
+  }
 
-    .dashboard-layout {
-        flex-direction: column;
-    }
-
-    .map-container,
-    .tropical-container {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    .tropical-title h2,
-    .current-title h2 {
-        font-size: 1.3rem;
-    }
-
-    .tropical-content h3 {
-        font-size: 1rem;
-    }
-
-    .tropical-content p {
-        font-size: 0.8rem;
-    }
-
-    .tropical-disclaimer {
-        font-size: 0.8rem;
-    }
+  .tropical-title h2,
+  .current-title h2 {
+    font-size: 1.3rem;
+  }
 }
 
 @media (max-width: 600px) {
-    .map-legend {
-        font-size: 0.7rem;
-        padding: 5px;
-    }
+  .map-legend {
+    font-size: 0.7rem;
+    padding: 5px;
+  }
 
-    #legend-title {
-        font-size: 0.7rem;
-        margin-bottom: 2px;
-    }
+  #legend-title {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+  }
 
-    .tropical-title h2,
-    .current-title h2 {
-        margin: 0;
-        font-size: 1rem;
-    }
+  .tropical-title h2,
+  .current-title h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
 
-    .tropical-content h3 {
-        font-size: 1rem;
-    }
+  .tropical-alert-banner {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
 
-    .tropical-content p {
-        font-size: 0.7rem;
-    }
+  .active-systems-container {
+    flex-direction: column;
+  }
+}
 
-    .tropical-disclaimer {
-        font-size: 0.6rem;
-    }
+/* Dashboard Layout Updates */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
 
-    .tropical-alert-banner {
-        font-size: 0.9rem;
-        padding: 8px 10px;
-    }
+.dashboard-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
 
-    .active-systems-container {
-        flex-direction: column;
-    }
+/* Ensure equal width for map and radsat on desktop */
+@media (min-width: 1024px) {
+  .map-container,
+  .radsat-container {
+    flex: 1;
+    min-width: 0; /* Prevent flex items from overflowing */
+  }
+}
+
+/* Radar/Satellite Container */
+.radsat-container {
+  background-color: var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  color: var(--color-text-light);
+  box-shadow: var(--shadow-standard);
+  min-width: 300px;
+}
+
+.radsat-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.radsat-title i {
+  margin-right: 15px;
+  color: var(--color-accent);
+}
+
+.radsat-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.radsat-content {
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  padding: var(--padding-section);
+  border-radius: 5px;
+  color: var(--color-text);
+}
+
+/* Tab Styles */
+.radsat-tabs {
+  display: flex;
+  margin-top: 10px;
+  padding: 5px;
+  gap: 10px;
+  justify-content: center;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-light-text);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.tab-button:hover {
+  color: var(--color-accent);
+}
+
+.tab-button.active {
+  color: var(--color-text);
+  background-color: var(--color-accent);
+  border-radius: 7px;
+  box-shadow: var(--shadow-standard);
+}
+
+/* Tab Panels */
+.tab-panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Image Container */
+.radsat-image-container {
+  background-color: var(--color-text-light);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  color: var(--color-text);
+}
+
+.image-container {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.weather-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 5px;
+  background-color: #f5f5f5;
+}
+
+/* Tropical Section Updates */
+.tropical-container.tropical-full {
+  min-width: 300px
+}
+
+.tropical-image-container {
+  position: relative;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.tropical-outlook-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .dashboard-row {
+    flex-direction: column;
+  }
+
+  .map-container,
+  .radsat-container {
+    width: 100%;
+  }
+  .weather-image {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .radsat-title h2,
+  .tropical-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .tab-button {
+    padding: 8px 15px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .radsat-title h2,
+  .tropical-title h2 {
+    font-size: 1rem;
+  }
+
+  .radsat-content {
+    padding: 10px;
+  }
 }
