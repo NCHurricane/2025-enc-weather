@@ -235,8 +235,10 @@
 .active-system-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   flex: 1;
+  font-weight: 800;
   padding: 8px 12px;
   background-color: #ffff00;
   border-radius: 5px;
@@ -487,7 +489,7 @@
     width: 100%;
   }
   .weather-image {
-    width: 100%;
+    width: 80%;
   }
 }
 

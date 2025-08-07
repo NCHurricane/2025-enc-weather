@@ -37,10 +37,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set up refresh button
     setupRefreshButton();
-
-    // Initialize active storm checking
-    checkActiveStorms();
 });
+
+async function fetchActiveAtlanticStorms() {
+    try {
+        const response = await fetch(`./js/modules/cache/nhc_current_storms.json?t=${Date.now()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        const raw = await response.json();
+        
+        let activeStorms = [];
+        if (Array.isArray(raw.activeStorms)) {
+            activeStorms = raw.activeStorms;
+        } else if (raw.data && Array.isArray(raw.data.activeStorms)) {
+            activeStorms = raw.data.activeStorms;
+        } else if (raw.data && Array.isArray(raw.data.storms)) {
+            activeStorms = raw.data.storms;
+        }
+        
+        return activeStorms.filter(storm => 
+            storm.binNumber && storm.binNumber.toUpperCase().startsWith('AL')
+        );
+    } catch (error) {
+        console.error('Error fetching active storms:', error);
+        return [];
+    }
+}
 
 /**
  * Initialize tropical satellite display
@@ -611,274 +634,6 @@ export async function checkActiveSystemsStatus() {
         return false;
     }
 }
-
-/**
- * Add alert banner for active tropical systems
- * @param {boolean} isActive - Whether there are active systems
- */
-export function updateTropicalAlertBanner(isActive) {
-    // Don't show banner if user dismissed it this session
-    if (sessionStorage.getItem('hideTropicalBanner') === 'true') {
-        return;
-    }
-
-    // Remove existing banner if any
-    const existingBanner = document.getElementById('tropical-alert-banner');
-    if (existingBanner) {
-        existingBanner.remove();
-    }
-
-    // If active systems, add a new banner
-    if (isActive) {
-        const banner = document.createElement('div');
-        banner.id = 'tropical-alert-banner';
-        banner.className = 'tropical-alert-banner';
-        banner.innerHTML = `
-            <i class="fa-solid fa-hurricane"></i>
-            <span>Active tropical systems in the Atlantic basin. <a href="tropical.html">View details</a></span>
-            <button class="close-button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-        `;
-
-        document.body.insertBefore(banner, document.body.firstChild);
-        document.body.classList.add('has-alert-banner');
-
-        // Add close button functionality
-        const closeButton = banner.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                banner.remove();
-                document.body.classList.remove('has-alert-banner');
-                // Store preference in session storage
-                sessionStorage.setItem('hideTropicalBanner', 'true');
-            });
-        }
-    }
-}
-
-/**
- * Atlantic Storm Alert System
- * Checks for active Atlantic tropical systems from NHC JSON data
- * and displays alerts on the tropical page
- */
-
-// Storm classification mapping for readable display
-const STORM_CLASSIFICATIONS = {
-    'TD': 'Tropical Depression',
-    'TS': 'Tropical Storm',
-    'HU': 'Hurricane',
-    'MH': 'Major Hurricane',
-    'STD': 'Subtropical Depression',
-    'STS': 'Subtropical Storm',
-    'PTC': 'Post-tropical Cyclone',
-    'PC': 'Potential Tropical Cyclone'
-};
-
-/**
- * Fetches current active storms from NHC
- * @returns {Promise<Array>} Array of active Atlantic storms
- */
-async function fetchActiveAtlanticStorms() {
-    try {
-        // URL to NHC active cyclones JSON cache (fallback to live if missing)
-        const nhcJsonUrl = './js/modules/cache/nhc_current_storms.json';
-
-        // Fetch the JSON data with cache-busting
-        const response = await fetch(`${nhcJsonUrl}?t=${Date.now()}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-
-        const raw = await response.json();
-
-        if (!raw || typeof raw !== 'object') {
-            console.warn('Unexpected current storms payload (not an object):', raw);
-            return [];
-        }
-
-        // Drill into known nesting variations to locate the activeStorms array
-        let activeStorms = [];
-        if (Array.isArray(raw.activeStorms)) {
-            activeStorms = raw.activeStorms;
-        } else if (raw.data && Array.isArray(raw.data.activeStorms)) {
-            activeStorms = raw.data.activeStorms;
-        } else if (raw.data && Array.isArray(raw.data.storms)) {
-            // fallback if the property name differs
-            activeStorms = raw.data.storms;
-        } else {
-            console.warn('Unexpected CurrentStorms.json structure, full response:', raw);
-            return [];
-        }
-
-        // Debug: log all seen binNumbers for visibility when diagnosing misses
-        console.log('All active storm binNumbers:', activeStorms.map(s => s.binNumber));
-
-        // Filter for Atlantic basin storms — NHC uses "AL" prefix for Atlantic systems
-        const atlanticStorms = activeStorms.filter(storm => {
-            if (!storm.binNumber) return false;
-            const bin = storm.binNumber.toUpperCase();
-            return bin.startsWith('AL') || bin.startsWith('AT');
-        });
-
-        console.log(`Found ${atlanticStorms.length} active Atlantic storms`);
-        return atlanticStorms;
-    } catch (error) {
-        console.error('Error fetching active storms:', error);
-        return [];
-    }
-}
-
-
-/**
- * Creates a storm alert banner for display
- * @param {Array} storms - Array of active Atlantic storms
- * @returns {HTMLElement} Alert element for insertion into DOM
- */
-function createStormAlertBanner(storms) {
-    // Create the alert container
-    const alertBanner = document.createElement('div');
-    alertBanner.className = 'tropical-alert-banner';
-    alertBanner.id = 'active-storm-alert';
-
-    // Add a hurricane icon
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-hurricane';
-    alertBanner.appendChild(icon);
-
-    // Create the alert message
-    const message = document.createElement('span');
-
-    if (storms.length === 1) {
-        // Single storm format
-        const storm = storms[0];
-        const classification = STORM_CLASSIFICATIONS[storm.classification] || 'Tropical System';
-        message.textContent = `Active: ${classification} ${storm.name}`;
-    } else {
-        // Multiple storms format
-        message.textContent = `${storms.length} Active Atlantic Tropical Systems: `;
-
-        // Add each storm name with classification
-        storms.forEach((storm, index) => {
-            const classification = STORM_CLASSIFICATIONS[storm.classification] || 'Tropical System';
-            const stormText = `${classification} ${storm.name}`;
-
-            if (index > 0) {
-                message.textContent += ', ';
-            }
-
-            message.textContent += stormText;
-        });
-    }
-
-    alertBanner.appendChild(message);
-
-    // Add a details link
-    const link = document.createElement('a');
-    link.href = '#tropical-storms-section';
-    link.textContent = ' View Details';
-    link.className = 'tropical-alert-link';
-    message.appendChild(link);
-
-    // Add close button
-    const closeButton = document.createElement('button');
-    closeButton.className = 'tropical-alert-close';
-    closeButton.setAttribute('aria-label', 'Close alert');
-    closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    closeButton.addEventListener('click', () => {
-        alertBanner.remove();
-        // Store a session flag that the user dismissed the alert
-        sessionStorage.setItem('stormAlertDismissed', 'true');
-    });
-    alertBanner.appendChild(closeButton);
-
-    return alertBanner;
-}
-
-/**
- * Creates a more detailed storm listing for the tropical page
- * @param {Array} storms - Array of active Atlantic storms
- * @returns {HTMLElement} Storm list element
- */
-function createStormList(storms) {
-    const stormList = document.createElement('div');
-    stormList.className = 'active-storms-list';
-    stormList.id = 'tropical-storms-section';
-
-    const heading = document.createElement('h3');
-    heading.textContent = 'Active Atlantic Tropical Systems';
-    stormList.appendChild(heading);
-
-    if (storms.length === 0) {
-        const noStorms = document.createElement('p');
-        noStorms.textContent = 'No active systems in the Atlantic basin at this time.';
-        stormList.appendChild(noStorms);
-        return stormList;
-    }
-
-    // Create a list of storms
-    const list = document.createElement('ul');
-
-    storms.forEach(storm => {
-        const item = document.createElement('li');
-        const classification = STORM_CLASSIFICATIONS[storm.classification] || 'Tropical System';
-
-        // Add intensity and pressure if available
-        let details = '';
-        if (storm.intensity) {
-            details += ` - Wind: ${storm.intensity} kt`;
-        }
-        if (storm.pressure) {
-            details += ` - Pressure: ${storm.pressure} mb`;
-        }
-
-        item.innerHTML = `<strong>${classification} ${storm.name}</strong>${details}`;
-
-        // Add a link to NHC
-        if (storm.forecastGraphics && storm.forecastGraphics.url) {
-            const nhcLink = document.createElement('a');
-            nhcLink.href = storm.forecastGraphics.url;
-            nhcLink.target = '_blank';
-            nhcLink.textContent = ' NHC Info';
-            nhcLink.className = 'storm-nhc-link';
-            item.appendChild(nhcLink);
-        }
-
-        list.appendChild(item);
-    });
-
-    stormList.appendChild(list);
-    return stormList;
-}
-
-/**
- * Main function to check for active storms and update the UI accordingly
- */
-export async function checkActiveStorms() {
-    // Don't show alert if user dismissed it this session
-    if (sessionStorage.getItem('stormAlertDismissed') === 'true') {
-        return;
-    }
-
-    const activeStorms = await fetchActiveAtlanticStorms();
-
-    // Update the UI if there are active storms
-    if (activeStorms.length > 0) {
-        // Add the alert banner to the page
-        const alertBanner = createStormAlertBanner(activeStorms);
-        document.body.insertBefore(alertBanner, document.body.firstChild);
-
-        // Add detailed storm information to the tropical content section
-        const tropicalContent = document.querySelector('.tropical-content');
-        if (tropicalContent) {
-            const stormList = createStormList(activeStorms);
-            tropicalContent.insertBefore(stormList, tropicalContent.firstChild);
-        }
-    }
-}
-
-// The following line should be added to your initialization code
-// This ensures the active storm check runs when the page loads
-// document.addEventListener('DOMContentLoaded', checkActiveStorms);
 
 
 
