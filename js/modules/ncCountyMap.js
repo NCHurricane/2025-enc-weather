@@ -99,28 +99,34 @@ export class NCCountyMap {
       .attr("stroke-width", this.options.strokeWidth);
   }
 
-  async updateWeatherData() {
-    const counties = window.siteConfig?.counties || [];
-    await Promise.all(
-      counties.map(async (county) => {
-        try {
-          let weather = await fetchCurrentWeather(county.lat, county.lon);
-          if (!weather || weather.temp == "N/A") {
-            weather = getDefaultWeatherData();
-          }
-
-          weather.city = county.city;
-
-          const key = county.name.toLowerCase();
-          this.weatherData[key] = weather;
-          this.addWeatherMarker(county, weather);
-        } catch (err) {
-          console.error(`Weather update failed for ${county.name}:`, err);
+async updateWeatherData() {
+  const counties = window.siteConfig?.counties || [];
+  await Promise.all(
+    counties.map(async (county) => {
+      try {
+        // Get weather data
+        let weather = await fetchCurrentWeather(county.lat, county.lon);
+        if (!weather || weather.temp == "N/A") {
+          weather = getDefaultWeatherData();
         }
-      })
-    );
-    this.createWarningLegend();
-  }
+        weather.city = county.city;
+
+        // Get alerts using zone-based method
+        const alerts = await fetchAlerts(county.lat, county.lon);
+        
+        const key = county.name.toLowerCase();
+        this.weatherData[key] = weather;
+        this.alertData[key] = alerts;
+
+        this.addWeatherMarker(county, weather);
+        this.colorZonesForCounty(key, alerts);
+      } catch (err) {
+        console.error(`Weather update failed for ${county.name}:`, err);
+      }
+    })
+  );
+  this.createWarningLegend();
+}
 
   addWeatherMarker(county, weather) {
     const key = county.name.toLowerCase();
@@ -157,25 +163,29 @@ export class NCCountyMap {
       .on("click", () => county.url && (window.location.href = county.url));
   }
 
-  colorZonesForCounty(countyKey, alerts) {
-    if (!alerts?.length) return;
-    let bestEv = null;
-    let bestPri = Infinity;
-    alerts.forEach((a) => {
-      const e = a.properties.event;
-      const p = warningPriorities[e] ?? Infinity;
-      if (p < bestPri) {
-        bestPri = p;
-        bestEv = e;
-      }
-    });
-    const color = warningColors[bestEv] || this.options.highlightFill;
-    this.svg
-      .selectAll(`path[data-county="${countyKey}"]`)
-      .attr("fill", color)
-      .attr("stroke-width", 2)
-      .attr("title", bestEv);
+colorZonesForCounty(countyKey, alerts) {
+  if (!alerts?.length) return;
+  
+  let bestEvent = null;
+  let bestPriority = Infinity;
+  
+  alerts.forEach((alert) => {
+    const event = alert.event || alert.properties?.event;
+    const priority = warningPriorities[event] ?? 999;
+    if (priority < bestPriority) {
+      bestPriority = priority;
+      bestEvent = event;
+    }
+  });
+
+  if (bestEvent) {
+    const color = warningColors[bestEvent] || this.options.defaultFill;
+    
+    // Color all zones for this county
+    this.svg.selectAll(`path[data-county="${countyKey}"]`)
+      .attr("fill", color);
   }
+}
 
   createWarningLegend() {
     const old = document.querySelector(".map-legend");

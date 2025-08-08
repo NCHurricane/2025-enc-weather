@@ -95,13 +95,41 @@ function getCountyConfig() {
     if (file_exists($countiesFile)) {
         $jsonContent = file_get_contents($countiesFile);
         $countiesData = json_decode($jsonContent, true);
-        return $countiesData['counties'] ?? [];
+        
+        // Process counties and normalize names
+        $counties = [];
+        $processedCounties = [];
+        
+        foreach ($countiesData['counties'] ?? [] as $county) {
+            $countyName = $county['name'];
+            
+            // Map multi-zone entries to base county names
+            $countyNameMap = [
+                'Mainland Hyde' => 'Hyde',
+                'Ocracoke Island' => 'Hyde', 
+                'Mainland Dare' => 'Dare',
+                'Northern OBX' => 'Dare',
+                'Hatteras Island' => 'Dare'
+            ];
+            $baseCountyName = $countyNameMap[$countyName] ?? $countyName;
+            
+            // Use the first occurrence of each base county
+            if (!isset($processedCounties[$baseCountyName])) {
+                $processedCounties[$baseCountyName] = [
+                    'name' => $baseCountyName,
+                    'city' => $county['city'],
+                    'lat' => $county['lat'],
+                    'lon' => $county['lon']
+                ];
+            }
+        }
+        
+        return array_values($processedCounties);
     } else {
-        // Fallback to hardcoded counties if file doesn't exist
+        // Fallback to hardcoded counties
         return [
             ["name" => "Bertie", "city" => "Windsor", "lat" => 35.9985, "lon" => -76.9461],
             ["name" => "Pitt", "city" => "Greenville", "lat" => 35.6115, "lon" => -77.3752],
-            // Add more hardcoded counties if needed
         ];
     }
 }
@@ -200,11 +228,11 @@ foreach ($counties as $county) {
         $condition = $props['textDescription'] ?? 'Unknown';
 
         // Get the icon URL and upgrade size from medium to large
-$iconUrl = $props['icon'] ?? null;
-if ($iconUrl) {
-    // Replace size=medium with size=large in the URL
-    $iconUrl = str_replace('size=medium', 'size=large', $iconUrl);
-}
+        $iconUrl = $props['icon'] ?? null;
+        if ($iconUrl) {
+            // Replace size=medium with size=large in the URL
+            $iconUrl = str_replace('size=medium', 'size=large', $iconUrl);
+        }
         
         // Extract other weather data
         $weather = [

@@ -7,24 +7,36 @@ class DataService {
   constructor() {
     // Cache configuration - TTL in milliseconds
     this.cacheTTL = {
-      alerts: 2 * 60 * 1000,           // 2 minutes
+      alerts: 2 * 60 * 1000, // 2 minutes
       currentConditions: 30 * 60 * 1000, // 30 minutes
-      forecast: 2 * 60 * 60 * 1000,     // 2 hours
-      tropical: 2 * 60 * 60 * 1000,     // 2 hours
-      radar: 5 * 60 * 1000,             // 5 minutes
-      satellite: 15 * 60 * 1000,        // 15 minutes
-      afd: 3 * 60 * 60 * 1000,          // 3 hours
+      forecast: 2 * 60 * 60 * 1000, // 2 hours
+      tropical: 2 * 60 * 60 * 1000, // 2 hours
+      radar: 5 * 60 * 1000, // 5 minutes
+      satellite: 15 * 60 * 1000, // 15 minutes
+      afd: 3 * 60 * 60 * 1000, // 3 hours
       countyMapping: 1 * 60 * 60 * 1000, // 1 hour - county zone/UGC mappings
     };
 
+    // User-Agent header for NWS API compliance
+    this.userAgent = "NCHurricane.com Weather App/1.0 (admin@nchurricane.com)";
+
+    // Headers for NWS API requests
+    this.nwsHeaders = {
+      "User-Agent": this.userAgent,
+      Accept: "application/geo+json",
+    };
+
     // API configurations
-    this.nwsApiBase = 'https://api.weather.gov';
-    this.openMeteoApiBase = 'https://api.open-meteo.com/v1/forecast';
+    this.nwsApiBase = "https://api.weather.gov";
+    this.openMeteoApiBase = "https://api.open-meteo.com/v1/forecast";
+
+    // Zone cache to avoid repeated point lookups
+    this.zoneCache = new Map();
 
     // Local cache paths
     this.localCachePaths = {
-      base: './js/modules/cache/',
-      alternate: '../../js/modules/cache/'
+      base: "./js/modules/cache/",
+      alternate: "../../js/modules/cache/",
     };
 
     // Initialize cache
@@ -35,10 +47,10 @@ class DataService {
    * Initialize localStorage cache if not exists
    */
   initCache() {
-    if (!localStorage.getItem('weatherCache')) {
-      localStorage.setItem('weatherCache', JSON.stringify({}));
+    if (!localStorage.getItem("weatherCache")) {
+      localStorage.setItem("weatherCache", JSON.stringify({}));
     }
-    console.log('DataService initialized with local storage cache');
+    console.log("DataService initialized with local storage cache");
   }
 
   /**
@@ -90,7 +102,7 @@ class DataService {
    */
   getFromLocalCache(dataType, params) {
     try {
-      const cache = JSON.parse(localStorage.getItem('weatherCache') || '{}');
+      const cache = JSON.parse(localStorage.getItem("weatherCache") || "{}");
       const cacheKey = this.getCacheKey(dataType, params);
 
       if (cache[cacheKey]) {
@@ -104,7 +116,7 @@ class DataService {
       }
       return null;
     } catch (error) {
-      console.warn('Error reading from localStorage:', error);
+      console.warn("Error reading from localStorage:", error);
       return null;
     }
   }
@@ -117,17 +129,17 @@ class DataService {
    */
   saveToLocalCache(dataType, params, data) {
     try {
-      const cache = JSON.parse(localStorage.getItem('weatherCache') || '{}');
+      const cache = JSON.parse(localStorage.getItem("weatherCache") || "{}");
       const cacheKey = this.getCacheKey(dataType, params);
 
       cache[cacheKey] = {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
-      localStorage.setItem('weatherCache', JSON.stringify(cache));
+      localStorage.setItem("weatherCache", JSON.stringify(cache));
     } catch (error) {
-      console.warn('Error saving to localStorage:', error);
+      console.warn("Error saving to localStorage:", error);
     }
   }
 
@@ -142,7 +154,7 @@ class DataService {
     const paramString = Object.entries(params || {})
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
       .map(([key, value]) => `${key}:${value}`)
-      .join('_');
+      .join("_");
 
     return `${dataType}_${paramString}`;
   }
@@ -155,28 +167,118 @@ class DataService {
    */
   async getFromServerCache(dataType, params) {
     try {
-      // Determine the cache file path based on data type and parameters
       const cacheFilePath = this.getServerCachePath(dataType, params);
 
-      // Try multiple path patterns to handle different directory structures
-      for (const basePath of [this.localCachePaths.base, this.localCachePaths.alternate]) {
+      // Try multiple path patterns for other data types
+      for (const basePath of [
+        this.localCachePaths.base,
+        this.localCachePaths.alternate,
+      ]) {
         try {
-          const response = await fetch(`${basePath}${cacheFilePath}?t=${Date.now()}`);
+          const response = await fetch(
+            `${basePath}${cacheFilePath}?t=${Date.now()}`
+          );
           if (response.ok) {
             const data = await response.json();
-            // Normalize the data to ensure consistent structure
             return this.normalizeData(dataType, data);
           }
         } catch (err) {
           console.log(`Failed fetch attempt for ${basePath}${cacheFilePath}`);
-          // Continue to next path pattern
         }
       }
 
-      // If we've tried all paths and none worked
       return null;
     } catch (error) {
       console.warn(`Error fetching from server cache for ${dataType}:`, error);
+      return null;
+    }
+  }
+async fetchNwsAlerts(params) {
+  const { lat, lon, county } = params;
+  const zoneIds = await this.getZoneIds(lat, lon, county);
+  
+  if (!zoneIds || zoneIds.length === 0) {
+    throw new Error('No zones found for location');
+  }
+
+  const alertPromises = zoneIds.map(zoneId => 
+    fetch(`${this.nwsApiBase}/alerts/active/zone/${zoneId}`, {
+      headers: this.nwsHeaders
+    }).then(response => response.json())
+  );
+
+  const alertResults = await Promise.all(alertPromises);
+  
+  // Combine and deduplicate
+  const allAlerts = [];
+  const seenAlertIds = new Set();
+  
+  alertResults.forEach(result => {
+    result.features?.forEach(alert => {
+      const alertId = alert.id || alert.properties?.id;
+      if (alertId && !seenAlertIds.has(alertId)) {
+        seenAlertIds.add(alertId);
+        allAlerts.push(alert);
+      }
+    });
+  });
+
+  return { type: 'FeatureCollection', features: allAlerts };
+}
+
+  async getZoneIds(lat, lon, county) {
+    const cacheKey = `${lat},${lon}`;
+
+    // Check cache first
+    if (this.zoneCache.has(cacheKey)) {
+      return this.zoneCache.get(cacheKey);
+    }
+
+    try {
+      // Get point data from NWS
+      const pointsResponse = await fetch(
+        `${this.nwsApiBase}/points/${lat},${lon}`,
+        {
+          headers: this.nwsHeaders,
+        }
+      );
+
+      if (!pointsResponse.ok) {
+        throw new Error(`Points lookup failed: ${pointsResponse.status}`);
+      }
+
+      const pointsData = await pointsResponse.json();
+      const properties = pointsData.properties;
+
+      // Extract zone IDs from URLs
+      const zoneIds = [];
+
+      if (properties.county) {
+        const countyZone = properties.county.split("/").pop();
+        if (countyZone) zoneIds.push(countyZone);
+      }
+
+      if (properties.forecastZone) {
+        const forecastZone = properties.forecastZone.split("/").pop();
+        if (forecastZone && !zoneIds.includes(forecastZone)) {
+          zoneIds.push(forecastZone);
+        }
+      }
+
+      if (properties.fireWeatherZone) {
+        const fireZone = properties.fireWeatherZone.split("/").pop();
+        if (fireZone && !zoneIds.includes(fireZone)) {
+          zoneIds.push(fireZone);
+        }
+      }
+
+      // Cache the result
+      this.zoneCache.set(cacheKey, zoneIds);
+
+      console.log(`Found zones for ${lat},${lon}:`, zoneIds);
+      return zoneIds;
+    } catch (error) {
+      console.error("Error getting zone IDs:", error);
       return null;
     }
   }
@@ -189,19 +291,19 @@ class DataService {
    */
   getServerCachePath(dataType, params) {
     switch (dataType) {
-      case 'currentConditions':
+      case "currentConditions":
         return `${params.county.toLowerCase()}_weather.json`;
-      case 'forecast':
+      case "forecast":
         return `${params.county.toLowerCase()}_forecast.json`;
-      case 'alerts':
+      case "alerts":
         return `${params.county.toLowerCase()}_alerts.json`;
-      case 'afd':
+      case "afd":
         return `${params.wfo.toLowerCase()}_afd.json`;
-      case 'tropical':
-        if (params.subType === 'outlook') return 'tropical_two_at.json';
-        if (params.subType === 'outlookSpanish') return 'tropical_two_sat.json';
-        if (params.subType === 'discussion') return 'tropical_disc_at.json';
-        return 'nhc_current_storms.json';
+      case "tropical":
+        if (params.subType === "outlook") return "tropical_two_at.json";
+        if (params.subType === "outlookSpanish") return "tropical_two_sat.json";
+        if (params.subType === "discussion") return "tropical_disc_at.json";
+        return "nhc_current_storms.json";
       default:
         return `${params.county.toLowerCase()}_${dataType}.json`;
     }
@@ -218,24 +320,26 @@ class DataService {
       let data = null;
 
       switch (dataType) {
-        case 'currentConditions':
+        case "currentConditions":
           // Use Open-Meteo for current conditions as specified
           data = await this.fetchOpenMeteoCurrentConditions(params);
           break;
-        case 'forecast':
+        case "forecast":
           data = await this.fetchNwsForecast(params);
           break;
-        case 'alerts':
+        case "alerts":
           data = await this.fetchNwsAlerts(params);
           break;
-        case 'afd':
+        case "afd":
           data = await this.fetchNwsAfd(params);
           break;
-        case 'tropical':
+        case "tropical":
           data = await this.fetchTropicalData(params);
           break;
         default:
-          throw new Error(`API fetch not implemented for data type: ${dataType}`);
+          throw new Error(
+            `API fetch not implemented for data type: ${dataType}`
+          );
       }
 
       // Normalize the data to ensure consistent structure
@@ -272,8 +376,14 @@ class DataService {
     const { lat, lon } = params;
 
     // First call to get grid points
-    const pointsResponse = await fetch(`${this.nwsApiBase}/points/${lat},${lon}`);
-    if (!pointsResponse.ok) throw new Error(`HTTP error! status: ${pointsResponse.status}`);
+    const pointsResponse = await fetch(
+      `${this.nwsApiBase}/points/${lat},${lon}`,
+      {
+        headers: this.nwsHeaders,
+      }
+    );
+    if (!pointsResponse.ok)
+      throw new Error(`HTTP error! status: ${pointsResponse.status}`);
 
     const pointsData = await pointsResponse.json();
     const forecastUrl = pointsData.properties.forecast;
@@ -281,21 +391,20 @@ class DataService {
 
     // Get both daily and hourly forecasts
     const [forecastResponse, hourlyResponse] = await Promise.all([
-      fetch(forecastUrl),
-      fetch(hourlyForecastUrl)
+      fetch(forecastUrl, { headers: this.nwsHeaders }),
+      fetch(hourlyForecastUrl, { headers: this.nwsHeaders }),
     ]);
 
     if (!forecastResponse.ok || !hourlyResponse.ok) {
-      throw new Error('Failed to fetch forecast data');
+      throw new Error("Failed to fetch forecast data");
     }
 
     const forecastData = await forecastResponse.json();
     const hourlyData = await hourlyResponse.json();
 
-    // Combine both forecasts into one data structure
     return {
       daily: forecastData.properties.periods,
-      hourly: hourlyData.properties.periods
+      hourly: hourlyData.properties.periods,
     };
   }
 
@@ -307,7 +416,12 @@ class DataService {
   async fetchNwsAlerts(params) {
     const { lat, lon } = params;
 
-    const response = await fetch(`${this.nwsApiBase}/alerts/active?point=${lat},${lon}`);
+    const response = await fetch(
+      `${this.nwsApiBase}/alerts/active?point=${lat},${lon}`,
+      {
+        headers: this.nwsHeaders,
+      }
+    );
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     return await response.json();
@@ -321,10 +435,14 @@ class DataService {
   async fetchNwsAfd(params) {
     const { wfo } = params;
 
-    // This is more complex as it requires scraping HTML
     const url = `https://forecast.weather.gov/product.php?site=${wfo}&issuedby=${wfo}&product=AFD&format=txt&version=1&glossary=0`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": this.userAgent,
+        Accept: "text/html",
+      },
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const html = await response.text();
@@ -334,14 +452,13 @@ class DataService {
     const doc = parser.parseFromString(html, "text/html");
     const preElement = doc.querySelector("pre");
 
-    if (!preElement) throw new Error('Could not find AFD content in page');
+    if (!preElement) throw new Error("Could not find AFD content in page");
 
     const afdText = preElement.innerText;
 
-    // Return in the format expected by the normalizer
     return {
       content: afdText,
-      timestamp: Date.now() / 1000 // Convert to seconds for consistency with PHP timestamp
+      timestamp: Date.now() / 1000,
     };
   }
 
@@ -354,14 +471,19 @@ class DataService {
     // This is a placeholder - actual implementation would depend on what's available
     // Most tropical data is best consumed from caches due to complex formats
 
-    if (params.subType === 'stormInfo') {
+    if (params.subType === "stormInfo") {
       // For active storms, try NHC API directly
-      const response = await fetch('https://www.nhc.noaa.gov/CurrentStorms.json');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(
+        "https://www.nhc.noaa.gov/CurrentStorms.json"
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
     }
 
-    throw new Error('Direct API fetch not implemented for this tropical data type');
+    throw new Error(
+      "Direct API fetch not implemented for this tropical data type"
+    );
   }
 
   /**
@@ -374,15 +496,15 @@ class DataService {
     if (!data) return null;
 
     switch (dataType) {
-      case 'currentConditions':
+      case "currentConditions":
         return this.normalizeCurrentConditions(data);
-      case 'forecast':
+      case "forecast":
         return this.normalizeForecast(data);
-      case 'alerts':
+      case "alerts":
         return this.normalizeAlerts(data);
-      case 'afd':
+      case "afd":
         return this.normalizeAfd(data);
-      case 'tropical':
+      case "tropical":
         return this.normalizeTropical(data);
       default:
         // For types without specific normalization, return as-is
@@ -402,7 +524,7 @@ class DataService {
       const w = data.weather;
       return {
         temp: this.formatTemperature(w.temperature),
-        condition: w.skyConditions || 'Unknown',
+        condition: w.skyConditions || "Unknown",
         dewpoint: this.formatTemperature(w.dewPoint),
         humidity: this.formatPercentage(w.humidity),
         wind: this.formatWind(w.windSpeed, w.windDirectionCardinal),
@@ -410,8 +532,8 @@ class DataService {
         pressure: this.formatPressure(w.pressure),
         time: w.timestamp ? new Date(w.timestamp * 1000) : new Date(),
         formattedTime: this.formatTime(w.timestamp),
-        stationName: w.stationName || 'Local Station',
-        iconUrl: w.iconUrl || null
+        stationName: w.stationName || "Local Station",
+        iconUrl: w.iconUrl || null,
       };
     }
 
@@ -423,20 +545,23 @@ class DataService {
       return {
         temp: this.formatTemperature(cw.temperature),
         condition: condition,
-        dewpoint: 'N/A', // Open-Meteo basic endpoint doesn't provide dewpoint
-        humidity: 'N/A', // Open-Meteo basic endpoint doesn't provide humidity
-        wind: this.formatWind(cw.windspeed, this.degreesToCardinal(cw.winddirection)),
-        visibility: 'N/A', // Open-Meteo basic endpoint doesn't provide visibility
-        pressure: 'N/A', // Open-Meteo basic endpoint doesn't provide pressure
+        dewpoint: "N/A", // Open-Meteo basic endpoint doesn't provide dewpoint
+        humidity: "N/A", // Open-Meteo basic endpoint doesn't provide humidity
+        wind: this.formatWind(
+          cw.windspeed,
+          this.degreesToCardinal(cw.winddirection)
+        ),
+        visibility: "N/A", // Open-Meteo basic endpoint doesn't provide visibility
+        pressure: "N/A", // Open-Meteo basic endpoint doesn't provide pressure
         time: new Date(cw.time * 1000),
         formattedTime: this.formatTime(cw.time),
-        stationName: 'Open-Meteo',
-        iconUrl: null // Open-Meteo doesn't provide icons
+        stationName: "Open-Meteo",
+        iconUrl: null, // Open-Meteo doesn't provide icons
       };
     }
 
     // Fallback for unknown format
-    return this.getFallbackData('currentConditions');
+    return this.getFallbackData("currentConditions");
   }
 
   /**
@@ -446,37 +571,37 @@ class DataService {
    */
   getWeatherCondition(code) {
     const conditions = {
-      0: 'Clear sky',
-      1: 'Mainly clear',
-      2: 'Partly cloudy',
-      3: 'Overcast',
-      45: 'Fog',
-      48: 'Depositing rime fog',
-      51: 'Light drizzle',
-      53: 'Moderate drizzle',
-      55: 'Dense drizzle',
-      56: 'Light freezing drizzle',
-      57: 'Dense freezing drizzle',
-      61: 'Slight rain',
-      63: 'Moderate rain',
-      65: 'Heavy rain',
-      66: 'Light freezing rain',
-      67: 'Heavy freezing rain',
-      71: 'Slight snow fall',
-      73: 'Moderate snow fall',
-      75: 'Heavy snow fall',
-      77: 'Snow grains',
-      80: 'Slight rain showers',
-      81: 'Moderate rain showers',
-      82: 'Violent rain showers',
-      85: 'Slight snow showers',
-      86: 'Heavy snow showers',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm with slight hail',
-      99: 'Thunderstorm with heavy hail'
+      0: "Clear sky",
+      1: "Mainly clear",
+      2: "Partly cloudy",
+      3: "Overcast",
+      45: "Fog",
+      48: "Depositing rime fog",
+      51: "Light drizzle",
+      53: "Moderate drizzle",
+      55: "Dense drizzle",
+      56: "Light freezing drizzle",
+      57: "Dense freezing drizzle",
+      61: "Slight rain",
+      63: "Moderate rain",
+      65: "Heavy rain",
+      66: "Light freezing rain",
+      67: "Heavy freezing rain",
+      71: "Slight snow fall",
+      73: "Moderate snow fall",
+      75: "Heavy snow fall",
+      77: "Snow grains",
+      80: "Slight rain showers",
+      81: "Moderate rain showers",
+      82: "Violent rain showers",
+      85: "Slight snow showers",
+      86: "Heavy snow showers",
+      95: "Thunderstorm",
+      96: "Thunderstorm with slight hail",
+      99: "Thunderstorm with heavy hail",
     };
 
-    return conditions[code] || 'Unknown';
+    return conditions[code] || "Unknown";
   }
 
   /**
@@ -489,7 +614,7 @@ class DataService {
     if (data.forecast && (data.forecast.daily || data.forecast.hourly)) {
       return {
         daily: data.forecast.daily || [],
-        hourly: data.forecast.hourly || []
+        hourly: data.forecast.hourly || [],
       };
     }
 
@@ -503,12 +628,12 @@ class DataService {
       // If we can't determine if it's daily or hourly, assume daily
       return {
         daily: data.properties.periods,
-        hourly: []
+        hourly: [],
       };
     }
 
     // Fallback
-    return this.getFallbackData('forecast');
+    return this.getFallbackData("forecast");
   }
 
   /**
@@ -520,33 +645,33 @@ class DataService {
     // From county cache
     if (data.alerts && Array.isArray(data.alerts)) {
       return {
-        alerts: data.alerts.map(alert => {
+        alerts: data.alerts.map((alert) => {
           // Ensure each alert has a properties object for consistency
           if (!alert.properties) {
             alert.properties = {
-              event: alert.event || 'Unknown Alert',
-              headline: alert.headline || '',
-              description: alert.description || '',
-              instruction: alert.instruction || '',
-              severity: alert.severity || 'Unknown',
-              certainty: alert.certainty || 'Unknown',
-              urgency: alert.urgency || 'Unknown'
+              event: alert.event || "Unknown Alert",
+              headline: alert.headline || "",
+              description: alert.description || "",
+              instruction: alert.instruction || "",
+              severity: alert.severity || "Unknown",
+              certainty: alert.certainty || "Unknown",
+              urgency: alert.urgency || "Unknown",
             };
           }
           return alert;
-        })
+        }),
       };
     }
 
     // From NWS API
     if (data.features && Array.isArray(data.features)) {
       return {
-        alerts: data.features
+        alerts: data.features,
       };
     }
 
     // Fallback
-    return this.getFallbackData('alerts');
+    return this.getFallbackData("alerts");
   }
 
   /**
@@ -561,15 +686,15 @@ class DataService {
     }
 
     // If it's raw text from API
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       return {
         content: data,
-        timestamp: Date.now() / 1000
+        timestamp: Date.now() / 1000,
       };
     }
 
     // Fallback
-    return this.getFallbackData('afd');
+    return this.getFallbackData("afd");
   }
 
   /**
@@ -586,12 +711,12 @@ class DataService {
     // If it's from NHC CurrentStorms API
     if (data.activeStorms && Array.isArray(data.activeStorms)) {
       return {
-        activeStorms: data.activeStorms
+        activeStorms: data.activeStorms,
       };
     }
 
     // Fallback
-    return this.getFallbackData('tropical');
+    return this.getFallbackData("tropical");
   }
 
   /**
@@ -602,43 +727,43 @@ class DataService {
   getFallbackData(dataType) {
     // Provide default/empty data structures for each data type
     switch (dataType) {
-      case 'currentConditions':
+      case "currentConditions":
         return {
-          temp: 'N/A',
-          condition: 'Data Unavailable',
-          dewpoint: 'N/A',
-          humidity: 'N/A',
-          wind: 'N/A',
-          visibility: 'N/A',
-          pressure: 'N/A',
+          temp: "N/A",
+          condition: "Data Unavailable",
+          dewpoint: "N/A",
+          humidity: "N/A",
+          wind: "N/A",
+          visibility: "N/A",
+          pressure: "N/A",
           time: new Date(),
           formattedTime: this.formatTime(Date.now() / 1000),
-          stationName: 'Unknown Station',
-          iconUrl: null
+          stationName: "Unknown Station",
+          iconUrl: null,
         };
-      case 'forecast':
+      case "forecast":
         return {
           daily: [],
-          hourly: []
+          hourly: [],
         };
-      case 'alerts':
+      case "alerts":
         return {
-          alerts: []
+          alerts: [],
         };
-      case 'afd':
+      case "afd":
         return {
-          content: 'Area Forecast Discussion not available at this time.',
-          timestamp: Date.now() / 1000
+          content: "Area Forecast Discussion not available at this time.",
+          timestamp: Date.now() / 1000,
         };
-      case 'tropical':
+      case "tropical":
         return {
           activeStorms: [],
-          outlook: 'Tropical data not available at this time.'
+          outlook: "Tropical data not available at this time.",
         };
       default:
         return {
-          error: 'No data available',
-          timestamp: Date.now() / 1000
+          error: "No data available",
+          timestamp: Date.now() / 1000,
         };
     }
   }
@@ -651,10 +776,10 @@ class DataService {
    * @returns {number|string} - Formatted temperature
    */
   formatTemperature(temp) {
-    if (temp === null || temp === undefined || temp === 'N/A') {
-      return 'N/A';
+    if (temp === null || temp === undefined || temp === "N/A") {
+      return "N/A";
     }
-    return Math.round(typeof temp === 'string' ? parseFloat(temp) : temp);
+    return Math.round(typeof temp === "string" ? parseFloat(temp) : temp);
   }
 
   /**
@@ -664,9 +789,9 @@ class DataService {
    */
   formatPercentage(value) {
     if (value === null || value === undefined) {
-      return 'N/A';
+      return "N/A";
     }
-    return Math.round(typeof value === 'string' ? parseFloat(value) : value);
+    return Math.round(typeof value === "string" ? parseFloat(value) : value);
   }
 
   /**
@@ -676,19 +801,19 @@ class DataService {
    * @returns {string} - Formatted wind information
    */
   formatWind(speed, direction) {
-    if (typeof speed === 'string') {
+    if (typeof speed === "string") {
       const match = speed.match(/(\d+)/);
       if (match) {
         speed = parseInt(match[1], 10);
       } else {
-        return 'N/A';
+        return "N/A";
       }
     }
 
     if (speed === 0) {
-      return 'Calm';
+      return "Calm";
     } else {
-      return `${Math.round(speed)} mph from ${direction || 'N/A'}`;
+      return `${Math.round(speed)} mph from ${direction || "N/A"}`;
     }
   }
 
@@ -699,7 +824,7 @@ class DataService {
    */
   formatVisibility(visibility) {
     if (visibility === null || visibility === undefined) {
-      return 'N/A';
+      return "N/A";
     }
     return visibility;
   }
@@ -711,7 +836,7 @@ class DataService {
    */
   formatPressure(pressure) {
     if (pressure === null || pressure === undefined) {
-      return 'N/A';
+      return "N/A";
     }
     return pressure;
   }
@@ -722,10 +847,10 @@ class DataService {
    * @returns {string} - Formatted time string
    */
   formatTime(timestamp) {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) return "Unknown";
 
     const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
   /**
@@ -734,13 +859,29 @@ class DataService {
    * @returns {string} - Cardinal direction
    */
   degreesToCardinal(degrees) {
-    if (degrees === undefined || degrees === null) return 'N/A';
+    if (degrees === undefined || degrees === null) return "N/A";
 
     // Ensure degrees is between 0-360
     degrees = ((degrees % 360) + 360) % 360;
 
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const directions = [
+      "N",
+      "NNE",
+      "NE",
+      "ENE",
+      "E",
+      "ESE",
+      "SE",
+      "SSE",
+      "S",
+      "SSW",
+      "SW",
+      "WSW",
+      "W",
+      "WNW",
+      "NW",
+      "NNW",
+    ];
     return directions[Math.round(degrees / 22.5) % 16];
   }
 
@@ -748,9 +889,9 @@ class DataService {
    * Clear all cached data (localStorage only)
    */
   clearCache() {
-    localStorage.removeItem('weatherCache');
+    localStorage.removeItem("weatherCache");
     this.initCache();
-    console.log('Weather cache cleared');
+    console.log("Weather cache cleared");
   }
 
   /**
@@ -783,5 +924,5 @@ class DataService {
 }
 
 // Create and export singleton instance
-const dataServiceInstance = new DataService();  // Changed class name to DataService (capitalized)
+const dataServiceInstance = new DataService(); // Changed class name to DataService (capitalized)
 export default dataServiceInstance;

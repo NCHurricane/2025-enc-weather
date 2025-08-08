@@ -67,13 +67,41 @@ function fetchData($url, $userAgent, $retries = 3)
 }
 
 // Function to read county configuration
-function getCountyConfig()
-{
+function getCountyConfig() {
     $countiesFile = '../../counties/counties.json';
     if (file_exists($countiesFile)) {
         $jsonContent = file_get_contents($countiesFile);
         $countiesData = json_decode($jsonContent, true);
-        return $countiesData['counties'] ?? [];
+        
+        // Process counties and normalize names
+        $counties = [];
+        $processedCounties = [];
+        
+        foreach ($countiesData['counties'] ?? [] as $county) {
+            $countyName = $county['name'];
+            
+            // Map multi-zone entries to base county names
+            $countyNameMap = [
+                'Mainland Hyde' => 'Hyde',
+                'Ocracoke Island' => 'Hyde', 
+                'Mainland Dare' => 'Dare',
+                'Northern OBX' => 'Dare',
+                'Hatteras Island' => 'Dare'
+            ];
+            $baseCountyName = $countyNameMap[$countyName] ?? $countyName;
+            
+            // Use the first occurrence of each base county
+            if (!isset($processedCounties[$baseCountyName])) {
+                $processedCounties[$baseCountyName] = [
+                    'name' => $baseCountyName,
+                    'city' => $county['city'],
+                    'lat' => $county['lat'],
+                    'lon' => $county['lon']
+                ];
+            }
+        }
+        
+        return array_values($processedCounties);
     } else {
         // Fallback to hardcoded counties
         return [
