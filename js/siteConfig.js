@@ -7,8 +7,8 @@ window.siteConfig = {
             lat: 35.9985,
             lon: -76.9461,
             url: "counties/bertie/index.html",
-            ugcCode: "NCZ044",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ044"
+            ugcCode: "NCZ030",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ030"
         },
         {
             name: "Pitt",
@@ -16,8 +16,8 @@ window.siteConfig = {
             lat: 35.6115,
             lon: -77.3752,
             url: "counties/pitt/index.html",
-            ugcCode: "NCZ029",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ029"
+            ugcCode: "NCZ044",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ044"
         },
         {
             name: "Beaufort",
@@ -25,8 +25,8 @@ window.siteConfig = {
             lat: 35.5465,
             lon: -77.0519,
             url: "counties/beaufort/index.html",
-            ugcCode: "NCZ045",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ045"
+            ugcCode: "NCZ080",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ080"
         },
         {
             name: "Martin",
@@ -35,8 +35,8 @@ window.siteConfig = {
             lon: -77.18,
             url: "counties/martin/index.html",
             station: "KMCZ",
-            ugcCode: "NCZ046",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ046"
+            ugcCode: "NCZ029",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ029"
         },
         {
             name: "Dare",
@@ -58,8 +58,8 @@ window.siteConfig = {
             lat: 35.8668,
             lon: -76.7488,
             url: "counties/washington/index.html",
-            ugcCode: "NCZ043",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ043"
+            ugcCode: "NCZ045",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ045"
         },
         {
             name: "Tyrrell",
@@ -67,8 +67,8 @@ window.siteConfig = {
             lat: 35.9177,
             lon: -76.2522,
             url: "counties/tyrrell/index.html",
-            ugcCode: "NCZ042",
-            zoneURL: "https://api.weather.gov/zones/forecast/NCZ042"
+            ugcCode: "NCZ046",
+            zoneURL: "https://api.weather.gov/zones/forecast/NCZ046"
         },
         {
             name: "Hyde",

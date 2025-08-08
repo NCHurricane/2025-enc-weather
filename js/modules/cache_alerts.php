@@ -35,10 +35,6 @@ if (!is_dir($cacheDir)) {
  */
 function fetchData($url, $userAgent, $retries = 3)
 {
-    // Function implementation remains the same
-    // ...
-
-    // Rest of the fetchData function code
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -116,6 +112,61 @@ function fetchData($url, $userAgent, $retries = 3)
     return $result;
 }
 
+/**
+ * Check if an alert is currently active (not expired)
+ * @param array $alert Alert data from NWS API
+ * @return bool True if alert is active, false if expired
+ */
+function isAlertActive($alert) {
+    $expires = $alert['properties']['expires'] ?? null;
+    
+    if (!$expires) {
+        // If no expiration date, consider it active
+        return true;
+    }
+    
+    try {
+        $expirationTime = new DateTime($expires);
+        $currentTime = new DateTime();
+        
+        // Alert is active if current time is before expiration
+        $isActive = $currentTime < $expirationTime;
+        
+        // Log for debugging
+        addDebugLog("Alert expires: $expires, Current: " . $currentTime->format('c') . ", Active: " . ($isActive ? 'YES' : 'NO'));
+        
+        return $isActive;
+    } catch (Exception $e) {
+        // If we can't parse the date, assume it's active to be safe
+        addDebugLog("Error parsing expiration date '$expires': " . $e->getMessage());
+        return true;
+    }
+}
+
+/**
+ * Remove duplicate alerts based on ID
+ * @param array $alerts Array of alert objects
+ * @return array Deduplicated alerts
+ */
+function removeDuplicateAlerts($alerts) {
+    $seenIds = [];
+    $uniqueAlerts = [];
+    
+    foreach ($alerts as $alert) {
+        $alertId = $alert['id'] ?? uniqid('alert_');
+        
+        if (!in_array($alertId, $seenIds)) {
+            $seenIds[] = $alertId;
+            $uniqueAlerts[] = $alert;
+        } else {
+            addDebugLog("Removed duplicate alert with ID: $alertId");
+        }
+    }
+    
+    addDebugLog("Removed " . (count($alerts) - count($uniqueAlerts)) . " duplicate alerts");
+    return $uniqueAlerts;
+}
+
 // Function to read county configuration
 function getCountyConfig()
 {
@@ -135,12 +186,145 @@ function getCountyConfig()
             ["name" => "Northern OBX", "city" => "Kitty Hawk", "lat" => 36.0646, "lon" => -75.7057],
             ["name" => "Hatteras Island", "city" => "Hatteras", "lat" => 35.2195, "lon" => -76.6903],
             ["name" => "Washington", "city" => "Plymouth", "lat" => 35.8668, "lon" => -76.7488],
-            ["name" => "Tyrrell", "city" => "Columbia", "lat" => 35.9177, "lon" => -76.2522]
-            ,["name" => "Mainland Hyde", "city" => "Swan Quarter", "lat" => 35.4085, "lon" => -76.3302],
+            ["name" => "Tyrrell", "city" => "Columbia", "lat" => 35.9177, "lon" => -76.2522],
+            ["name" => "Mainland Hyde", "city" => "Swan Quarter", "lat" => 35.4085, "lon" => -76.3302],
             ["name" => "Ocracoke Island", "city" => "Ocracoke", "lat" => 35.1146, "lon" => -75.9810],
             // Add more hardcoded counties if needed
         ];
     }
+}
+
+/**
+ * Enhanced function to map alert geometry to county names
+ * Improved to prevent false matches like "Martin" matching "Martinsville"
+ */
+function mapAlertToCounties($alert, $counties)
+{
+    global $debugLog;
+    $affectedCounties = [];
+
+    // Get alert properties
+    $alertUGCCodes = [];
+    if (isset($alert['properties']['geocode']['UGC']) && is_array($alert['properties']['geocode']['UGC'])) {
+        $alertUGCCodes = $alert['properties']['geocode']['UGC'];
+        addDebugLog("Found UGC codes in alert: " . implode(", ", $alertUGCCodes));
+    }
+
+    $affectedZones = [];
+    if (isset($alert['properties']['affectedZones']) && is_array($alert['properties']['affectedZones'])) {
+        $affectedZones = $alert['properties']['affectedZones'];
+        addDebugLog("Found affected zones in alert: " . implode(", ", $affectedZones));
+    }
+
+    $alertEvent = $alert['properties']['event'] ?? 'Unknown Alert';
+    $areaDesc = $alert['properties']['areaDesc'] ?? '';
+
+    // Define coastal vs inland zone types to prevent geographic mismatches
+    $coastalZones = [
+        'NCZ203', // Northern Outer Banks
+        'NCZ204', // Ocracoke Island  
+        'NCZ205', // Hatteras Island
+    ];
+
+    $coastalAlertTypes = [
+        'Beach Hazards Statement',
+        'Coastal Flood Advisory',
+        'Coastal Flood Warning',
+        'High Surf Advisory',
+        'Marine Weather Statement'
+    ];
+
+    // Check if this is a coastal-only alert
+    $isCoastalAlert = in_array($alertEvent, $coastalAlertTypes);
+    
+    if ($isCoastalAlert) {
+        addDebugLog("This is a coastal alert type: $alertEvent");
+    }
+
+    // Check each county for matches
+    foreach ($counties as $county) {
+        $countyName = $county['name'];
+        $matchFound = false;
+
+        addDebugLog("Checking if alert affects county: $countyName");
+
+        // METHOD 1: Direct UGC code matching (most reliable)
+        if (isset($county['ugcCode']) && in_array($county['ugcCode'], $alertUGCCodes)) {
+            addDebugLog("Match found: County UGC code {$county['ugcCode']} in alert");
+            $matchFound = true;
+        }
+
+        // METHOD 2: Zone URL matching
+        if (!$matchFound && isset($county['zoneURL']) && in_array($county['zoneURL'], $affectedZones)) {
+            addDebugLog("Match found: County zone URL {$county['zoneURL']} in alert");
+            $matchFound = true;
+        }
+
+        // METHOD 3: Area description matching WITH GEOGRAPHIC VALIDATION
+        if (!$matchFound && !empty($areaDesc)) {
+            // Special handling for Washington County to prevent coastal mismatches
+            if (strtolower($countyName) === 'washington') {
+                // Washington County should NEVER match coastal alerts
+                if ($isCoastalAlert) {
+                    addDebugLog("Skipping Washington County for coastal alert: $alertEvent");
+                    continue;
+                }
+                
+                // For non-coastal alerts, be very specific about Washington County matching
+                $washingtonPatterns = [
+                    '/\bWashington\s+County\b/i',           // "Washington County"
+                    '/\bWashington\s+Co\b/i',               // "Washington Co"
+                    '/(?<!city\s)(?<!town\s)Washington(?!\s+(?:NC|North\s+Carolina|city|downtown))/i'  // "Washington" but not "Washington, NC" or "Washington city"
+                ];
+                
+                foreach ($washingtonPatterns as $pattern) {
+                    if (preg_match($pattern, $areaDesc)) {
+                        addDebugLog("Match found: Washington County pattern matched in area description");
+                        $matchFound = true;
+                        break;
+                    }
+                }
+                
+                if (!$matchFound) {
+                    addDebugLog("No specific Washington County match found in: $areaDesc");
+                }
+            } else {
+                // For other counties, use standard word boundary matching
+                $countyNamePattern = '/\b' . preg_quote($countyName, '/') . '\b/i';
+                if (preg_match($countyNamePattern, $areaDesc)) {
+                    // Additional validation for inland counties vs coastal alerts
+                    if ($isCoastalAlert && !isset($county['isCoastal'])) {
+                        // Check if county has any coastal zones
+                        $hasCoastalZone = false;
+                        if (isset($county['ugcCode']) && in_array($county['ugcCode'], $coastalZones)) {
+                            $hasCoastalZone = true;
+                        }
+                        
+                        if (!$hasCoastalZone) {
+                            addDebugLog("Skipping inland county $countyName for coastal alert");
+                            continue;
+                        }
+                    }
+                    
+                    addDebugLog("Match found: County name '$countyName' found in area description");
+                    $matchFound = true;
+                }
+            }
+        }
+
+        if ($matchFound) {
+            $affectedCounties[] = $countyName;
+            addDebugLog("County $countyName affected by alert: " . ($alert['properties']['id'] ?? 'unknown'));
+        }
+    }
+
+    // Enhanced debugging
+    addDebugLog("Alert: $alertEvent");
+    addDebugLog("Area description: $areaDesc");
+    addDebugLog("UGC codes: " . implode(", ", $alertUGCCodes));
+    addDebugLog("Affected counties: " . implode(", ", $affectedCounties));
+
+    return array_unique($affectedCounties);
 }
 
 // Get counties configuration BEFORE using it
@@ -151,130 +335,6 @@ addDebugLog("Found " . count($counties) . " counties to process for alerts");
 // NOW it's safe to log this (moved this line from earlier in the file)
 error_log("Starting alert cache process at " . date('Y-m-d H:i:s'));
 addDebugLog("Starting alert cache process with " . count($counties) . " counties");
-
-/**
- * Enhanced function to map alert geometry to county names
- */
-/**
- * Enhanced function to map alert geometry to county names
- * Improved to prevent false matches like "Martin" matching "Martinsville"
- */
-function mapAlertToCounties($alert, $counties)
-{
-    // Function for logging
-    global $debugLog;
-    $affectedCounties = [];
-
-    // Check if the alert has UGC codes from geocode
-    $alertUGCCodes = [];
-    if (isset($alert['properties']['geocode']['UGC']) && is_array($alert['properties']['geocode']['UGC'])) {
-        $alertUGCCodes = $alert['properties']['geocode']['UGC'];
-        addDebugLog("Found UGC codes in alert: " . implode(", ", $alertUGCCodes));
-    }
-
-    // Get affected zone URLs from the alert
-    $affectedZones = [];
-    if (isset($alert['properties']['affectedZones']) && is_array($alert['properties']['affectedZones'])) {
-        $affectedZones = $alert['properties']['affectedZones'];
-        addDebugLog("Found affected zones in alert: " . implode(", ", $affectedZones));
-    }
-
-    // If no UGC codes or zones, this alert might not be properly formatted
-    if (empty($alertUGCCodes) && empty($affectedZones)) {
-        addDebugLog("WARNING: Alert has no UGC codes or affected zones");
-    }
-
-    // Check for each county if it's affected by this alert
-    foreach ($counties as $county) {
-        $countyName = $county['name'];
-        $matchFound = false;
-
-        // Debug log the county we're checking
-        addDebugLog("Checking if alert affects county: $countyName");
-
-        // Check if county's UGC code matches any in the alert
-        if (isset($county['ugcCode']) && in_array($county['ugcCode'], $alertUGCCodes)) {
-            addDebugLog("Match found: County UGC code {$county['ugcCode']} in alert");
-            $matchFound = true;
-        }
-
-        // Check if county's zone URL matches any affected zones
-        if (!$matchFound && isset($county['zoneURL']) && in_array($county['zoneURL'], $affectedZones)) {
-            addDebugLog("Match found: County zone URL {$county['zoneURL']} in alert");
-            $matchFound = true;
-        }
-
-        // As a fallback, check if alert affects this county by area description
-        if (!$matchFound && isset($alert['properties']['areaDesc'])) {
-            $areaDesc = $alert['properties']['areaDesc'];
-
-            // ------------------------
-            // NEW PRECISE MATCHING CODE
-            // ------------------------
-
-            // 1. Check for exact county name with word boundaries
-            $countyNamePattern = '/\b' . preg_quote($countyName, '/') . '\b/i';
-            if (preg_match($countyNamePattern, $areaDesc)) {
-                // Further verify it's not part of a larger word or place name
-                $contextWordsPattern = '/\b' . preg_quote($countyName, '/') . 's?ville\b|\b' .
-                    preg_quote($countyName, '/') . 'boro\b|\bCity of ' .
-                    preg_quote($countyName, '/') . '\b/i';
-
-                // If it matches a known pattern for false positives, reject it
-                if (preg_match($contextWordsPattern, $areaDesc)) {
-                    addDebugLog("FALSE MATCH AVOIDED: '$countyName' found but appears to be part of place name like 'Martinsville'");
-                } else {
-                    addDebugLog("Match found: County name '$countyName' found in area description with word boundaries");
-                    $matchFound = true;
-                }
-            }
-
-            // 2. Check for specific context patterns that confirm it's a county
-            if (!$matchFound) {
-                $countyContextPatterns = [
-                    '/' . preg_quote($countyName, '/') . '\s+County\b/i',  // "Martin County"
-                    '/\b' . preg_quote($countyName, '/') . ',/i',          // "Martin," (comma after)
-                    '/,\s+' . preg_quote($countyName, '/') . '\b/i',       // ", Martin" (comma before)
-                    '/counties.*?\b' . preg_quote($countyName, '/') . '\b/i', // "counties... Martin"
-                    '/\bareas.*?\b' . preg_quote($countyName, '/') . '\b/i'   // "areas... Martin"
-                ];
-
-                foreach ($countyContextPatterns as $pattern) {
-                    if (preg_match($pattern, $areaDesc)) {
-                        addDebugLog("Match found: County name '$countyName' found with confirming context pattern");
-                        $matchFound = true;
-                        break;
-                    }
-                }
-            }
-
-            // ------------------------
-            // END NEW MATCHING CODE
-            // ------------------------
-        }
-
-        // If we found a match, add this county to affected counties
-        if ($matchFound) {
-            $affectedCounties[] = $countyName;
-            addDebugLog("Added $countyName to affected counties list");
-        }
-    }
-
-    // If still empty, log it for investigation
-    if (empty($affectedCounties)) {
-        addDebugLog("WARNING: Could not determine affected counties for alert: " .
-            ($alert['properties']['id'] ?? 'unknown'));
-
-        // For debugging, extract the area description
-        if (isset($alert['properties']['areaDesc'])) {
-            $areaDesc = $alert['properties']['areaDesc'];
-            addDebugLog("Area description is: " . $areaDesc);
-        }
-    }
-
-    // Remove duplicates and return
-    return array_unique($affectedCounties);
-}
 
 // Initialize alert tracking
 $masterAlerts = [
@@ -298,94 +358,70 @@ addDebugLog("Fetching from: $regionUrl");
 
 $alertsResponse = fetchData($regionUrl, $userAgent);
 
-// Rest of the script processing the alerts response
-// ...
-
-// The remainder of the script stays the same
+// Process the alerts response
 if ($alertsResponse) {
-    // Processing code remains the same
     addDebugLog("Received response from NWS API (" . strlen($alertsResponse) . " bytes)");
-
-    // Process the alerts from the response
-    // ...
 
     $alertsData = json_decode($alertsResponse, true);
     if (isset($alertsData['features']) && !empty($alertsData['features'])) {
         $alertFeatures = $alertsData['features'];
 
-        // Extract and log alert types
-        $alertTypes = [];
+        // FILTER OUT EXPIRED ALERTS FIRST
+        $activeAlerts = [];
         foreach ($alertFeatures as $alert) {
-            if (isset($alert['properties']['event'])) {
-                $eventType = $alert['properties']['event'];
-                if (!isset($alertTypes[$eventType])) {
-                    $alertTypes[$eventType] = 0;
-                }
-                $alertTypes[$eventType]++;
+            if (isAlertActive($alert)) {
+                $activeAlerts[] = $alert;
+            } else {
+                $alertEvent = $alert['properties']['event'] ?? 'Unknown Alert';
+                $expires = $alert['properties']['expires'] ?? 'No expiration';
+                addDebugLog("Filtered out expired alert: $alertEvent (expired: $expires)");
             }
         }
+        
+        addDebugLog("Filtered " . count($alertFeatures) . " total alerts down to " . count($activeAlerts) . " active alerts");
 
-        addDebugLog("Found " . count($alertFeatures) . " active alerts in the region");
-
-        // Log the types of alerts found
-        foreach ($alertTypes as $type => $count) {
-            addDebugLog("- $count x $type");
-        }
-
-        error_log("Found " . count($alertFeatures) . " active alerts in the region");
-
-        // Process each alert
-        foreach ($alertFeatures as $alert) {
-            // Process alert code remains the same
-            // ...
-            // Extract alert data
-            $alertId = $alert['properties']['id'] ?? uniqid('alert_');
-            $alertEvent = $alert['properties']['event'] ?? 'Unknown Alert';
-            $alertHeadline = $alert['properties']['headline'] ?? '';
-            $alertDescription = $alert['properties']['description'] ?? '';
-            $alertInstruction = $alert['properties']['instruction'] ?? '';
-            $alertSeverity = $alert['properties']['severity'] ?? 'Unknown';
-            $alertCertainty = $alert['properties']['certainty'] ?? 'Unknown';
-            $alertUrgency = $alert['properties']['urgency'] ?? 'Unknown';
-            $alertSent = $alert['properties']['sent'] ?? null;
-            $alertEffective = $alert['properties']['effective'] ?? null;
-            $alertExpires = $alert['properties']['expires'] ?? null;
-
-            // Map alert to affected counties
-            $affectedCounties = mapAlertToCounties($alert, $counties);
-
-            // Add to master alerts list
-            $masterAlerts['alerts'][] = [
-                'id' => $alertId,
-                'event' => $alertEvent,
-                'headline' => $alertHeadline,
-                'description' => $alertDescription,
-                'instruction' => $alertInstruction,
-                'severity' => $alertSeverity,
-                'certainty' => $alertCertainty,
-                'urgency' => $alertUrgency,
-                'sent' => $alertSent,
-                'effective' => $alertEffective,
-                'expires' => $alertExpires,
-                'affectedCounties' => $affectedCounties
-            ];
-
-            // Create county-specific alert entries
-            foreach ($affectedCounties as $countyName) {
-                $countyFile = $cacheDir . strtolower($countyName) . '_alerts.json';
-
-                // Read existing alerts if file exists
-                $countyAlerts = [];
-                if (file_exists($countyFile)) {
-                    $jsonContent = file_get_contents($countyFile);
-                    $countyData = json_decode($jsonContent, true);
-                    if (isset($countyData['alerts'])) {
-                        $countyAlerts = $countyData['alerts'];
+        if (!empty($activeAlerts)) {
+            // Extract and log alert types for active alerts only
+            $alertTypes = [];
+            foreach ($activeAlerts as $alert) {
+                if (isset($alert['properties']['event'])) {
+                    $eventType = $alert['properties']['event'];
+                    if (!isset($alertTypes[$eventType])) {
+                        $alertTypes[$eventType] = 0;
                     }
+                    $alertTypes[$eventType]++;
                 }
+            }
 
-                // Add this alert to county's alerts
-                $countyAlerts[] = [
+            addDebugLog("Found " . count($activeAlerts) . " active alerts in the region");
+
+            // Log the types of active alerts found
+            foreach ($alertTypes as $type => $count) {
+                addDebugLog("- $count x $type");
+            }
+
+            error_log("Found " . count($activeAlerts) . " active alerts in the region");
+
+            // Process each ACTIVE alert
+            foreach ($activeAlerts as $alert) {
+                // Extract alert data
+                $alertId = $alert['properties']['id'] ?? uniqid('alert_');
+                $alertEvent = $alert['properties']['event'] ?? 'Unknown Alert';
+                $alertHeadline = $alert['properties']['headline'] ?? '';
+                $alertDescription = $alert['properties']['description'] ?? '';
+                $alertInstruction = $alert['properties']['instruction'] ?? '';
+                $alertSeverity = $alert['properties']['severity'] ?? 'Unknown';
+                $alertCertainty = $alert['properties']['certainty'] ?? 'Unknown';
+                $alertUrgency = $alert['properties']['urgency'] ?? 'Unknown';
+                $alertSent = $alert['properties']['sent'] ?? null;
+                $alertEffective = $alert['properties']['effective'] ?? null;
+                $alertExpires = $alert['properties']['expires'] ?? null;
+
+                // Map alert to affected counties
+                $affectedCounties = mapAlertToCounties($alert, $counties);
+
+                // Add to master alerts list
+                $masterAlerts['alerts'][] = [
                     'id' => $alertId,
                     'event' => $alertEvent,
                     'headline' => $alertHeadline,
@@ -396,20 +432,76 @@ if ($alertsResponse) {
                     'urgency' => $alertUrgency,
                     'sent' => $alertSent,
                     'effective' => $alertEffective,
-                    'expires' => $alertExpires
+                    'expires' => $alertExpires,
+                    'affectedCounties' => $affectedCounties
                 ];
 
-                // Save county-specific alerts file
-                $countyData = [
-                    'timestamp' => time(),
-                    'lastUpdated' => date('Y-m-d H:i:s'),
-                    'alerts' => $countyAlerts
-                ];
+                // Create county-specific alert entries
+                foreach ($affectedCounties as $countyName) {
+                    $countyFile = $cacheDir . strtolower($countyName) . '_alerts.json';
 
-                file_put_contents($countyFile, json_encode($countyData));
-                error_log("Alert cache updated for {$countyName}: {$alertEvent}");
-                addDebugLog("Alert cache updated for {$countyName}: {$alertEvent}");
+                    // Read existing alerts if file exists
+                    $countyAlerts = [];
+                    if (file_exists($countyFile)) {
+                        $jsonContent = file_get_contents($countyFile);
+                        $countyData = json_decode($jsonContent, true);
+                        if (isset($countyData['alerts'])) {
+                            // FILTER EXISTING ALERTS TO REMOVE EXPIRED ONES
+                            $existingActiveAlerts = [];
+                            foreach ($countyData['alerts'] as $existingAlert) {
+                                $expires = $existingAlert['expires'] ?? null;
+                                if ($expires) {
+                                    try {
+                                        $expirationTime = new DateTime($expires);
+                                        $currentTime = new DateTime();
+                                        if ($currentTime < $expirationTime) {
+                                            $existingActiveAlerts[] = $existingAlert;
+                                        }
+                                    } catch (Exception $e) {
+                                        // If we can't parse, keep the alert to be safe
+                                        $existingActiveAlerts[] = $existingAlert;
+                                    }
+                                } else {
+                                    // No expiration date, keep it
+                                    $existingActiveAlerts[] = $existingAlert;
+                                }
+                            }
+                            $countyAlerts = $existingActiveAlerts;
+                        }
+                    }
+
+                    // Add this alert to county's alerts
+                    $countyAlerts[] = [
+                        'id' => $alertId,
+                        'event' => $alertEvent,
+                        'headline' => $alertHeadline,
+                        'description' => $alertDescription,
+                        'instruction' => $alertInstruction,
+                        'severity' => $alertSeverity,
+                        'certainty' => $alertCertainty,
+                        'urgency' => $alertUrgency,
+                        'sent' => $alertSent,
+                        'effective' => $alertEffective,
+                        'expires' => $alertExpires
+                    ];
+
+                    // Remove duplicates from county alerts
+                    $countyAlerts = removeDuplicateAlerts($countyAlerts);
+
+                    // Save county-specific alerts file
+                    $countyData = [
+                        'timestamp' => time(),
+                        'lastUpdated' => date('Y-m-d H:i:s'),
+                        'alerts' => $countyAlerts
+                    ];
+
+                    file_put_contents($countyFile, json_encode($countyData));
+                    error_log("Alert cache updated for {$countyName}: {$alertEvent}");
+                    addDebugLog("Alert cache updated for {$countyName}: {$alertEvent}");
+                }
             }
+        } else {
+            addDebugLog("No active alerts found after filtering");
         }
     } else {
         error_log("No active alerts found in the region");
@@ -424,10 +516,11 @@ if ($alertsResponse) {
         addDebugLog("Created empty master alerts file");
     }
 
-    // Save master alerts file
+    // Remove duplicates from master alerts and save
+    $masterAlerts['alerts'] = removeDuplicateAlerts($masterAlerts['alerts']);
     file_put_contents($cacheDir . $masterAlertsFile, json_encode($masterAlerts));
-    error_log("Master alerts file updated with " . count($masterAlerts['alerts']) . " alerts");
-    addDebugLog("Master alerts file updated with " . count($masterAlerts['alerts']) . " alerts");
+    error_log("Master alerts file updated with " . count($masterAlerts['alerts']) . " active alerts");
+    addDebugLog("Master alerts file updated with " . count($masterAlerts['alerts']) . " active alerts");
 } else {
     error_log("Failed to fetch alerts for the region");
     addDebugLog("Failed to fetch alerts from NWS API");
@@ -493,3 +586,4 @@ if (php_sapi_name() !== 'cli') {
     echo "</pre>";
     ob_end_flush();
 }
+?>

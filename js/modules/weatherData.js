@@ -724,36 +724,36 @@ export function setWeatherBackground(weatherData, containerId = 'weather-backgro
  * Zone to County mapping for multi-zone counties
  */
 const ZONE_TO_COUNTY_MAP = {
-    // Dare County zones
+    // Dare County zones (multi-zone county)
     'NCZ047': 'dare',        // Mainland Dare
     'NCZ203': 'dare',        // Northern Outer Banks  
     'NCZ205': 'dare',        // Hatteras Island
 
-    // Hyde County zones
-    'NCZ081': 'hyde',        // Mainland Hyde
+    // Hyde County zones (multi-zone county)
+    'NCZ081': 'hyde',        // Hyde (mainland)
     'NCZ204': 'hyde',        // Ocracoke Island
 
-    // Single-zone counties
-    'NCZ029': 'pitt',        // Pitt County
-    'NCZ044': 'bertie',      // Bertie County
-    'NCZ045': 'beaufort',    // Beaufort County
-    'NCZ046': 'martin',      // Martin County
-    'NCZ043': 'washington',  // Washington County
-    'NCZ042': 'tyrrell',     // Tyrrell County
+    // Single-zone counties - CORRECTED
+    'NCZ030': 'bertie',      // Bertie County - CORRECTED FROM NCZ044
+    'NCZ080': 'beaufort',    // Beaufort County - CORRECTED FROM NCZ045
+    'NCZ029': 'martin',      // Martin County - CORRECTED FROM NCZ046
+    'NCZ044': 'pitt',        // Pitt County - CORRECTED FROM NCZ029
+    'NCZ046': 'tyrrell',     // Tyrrell County - CORRECTED FROM NCZ042
+    'MNZ173': 'washington',  // Washington County - CORRECT
 };
 
 /**
- * County to Zones mapping (reverse lookup)
+ * County to Zones mapping (reverse lookup) - CORRECTED
  */
 const COUNTY_TO_ZONES_MAP = {
     'dare': ['NCZ047', 'NCZ203', 'NCZ205'],
     'hyde': ['NCZ081', 'NCZ204'],
-    'pitt': ['NCZ029'],
-    'bertie': ['NCZ044'],
-    'beaufort': ['NCZ045'],
-    'martin': ['NCZ046'],
-    'washington': ['NCZ043'],
-    'tyrrell': ['NCZ042'],
+    'bertie': ['NCZ030'],     // CORRECTED FROM NCZ044
+    'beaufort': ['NCZ080'],   // CORRECTED FROM NCZ045  
+    'martin': ['NCZ029'],     // CORRECTED FROM NCZ046
+    'pitt': ['NCZ044'],       // CORRECTED FROM NCZ029
+    'tyrrell': ['NCZ046'],    // CORRECTED FROM NCZ042
+    'washington': ['MNZ173'], // CORRECT
 };
 
 /**
@@ -766,6 +766,7 @@ const REGION_TO_COUNTY_MAP = {
     'mainland dare': 'dare',
     'ocracoke island': 'hyde',
     'mainland hyde': 'hyde',
+    'hyde': 'hyde',
     // Add more region mappings as needed
 };
 
@@ -805,6 +806,26 @@ export async function fetchAlerts(lat, lon) {
         const countyZones = COUNTY_TO_ZONES_MAP[countyName.toLowerCase()] || [];
         console.log(`Zones for ${countyName}:`, countyZones);
 
+        // Define coastal regions that should never match inland counties
+        const coastalRegions = [
+            'northern obx',
+            'northern outer banks', 
+            'hatteras island',
+            'ocracoke island',
+            'outer banks'
+        ];
+
+        // Define inland counties that should never get coastal alerts
+        const inlandCounties = [
+            'washington',
+            'martin', 
+            'pitt',
+            'bertie',
+            'tyrrell'
+        ];
+
+        const isInlandCounty = inlandCounties.includes(countyName.toLowerCase());
+
         try {
             // FIXED: Use correct base path for master_alerts.json
             const basePath = getCacheBasePath();
@@ -826,50 +847,88 @@ export async function fetchAlerts(lat, lon) {
                     const matchedAlerts = masterData.alerts.filter(alert => {
                         let isMatch = false;
 
-                        // Method 1: Check UGC codes against county zones
-                        if (alert.properties && alert.properties.geocode && alert.properties.geocode.UGC) {
-                            const alertUGCs = alert.properties.geocode.UGC;
-                            console.log(`Alert UGC codes:`, alertUGCs);
+                        // COASTAL ALERT FILTERING: Prevent inland counties from getting coastal alerts
+                        const alertEvent = alert.event || alert.properties?.event || '';
+                        const isCoastalAlert = [
+                            'Beach Hazards Statement',
+                            'Coastal Flood Advisory', 
+                            'Coastal Flood Warning',
+                            'High Surf Advisory',
+                            'Marine Weather Statement'
+                        ].includes(alertEvent);
 
-                            const zoneMatch = countyZones.some(zone => alertUGCs.includes(zone));
-                            if (zoneMatch) {
-                                console.log(`Zone match found for ${countyName} via UGC codes`);
-                                isMatch = true;
-                            }
+                        if (isCoastalAlert && isInlandCounty) {
+                            console.log(`Filtering out coastal alert "${alertEvent}" for inland county ${countyName}`);
+                            return false;
                         }
 
-                        // Method 2: Check affected counties (direct name matching)
-                        if (!isMatch && alert.affectedCounties) {
-                            const nameMatch = alert.affectedCounties.some(affectedCounty => {
-                                const lowerAffected = affectedCounty.toLowerCase();
-                                const lowerCounty = countyName.toLowerCase();
-
-                                if (lowerAffected === lowerCounty) return true;
-
-                                const mappedCounty = REGION_TO_COUNTY_MAP[lowerAffected];
-                                if (mappedCounty === lowerCounty) return true;
-
+                        // Method 1: Check affected counties array for exact matches
+                        if (alert.affectedCounties && Array.isArray(alert.affectedCounties)) {
+                            // Check for exact county name matches
+                            const exactMatch = alert.affectedCounties.some(affectedCounty => {
+                                const affectedLower = affectedCounty.toLowerCase();
+                                
+                                // Exact county name match
+                                if (affectedLower === countyName.toLowerCase()) {
+                                    return true;
+                                }
+                                
+                                // Handle special cases for multi-zone counties
+                                if (countyName.toLowerCase() === 'dare') {
+                                    return ['mainland dare', 'northern obx', 'northern outer banks', 'hatteras island'].includes(affectedLower);
+                                }
+                                
+                                if (countyName.toLowerCase() === 'hyde') {
+                                    return ['mainland hyde', 'ocracoke island'].includes(affectedLower);
+                                }
+                                
                                 return false;
                             });
 
-                            if (nameMatch) {
-                                console.log(`Name/region match found for ${countyName}`);
+                            if (exactMatch) {
+                                console.log(`Alert matches ${countyName} via affectedCounties:`, alert.affectedCounties);
                                 isMatch = true;
                             }
                         }
 
-                        // Method 3: Check affected zones URLs
-                        if (!isMatch && countyConfig?.zoneURL && alert.properties?.affectedZones) {
-                            const zoneUrlMatch = alert.properties.affectedZones.includes(countyConfig.zoneURL);
-                            if (zoneUrlMatch) {
-                                console.log(`Zone URL match found for ${countyName}`);
+                        // Method 2: Check UGC codes against county zones (if no affectedCounties match)
+                        if (!isMatch && alert.geocode?.UGC && Array.isArray(alert.geocode.UGC)) {
+                            const alertUGCs = alert.geocode.UGC;
+                            const hasMatchingZone = alertUGCs.some(ugc => countyZones.includes(ugc));
+                            
+                            if (hasMatchingZone) {
+                                console.log(`Alert matches ${countyName} via UGC codes:`, alertUGCs);
                                 isMatch = true;
                             }
+                        }
+
+                        // Method 3: Check affected zones (if no previous matches)
+                        if (!isMatch && alert.affectedZones && Array.isArray(alert.affectedZones)) {
+                            const hasMatchingZoneURL = alert.affectedZones.some(zoneURL => {
+                                // Extract zone code from URL like "https://api.weather.gov/zones/forecast/NCZ043"
+                                const zoneMatch = zoneURL.match(/NCZ\d+/);
+                                if (zoneMatch) {
+                                    const zoneCode = zoneMatch[0];
+                                    return countyZones.includes(zoneCode);
+                                }
+                                return false;
+                            });
+                            
+                            if (hasMatchingZoneURL) {
+                                console.log(`Alert matches ${countyName} via zone URLs:`, alert.affectedZones);
+                                isMatch = true;
+                            }
+                        }
+
+                        // ADDITIONAL SAFETY CHECK: Prevent Washington County from getting coastal alerts
+                        if (isMatch && countyName.toLowerCase() === 'washington' && isCoastalAlert) {
+                            console.log(`SAFETY FILTER: Blocking coastal alert "${alertEvent}" for Washington County`);
+                            isMatch = false;
                         }
 
                         if (isMatch) {
-                            console.log(`Alert match found for ${countyName}:`, {
-                                alertEvent: alert.event,
+                            console.log(`Final match for ${countyName}:`, {
+                                event: alertEvent,
                                 alertId: alert.id,
                                 affectedCounties: alert.affectedCounties
                             });

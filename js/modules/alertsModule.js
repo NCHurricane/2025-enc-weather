@@ -125,48 +125,122 @@ class AlertsModule {
     }
 
     /**
+     * Check if an alert is currently active (not expired)
+     * @param {Object} alert - Alert object
+     * @returns {boolean} - True if alert is active
+     */
+    isAlertActive(alert) {
+        const expires = alert.expires || alert.properties?.expires;
+        
+        if (!expires) {
+            // If no expiration date, consider it active
+            return true;
+        }
+        
+        try {
+            const expirationTime = new Date(expires);
+            const currentTime = new Date();
+            
+            // Alert is active if current time is before expiration
+            const isActive = currentTime < expirationTime;
+            
+            if (!isActive) {
+                console.log(`Alert expired: ${alert.event || alert.properties?.event} (expired: ${expires})`);
+            }
+            
+            return isActive;
+        } catch (error) {
+            // If we can't parse the date, assume it's active to be safe
+            console.warn('Error parsing expiration date:', expires, error);
+            return true;
+        }
+    }
+
+    /**
+     * Filter out expired alerts and remove duplicates
+     * @param {Array} alerts - Array of alert objects
+     * @returns {Array} - Filtered array of active, unique alerts
+     */
+    filterActiveAlerts(alerts) {
+        if (!Array.isArray(alerts)) {
+            return [];
+        }
+        
+        // First filter out expired alerts
+        const activeAlerts = alerts.filter(alert => this.isAlertActive(alert));
+        
+        // Then remove duplicates based on alert ID
+        const seenIds = new Set();
+        const uniqueAlerts = [];
+        
+        for (const alert of activeAlerts) {
+            const alertId = alert.id || alert.properties?.id || `${alert.event}-${alert.expires}`;
+            
+            if (!seenIds.has(alertId)) {
+                seenIds.add(alertId);
+                uniqueAlerts.push(alert);
+            } else {
+                console.log(`Removed duplicate alert: ${alertId}`);
+            }
+        }
+        
+        const removedCount = alerts.length - uniqueAlerts.length;
+        if (removedCount > 0) {
+            console.log(`Filtered out ${removedCount} expired/duplicate alerts from ${alerts.length} total`);
+        }
+        
+        return uniqueAlerts;
+    }
+
+    /**
      * Render alerts into the DOM
      */
     renderAlerts() {
         const alertsElement = document.getElementById(this.config.alertsElementId);
         if (!alertsElement) return;
 
-        // Get alerts from data
-        const alerts = this.alertsData.alerts || [];
+        // Get alerts from data and filter out expired/duplicate ones
+        const allAlerts = this.alertsData.alerts || [];
+        const activeAlerts = this.filterActiveAlerts(allAlerts);
 
-        if (!alerts || alerts.length === 0) {
+        if (!activeAlerts || activeAlerts.length === 0) {
             alertsElement.innerHTML = '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
             return;
         }
 
         let alertsHTML = '';
-        alerts.forEach((alert, index) => {
+        activeAlerts.forEach((alert, index) => {
             // Get event name based on structure
             const eventName = alert.properties?.event || alert.event || 'Unknown Alert';
 
             // Get description based on structure
             let description = alert.properties?.description || alert.description || 'No description available.';
-            description = description.replace(/\\r\\n/g, "\\n");
+            
+            // Clean up line breaks in description
+            description = description.replace(/\r\n/g, "\n");
 
-            const paragraphs = description.split(/\\n\\s*\\n/);
-            const formattedDescription = paragraphs.map(p => `<p>${p.replace(/\\n/g, " ")}</p>`).join("");
+            const paragraphs = description.split(/\n\s*\n/);
+            const formattedDescription = paragraphs.map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join("");
 
             // Add to HTML
             alertsHTML += `
-        <div class="alert">
-          <input type="checkbox" id="alert-${index}" class="alert-toggle">
-          <label for="alert-${index}" class="alert-title">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            ${eventName}
-          </label>
-          <div class="alert-details">
-            ${formattedDescription}
-          </div>
-        </div>
-      `;
+                <div class="alert">
+                    <input type="checkbox" id="alert-${index}" class="alert-toggle">
+                    <label for="alert-${index}" class="alert-title">
+                        <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
+                        ${eventName}
+                    </label>
+                    <div class="alert-details">
+                        ${formattedDescription}
+                    </div>
+                </div>
+            `;
         });
 
         alertsElement.innerHTML = alertsHTML;
+        
+        // Log for debugging
+        console.log(`Rendered ${activeAlerts.length} active alerts (filtered from ${allAlerts.length} total)`);
     }
 
     /**
@@ -197,45 +271,20 @@ class AlertsModule {
     /**
      * Filter alerts to only those affecting this county
      * @param {Array} alerts - Array of alert objects
-     * @returns {Array} - Filtered array of alerts
+     * @param {string} countyName - County name to filter by
+     * @returns {Array} - Filtered alerts
      */
-    filterAlertsByCounty(alerts) {
-        if (!alerts || !alerts.length) return [];
+    filterAlertsByCounty(alerts, countyName) {
+        if (!Array.isArray(alerts) || !countyName) {
+            return alerts || [];
+        }
 
         return alerts.filter(alert => {
-            // Skip if no properties
-            if (!alert.properties) return false;
-
-            let matchesOurCounty = false;
-
-            // First check if the county name appears in the affected areas
-            if (alert.properties.areaDesc) {
-                const countyPattern = new RegExp(`\\b${this.county}\\b`, 'i');
-                if (countyPattern.test(alert.properties.areaDesc)) {
-                    matchesOurCounty = true;
-                }
-            }
-
-            // Check if our county's UGC code matches any in the alert
-            if (!matchesOurCounty && alert.properties.geocode && alert.properties.geocode.UGC) {
-                // Find our county's UGC code
-                const countyUGC = this.getCountyUGC(this.county);
-                if (countyUGC && alert.properties.geocode.UGC.includes(countyUGC)) {
-                    matchesOurCounty = true;
-                }
-            }
-
-            // Check if our county's zone URL matches any affected zones
-            if (!matchesOurCounty && alert.properties.affectedZones) {
-                // Find our county's zone URL
-                const countyZoneURL = this.getCountyZoneURL(this.county);
-                if (countyZoneURL && alert.properties.affectedZones.includes(countyZoneURL)) {
-                    matchesOurCounty = true;
-                }
-            }
-
-            // Return true if any match was found
-            return matchesOurCounty;
+            // Check if alert affects this county
+            const affectedCounties = alert.affectedCounties || [];
+            return affectedCounties.some(county => 
+                county.toLowerCase() === countyName.toLowerCase()
+            );
         });
     }
 
@@ -244,7 +293,7 @@ class AlertsModule {
      * @param {string} countyName - County name
      * @returns {string|null} - UGC code or null
      */
-    getCountyUGC(countyName) {
+    getCountyUGCCode(countyName) {
         const counties = window.siteConfig?.counties || [];
         const county = counties.find(c =>
             c.name.toLowerCase() === countyName.toLowerCase()
