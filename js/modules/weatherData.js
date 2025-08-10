@@ -13,6 +13,10 @@ import {
   celsiusToFahrenheit,
   metersToMiles,
   pascalsToMillibars,
+    selectBestStationJS, 
+  selectWorkingStation, 
+  isDataFresh,
+  calculateDistance
 } from "./utils.js";
 
 let observationTime = null;
@@ -525,127 +529,288 @@ export async function fetchCurrentWeather(lat, lon) {
 }
 
 /**
- * Fallback method to fetch data directly from NWS API
+ * Enhanced fallback method to fetch data directly from NWS API
+ * Now uses intelligent station selection with fallback logic
  * @param {number} lat - Latitude
  * @param {number} lon - Longitude
  * @returns {Promise<Object>} Formatted weather data
  */
 async function fetchWeatherFromAPI(lat, lon) {
   try {
+    console.log(`Fetching weather from NWS API for coordinates: ${lat}, ${lon}`);
+    
+    // Step 1: Get the forecast office and grid coordinates
     const pointsResponse = await fetch(
       `https://api.weather.gov/points/${lat},${lon}`
     );
-    if (!pointsResponse.ok)
-      throw new Error(`HTTP error: ${pointsResponse.status}`);
+    if (!pointsResponse.ok) {
+      throw new Error(`Points API error: ${pointsResponse.status}`);
+    }
+    
     const pointsData = await pointsResponse.json();
     if (!pointsData.properties || !pointsData.properties.observationStations) {
       throw new Error("Invalid points data response");
     }
+
+    // Step 2: Get nearby observation stations
     const stationUrl = pointsData.properties.observationStations;
     const stationsResponse = await fetch(stationUrl);
-    if (!stationsResponse.ok)
-      throw new Error(`HTTP error: ${stationsResponse.status}`);
+    if (!stationsResponse.ok) {
+      throw new Error(`Stations API error: ${stationsResponse.status}`);
+    }
+    
     const stationsData = await stationsResponse.json();
     if (!stationsData.features || !stationsData.features.length) {
       throw new Error("No observation stations found");
     }
-    const stationId = stationsData.features[0].properties.stationIdentifier;
-    const obsResponse = await fetch(
-      `https://api.weather.gov/stations/${stationId}/observations/latest`
+
+    // Step 3: Use enhanced station selection with working station fallback
+    const stationInfo = await selectWorkingStation(
+      stationsData.features, 
+      lat, 
+      lon, 
+      testStationData
     );
-    if (!obsResponse.ok) throw new Error(`HTTP error: ${obsResponse.status}`);
+
+    console.log(`Using station: ${stationInfo.stationId} (${stationInfo.name}) - Distance: ${stationInfo.distance} mi`);
+
+    // Step 4: Get the latest observation from the selected station
+    const obsUrl = `https://api.weather.gov/stations/${stationInfo.stationId}/observations/latest`;
+    const obsResponse = await fetch(obsUrl);
+    if (!obsResponse.ok) {
+      throw new Error(`Observation API error: ${obsResponse.status}`);
+    }
+    
     const obsData = await obsResponse.json();
     if (!obsData.properties) {
       throw new Error("Invalid observation data");
     }
-    return formatObservationData(
-      obsData.properties,
-      stationsData.features[0].properties.name
+
+    // Step 5: Format the observation data with station info
+    const weatherData = formatObservationData(
+      obsData.properties, 
+      stationInfo.name,
+      stationInfo
     );
+
+    console.log(`Successfully fetched weather via API: ${weatherData.temp}, ${weatherData.condition}`);
+    return weatherData;
+
   } catch (error) {
-    console.error("API fallback failed:", error);
+    console.error("Enhanced API fallback failed:", error);
     return getDefaultWeatherData();
   }
 }
 
 /**
- * Format weather data from county cache JSON
- * @param {Object} weatherData - Raw weather data from cache
- * @returns {Object} Formatted weather object
+ * Test if a station has good recent data
+ * Used by selectWorkingStation to find a station that actually works
+ * @param {string} stationId - Station identifier to test
+ * @returns {Promise<boolean>} True if station has good data
+ */
+async function testStationData(stationId) {
+  try {
+    const obsUrl = `https://api.weather.gov/stations/${stationId}/observations/latest`;
+    const response = await fetch(obsUrl);
+    
+    if (!response.ok) {
+      return false;
+    }
+    
+    const data = await response.json();
+    const props = data.properties;
+    
+    if (!props) {
+      return false;
+    }
+    
+    // Check if observation is recent (within 6 hours)
+    if (!isDataFresh(props.timestamp, 6)) {
+      console.log(`Station ${stationId} has stale data`);
+      return false;
+    }
+    
+    // Check if essential fields are present
+    const hasTemperature = props.temperature && props.temperature.value !== null;
+    const hasCondition = props.textDescription;
+    
+    if (!hasTemperature || !hasCondition) {
+      console.log(`Station ${stationId} missing essential data fields`);
+      return false;
+    }
+    
+    console.log(`Station ${stationId} passed data quality check`);
+    return true;
+    
+  } catch (error) {
+    console.log(`Station ${stationId} test failed: ${error.message}`);
+    return false;
+  }
+}
+
+/**
+ * Enhanced formatWeatherData function for cache data
+ * Now handles the new fields from enhanced cache structure
+ * Replace the existing function in weatherData.js
  */
 function formatWeatherData(weatherData) {
   if (weatherData.timestamp) {
     observationTime = new Date(weatherData.timestamp * 1000);
   }
+
   return {
     temp: formatTemperature(weatherData.temperature),
     condition: weatherData.skyConditions || "Unknown",
-    dewpoint: formatDewpoint(weatherData.dewPoint),
+    dewpoint: formatTemperature(weatherData.dewPoint),
     humidity: formatHumidity(weatherData.humidity),
     wind: formatWind(weatherData.windSpeed, weatherData.windDirectionCardinal),
     visibility: formatVisibility(weatherData.visibility),
     pressure: formatPressure(weatherData.pressure),
+    // NEW: Enhanced fields from cache
+    heatIndex: weatherData.heatIndex ? Math.round(weatherData.heatIndex) : null,
+    windChill: weatherData.windChill ? Math.round(weatherData.windChill) : null,
+    precipitationLastHour: weatherData.precipitationLastHour || null,
     time: observationTime,
     formattedTime: formatTime(weatherData.timestamp),
     stationName: weatherData.stationName || "Local Station",
     iconUrl: weatherData.iconUrl || null,
+    source: weatherData.source || 'cache',
+    // NEW: Station metadata if available in cache
+    station: weatherData.station || null
   };
 }
 
 /**
- * Format observation data from NWS API response
- *
+ * Smart temperature display function
+ * Shows heat index or wind chill when significant
+ * Add this new function to utils.js or weatherData.js
+ */
+export function getDisplayTemperature(weatherData) {
+  const temp = weatherData.temp;
+  const heatIndex = weatherData.heatIndex;
+  const windChill = weatherData.windChill;
+
+  // Show heat index if it's significantly higher than actual temp (2°F+ difference)
+  if (heatIndex && heatIndex > temp + 1) {
+    return {
+      display: `${temp}° (feels like ${heatIndex}°)`,
+      type: 'heat-index',
+      apparent: heatIndex
+    };
+  }
+
+  // Show wind chill if it's significantly lower than actual temp (2°F+ difference) 
+  if (windChill && windChill < temp - 1) {
+    return {
+      display: `${temp}° (feels like ${windChill}°)`,
+      type: 'wind-chill',
+      apparent: windChill
+    };
+  }
+
+  // Just show regular temperature
+  return {
+    display: `${temp}°`,
+    type: 'normal',
+    apparent: temp
+  };
+}
+
+/**
+ * Enhanced weather summary for mobile/compact displays
+ * Add this new function to provide concise weather info
+ */
+export function getWeatherSummary(weatherData) {
+  const tempInfo = getDisplayTemperature(weatherData);
+  let summary = `${tempInfo.display} - ${weatherData.condition}`;
+
+  // Add significant weather info
+  const additions = [];
+  
+  if (weatherData.precipitationLastHour > 0) {
+    additions.push(`${weatherData.precipitationLastHour}" rain`);
+  }
+  
+  if (weatherData.wind !== 'Calm' && !weatherData.wind.includes('N/A')) {
+    additions.push(weatherData.wind);
+  }
+
+  if (additions.length > 0) {
+    summary += ` • ${additions.join(' • ')}`;
+  }
+
+  return summary;
+}
+
+
+/**
+ * Enhanced format observation data from NWS API response
+ * Now includes station metadata and additional fields
  * @param {Object} properties - Observation properties from API
  * @param {string} stationName - Name of the weather station
+ * @param {Object} stationInfo - Additional station information from selection
  * @returns {Object} Formatted weather data
  */
-function formatObservationData(properties, stationName) {
+function formatObservationData(properties, stationName, stationInfo = null) {
   if (properties.timestamp) {
     observationTime = new Date(properties.timestamp);
   }
-  const temperature =
-    properties.temperature && properties.temperature.value !== null
-      ? celsiusToFahrenheit(properties.temperature.value)
-      : "N/A";
-  const dewpoint =
-    properties.dewpoint && properties.dewpoint.value !== null
-      ? celsiusToFahrenheit(properties.dewpoint.value)
-      : "N/A";
-  const humidity =
-    properties.relativeHumidity && properties.relativeHumidity.value !== null
-      ? Math.round(properties.relativeHumidity.value)
-      : "N/A";
+
+  // Temperature conversion
+  const temperature = properties.temperature && properties.temperature.value !== null
+    ? celsiusToFahrenheit(properties.temperature.value)
+    : "N/A";
+
+  // Dewpoint conversion  
+  const dewpoint = properties.dewpoint && properties.dewpoint.value !== null
+    ? celsiusToFahrenheit(properties.dewpoint.value)
+    : "N/A";
+
+  // Humidity
+  const humidity = properties.relativeHumidity && properties.relativeHumidity.value !== null
+    ? Math.round(properties.relativeHumidity.value)
+    : "N/A";
+
+  // Wind processing
   let windDisplay = "N/A";
   if (properties.windSpeed && properties.windSpeed.value !== null) {
-    const windSpeed = Math.round(properties.windSpeed.value * 0.621371);
+    const windSpeed = Math.round(properties.windSpeed.value * 0.621371); // m/s to mph
+    
     if (windSpeed === 0) {
       windDisplay = "Calm";
-    } else if (
-      properties.windDirection &&
-      properties.windDirection.value !== null
-    ) {
+    } else if (properties.windDirection && properties.windDirection.value !== null) {
       const direction = degreesToCardinal(properties.windDirection.value);
       windDisplay = `${windSpeed} mph from ${direction}`;
     } else {
       windDisplay = `${windSpeed} mph`;
     }
   }
-  const visibility =
-    properties.visibility && properties.visibility.value !== null
-      ? metersToMiles(properties.visibility.value)
-      : "N/A";
-  const pressure =
-    properties.barometricPressure &&
-    properties.barometricPressure.value !== null
-      ? pascalsToMillibars(properties.barometricPressure.value)
-      : "N/A";
-  const formattedTime = observationTime
-    ? observationTime.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "Unknown";
-  return {
+
+  // Visibility conversion
+  const visibility = properties.visibility && properties.visibility.value !== null
+    ? metersToMiles(properties.visibility.value)
+    : "N/A";
+
+  // Pressure conversion
+  const pressure = properties.barometricPressure && properties.barometricPressure.value !== null
+    ? pascalsToMillibars(properties.barometricPressure.value)
+    : "N/A";
+
+  // Enhanced fields from API
+  const heatIndex = properties.heatIndex && properties.heatIndex.value !== null
+    ? celsiusToFahrenheit(properties.heatIndex.value)
+    : null;
+
+  const windChill = properties.windChill && properties.windChill.value !== null
+    ? celsiusToFahrenheit(properties.windChill.value)
+    : null;
+
+  const precipLastHour = properties.precipitationLastHour && properties.precipitationLastHour.value !== null
+    ? Math.round(properties.precipitationLastHour.value * 0.0393701 * 100) / 100 // mm to inches
+    : null;
+
+  // Enhanced weather object with station metadata
+  const weatherData = {
     temp: temperature,
     condition: properties.textDescription || "Unknown",
     dewpoint: dewpoint,
@@ -653,12 +818,111 @@ function formatObservationData(properties, stationName) {
     wind: windDisplay,
     visibility: visibility,
     pressure: pressure,
+    heatIndex: heatIndex,                    // NEW FIELD
+    windChill: windChill,                    // NEW FIELD
+    precipitationLastHour: precipLastHour,   // NEW FIELD
     time: observationTime,
-    formattedTime: formattedTime,
-    stationName: stationName,
-    iconUrl: properties.icon,
+    formattedTime: formatTime(properties.timestamp ? new Date(properties.timestamp).getTime() / 1000 : null),
+    stationName: stationName || "Unknown Station",
+    iconUrl: properties.icon || null,
+    source: 'nws-api',
+    // Station metadata for debugging/transparency
+    station: stationInfo ? {
+      id: stationInfo.stationId,
+      name: stationInfo.name,
+      distance: stationInfo.distance,
+      provider: stationInfo.provider,
+      scores: stationInfo.scores
+    } : null
   };
+
+  return weatherData;
 }
+
+/**
+ * Simple fallback station selection for emergency use
+ * Used when enhanced selection fails
+ * @param {Array} stations - Array of station features
+ * @param {number} targetLat - Target latitude
+ * @param {number} targetLon - Target longitude
+ * @returns {Object} Basic station info
+ */
+function selectNearestStation(stations, targetLat, targetLon) {
+  let nearestStation = null;
+  let shortestDistance = Infinity;
+
+  for (const station of stations.slice(0, 3)) { // Check first 3 only
+    const coords = station.geometry.coordinates;
+    const stationLat = coords[1];
+    const stationLon = coords[0];
+    
+    const distance = calculateDistance(targetLat, targetLon, stationLat, stationLon);
+    
+    if (distance < shortestDistance) {
+      shortestDistance = distance;
+      nearestStation = {
+        stationId: station.properties.stationIdentifier,
+        name: station.properties.name,
+        distance: Math.round(distance * 10) / 10,
+        provider: station.properties.provider || 'unknown'
+      };
+    }
+  }
+
+  return nearestStation;
+}
+/**
+ * Robust weather fetching with multiple fallback levels
+ * This is the main function that should replace fetchWeatherFromAPI
+ * @param {number} lat - Latitude
+ * @param {number} lon - Longitude
+ * @returns {Promise<Object>} Formatted weather data
+ */
+export async function fetchWeatherFromAPIRobust(lat, lon) {
+  try {
+    // Try enhanced API fetch first
+    return await fetchWeatherFromAPI(lat, lon);
+  } catch (enhancedError) {
+    console.warn("Enhanced API fetch failed, trying simple fallback:", enhancedError.message);
+    
+    try {
+      // Fallback to original simple logic
+      const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+      if (!pointsResponse.ok) throw new Error(`HTTP error: ${pointsResponse.status}`);
+      
+      const pointsData = await pointsResponse.json();
+      if (!pointsData.properties?.observationStations) {
+        throw new Error("Invalid points data response");
+      }
+      
+      const stationsResponse = await fetch(pointsData.properties.observationStations);
+      if (!stationsResponse.ok) throw new Error(`HTTP error: ${stationsResponse.status}`);
+      
+      const stationsData = await stationsResponse.json();
+      if (!stationsData.features?.length) {
+        throw new Error("No observation stations found");
+      }
+      
+      // Use simple nearest station selection
+      const stationInfo = selectNearestStation(stationsData.features, lat, lon);
+      
+      const obsResponse = await fetch(
+        `https://api.weather.gov/stations/${stationInfo.stationId}/observations/latest`
+      );
+      if (!obsResponse.ok) throw new Error(`HTTP error: ${obsResponse.status}`);
+      
+      const obsData = await obsResponse.json();
+      if (!obsData.properties) throw new Error("Invalid observation data");
+      
+      return formatObservationData(obsData.properties, stationInfo.name, stationInfo);
+      
+    } catch (simpleError) {
+      console.error("All API fallback attempts failed:", simpleError);
+      return getDefaultWeatherData();
+    }
+  }
+}
+
 
 /**
  * Helper formatting functions
@@ -795,14 +1059,17 @@ export function isDateInHurricaneSeason(date = new Date()) {
 }
 
 /**
- * Update DOM with weather data
- * @param {Object} weatherData - Formatted weather data
+ * Enhanced updateDOMWithObservation function
+ * Now displays heat index, wind chill, and precipitation data
+ * Replace the existing function in weatherData.js
  */
 export function updateDOMWithObservation(weatherData) {
   console.log("Weather data for display:", JSON.stringify(weatherData));
 
   if (!weatherData) return;
   startUpdateTimer();
+
+  // Existing elements
   const tempElement = document.getElementById("current-temp");
   const descElement = document.getElementById("current-desc");
   const dewpointElement = document.getElementById("current-dewpoint");
@@ -812,24 +1079,67 @@ export function updateDOMWithObservation(weatherData) {
   const pressureElement = document.getElementById("current-pressure");
   const timeElement = document.getElementById("current-obs-time");
   const locationElement = document.getElementById("current-location");
+  
+  // NEW: Enhanced data elements (optional - will work if present in HTML)
+  const heatIndexElement = document.getElementById("current-heat-index");
+  const windChillElement = document.getElementById("current-wind-chill");
+  const precipElement = document.getElementById("current-precipitation");
+  const stationInfoElement = document.getElementById("station-info");
+
   requestAnimationFrame(() => {
+    // Existing data fields
     if (tempElement) tempElement.textContent = `${weatherData.temp}°`;
-    if (descElement)
-      descElement.textContent = weatherData.condition || "Sky Conditions N/A";
-    if (dewpointElement)
-      dewpointElement.innerHTML = `<strong>Dew Point:</strong> ${weatherData.dewpoint}°F`;
-    if (humidityElement)
-      humidityElement.innerHTML = `<strong>Humidity:</strong> ${weatherData.humidity}%`;
-    if (windElement)
-      windElement.innerHTML = `<strong>Wind:</strong> ${weatherData.wind}`;
-    if (visibilityElement)
-      visibilityElement.innerHTML = `<strong>Visibility:</strong> ${weatherData.visibility} mi`;
-    if (pressureElement)
-      pressureElement.innerHTML = `<strong>Pressure:</strong> ${weatherData.pressure} mb`;
+    if (descElement) descElement.textContent = weatherData.condition || "Sky Conditions N/A";
+    if (dewpointElement) dewpointElement.innerHTML = `<strong>Dew Point:</strong> ${weatherData.dewpoint}°F`;
+    if (humidityElement) humidityElement.innerHTML = `<strong>Humidity:</strong> ${weatherData.humidity}%`;
+    if (windElement) windElement.innerHTML = `<strong>Wind:</strong> ${weatherData.wind}`;
+    if (visibilityElement) visibilityElement.innerHTML = `<strong>Visibility:</strong> ${weatherData.visibility} mi`;
+    if (pressureElement) pressureElement.innerHTML = `<strong>Pressure:</strong> ${weatherData.pressure} mb`;
     if (timeElement) timeElement.textContent = weatherData.formattedTime;
-    if (locationElement)
-      locationElement.textContent =
-        weatherData.stationName || "Unknown Station";
+    if (locationElement) locationElement.textContent = weatherData.stationName || "Unknown Station";
+
+    // NEW: Enhanced data fields
+    if (heatIndexElement) {
+      if (weatherData.heatIndex && weatherData.heatIndex > weatherData.temp) {
+        heatIndexElement.innerHTML = `<strong>Heat Index:</strong> ${weatherData.heatIndex}°F`;
+        heatIndexElement.style.display = 'block';
+      } else {
+        heatIndexElement.style.display = 'none';
+      }
+    }
+
+    if (windChillElement) {
+      if (weatherData.windChill && weatherData.windChill < weatherData.temp) {
+        windChillElement.innerHTML = `<strong>Wind Chill:</strong> ${weatherData.windChill}°F`;
+        windChillElement.style.display = 'block';
+      } else {
+        windChillElement.style.display = 'none';
+      }
+    }
+
+    if (precipElement) {
+      if (weatherData.precipitationLastHour && weatherData.precipitationLastHour > 0) {
+        precipElement.innerHTML = `<strong>Precip (1hr):</strong> ${weatherData.precipitationLastHour}"`;
+        precipElement.style.display = 'block';
+      } else {
+        precipElement.style.display = 'none';
+      }
+    }
+
+    // NEW: Station information (for debugging/transparency)
+    if (stationInfoElement && weatherData.station) {
+      const station = weatherData.station;
+      stationInfoElement.innerHTML = `
+        <small>
+          Station: ${station.name} (${station.id})<br>
+          Distance: ${station.distance} mi
+          ${station.provider !== 'unknown' ? ` • Provider: ${station.provider}` : ''}
+        </small>
+      `;
+      stationInfoElement.style.display = 'block';
+    }
+
+    // Set weather background
     setWeatherBackground(weatherData);
   });
 }
@@ -1185,3 +1495,6 @@ export function getDefaultWeatherData() {
     isFallback: true,
   };
 }
+
+// Export the enhanced function
+export { fetchWeatherFromAPIRobust as fetchWeatherFromAPI };

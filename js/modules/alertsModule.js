@@ -86,21 +86,60 @@ class AlertsModule {
    */
   async fetchAlertsData() {
     try {
+      // Show loading state
+      this.showLoadingState();
+
       const data = await dataService.getData("alerts", {
         lat: this.lat,
         lon: this.lon,
         county: this.county,
       });
 
+      // Handle different data structures based on source
+      let alertsArray = [];
+
+      if (data) {
+        if (Array.isArray(data)) {
+          // Direct array of alerts
+          alertsArray = data;
+        } else if (data.alerts && Array.isArray(data.alerts)) {
+          // Cache structure: { alerts: [...] }
+          alertsArray = data.alerts;
+        } else if (data.features && Array.isArray(data.features)) {
+          // NWS API structure: { features: [{ properties: {...} }] }
+          alertsArray = data.features.map(
+            (feature) => feature.properties || feature
+          );
+        } else if (data.properties) {
+          // Single alert object
+          alertsArray = [data.properties || data];
+        } else {
+          // Unknown structure, log for debugging
+          console.warn("Unexpected alerts data structure:", data);
+          alertsArray = [];
+        }
+      }
+
+      // Store the processed data
       this.alertsData = {
-        alerts: data.features?.map((feature) => feature.properties) || [],
+        alerts: alertsArray,
         timestamp: Date.now(),
       };
 
+      // Always render, even if empty (will show "No active alerts")
       this.renderAlerts();
       this.lastUpdateTime = new Date();
+
+      console.log(`Processed ${alertsArray.length} alerts for ${this.county}`);
     } catch (error) {
       console.error("Error fetching alerts data:", error);
+
+      // Set empty data on error
+      this.alertsData = {
+        alerts: [],
+        timestamp: Date.now(),
+      };
+
       this.showErrorState(error);
     }
   }
@@ -142,38 +181,58 @@ class AlertsModule {
   }
 
   /**
-   * Filter out expired alerts and remove duplicates
-   * @param {Array} alerts - Array of alert objects
-   * @returns {Array} - Filtered array of active, unique alerts
+   * Enhanced filterActiveAlerts method with better error handling
    */
   filterActiveAlerts(alerts) {
+    // Handle non-array input gracefully
     if (!Array.isArray(alerts)) {
+      console.warn(
+        "filterActiveAlerts received non-array input:",
+        typeof alerts
+      );
+      return [];
+    }
+
+    if (alerts.length === 0) {
+      console.log("No alerts to filter");
       return [];
     }
 
     // First filter out expired alerts
-    const activeAlerts = alerts.filter((alert) => this.isAlertActive(alert));
+    const activeAlerts = alerts.filter((alert) => {
+      try {
+        return this.isAlertActive(alert);
+      } catch (error) {
+        console.warn("Error checking if alert is active:", error);
+        return true; // Include alert if we can't determine expiration
+      }
+    });
 
     // Then remove duplicates based on alert ID
     const seenIds = new Set();
     const uniqueAlerts = [];
 
     for (const alert of activeAlerts) {
-      const alertId =
-        alert.id || alert.properties?.id || `${alert.event}-${alert.expires}`;
+      try {
+        const alertId = this.getAlertId(alert);
 
-      if (!seenIds.has(alertId)) {
-        seenIds.add(alertId);
+        if (!seenIds.has(alertId)) {
+          seenIds.add(alertId);
+          uniqueAlerts.push(alert);
+        } else {
+          console.log(`Removed duplicate alert: ${alertId}`);
+        }
+      } catch (error) {
+        console.warn("Error processing alert:", error);
+        // Include the alert anyway to avoid losing data
         uniqueAlerts.push(alert);
-      } else {
-        console.log(`Removed duplicate alert: ${alertId}`);
       }
     }
 
     const removedCount = alerts.length - uniqueAlerts.length;
     if (removedCount > 0) {
       console.log(
-        `Filtered out ${removedCount} expired/duplicate alerts from ${alerts.length} total`
+        `Filtered out ${removedCount} expired/duplicate alerts (${uniqueAlerts.length} remaining)`
       );
     }
 
@@ -181,89 +240,157 @@ class AlertsModule {
   }
 
   /**
+   * NEW: Safely generate alert ID for deduplication
+   * @param {Object} alert - Alert object
+   * @returns {string} - Unique alert identifier
+   */
+  getAlertId(alert) {
+    if (!alert) return `unknown-${Date.now()}`;
+
+    return (
+      alert.id ||
+      alert.properties?.id ||
+      `${this.getAlertEventName(alert)}-${
+        alert.expires || alert.properties?.expires || Date.now()
+      }`
+    );
+  }
+
+  /**
    * Render alerts into the DOM
    */
   renderAlerts() {
     const alertsElement = document.getElementById(this.config.alertsElementId);
-    if (!alertsElement) return;
-
-    // Get alerts from data and filter out expired/duplicate ones
-    const allAlerts = this.alertsData.alerts || [];
-    const activeAlerts = this.filterActiveAlerts(allAlerts);
-
-    if (!activeAlerts || activeAlerts.length === 0) {
-      alertsElement.innerHTML =
-        '<div class="alert"><div class="alert-none"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>No active alerts</b></div></div>';
+    if (!alertsElement) {
+      console.warn(`Alerts element '${this.config.alertsElementId}' not found`);
       return;
     }
 
+    // Safely get alerts from data
+    const allAlerts =
+      this.alertsData && this.alertsData.alerts ? this.alertsData.alerts : [];
+
+    // Filter out expired/duplicate ones
+    const activeAlerts = this.filterActiveAlerts(allAlerts);
+
+    // Handle empty state
+    if (!activeAlerts || activeAlerts.length === 0) {
+      alertsElement.innerHTML =
+        '<div class="alert">' +
+        '<div class="alert-none">' +
+        '<i class="fa-sharp-duotone fa-solid fa-circle-check fa-xl fontawesome-icon" style="color: #28a745;"></i> ' +
+        "<b>No active alerts</b>" +
+        "</div>" +
+        "</div>";
+
+      console.log(`No active alerts to display for ${this.county}`);
+      return;
+    }
+
+    // Render active alerts
     let alertsHTML = "";
     activeAlerts.forEach((alert, index) => {
-      // Get event name based on structure
-      const eventName =
-        alert.properties?.event || alert.event || "Unknown Alert";
-
-      // Get description based on structure
-      let description =
-        alert.properties?.description ||
-        alert.description ||
-        "No description available.";
+      // Handle different alert structures safely
+      const eventName = this.getAlertEventName(alert);
+      const description = this.getAlertDescription(alert);
 
       // Clean up line breaks in description
-      description = description.replace(/\r\n/g, "\n");
-
-      const paragraphs = description.split(/\n\s*\n/);
+      const cleanDescription = description.replace(/\r\n/g, "\n");
+      const paragraphs = cleanDescription.split(/\n\s*\n/);
       const formattedDescription = paragraphs
         .map((p) => `<p>${p.replace(/\n/g, " ")}</p>`)
         .join("");
 
       // Add to HTML
       alertsHTML += `
-                <div class="alert">
-                    <input type="checkbox" id="alert-${index}" class="alert-toggle">
-                    <label for="alert-${index}" class="alert-title">
-                        <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-                        ${eventName}
-                    </label>
-                    <div class="alert-details">
-                        ${formattedDescription}
-                    </div>
-                </div>
-            `;
+      <div class="alert">
+        <input type="checkbox" id="alert-${index}" class="alert-toggle">
+        <label for="alert-${index}" class="alert-title">
+          <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
+          ${eventName}
+        </label>
+        <div class="alert-details">
+          ${formattedDescription}
+        </div>
+      </div>
+    `;
     });
 
     alertsElement.innerHTML = alertsHTML;
 
     // Log for debugging
     console.log(
-      `Rendered ${activeAlerts.length} active alerts (filtered from ${allAlerts.length} total)`
+      `Rendered ${activeAlerts.length} active alerts for ${this.county}`
     );
   }
 
   /**
-   * Show loading state for alerts
+   * NEW: Safely extract event name from alert object
+   * @param {Object} alert - Alert object with varying structure
+   * @returns {string} - Event name or fallback
+   */
+  getAlertEventName(alert) {
+    if (!alert) return "Unknown Alert";
+
+    return (
+      alert.event ||
+      alert.properties?.event ||
+      alert.headline ||
+      alert.properties?.headline ||
+      "Unknown Alert"
+    );
+  }
+
+  /**
+   * NEW: Safely extract description from alert object
+   * @param {Object} alert - Alert object with varying structure
+   * @returns {string} - Description or fallback
+   */
+  getAlertDescription(alert) {
+    if (!alert) return "No description available.";
+
+    return (
+      alert.description ||
+      alert.properties?.description ||
+      alert.instruction ||
+      alert.properties?.instruction ||
+      alert.summary ||
+      alert.properties?.summary ||
+      "No description available."
+    );
+  }
+
+  /**
+   * Enhanced showLoadingState method
    */
   showLoadingState() {
     const alertsElement = document.getElementById(this.config.alertsElementId);
     if (!alertsElement) return;
 
-    if (!this.alertsData) {
-      alertsElement.innerHTML =
-        '<div class="alert"><div class="alert-none"><i class="fa-solid fa-spinner fa-spin fa-xl fontawesome-icon"></i> <b>Loading alerts...</b></div></div>';
-    }
+    alertsElement.innerHTML =
+      '<div class="alert">' +
+      '<div class="alert-none">' +
+      '<i class="fa-solid fa-spinner fa-spin fa-xl fontawesome-icon"></i> ' +
+      "<b>Loading alerts...</b>" +
+      "</div>" +
+      "</div>";
   }
 
   /**
-   * Show error state for alerts
-   * @param {Error} error - The error that occurred
+   * Enhanced showErrorState method
    */
   showErrorState(error) {
     const alertsElement = document.getElementById(this.config.alertsElementId);
     if (!alertsElement) return;
 
-    if (!this.alertsData) {
-      alertsElement.innerHTML = `<div class="alert"><div class="alert-none"><i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i> <b>Unable to load alerts</b></div></div>`;
-    }
+    alertsElement.innerHTML =
+      '<div class="alert">' +
+      '<div class="alert-none">' +
+      '<i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon" style="color: #dc3545;"></i> ' +
+      "<b>Unable to load alerts</b>" +
+      '<div style="font-size: 0.9em; color: #666; margin-top: 0.5em;">Please try again later</div>' +
+      "</div>" +
+      "</div>";
   }
 
   /**

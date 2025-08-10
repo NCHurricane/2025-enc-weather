@@ -8,7 +8,7 @@ import { safeSetText, safeSetHTML } from './utils.js';
 
 class CurrentConditionsModule {
   constructor(options = {}) {
-    // Default configuration
+    // Default configuration - Enhanced with new element IDs
     this.config = {
       tempElementId: 'current-temp',
       descElementId: 'current-desc',
@@ -20,6 +20,11 @@ class CurrentConditionsModule {
       timeElementId: 'current-obs-time',
       locationElementId: 'current-location',
       lastUpdateElementId: 'last-update-time',
+      // NEW: Enhanced data element IDs
+      heatIndexElementId: 'current-heat-index',
+      windChillElementId: 'current-wind-chill',
+      precipitationElementId: 'current-precipitation',
+      stationInfoElementId: 'station-info',
       backgroundElementId: 'weather-background',
       backgroundIconClass: 'weather-icon',
       refreshInterval: 30 * 60 * 1000, // 30 minutes
@@ -33,6 +38,7 @@ class CurrentConditionsModule {
     this.updateTimer = null;
     this.refreshTimer = null;
   }
+
 
   /**
    * Initialize the current conditions module
@@ -115,14 +121,14 @@ class CurrentConditionsModule {
   }
 
   /**
-   * Update the DOM with current weather data
+   * Enhanced updateDOM method - now handles all weather fields including new ones
    */
   updateDOM() {
     if (!this.weatherData) return;
 
     // Start the animation frame for smoother UI updates
     requestAnimationFrame(() => {
-      // Update each element if it exists
+      // EXISTING FIELDS - Update each element if it exists
       if (this.weatherData.temp !== 'N/A') {
         safeSetText(this.config.tempElementId, `${this.weatherData.temp}°`);
       } else {
@@ -138,6 +144,18 @@ class CurrentConditionsModule {
       safeSetText(this.config.timeElementId, this.weatherData.formattedTime || 'N/A');
       safeSetText(this.config.locationElementId, this.weatherData.stationName || 'Unknown Station');
 
+      // NEW: Enhanced data fields - Heat Index
+      this.updateHeatIndex();
+
+      // NEW: Enhanced data fields - Wind Chill
+      this.updateWindChill();
+
+      // NEW: Enhanced data fields - Precipitation
+      this.updatePrecipitation();
+
+      // NEW: Enhanced data fields - Station Information
+      this.updateStationInfo();
+
       // Update the background
       this.setWeatherBackground();
 
@@ -145,8 +163,164 @@ class CurrentConditionsModule {
       this.updateLastUpdateTime();
     });
   }
+/**
+   * NEW: Update heat index display
+   */
+  updateHeatIndex() {
+    const element = document.getElementById(this.config.heatIndexElementId);
+    if (!element) return;
+
+    const temp = parseInt(this.weatherData.temp);
+    const heatIndex = this.weatherData.heatIndex;
+
+    // Show heat index if it's significantly higher than actual temp (2°F+ difference)
+    if (heatIndex && heatIndex > temp + 1) {
+      safeSetHTML(this.config.heatIndexElementId, `<strong>Heat Index:</strong> ${heatIndex}°F`);
+      element.style.display = 'block';
+      element.style.color = '#ff6b35'; // Warm orange color
+    } else {
+      element.style.display = 'none';
+    }
+  }
 
   /**
+   * NEW: Update wind chill display
+   */
+  updateWindChill() {
+    const element = document.getElementById(this.config.windChillElementId);
+    if (!element) return;
+
+    const temp = parseInt(this.weatherData.temp);
+    const windChill = this.weatherData.windChill;
+
+    // Show wind chill if it's significantly lower than actual temp (2°F+ difference)
+    if (windChill && windChill < temp - 1) {
+      safeSetHTML(this.config.windChillElementId, `<strong>Wind Chill:</strong> ${windChill}°F`);
+      element.style.display = 'block';
+      element.style.color = '#4a90e2'; // Cool blue color
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+  /**
+   * NEW: Update precipitation display
+   */
+  updatePrecipitation() {
+    const element = document.getElementById(this.config.precipitationElementId);
+    if (!element) return;
+
+    const precip = this.weatherData.precipitationLastHour;
+
+    // Show precipitation if there's been measurable rainfall in the last hour
+    if (precip && precip > 0) {
+      safeSetHTML(this.config.precipitationElementId, `<strong>Precip (1hr):</strong> ${precip}"`);
+      element.style.display = 'block';
+      element.style.color = '#5cb3cc'; // Blue color for precipitation
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+  /**
+   * NEW: Update station information display
+   */
+  updateStationInfo() {
+    const element = document.getElementById(this.config.stationInfoElementId);
+    if (!element) return;
+
+    const station = this.weatherData.station;
+
+    // Show station info if available (helpful for debugging and transparency)
+    if (station) {
+      let stationHTML = `
+        <small>
+          Station: ${station.name} (${station.id})<br>
+          Distance: ${station.distance} mi
+      `;
+
+      // Add provider info if available and not 'unknown'
+      if (station.provider && station.provider !== 'unknown') {
+        stationHTML += ` • Provider: ${station.provider}`;
+      }
+
+      // Add quality score if available (useful for debugging)
+      if (station.quality_score) {
+        stationHTML += ` • Score: ${station.quality_score.toFixed(2)}`;
+      }
+
+      stationHTML += `</small>`;
+
+      safeSetHTML(this.config.stationInfoElementId, stationHTML);
+      element.style.display = 'block';
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+/**
+   * NEW: Get smart temperature display (combines temp with feels-like when significant)
+   * @returns {Object} Display information
+   */
+  getDisplayTemperature() {
+    const temp = parseInt(this.weatherData.temp);
+    const heatIndex = this.weatherData.heatIndex;
+    const windChill = this.weatherData.windChill;
+
+    // Show heat index if it's significantly higher than actual temp
+    if (heatIndex && heatIndex > temp + 1) {
+      return {
+        display: `${temp}° (feels like ${heatIndex}°)`,
+        type: 'heat-index',
+        apparent: heatIndex
+      };
+    }
+
+    // Show wind chill if it's significantly lower than actual temp
+    if (windChill && windChill < temp - 1) {
+      return {
+        display: `${temp}° (feels like ${windChill}°)`,
+        type: 'wind-chill',
+        apparent: windChill
+      };
+    }
+
+    // Just show regular temperature
+    return {
+      display: `${temp}°`,
+      type: 'normal',
+      apparent: temp
+    };
+  }
+
+  /**
+   * NEW: Get comprehensive weather summary for mobile/compact displays
+   * @returns {string} Formatted weather summary
+   */
+  getWeatherSummary() {
+    const tempInfo = this.getDisplayTemperature();
+    let summary = `${tempInfo.display} - ${this.weatherData.condition}`;
+
+    // Add significant weather info
+    const additions = [];
+    
+    if (this.weatherData.precipitationLastHour > 0) {
+      additions.push(`${this.weatherData.precipitationLastHour}" rain`);
+    }
+    
+    if (this.weatherData.wind !== 'Calm' && !this.weatherData.wind.includes('N/A')) {
+      additions.push(this.weatherData.wind);
+    }
+
+    if (additions.length > 0) {
+      summary += ` • ${additions.join(' • ')}`;
+    }
+
+    return summary;
+  }
+
+
+/**
    * Set weather background based on conditions
    */
   setWeatherBackground() {
@@ -173,6 +347,7 @@ class CurrentConditionsModule {
       this.applyWeatherClass(weatherBgElement);
     }
   }
+
 
   /**
    * Apply weather class based on conditions
@@ -206,7 +381,7 @@ class CurrentConditionsModule {
       element.classList.add('weather-fog');
     }
   }
-
+  
   /**
    * Create the last update element to show data age
    * @returns {HTMLElement|null} - Created element or null if creation failed
@@ -222,61 +397,11 @@ class CurrentConditionsModule {
 
     lastUpdateElement = document.createElement('p');
     lastUpdateElement.id = this.config.lastUpdateElementId;
-    lastUpdateElement.className = 'last-update';
-    lastUpdateElement.style.color = '#fff200';
-    lastUpdateElement.style.fontSize = '.8rem';
-    lastUpdateElement.innerText = 'Data age: Unknown';
-
-    const br = detailsElement.querySelector('br');
-    if (br) {
-      detailsElement.insertBefore(lastUpdateElement, br);
-    } else {
-      detailsElement.appendChild(lastUpdateElement);
-    }
+    lastUpdateElement.className = 'last-update-time';
+    lastUpdateElement.textContent = 'Loading...';
+    detailsElement.appendChild(lastUpdateElement);
 
     return lastUpdateElement;
-  }
-
-  /**
-   * Update the last update timestamp text
-   */
-  updateLastUpdateTime() {
-    if (!this.lastUpdateTime) return;
-
-    const lastUpdateElement = document.getElementById(this.config.lastUpdateElementId);
-    if (!lastUpdateElement) return;
-
-    const now = new Date();
-    const diffMs = now - this.lastUpdateTime;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    let ageText;
-    if (diffMins < 1) {
-      ageText = 'Data age: Less than a minute';
-    } else if (diffMins === 1) {
-      ageText = 'Data age: 1 minute';
-    } else if (diffMins < 60) {
-      ageText = `Data age: ${diffMins} minutes`;
-    } else {
-      const hours = Math.floor(diffMins / 60);
-      const remainingMins = diffMins % 60;
-
-      if (hours === 1) {
-        if (remainingMins === 0) {
-          ageText = 'Data age: 1 hour';
-        } else {
-          ageText = `Data age: 1 hour, ${remainingMins} min`;
-        }
-      } else {
-        if (remainingMins === 0) {
-          ageText = `Data age: ${hours} hours`;
-        } else {
-          ageText = `Data age: ${hours} hr, ${remainingMins} min`;
-        }
-      }
-    }
-
-    safeSetText(lastUpdateElement, ageText);
   }
 
   /**
@@ -339,10 +464,14 @@ class CurrentConditionsModule {
       wind: 'N/A',
       visibility: 'N/A',
       pressure: 'N/A',
+      heatIndex: null,                 // NEW FIELD
+      windChill: null,                 // NEW FIELD
+      precipitationLastHour: null,     // NEW FIELD
       time: new Date(),
       formattedTime: 'N/A',
       stationName: 'Unknown Station',
-      iconUrl: null
+      iconUrl: null,
+      station: null                    // NEW FIELD
     };
   }
 

@@ -99,34 +99,34 @@ export class NCCountyMap {
       .attr("stroke-width", this.options.strokeWidth);
   }
 
-async updateWeatherData() {
-  const counties = window.siteConfig?.counties || [];
-  await Promise.all(
-    counties.map(async (county) => {
-      try {
-        // Get weather data
-        let weather = await fetchCurrentWeather(county.lat, county.lon);
-        if (!weather || weather.temp == "N/A") {
-          weather = getDefaultWeatherData();
+  async updateWeatherData() {
+    const counties = window.siteConfig?.counties || [];
+    await Promise.all(
+      counties.map(async (county) => {
+        try {
+          // Get weather data
+          let weather = await fetchCurrentWeather(county.lat, county.lon);
+          if (!weather || weather.temp == "N/A") {
+            weather = getDefaultWeatherData();
+          }
+          weather.city = county.city;
+
+          // Get alerts using zone-based method
+          const alerts = await fetchAlerts(county.lat, county.lon);
+
+          const key = county.name.toLowerCase();
+          this.weatherData[key] = weather;
+          this.alertData[key] = alerts;
+
+          this.addWeatherMarker(county, weather);
+          this.colorZonesForCounty(key, alerts);
+        } catch (err) {
+          console.error(`Weather update failed for ${county.name}:`, err);
         }
-        weather.city = county.city;
-
-        // Get alerts using zone-based method
-        const alerts = await fetchAlerts(county.lat, county.lon);
-        
-        const key = county.name.toLowerCase();
-        this.weatherData[key] = weather;
-        this.alertData[key] = alerts;
-
-        this.addWeatherMarker(county, weather);
-        this.colorZonesForCounty(key, alerts);
-      } catch (err) {
-        console.error(`Weather update failed for ${county.name}:`, err);
-      }
-    })
-  );
-  this.createWarningLegend();
-}
+      })
+    );
+    this.createWarningLegend();
+  }
 
   addWeatherMarker(county, weather) {
     const key = county.name.toLowerCase();
@@ -163,52 +163,94 @@ async updateWeatherData() {
       .on("click", () => county.url && (window.location.href = county.url));
   }
 
-colorZonesForCounty(countyKey, alerts) {
-  if (!alerts?.length) return;
-  
-  let bestEvent = null;
-  let bestPriority = Infinity;
-  
-  alerts.forEach((alert) => {
-    const event = alert.event || alert.properties?.event;
-    const priority = warningPriorities[event] ?? 999;
-    if (priority < bestPriority) {
-      bestPriority = priority;
-      bestEvent = event;
-    }
-  });
+  colorZonesForCounty(countyKey, alerts) {
+    if (!alerts || !Array.isArray(alerts) || !alerts.length) return;
 
-  if (bestEvent) {
-    const color = warningColors[bestEvent] || this.options.defaultFill;
-    
-    // Color all zones for this county
-    this.svg.selectAll(`path[data-county="${countyKey}"]`)
-      .attr("fill", color);
+    let bestEvent = null;
+    let bestPriority = Infinity;
+
+    alerts.forEach((alert) => {
+      if (!alert) return; // Guard against null/undefined alerts
+
+      // Handle different alert data structures
+      let eventName = null;
+
+      if (alert.properties && alert.properties.event) {
+        eventName = alert.properties.event;
+      } else if (alert.event) {
+        eventName = alert.event;
+      }
+
+      if (!eventName) return; // Skip if we can't find an event name
+
+      const priority = warningPriorities[eventName] ?? 999;
+      if (priority < bestPriority) {
+        bestPriority = priority;
+        bestEvent = eventName;
+      }
+    });
+
+    if (bestEvent) {
+      const color = warningColors[bestEvent] || this.options.defaultFill;
+
+      // Color all zones for this county
+      this.svg
+        .selectAll(`path[data-county="${countyKey}"]`)
+        .attr("fill", color);
+    }
   }
-}
+
+  /**
+   * Fix for ncCountyMap.js - Replace the createWarningLegend method
+   * Add defensive programming to handle undefined properties
+   */
 
   createWarningLegend() {
     const old = document.querySelector(".map-legend");
     if (old) old.remove();
 
     const active = new Map();
+
     Object.values(this.alertData).forEach((alerts) => {
-      alerts?.forEach((a) => {
-        const ev = a.properties.event;
-        if (warningColors[ev]) active.set(ev, warningColors[ev]);
+      if (!alerts || !Array.isArray(alerts)) return; // Guard against non-array data
+
+      alerts.forEach((alert) => {
+        if (!alert) return; // Guard against null/undefined alerts
+
+        // Handle different alert data structures
+        let eventName = null;
+
+        // Try multiple ways to get the event name
+        if (alert.properties && alert.properties.event) {
+          eventName = alert.properties.event;
+        } else if (alert.event) {
+          eventName = alert.event;
+        } else if (typeof alert === "string") {
+          eventName = alert; // Sometimes the alert might just be a string
+        }
+
+        // Only add to legend if we found a valid event name and it has a color
+        if (eventName && warningColors[eventName]) {
+          active.set(eventName, warningColors[eventName]);
+        } else if (eventName) {
+          console.warn(`No color defined for alert type: ${eventName}`);
+        }
       });
     });
+
     if (!active.size) return;
 
     const legend = document.createElement("div");
     legend.className = "map-legend";
     legend.id = "map-alerts-legend";
     legend.innerHTML = `<div id="legend-title">Active Alerts</div>`;
-    Object.entries(Object.fromEntries(active)).forEach(([ev, col]) => {
+
+    Object.entries(Object.fromEntries(active)).forEach(([eventName, color]) => {
       const item = document.createElement("div");
-      item.innerHTML = `<span style="display:inline-block;width:12px;height:12px;background:${col};margin-right:5px;border:1px solid #333;"></span><strong>${ev}</strong>`;
+      item.innerHTML = `<span style="display:inline-block;width:12px;height:12px;background:${color};margin-right:5px;border:1px solid #333;"></span><strong>${eventName}</strong>`;
       legend.appendChild(item);
     });
+
     this.container.parentNode.insertBefore(legend, this.container.nextSibling);
   }
 }

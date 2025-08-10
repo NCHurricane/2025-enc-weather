@@ -1,357 +1,344 @@
 /**
- * utils.js
- * Utility functions for the weather application
+ * Enhanced utils.js - Weather Application Utilities
+ * Includes new station selection functions for API fallback
  */
 
-/**
- * Safely sets the text content of an element
- * @param {string|Element} target - Element ID string or DOM Element
- * @param {string} text - Text content to set
- * @returns {boolean} - Success status
- */
-export function safeSetText(target, text) {
-  try {
-    const element = typeof target === 'string' ? document.getElementById(target) : target;
-    if (!element) {
-      console.warn(`Element not found: ${target}`);
-      return false;
-    }
-    element.innerText = text;
-    return true;
-  } catch (error) {
-    console.error(`Error setting text: ${error.message}`);
-    return false;
+// Existing utility functions (preserved)
+export function safeSetText(elementId, text) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.textContent = text;
   }
 }
 
-/**
- * Safely sets the HTML content of an element
- * @param {string|Element} target - Element ID string or DOM Element
- * @param {string} html - HTML content to set
- * @returns {boolean} - Success status
- */
-export function safeSetHTML(target, html) {
-  try {
-    const element = typeof target === 'string' ? document.getElementById(target) : target;
-    if (!element) {
-      console.warn(`Element not found: ${target}`);
-      return false;
-    }
+export function safeSetHTML(elementId, html) {
+  const element = document.getElementById(elementId);
+  if (element) {
     element.innerHTML = html;
-    return true;
-  } catch (error) {
-    console.error(`Error setting HTML: ${error.message}`);
-    return false;
   }
 }
 
-/**
- * Creates a DOM element with attributes and content
- * @param {string} tag - HTML tag name
- * @param {Object} attributes - Element attributes
- * @param {string|Element|Array} children - Child content/elements
- * @returns {Element} - Created DOM element
- */
-export function createElement(tag, attributes = {}, children = null) {
-  try {
-    const element = document.createElement(tag);
-
-    // Set attributes
-    Object.entries(attributes).forEach(([key, value]) => {
-      if (key === 'className') {
-        element.className = value;
-      } else if (key === 'style' && typeof value === 'object') {
-        Object.assign(element.style, value);
-      } else {
-        element.setAttribute(key, value);
-      }
-    });
-
-    // Add children
-    if (children) {
-      if (Array.isArray(children)) {
-        children.forEach(child => {
-          if (child instanceof Element) {
-            element.appendChild(child);
-          } else {
-            element.appendChild(document.createTextNode(String(child)));
-          }
-        });
-      } else if (children instanceof Element) {
-        element.appendChild(children);
-      } else {
-        element.textContent = String(children);
-      }
-    }
-
-    return element;
-  } catch (error) {
-    console.error(`Error creating element: ${error.message}`);
-    return document.createElement(tag); // Return bare element as fallback
-  }
+export function degreesToCardinal(degrees) {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
 }
 
-/**
- * Converts degrees to cardinal direction
- * @param {number} deg - Degrees (0-360)
- * @returns {string} - Cardinal direction
- */
-export function degreesToCardinal(deg) {
-  if (deg === undefined || deg === null) return 'N/A';
-
-  // Ensure deg is between 0-360
-  deg = ((deg % 360) + 360) % 360;
-
-  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-  return directions[Math.floor((deg / 22.5) + 0.5) % 16];
-}
-
-/**
- * Formats a date to display string
- * @param {Date|string} date - Date object or date string
- * @param {Object} options - Formatting options
- * @returns {string} - Formatted date string
- */
-export function formatDate(date, options = {}) {
-  try {
-    const dateObj = date instanceof Date ? date : new Date(date);
-
-    const defaultOptions = {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    };
-
-    const mergedOptions = { ...defaultOptions, ...options };
-    return dateObj.toLocaleString('en-US', mergedOptions);
-  } catch (error) {
-    console.error(`Error formatting date: ${error.message}`);
-    return 'Invalid Date';
-  }
-}
-
-/**
- * Converts Celsius to Fahrenheit
- * @param {number} celsius - Temperature in Celsius
- * @returns {number} - Temperature in Fahrenheit
- */
 export function celsiusToFahrenheit(celsius) {
-  if (celsius === null || celsius === undefined || isNaN(celsius)) {
-    return null;
-  }
-  return Math.round((celsius * 9 / 5) + 32);
+  return Math.round(celsius * 9/5 + 32);
 }
 
-/**
- * Converts meters to miles
- * @param {number} meters - Distance in meters
- * @returns {number} - Distance in miles
- */
 export function metersToMiles(meters) {
-  if (meters === null || meters === undefined || isNaN(meters)) {
-    return null;
-  }
-  return Math.round(meters * 0.000621371 * 10) / 10; // Round to 1 decimal
+  return Math.round(meters * 0.000621371);
 }
 
-/**
- * Converts pascals to millibars
- * @param {number} pascals - Pressure in pascals
- * @returns {number} - Pressure in millibars
- */
 export function pascalsToMillibars(pascals) {
-  if (pascals === null || pascals === undefined || isNaN(pascals)) {
-    return null;
-  }
   return Math.round(pascals / 100);
 }
 
-/**
- * Converts pascals to inches of mercury (inHg)
- * @param {number} pascals - Pressure in pascals
- * @returns {number} - Pressure in inHg
- */
-export function pascalsToInHg(pascals) {
-  if (pascals === null || pascals === undefined || isNaN(pascals)) {
-    return null;
-  }
-  return Math.round((pascals / 3386.389) * 100) / 100; // Round to 2 decimals
+export function formatTime(timestamp) {
+  if (!timestamp) return 'Unknown';
+  
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).replace(',', '');
 }
 
 /**
- * Throttles a function call
- * @param {Function} func - Function to throttle
- * @param {number} delay - Delay in milliseconds
- * @returns {Function} - Throttled function
+ * NEW STATION SELECTION FUNCTIONS
+ * Simplified versions for JavaScript fallback scenarios
  */
-export function throttle(func, delay = 300) {
-  let lastCall = 0;
-  return function (...args) {
-    const now = Date.now();
-    if (now - lastCall >= delay) {
-      lastCall = now;
-      return func.apply(this, args);
+
+/**
+ * Calculate distance between two coordinates using Haversine formula
+ * @param {number} lat1 First latitude
+ * @param {number} lon1 First longitude  
+ * @param {number} lat2 Second latitude
+ * @param {number} lon2 Second longitude
+ * @returns {number} Distance in miles
+ */
+export function calculateDistance(lat1, lon1, lat2, lon2) {
+  const earthRadius = 3959; // Earth radius in miles
+  
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+           Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * 
+           Math.sin(dLon/2) * Math.sin(dLon/2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  
+  return earthRadius * c;
+}
+
+/**
+ * Convert degrees to radians
+ * @param {number} degrees Degrees to convert
+ * @returns {number} Radians
+ */
+function toRadians(degrees) {
+  return degrees * (Math.PI / 180);
+}
+
+/**
+ * Score station quality based on basic criteria (simplified for JS)
+ * @param {Object} station Station feature from NWS API
+ * @param {number} targetLat Target latitude
+ * @param {number} targetLon Target longitude
+ * @returns {Object} Station with score
+ */
+export function scoreStation(station, targetLat, targetLon) {
+  const props = station.properties;
+  const coords = station.geometry.coordinates; // [lon, lat]
+  const stationLat = coords[1];
+  const stationLon = coords[0];
+  
+  // Calculate distance score (closer = better)
+  const distance = calculateDistance(targetLat, targetLon, stationLat, stationLon);
+  const distanceScore = Math.max(0, (100 - distance) / 100); // 0-1 scale
+  
+  // Provider preference (simplified)
+  const provider = (props.provider || 'unknown').toUpperCase();
+  let providerScore = 0.5; // default
+  
+  if (provider === 'ASOS') providerScore = 1.0;
+  else if (provider === 'AWOS') providerScore = 0.9;
+  else if (provider === 'MESOWEST' || provider === 'MADIS') providerScore = 0.7;
+  else if (provider === 'COOP' || provider === 'RAWS') providerScore = 0.6;
+  
+  // Station type preference (simplified)
+  const name = (props.name || '').toUpperCase();
+  let typeScore = 0.7; // default
+  
+  if (name.includes('AIRPORT') || name.includes('FIELD') || 
+      name.includes('AFB') || name.includes('ARP')) {
+    typeScore = 1.0;
+  } else if (name.includes('COAST GUARD')) {
+    typeScore = 0.9;
+  } else if (name.includes('UNIVERSITY') || name.includes('COLLEGE')) {
+    typeScore = 0.8;
+  }
+  
+  // Simple composite score (distance weighted higher for JS fallback)
+  const compositeScore = (
+    distanceScore * 0.6 +      // 60% distance weight (higher than PHP)
+    providerScore * 0.25 +     // 25% provider weight
+    typeScore * 0.15           // 15% type weight
+  );
+  
+  return {
+    station,
+    stationId: props.stationIdentifier,
+    name: props.name,
+    provider: props.provider || 'unknown',
+    distance: Math.round(distance * 10) / 10, // Round to 1 decimal
+    scores: {
+      distance: Math.round(distanceScore * 1000) / 1000,
+      provider: Math.round(providerScore * 1000) / 1000,
+      type: Math.round(typeScore * 1000) / 1000,
+      composite: Math.round(compositeScore * 1000) / 1000
     }
   };
 }
 
 /**
- * Debounces a function call
- * @param {Function} func - Function to debounce
- * @param {number} wait - Wait time in milliseconds
- * @returns {Function} - Debounced function
+ * Select best station from available options (simplified for JS fallback)
+ * @param {Array} stations Array of station features from NWS API
+ * @param {number} targetLat Target latitude
+ * @param {number} targetLon Target longitude
+ * @returns {Object} Best station info
  */
-export function debounce(func, wait = 300) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+export function selectBestStationJS(stations, targetLat, targetLon) {
+  if (!stations || stations.length === 0) {
+    throw new Error('No stations available for selection');
+  }
+  
+  console.log(`Evaluating ${Math.min(3, stations.length)} stations for JS fallback`);
+  
+  // For JS fallback, limit to top 3 stations to avoid too many API calls
+  const maxStationsToEvaluate = Math.min(3, stations.length);
+  const scoredStations = [];
+  
+  for (let i = 0; i < maxStationsToEvaluate; i++) {
+    const scoredStation = scoreStation(stations[i], targetLat, targetLon);
+    scoredStations.push(scoredStation);
+  }
+  
+  // Sort by composite score (highest first)
+  scoredStations.sort((a, b) => b.scores.composite - a.scores.composite);
+  
+  const bestStation = scoredStations[0];
+  
+  console.log(`Selected station ${bestStation.stationId} (${bestStation.name}) - Distance: ${bestStation.distance} mi, Score: ${bestStation.scores.composite}`);
+  
+  return bestStation;
 }
 
 /**
- * Validates API data against expected structure
- * @param {Object} data - API response data
- * @param {Array} requiredProps - Array of required property paths (dot notation)
- * @returns {boolean} - Whether data is valid
+ * Try multiple stations with fallback (for robust API calls)
+ * @param {Array} stations Array of station features
+ * @param {number} targetLat Target latitude
+ * @param {number} targetLon Target longitude
+ * @param {Function} testStationFn Function to test if station has good data
+ * @returns {Promise<Object>} Best working station info
  */
-export function validateApiData(data, requiredProps = []) {
-  try {
-    if (!data) return false;
-
-    return requiredProps.every(prop => {
-      const props = prop.split('.');
-      let value = data;
-
-      for (const p of props) {
-        if (value === undefined || value === null || !Object.prototype.hasOwnProperty.call(value, p)) {
-          return false;
-        }
-        value = value[p];
+export async function selectWorkingStation(stations, targetLat, targetLon, testStationFn) {
+  const rankedStations = [];
+  
+  // Score all stations first
+  for (const station of stations.slice(0, 5)) { // Limit to top 5
+    const scored = scoreStation(station, targetLat, targetLon);
+    rankedStations.push(scored);
+  }
+  
+  // Sort by score
+  rankedStations.sort((a, b) => b.scores.composite - a.scores.composite);
+  
+  // Try each station in order until one works
+  for (const stationInfo of rankedStations) {
+    try {
+      console.log(`Testing station ${stationInfo.stationId}...`);
+      const hasGoodData = await testStationFn(stationInfo.stationId);
+      
+      if (hasGoodData) {
+        console.log(`Station ${stationInfo.stationId} selected and working`);
+        return stationInfo;
       }
-
-      return true;
-    });
-  } catch (error) {
-    console.error(`Error validating API data: ${error.message}`);
-    return false;
-  }
-}
-
-/**
- * Safely retrieves a deeply nested property from an object
- * @param {Object} obj - Object to retrieve from
- * @param {string} path - Property path (dot notation)
- * @param {*} defaultValue - Default value if property doesn't exist
- * @returns {*} - Property value or default
- */
-export function getNestedProperty(obj, path, defaultValue = null) {
-  try {
-    const props = path.split('.');
-    let value = obj;
-
-    for (const prop of props) {
-      if (value === undefined || value === null || !Object.prototype.hasOwnProperty.call(value, prop)) {
-        return defaultValue;
-      }
-      value = value[prop];
+      
+      console.log(`Station ${stationInfo.stationId} failed data quality test`);
+    } catch (error) {
+      console.log(`Station ${stationInfo.stationId} failed: ${error.message}`);
     }
-
-    return value !== undefined ? value : defaultValue;
-  } catch (error) {
-    console.error(`Error getting nested property: ${error.message}`);
-    return defaultValue;
   }
+  
+  throw new Error('No working stations found');
 }
 
 /**
- * Check if the current date is within the Atlantic hurricane season
- * @param {Date} date - Date to check (defaults to current date)
- * @returns {boolean} - Whether date is in hurricane season
+ * ADDITIONAL FORMATTING UTILITIES
  */
-export function isDateInHurricaneSeason(date = new Date()) {
-  // Get hurricane season dates from site config if available
-  const config = window.siteConfig?.tropicalWeather?.season || {
-    start: '05-15', // May 15
-    end: '11-30'    // November 30
-  };
 
-  const year = date.getFullYear();
-  const seasonStart = new Date(`${year}-${config.start}`);
-  const seasonEnd = new Date(`${year}-${config.end}`);
-  
-  return date >= seasonStart && date <= seasonEnd;
+/**
+ * Format temperature with proper fallbacks
+ * @param {number|null} temp Temperature value
+ * @returns {string} Formatted temperature
+ */
+export function formatTemperature(temp) {
+  if (temp === null || temp === undefined || isNaN(temp)) {
+    return 'N/A';
+  }
+  return Math.round(temp) + '°F';
 }
 
 /**
- * Gets appropriate weather icon class based on condition text
- * @param {string} condition - Weather condition text
- * @returns {string} - CSS class or icon name
+ * Format wind information
+ * @param {number|null} speed Wind speed in mph
+ * @param {string|null} direction Cardinal direction
+ * @returns {string} Formatted wind string
  */
-export function getWeatherIconClass(condition) {
-  if (!condition || condition === 'N/A') {
-    return 'weather-unknown';
+export function formatWind(speed, direction) {
+  if (!speed || speed === 0) {
+    return 'Calm';
   }
   
-  const conditionLower = condition.toLowerCase();
-  
-  if (conditionLower.includes('thunderstorm') || conditionLower.includes('lightning')) {
-    return 'weather-storm';
-  } else if (conditionLower.includes('rain') && conditionLower.includes('snow')) {
-    return 'weather-mixed';
-  } else if (conditionLower.includes('rain') || conditionLower.includes('drizzle') || conditionLower.includes('shower')) {
-    return 'weather-rain';
-  } else if (conditionLower.includes('snow') || conditionLower.includes('flurr')) {
-    return 'weather-snow';
-  } else if (conditionLower.includes('sleet') || conditionLower.includes('pellets') || conditionLower.includes('ice')) {
-    return 'weather-sleet';
-  } else if (conditionLower.includes('fog') || conditionLower.includes('haze') || conditionLower.includes('mist')) {
-    return 'weather-fog';
-  } else if (conditionLower.includes('cloud')) {
-    if (conditionLower.includes('few') || conditionLower.includes('partly')) {
-      return 'weather-partly-cloudy';
-    } else {
-      return 'weather-cloudy';
-    }
-  } else if (conditionLower.includes('clear') || conditionLower.includes('sunny') || conditionLower.includes('fair')) {
-    return 'weather-clear';
-  } else {
-    return 'weather-default';
+  if (!direction || direction === 'N/A') {
+    return `${Math.round(speed)} mph`;
   }
+  
+  return `${Math.round(speed)} mph from ${direction}`;
 }
 
 /**
- * Format a number string with commas for thousands
- * @param {number|string} num - Number to format
- * @returns {string} - Formatted number string
+ * Format visibility
+ * @param {number|null} visibility Visibility in miles
+ * @returns {string} Formatted visibility
  */
-export function formatNumberWithCommas(num) {
-  if (num === null || num === undefined) return 'N/A';
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export function formatVisibility(visibility) {
+  if (visibility === null || visibility === undefined || isNaN(visibility)) {
+    return 'N/A';
+  }
+  
+  if (visibility >= 10) {
+    return '10+ mi';
+  }
+  
+  return `${Math.round(visibility * 10) / 10} mi`;
 }
 
-export default {
-  safeSetText,
-  safeSetHTML,
-  createElement,
-  degreesToCardinal,
-  formatDate,
-  celsiusToFahrenheit,
-  metersToMiles,
-  pascalsToMillibars,
-  pascalsToInHg,
-  throttle,
-  debounce,
-  validateApiData,
-  getNestedProperty,
-  isDateInHurricaneSeason,
-  getWeatherIconClass,
-  formatNumberWithCommas
-};
+/**
+ * Format pressure
+ * @param {number|null} pressure Pressure in millibars
+ * @returns {string} Formatted pressure
+ */
+export function formatPressure(pressure) {
+  if (pressure === null || pressure === undefined || isNaN(pressure)) {
+    return 'N/A';
+  }
+  
+  return `${Math.round(pressure)} mb`;
+}
+
+/**
+ * Format humidity
+ * @param {number|null} humidity Humidity percentage
+ * @returns {string} Formatted humidity
+ */
+export function formatHumidity(humidity) {
+  if (humidity === null || humidity === undefined || isNaN(humidity)) {
+    return 'N/A';
+  }
+  
+  return `${Math.round(humidity)}%`;
+}
+
+/**
+ * Check if data is recent enough to be useful
+ * @param {number|string} timestamp Unix timestamp or ISO string
+ * @param {number} maxAgeHours Maximum age in hours
+ * @returns {boolean} True if data is fresh enough
+ */
+export function isDataFresh(timestamp, maxAgeHours = 6) {
+  if (!timestamp) return false;
+  
+  const dataTime = typeof timestamp === 'string' ? 
+    new Date(timestamp).getTime() : 
+    timestamp * 1000;
+  
+  const ageHours = (Date.now() - dataTime) / (1000 * 60 * 60);
+  return ageHours <= maxAgeHours;
+}
+
+/**
+ * Format date for display (needed by tropical.js)
+ * @param {Date} date Date to format
+ * @returns {string} Formatted date string
+ */
+export function formatDate(date) {
+  if (!date) return 'Unknown';
+  
+  // Ensure we have a Date object
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).replace(',', '');
+}
