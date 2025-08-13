@@ -18,8 +18,8 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="../../css/styles.css?v=4.22.25">
-      <link rel="stylesheet" href="../../css/county.css?v=4.22.25">
+      <link rel="stylesheet" href="../../css/styles.css?v=4.22.25" />
+      <link rel="stylesheet" href="../../css/county.css?v=4.22.25" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -82,10 +82,6 @@
                      <br />
                      <p id="current-location"></p>
                      <p id="current-obs-time"></p>
-                     <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                        aria-label="Refresh weather data">
-                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                     </button>
                   </div>
                </div>
             </div>
@@ -150,9 +146,8 @@
                   <div id="radar-error" class="radar-error" style="display: none">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load radar imagery</span>
-                     <small>This could be due to a connection issue or server
-                        maintenance. Please try a different region, or check
-                        back later.</small>
+                     <small>This could be due to a connection issue or server maintenance.
+                        Please try a different region, or check back later.</small>
                   </div>
                   <div id="radar-image-container" class="radar-image-container">
                      <img id="radar-image" class="radar-image" alt="NWS Radar" />
@@ -196,8 +191,8 @@
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load satellite imagery</span>
                      <small>This could be due to a connection issue or NOAA server
-                        maintenance. Please try a different sector or product,
-                        or check back later.</small>
+                        maintenance. Please try a different sector or product, or check
+                        back later.</small>
                   </div>
                   <div id="satellite-image-container" class="satellite-image-container">
                      <img id="satellite-image" class="satellite-image" alt="GOES-16 Satellite" />
@@ -302,14 +297,14 @@
             </div>
             <p class="disclaimer">
                NCHurricane.com is for informative purposes only. Do not use the
-               information on this site to make decisions regarding protecting
-               your life and/or personal property. Rely only on information from
-               official sources of information, such as your
+               information on this site to make decisions regarding protecting your
+               life and/or personal property. Rely only on information from official
+               sources of information, such as your
                <a href="https://weather.gov" target="_blank">
                   <strong>local NWS office</strong> </a>,
                <a href="https://nhc.noaa.gov" target="_blank">
-                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions
-               in a severe weather event.
+                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions in a
+               severe weather event.
             </p>
             <p class="copyright">
                Copyright ©2003, 2025 NCHurricane.<br />Website design by
@@ -318,47 +313,38 @@
          </div>
       </footer>
 
-      <!-- CHANGE THE LAT, LONG, COUNTYNAME, AND WFO -->
-      <script>
-         window.weatherConfig = {
-            location: {
-               lat: 35.9985,
-               lon: -76.9461,
-               countyName: "bertie",
-               afdWFO: "AKQ",
-            },
-         };
-      </script>
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <!-- CHANGE VERSION: -->
-      <script type="module" src="../../js/main.js?v=4.22.25"></script>
+      <script src="./js/countyData.js" type="module"></script>
+      <script src="./js/countyApp.js" type="module"></script>
+      <script src="../../js/modules/radar.js" type=" module"></script>
 
       <!-- Back to Top Button -->
       <script>
-         document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.querySelector('.back-to-top');
+         document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.querySelector(".back-to-top");
             if (btn) {
                // Set initial state
-               btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               btn.style.display = window.pageYOffset > 0 ? "block" : "none";
 
-               window.addEventListener('scroll', () => {
-                  btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               window.addEventListener("scroll", () => {
+                  btn.style.display = window.pageYOffset > 0 ? "block" : "none";
                });
 
                // Add click handler if needed
-               btn.addEventListener('click', function (e) {
+               btn.addEventListener("click", function (e) {
                   e.preventDefault();
                   window.scrollTo({
                      top: 0,
-                     behavior: 'smooth'
+                     behavior: "smooth",
                   });
                });
             }
          });
       </script>
-      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
-         <i class="fa-solid fa-up-long"></i> </a>
+      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none">
+         <i class="fa-solid fa-up-long"></i>
+      </a>
    </body>
 
 </html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NWS Station Discovery Tool</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                line-height: 1.6;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 8px;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .county-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .county-card {
+                border: 2px solid #e1e5e9;
+                border-radius: 8px;
+                padding: 20px;
+                background: #fafbfc;
+            }
+
+            .county-name {
+                font-size: 1.3em;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+
+            .coords {
+                font-family: 'Courier New', monospace;
+                color: #666;
+                font-size: 0.9em;
+                margin-bottom: 15px;
+            }
+
+            .btn {
+                background: #2a5298;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9em;
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+
+            .btn:hover {
+                background: #1e3c72;
+            }
+
+            .btn:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+            }
+
+            .stations-list {
+                margin-top: 15px;
+                background: white;
+                border-radius: 5px;
+                padding: 15px;
+                border-left: 4px solid #2a5298;
+            }
+
+            .station-item {
+                margin-bottom: 10px;
+                padding: 8px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
+
+            .station-id {
+                font-weight: 600;
+                color: #2a5298;
+            }
+
+            .station-distance {
+                color: #666;
+                font-size: 0.85em;
+            }
+
+            .loading {
+                color: #666;
+                font-style: italic;
+            }
+
+            .error {
+                color: #dc3545;
+                font-size: 0.9em;
+            }
+
+            .controls {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .results-summary {
+                background: #e9ecef;
+                padding: 15px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="header">
+            <h1>🌤️ NWS Station Discovery Tool</h1>
+            <p>Find weather stations in Eastern NC counties using the NWS API</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="findAllStations()">🔍 Find All Stations</button>
+            <button class="btn" onclick="testBertieStations()">🧪 Test Bertie Stations</button>
+            <button class="btn" onclick="clearResults()">🗑️ Clear Results</button>
+            <label for="maxDistance" style="margin-left: 20px;">Max Distance: </label>
+            <select id="maxDistance" style="padding: 5px; margin-left: 5px;">
+                <option value="10">10 miles</option>
+                <option value="25" selected>25 miles</option>
+                <option value="50">50 miles</option>
+                <option value="100">100 miles</option>
+            </select>
+        </div>
+
+        <div id="summary" class="results-summary" style="display: none;"></div>
+
+        <div class="county-grid" id="countyGrid">
+            <!-- County cards will be generated here -->
+        </div>
+
+        <script>
+            // County configuration with fixed coordinate precision
+            const counties = [
+                { name: "Bertie", city: "Windsor", lat: 36.1254, lon: -76.9680 },
+                { name: "Pitt", city: "Greenville", lat: 35.6115, lon: -77.3752 },
+                { name: "Martin", city: "Williamston", lat: 35.8600, lon: -77.1800 },
+                { name: "Washington", city: "Plymouth", lat: 35.8668, lon: -76.7488 },
+                { name: "Beaufort", city: "Washington", lat: 35.5465, lon: -77.0519 },
+                { name: "Dare", city: "Manteo", lat: 35.9082, lon: -75.6757 },
+                { name: "Hyde", city: "Swan Quarter", lat: 35.4085, lon: -76.3302 },
+                { name: "Tyrrell", city: "Columbia", lat: 35.9177, lon: -76.2522 }
+            ];
+
+            let allStationsFound = {};
+
+            // Generate county cards
+            function generateCountyCards() {
+                const grid = document.getElementById('countyGrid');
+                grid.innerHTML = counties.map(county => `
+                <div class="county-card" id="card-${county.name.toLowerCase()}">
+                    <div class="county-name">${county.name} County</div>
+                    <div class="coords">${county.city} • ${county.lat}, ${county.lon}</div>
+                    <button class="btn" onclick="findStationsForCounty('${county.name}', ${county.lat}, ${county.lon})">
+                        Find Stations
+                    </button>
+                    <div id="stations-${county.name.toLowerCase()}" class="stations-list" style="display: none;"></div>
+                </div>
+            `).join('');
+            }
+
+            // Calculate distance between two points
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                // Debug logging
+                console.log(`Calculating distance: (${lat1}, ${lon1}) to (${lat2}, ${lon2})`);
+
+                const R = 3959; // Earth's radius in miles
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const distance = R * c;
+
+                console.log(`Distance result: ${distance.toFixed(1)} miles`);
+                return distance;
+            }
+
+            // Find stations for a specific county
+            async function findStationsForCounty(countyName, lat, lon) {
+                const stationsDiv = document.getElementById(`stations-${countyName.toLowerCase()}`);
+                const btn = event.target;
+
+                btn.disabled = true;
+                btn.textContent = 'Searching...';
+                stationsDiv.style.display = 'block';
+                stationsDiv.innerHTML = '<div class="loading">🔄 Searching for stations...</div>';
+
+                try {
+                    // Round coordinates to 4 decimal places for NWS API compatibility
+                    const roundedLat = Math.round(lat * 10000) / 10000;
+                    const roundedLon = Math.round(lon * 10000) / 10000;
+
+                    console.log(`Searching for stations near ${countyName}: ${roundedLat}, ${roundedLon}`);
+
+                    // First get the grid point to find observation stations
+                    const pointResponse = await fetch(`https://api.weather.gov/points/${roundedLat},${roundedLon}`);
+
+                    if (!pointResponse.ok) {
+                        const errorText = await pointResponse.text();
+                        console.error('NWS Points API Error:', pointResponse.status, errorText);
+                        throw new Error(`Points API HTTP ${pointResponse.status}: ${pointResponse.statusText}`);
+                    }
+
+                    const pointData = await pointResponse.json();
+                    const stationsUrl = pointData.properties?.observationStations;
+
+                    if (!stationsUrl) {
+                        throw new Error('No observation stations URL found for this location');
+                    }
+
+                    console.log(`Getting stations from: ${stationsUrl}`);
+
+                    // Now get the stations list
+                    const response = await fetch(stationsUrl);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('NWS Stations API Error:', response.status, errorText);
+                        throw new Error(`Stations API HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    const stations = data.features || [];
+
+                    if (stations.length === 0) {
+                        stationsDiv.innerHTML = '<div class="error">No stations found within 25km</div>';
+                        return;
+                    }
+
+                    // Process and sort stations by distance
+                    const processedStations = stations.map(station => {
+                        const stationLat = station.geometry.coordinates[1];
+                        const stationLon = station.geometry.coordinates[0];
+                        const distance = calculateDistance(lat, lon, stationLat, stationLon);
+
+                        return {
+                            id: station.properties.stationIdentifier,
+                            name: station.properties.name || 'Unknown Station',
+                            distance: distance,
+                            coordinates: { lat: stationLat, lon: stationLon }
+                        };
+                    }).sort((a, b) => a.distance - b.distance);
+
+                    // Store results
+                    allStationsFound[countyName] = processedStations;
+
+                    // Display results
+                    stationsDiv.innerHTML = `
+                    <strong>Found ${processedStations.length} stations within ${maxDistance} miles:</strong>
+                    ${processedStations.map(station => `
+                        <div class="station-item">
+                            <span class="station-id">${station.id}</span> - ${station.name}
+                            <br><span class="station-distance">${station.distance.toFixed(1)} miles away</span>
+                        </div>
+                    `).join('')}
+                `;
+
+                    updateSummary();
+
+                } catch (error) {
+                    console.error(`Error finding stations for ${countyName}:`, error);
+                    stationsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Find Stations';
+                }
+            }
+
+            // Find stations for all counties
+            async function findAllStations() {
+                for (const county of counties) {
+                    await findStationsForCounty(county.name, county.lat, county.lon);
+                    // Small delay to avoid overwhelming the API
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            // Test the known Bertie stations
+            async function testBertieStations() {
+                const bertieStations = ['GCRN7', 'WNRN7'];
+                const resultsDiv = document.getElementById('stations-bertie');
+
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div class="loading">🧪 Testing Bertie stations...</div>';
+
+                const results = [];
+                for (const stationId of bertieStations) {
+                    try {
+                        const response = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`);
+                        const working = response.ok;
+
+                        results.push({
+                            id: stationId,
+                            working: working,
+                            status: working ? 'Active' : `Error ${response.status}`
+                        });
+                    } catch (error) {
+                        results.push({
+                            id: stationId,
+                            working: false,
+                            status: 'Failed to connect'
+                        });
+                    }
+                }
+
+                resultsDiv.innerHTML = `
+                <strong>Bertie Station Test Results:</strong>
+                ${results.map(result => `
+                    <div class="station-item">
+                        <span class="station-id">${result.id}</span> - 
+                        <span style="color: ${result.working ? 'green' : 'red'}">
+                            ${result.status}
+                        </span>
+                    </div>
+                `).join('')}
+            `;
+            }
+
+            // Update the summary
+            function updateSummary() {
+                const summary = document.getElementById('summary');
+                const totalStations = Object.values(allStationsFound).reduce((sum, stations) => sum + stations.length, 0);
+                const countiesSearched = Object.keys(allStationsFound).length;
+
+                if (totalStations > 0) {
+                    summary.style.display = 'block';
+                    summary.innerHTML = `
+                    📊 <strong>Summary:</strong> Found ${totalStations} total stations across ${countiesSearched} counties
+                `;
+                }
+            }
+
+            // Clear all results
+            function clearResults() {
+                allStationsFound = {};
+                counties.forEach(county => {
+                    const stationsDiv = document.getElementById(`stations-${county.name.toLowerCase()}`);
+                    stationsDiv.style.display = 'none';
+                    stationsDiv.innerHTML = '';
+                });
+                document.getElementById('summary').style.display = 'none';
+            }
+
+            // Initialize the page
+            generateCountyCards();
+        </script>
+    </body>
+
+</html>

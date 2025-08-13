@@ -28,7 +28,6 @@ class DataService {
 
     // API configurations
     this.nwsApiBase = "https://api.weather.gov";
-    this.openMeteoApiBase = "https://api.open-meteo.com/v1/forecast";
 
     // Zone cache to avoid repeated point lookups
     this.zoneCache = new Map();
@@ -193,38 +192,38 @@ class DataService {
       return null;
     }
   }
-async fetchNwsAlerts(params) {
-  const { lat, lon, county } = params;
-  const zoneIds = await this.getZoneIds(lat, lon, county);
-  
-  if (!zoneIds || zoneIds.length === 0) {
-    throw new Error('No zones found for location');
-  }
+  async fetchNwsAlerts(params) {
+    const { lat, lon, county } = params;
+    const zoneIds = await this.getZoneIds(lat, lon, county);
 
-  const alertPromises = zoneIds.map(zoneId => 
-    fetch(`${this.nwsApiBase}/alerts/active/zone/${zoneId}`, {
-      headers: this.nwsHeaders
-    }).then(response => response.json())
-  );
+    if (!zoneIds || zoneIds.length === 0) {
+      throw new Error("No zones found for location");
+    }
 
-  const alertResults = await Promise.all(alertPromises);
-  
-  // Combine and deduplicate
-  const allAlerts = [];
-  const seenAlertIds = new Set();
-  
-  alertResults.forEach(result => {
-    result.features?.forEach(alert => {
-      const alertId = alert.id || alert.properties?.id;
-      if (alertId && !seenAlertIds.has(alertId)) {
-        seenAlertIds.add(alertId);
-        allAlerts.push(alert);
-      }
+    const alertPromises = zoneIds.map((zoneId) =>
+      fetch(`${this.nwsApiBase}/alerts/active/zone/${zoneId}`, {
+        headers: this.nwsHeaders,
+      }).then((response) => response.json())
+    );
+
+    const alertResults = await Promise.all(alertPromises);
+
+    // Combine and deduplicate
+    const allAlerts = [];
+    const seenAlertIds = new Set();
+
+    alertResults.forEach((result) => {
+      result.features?.forEach((alert) => {
+        const alertId = alert.id || alert.properties?.id;
+        if (alertId && !seenAlertIds.has(alertId)) {
+          seenAlertIds.add(alertId);
+          allAlerts.push(alert);
+        }
+      });
     });
-  });
 
-  return { type: 'FeatureCollection', features: allAlerts };
-}
+    return { type: "FeatureCollection", features: allAlerts };
+  }
 
   async getZoneIds(lat, lon, county) {
     const cacheKey = `${lat},${lon}`;
@@ -321,8 +320,7 @@ async fetchNwsAlerts(params) {
 
       switch (dataType) {
         case "currentConditions":
-          // Use Open-Meteo for current conditions as specified
-          data = await this.fetchOpenMeteoCurrentConditions(params);
+          data = await this.fetchNwsCurrentConditions(params);
           break;
         case "forecast":
           data = await this.fetchNwsForecast(params);
@@ -348,23 +346,6 @@ async fetchNwsAlerts(params) {
       console.error(`Error fetching ${dataType} from API:`, error);
       return null;
     }
-  }
-
-  /**
-   * Fetch current conditions from Open-Meteo API
-   * @param {Object} params - Parameters including lat and lon
-   * @returns {Promise<Object>} - Weather data
-   */
-  async fetchOpenMeteoCurrentConditions(params) {
-    const { lat, lon } = params;
-
-    // Construct the Open-Meteo API URL with required parameters
-    const url = `${this.openMeteoApiBase}?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch`;
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    return await response.json();
   }
 
   /**
@@ -425,6 +406,70 @@ async fetchNwsAlerts(params) {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     return await response.json();
+  }
+
+  /**
+   * Fetch current conditions from NWS API
+   * @param {Object} params - Parameters including lat and lon
+   * @returns {Promise<Object>} - Weather data
+   */
+  async fetchNwsCurrentConditions(params) {
+    const { lat, lon } = params;
+
+    // Get observation stations for this location
+    const pointsResponse = await fetch(
+      `${this.nwsApiBase}/points/${lat},${lon}`,
+      { headers: this.nwsHeaders }
+    );
+
+    if (!pointsResponse.ok) {
+      throw new Error(`NWS Points API error: ${pointsResponse.status}`);
+    }
+
+    const pointsData = await pointsResponse.json();
+    const stationsUrl = pointsData.properties?.observationStations;
+
+    if (!stationsUrl) {
+      throw new Error("No observation stations found");
+    }
+
+    // Get station list
+    const stationsResponse = await fetch(stationsUrl, {
+      headers: this.nwsHeaders,
+    });
+    if (!stationsResponse.ok) {
+      throw new Error(`NWS Stations API error: ${stationsResponse.status}`);
+    }
+
+    const stationsData = await stationsResponse.json();
+    const features = stationsData.features || [];
+
+    if (features.length === 0) {
+      throw new Error("No stations available");
+    }
+
+    // Try first station for current conditions
+    const station = features[0];
+    const stationId = station.properties.stationIdentifier;
+
+    const obsResponse = await fetch(
+      `${this.nwsApiBase}/stations/${stationId}/observations/latest`,
+      { headers: this.nwsHeaders }
+    );
+
+    if (!obsResponse.ok) {
+      throw new Error(`Observation API error: ${obsResponse.status}`);
+    }
+
+    const obsData = await obsResponse.json();
+
+    return {
+      station: {
+        name: station.properties.name || stationId,
+        id: stationId,
+      },
+      properties: obsData.properties,
+    };
   }
 
   /**
@@ -537,71 +582,8 @@ async fetchNwsAlerts(params) {
       };
     }
 
-    // Handle data from Open-Meteo API
-    if (data.current_weather) {
-      const cw = data.current_weather;
-      const condition = this.getWeatherCondition(cw.weathercode);
-
-      return {
-        temp: this.formatTemperature(cw.temperature),
-        condition: condition,
-        dewpoint: "N/A", // Open-Meteo basic endpoint doesn't provide dewpoint
-        humidity: "N/A", // Open-Meteo basic endpoint doesn't provide humidity
-        wind: this.formatWind(
-          cw.windspeed,
-          this.degreesToCardinal(cw.winddirection)
-        ),
-        visibility: "N/A", // Open-Meteo basic endpoint doesn't provide visibility
-        pressure: "N/A", // Open-Meteo basic endpoint doesn't provide pressure
-        time: new Date(cw.time * 1000),
-        formattedTime: this.formatTime(cw.time),
-        stationName: "Open-Meteo",
-        iconUrl: null, // Open-Meteo doesn't provide icons
-      };
-    }
-
     // Fallback for unknown format
     return this.getFallbackData("currentConditions");
-  }
-
-  /**
-   * Map Open-Meteo WMO weather codes to text conditions
-   * @param {number} code - WMO weather code
-   * @returns {string} - Text description of weather condition
-   */
-  getWeatherCondition(code) {
-    const conditions = {
-      0: "Clear sky",
-      1: "Mainly clear",
-      2: "Partly cloudy",
-      3: "Overcast",
-      45: "Fog",
-      48: "Depositing rime fog",
-      51: "Light drizzle",
-      53: "Moderate drizzle",
-      55: "Dense drizzle",
-      56: "Light freezing drizzle",
-      57: "Dense freezing drizzle",
-      61: "Slight rain",
-      63: "Moderate rain",
-      65: "Heavy rain",
-      66: "Light freezing rain",
-      67: "Heavy freezing rain",
-      71: "Slight snow fall",
-      73: "Moderate snow fall",
-      75: "Heavy snow fall",
-      77: "Snow grains",
-      80: "Slight rain showers",
-      81: "Moderate rain showers",
-      82: "Violent rain showers",
-      85: "Slight snow showers",
-      86: "Heavy snow showers",
-      95: "Thunderstorm",
-      96: "Thunderstorm with slight hail",
-      99: "Thunderstorm with heavy hail",
-    };
-
-    return conditions[code] || "Unknown";
   }
 
   /**

@@ -1,0 +1,43 @@
+{
+  "county": {
+    "name": "Bertie",
+    "state": "NC",
+    "timezone": "America/New_York"
+  },
+  "location": {
+    "lat": 35.9985,
+    "lon": -76.9461,
+    "city": "Windsor"
+  },
+  "zones": {
+    "forecast": "NCZ030",
+    "county": "NCC015"
+  },
+  "forecastOffice": {
+    "id": "AKQ",
+    "name": "Wakefield"
+  },
+  "stations": {
+    "primary": {
+      "id": "KEDE",
+      "name": "Northeastern Regional Airport",
+      "friendlyName": "Edenton",
+      "lat": 36.02778,
+      "lon": -76.56722
+    },
+    "secondary": {
+      "id": "WNRN7",
+      "name": "Cashie River in Windsor, NC",
+      "friendlyName": "Windsor",
+      "lat": 35.99389,
+      "lon": -76.9425
+    },
+    "tertiary": {
+      "id": "GCRN7",
+      "name": "Greens Cross Fire RAWS",
+      "friendlyName": "Greens Cross",
+      "lat": 36.01766,
+      "lon": -76.89126
+    }
+  }
+}
