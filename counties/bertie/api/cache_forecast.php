@@ -31,6 +31,11 @@ function atomic_write_json($path,$arr){
 }
 function ensure_large_icon($url){ if(!$url) return $url; return (strpos($url,'size=large')!==false) ? $url : $url.(strpos($url,'?')!==false ? '&' : '?').'size=large'; }
 
+// Helper function to convert Celsius to Fahrenheit
+function celsiusToFahrenheit($celsius) {
+  return $celsius !== null ? round(($celsius * 9/5) + 32) : null;
+}
+
 if ($lat===null || $lon===null) { http_response_code(500); exit("Missing lat/lon\n"); }
 $points = http_get_json("https://api.weather.gov/points/{$lat},{$lon}");
 $fcUrl = $points['properties']['forecast'] ?? null;
@@ -72,17 +77,27 @@ if ($forecast && isset($forecast['properties']['periods'])) {
 
 atomic_write_json($dataDir . '/forecast.json', $outForecast);
 
-// Build hourly.json (write raw-ish but present)
+// Build hourly.json (write raw-ish but present) - ENHANCED with dewpoint and humidity
 $outHourly = [
   'generated' => $nowIso,
   'hours' => []
 ];
 if ($hourly && isset($hourly['properties']['periods'])) {
   foreach ($hourly['properties']['periods'] as $h) {
+    // Extract dewpoint from NWS format: { unitCode: "wmoUnit:degC", value: 24.444 }
+    $dewpointCelsius = $h['dewpoint']['value'] ?? null;
+    $dewpointFahrenheit = celsiusToFahrenheit($dewpointCelsius);
+    
+    // Extract relative humidity from NWS format: { unitCode: "wmoUnit:percent", value: 78 }
+    $relativeHumidity = $h['relativeHumidity']['value'] ?? null;
+    $relativeHumidityRounded = $relativeHumidity !== null ? round($relativeHumidity) : null;
+    
     $outHourly['hours'][] = [
       'startTime' => $h['startTime'] ?? null,
       'temperature' => $h['temperature'] ?? null,
       'temperatureUnit' => $h['temperatureUnit'] ?? 'F',
+      'dewpoint' => $dewpointFahrenheit,  // NEW: Converted to Fahrenheit
+      'relativeHumidity' => $relativeHumidityRounded,  // NEW: Rounded percentage
       'windSpeed' => $h['windSpeed'] ?? null,
       'windDirection' => $h['windDirection'] ?? null,
       'shortForecast' => $h['shortForecast'] ?? null,
