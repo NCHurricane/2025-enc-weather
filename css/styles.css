@@ -25,7 +25,7 @@
     --padding-section: 15px 15px 15px 10px;
 
     /* Border radius */
-    --border-radius: 10px;
+    --border-radius: 8px;
 
     /* Breakpoints */
     --breakpoint-sm: 600px;
@@ -291,7 +291,8 @@ pre {
 .detailed-container,
 .radar-container,
 .satellite-container,
-.meteogram-container {
+.meteogram-container,
+.other-container {
     background-color: var(--color-primary);
     border: 1px solid var(--color-primary);
     border-radius: var(--border-radius);
@@ -307,7 +308,9 @@ pre {
 .radar-title,
 .satellite-title,
 .meteogram-title,
-.detailed-title {
+.detailed-title,
+.other-title,
+.section-title {
     cursor: pointer;
     font-weight: bold;
     text-transform: uppercase;
@@ -709,7 +712,8 @@ pre {
     .satellite-title,
     .radar-title,
     .meteogram-title,
-    .afd-title {
+    .afd-title,
+    .other-title {
         font-size: 0.9rem;
     }
 

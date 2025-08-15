@@ -19,7 +19,7 @@
 
       <!-- CHANGE VERSION: -->
       <link rel="stylesheet" href="../../css/styles.css?v=4.22.25" />
-      <link rel="stylesheet" href="../../css/county.css?v=4.22.25" />
+      <link rel="stylesheet" href="../css/county.css?v=4.22.25" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -66,25 +66,32 @@
          <h1 class="main-title">Bertie County</h1>
 
          <!-- Current Weather Section -->
-         <section class="current-container" aria-labelledby="current-weather-heading">
-            <div class="weather-card" id="weather-background">
+         <section class="current-container" id="weather-background" aria-labelledby="current-weather-heading">
+            <div class="weather-card">
                <div class="weather-desc">
                   <div class="weather-temp" id="current-temp"></div>
                   <div class="desc" id="current-desc"></div>
                   <div class="details">
-                     <p id="current-heat-index"></p>
-                     <p id="current-wind-chill"></p>
                      <p id="current-dewpoint"></p>
                      <p id="current-humidity"></p>
                      <p id="current-wind"></p>
-                     <p id="current-visibility"></p>
+                     <p id="current-heat-index"></p>
+                     <p id="current-wind-chill"></p>
                      <p id="current-pressure"></p>
+                     <p id="current-visibility"></p>
                      <br />
                      <p id="current-location"></p>
                      <p id="current-obs-time"></p>
                   </div>
                </div>
             </div>
+         </section>
+
+         <section class="other-container section-title" aria-labelledby="other-heading">
+            <div>
+               <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>OTHER LOCATIONS
+            </div>
+            <div id="other-stations"></div>
          </section>
 
          <!-- Current Alerts Section -->

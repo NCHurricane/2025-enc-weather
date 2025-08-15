@@ -131,7 +131,7 @@ foreach ($slots as $slot) {
       'conditions' => $wx,
       'heatIndex' => null, // can be derived later if needed
       'windChill' => null,
-      'icon' => $icon
+      'icon' => $icon ? str_replace('size=medium', 'size=large', $icon) : null,
     ];
   }
 
