@@ -18,8 +18,8 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="../../css/styles.css?v=4.22.25">
-      <link rel="stylesheet" href="../../css/county.css?v=4.22.25">
+      <link rel="stylesheet" href="../../css/styles.css?v=4.22.25" />
+      <link rel="stylesheet" href="../css/county.css?v=4.22.25" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -66,26 +66,22 @@
          <h1 class="main-title">Beaufort County</h1>
 
          <!-- Current Weather Section -->
-         <section class="current-container" aria-labelledby="current-weather-heading">
-            <div class="weather-card" id="weather-background">
+         <section class="current-container" id="weather-background" aria-labelledby="current-weather-heading">
+            <div class="weather-card">
                <div class="weather-desc">
                   <div class="weather-temp" id="current-temp"></div>
                   <div class="desc" id="current-desc"></div>
                   <div class="details">
-                     <p id="current-heat-index"></p>
-                     <p id="current-wind-chill"></p>
                      <p id="current-dewpoint"></p>
                      <p id="current-humidity"></p>
                      <p id="current-wind"></p>
-                     <p id="current-visibility"></p>
+                     <p id="current-heat-index"></p>
+                     <p id="current-wind-chill"></p>
                      <p id="current-pressure"></p>
+                     <p id="current-visibility"></p>
                      <br />
                      <p id="current-location"></p>
                      <p id="current-obs-time"></p>
-                     <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                        aria-label="Refresh weather data">
-                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                     </button>
                   </div>
                </div>
             </div>
@@ -96,7 +92,13 @@
             <div id="alerts"></div>
          </section>
 
-         <hr />
+         <!-- Other Locations Section -->
+         <section class="other-container section-title" aria-labelledby="other-heading">
+            <div>
+               <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>OTHER LOCATIONS
+            </div>
+            <div id="other-stations"></div>
+         </section>
 
          <!-- 5-Day Forecast Section -->
          <section class="forecast-container section-title" aria-labelledby="forecast-heading">
@@ -128,35 +130,39 @@
             <div class="radar-tabs">
                <div class="radar-controls">
                   <div class="radar-select-container">
-                     <label for="radar-product-select" class="radar-label">Radar:</label>
-                     <select id="radar-product-select" class="radar-select">
-                        <option value="KMHX">Newport, NC</option>
-                        <option value="KAKQ">Wakefield, VA</option>
-                        <option value="KRAX">Raleigh, NC</option>
-                        <option value="KLTX">Wilmington, NC</option>
+                     <label for="radar-station-select" class="radar-label">Station:</label>
+                     <select id="radar-station-select" class="radar-select">
+                        <option value="KMHX" selected>KMHX (Newport, NC)</option>
+                        <option value="KRAX">KRAX (Raleigh, NC)</option>
+                        <option value="KLTX">KLTX (Wilmington, NC)</option>
+                        <option value="SOUTHEAST">Regional (Southeast)</option>
                      </select>
-                     <button id="radar-play-pause" class="radar-button" aria-label="Play radar animation">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                  </div>
+                  <div class="radar-select-container">
+                     <label for="radar-product-select" class="radar-label">Product:</label>
+                     <select id="radar-product-select" class="radar-select">
+                        <option value="reflectivity-static" selected>Reflectivity Static</option>
+                        <option value="reflectivity-loop">Reflectivity Loop</option>
+                        <option value="velocity-static">Velocity Static</option>
+                        <option value="velocity-loop">Velocity Loop</option>
+                     </select>
                   </div>
                </div>
                <div class="radar-content">
-                  <div id="radar-loading" class="radar-loading">
+                  <div id="radar-loading" class="radar-loading" style="display: none;">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading radar imagery...</span>
-                     <small>This may take a moment depending on your connection
-                        speed.</small>
+                     <small>This may take a moment depending on your connection speed.</small>
                   </div>
-                  <div id="radar-error" class="radar-error" style="display: none">
+                  <div id="radar-error" class="radar-error" style="display: none;">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load radar imagery</span>
-                     <small>This could be due to a connection issue or server
-                        maintenance. Please try a different region, or check
-                        back later.</small>
+                     <small>This could be due to a connection issue or server maintenance. Please try a different
+                        station or
+                        product.</small>
                   </div>
                   <div id="radar-image-container" class="radar-image-container">
                      <img id="radar-image" class="radar-image" alt="NWS Radar" />
-                     <div id="radar-timestamp" class="radar-timestamp"></div>
                   </div>
                </div>
             </div>
@@ -174,33 +180,36 @@
                   <div class="satellite-select-container">
                      <label for="satellite-product-select" class="satellite-label">Product:</label>
                      <select id="satellite-product-select" class="satellite-select">
-                        <option value="GEOCOLOR">GeoColor</option>
+                        <option value="GEOCOLOR" selected>GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                     <button id="satellite-play-pause" class="satellite-button" aria-label="Play satellite animation">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                  </div>
+                  <div class="satellite-select-container">
+                     <label for="satellite-type-select" class="satellite-label">Type:</label>
+                     <select id="satellite-type-select" class="satellite-select">
+                        <option value="static" selected>Static</option>
+                        <option value="animated">Animated Loop</option>
+                     </select>
                   </div>
                </div>
                <div class="satellite-content">
-                  <div id="satellite-loading" class="satellite-loading">
+                  <div id="satellite-loading" class="satellite-loading" style="display: none;">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading satellite imagery...</span>
-                     <small>This may take a moment depending on your connection
-                        speed.</small>
+                     <small>This may take a moment depending on your connection speed.</small>
                   </div>
-                  <div id="satellite-error" class="satellite-error" style="display: none">
+                  <div id="satellite-error" class="satellite-error" style="display: none;">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load satellite imagery</span>
-                     <small>This could be due to a connection issue or NOAA server
-                        maintenance. Please try a different sector or product,
-                        or check back later.</small>
+                     <small>This could be due to a connection issue or NOAA server maintenance. Please try a different
+                        product.</small>
                   </div>
                   <div id="satellite-image-container" class="satellite-image-container">
-                     <img id="satellite-image" class="satellite-image" alt="GOES-16 Satellite" />
+                     <img id="satellite-image" class="satellite-image satellite-image-cropped"
+                        alt="GOES-19 Satellite" />
                      <div id="satellite-timestamp" class="satellite-timestamp"></div>
                   </div>
                </div>
@@ -302,14 +311,14 @@
             </div>
             <p class="disclaimer">
                NCHurricane.com is for informative purposes only. Do not use the
-               information on this site to make decisions regarding protecting
-               your life and/or personal property. Rely only on information from
-               official sources of information, such as your
+               information on this site to make decisions regarding protecting your
+               life and/or personal property. Rely only on information from official
+               sources of information, such as your
                <a href="https://weather.gov" target="_blank">
                   <strong>local NWS office</strong> </a>,
                <a href="https://nhc.noaa.gov" target="_blank">
-                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions
-               in a severe weather event.
+                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions in a
+               severe weather event.
             </p>
             <p class="copyright">
                Copyright ©2003, 2025 NCHurricane.<br />Website design by
@@ -318,47 +327,39 @@
          </div>
       </footer>
 
-      <!-- CHANGE THE LAT, LONG, COUNTYNAME, AND WFO -->
-      <script>
-         window.weatherConfig = {
-            location: {
-               lat: 35.57056,
-               lon: -77.04972,
-               countyName: "beaufort",
-               afdWFO: "MHX",
-            },
-         };
-      </script>
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <!-- CHANGE VERSION: -->
-      <script type="module" src="../../js/main.js?v=4.22.25"></script>
+      <script src="./js/countyData.js" type="module"></script>
+      <script src="./js/countyApp.js" type="module"></script>
+      <script src="./js/radar.js" type="module"></script>
+      <script src="./js/satellite.js" type="module"></script>
 
       <!-- Back to Top Button -->
       <script>
-         document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.querySelector('.back-to-top');
+         document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.querySelector(".back-to-top");
             if (btn) {
                // Set initial state
-               btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               btn.style.display = window.pageYOffset > 0 ? "block" : "none";
 
-               window.addEventListener('scroll', () => {
-                  btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               window.addEventListener("scroll", () => {
+                  btn.style.display = window.pageYOffset > 0 ? "block" : "none";
                });
 
                // Add click handler if needed
-               btn.addEventListener('click', function (e) {
+               btn.addEventListener("click", function (e) {
                   e.preventDefault();
                   window.scrollTo({
                      top: 0,
-                     behavior: 'smooth'
+                     behavior: "smooth",
                   });
                });
             }
          });
       </script>
-      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
-         <i class="fa-solid fa-up-long"></i> </a>
+      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none">
+         <i class="fa-solid fa-up-long"></i>
+      </a>
    </body>
 
 </html>

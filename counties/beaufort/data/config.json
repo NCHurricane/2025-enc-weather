@@ -1,0 +1,46 @@
+{
+  "county": {
+    "name": "Beaufort",
+    "state": "NC",
+    "timezone": "America/New_York"
+  },
+  "location": {
+    "lat": 35.5466,
+    "lon": -77.0522,
+    "city": "Washington"
+  },
+  "zones": {
+    "forecast": "NCZ080",
+    "county": "NCC013"
+  },
+  "forecastOffice": {
+    "id": "MHX",
+    "name": "Newport/Morehead City"
+  },
+  "stations": [
+    {
+      "id": "KOCW",
+      "name": "Washington-Warren Airport",
+      "url": "https://www.weather.gov/wrh/timeseries?site=KOCW",
+      "friendlyName": "Washington",
+      "lat": 35.57056,
+      "lon": -77.0497199
+    },
+    {
+      "id": "BNYN7",
+      "name": "NC Forest Service - Bunyan",
+      "url": "https://www.weather.gov/wrh/timeseries?site=BNYN7",
+      "friendlyName": "Bunyan",
+      "lat": 35.52081,
+      "lon": -76.93183
+    },
+    {
+      "id": "TS338",
+      "name": "NC Fire RAWS #4",
+      "friendlyName": "Pinetown",
+      "url": "https://www.weather.gov/wrh/timeseries?site=TS338",
+      "lat": 35.64,
+      "lon": -76.8
+    }
+  ]
+}

@@ -17,27 +17,30 @@
     "id": "AKQ",
     "name": "Wakefield"
   },
-  "stations": {
-    "primary": {
+  "stations": [
+    {
       "id": "KEDE",
       "name": "Northeastern Regional Airport",
       "friendlyName": "Edenton",
+      "url": "https://www.weather.gov/wrh/timeseries?site=KEDE",
       "lat": 36.02778,
       "lon": -76.56722
     },
-    "secondary": {
+    {
       "id": "WNRN7",
       "name": "Cashie River in Windsor, NC",
       "friendlyName": "Cashie River Bridge",
+      "url": "https://www.weather.gov/wrh/timeseries?site=WNRN7",
       "lat": 35.99389,
       "lon": -76.9425
     },
-    "tertiary": {
+    {
       "id": "GCRN7",
       "name": "Greens Cross Fire RAWS",
       "friendlyName": "Greens Cross",
+      "url": "https://www.weather.gov/wrh/timeseries?site=GCRN7",
       "lat": 36.01766,
       "lon": -76.89126
     }
-  }
+  ]
 }

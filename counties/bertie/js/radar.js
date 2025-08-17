@@ -115,7 +115,7 @@ class RadarModule {
     }
 
     showLoading() {
-        if (this.loadingDiv) this.loadingDiv.style.display = 'block';
+        if (this.loadingDiv) this.loadingDiv.style.display = 'flex';
         if (this.errorDiv) this.errorDiv.style.display = 'none';
     }
 
@@ -124,7 +124,7 @@ class RadarModule {
     }
 
     showError() {
-        if (this.errorDiv) this.errorDiv.style.display = 'block';
+        if (this.errorDiv) this.errorDiv.style.display = 'flex';
         if (this.loadingDiv) this.loadingDiv.style.display = 'none';
     }
 

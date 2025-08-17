@@ -130,34 +130,40 @@
             <div class="radar-tabs">
                <div class="radar-controls">
                   <div class="radar-select-container">
-                     <label for="radar-product-select" class="radar-label">Radar:</label>
-                     <select id="radar-product-select" class="radar-select">
-                        <option value="KMHX">Newport, NC</option>
-                        <option value="KAKQ">Wakefield, VA</option>
-                        <option value="KRAX">Raleigh, NC</option>
-                        <option value="KLTX">Wilmington, NC</option>
+                     <label for="radar-station-select" class="radar-label">Station:</label>
+                     <select id="radar-station-select" class="radar-select">
+                        <option value="KAKQ" selected>KAKQ (Wakefield, VA)</option>
+                        <option value="KMHX">KMHX (Newport, NC)</option>
+                        <option value="KRAX">KRAX (Raleigh, NC)</option>
+                        <option value="KLTX">KLTX (Wilmington, NC)</option>
+                        <option value="SOUTHEAST">Regional (Southeast)</option>
                      </select>
-                     <button id="radar-play-pause" class="radar-button" aria-label="Play radar animation">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                  </div>
+                  <div class="radar-select-container">
+                     <label for="radar-product-select" class="radar-label">Product:</label>
+                     <select id="radar-product-select" class="radar-select">
+                        <option value="reflectivity-static" selected>Reflectivity Static</option>
+                        <option value="reflectivity-loop">Reflectivity Loop</option>
+                        <option value="velocity-static">Velocity Static</option>
+                        <option value="velocity-loop">Velocity Loop</option>
+                     </select>
                   </div>
                </div>
                <div class="radar-content">
-                  <div id="radar-loading" class="radar-loading">
+                  <div id="radar-loading" class="radar-loading" style="display: none;">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading radar imagery...</span>
-                     <small>This may take a moment depending on your connection
-                        speed.</small>
+                     <small>This may take a moment depending on your connection speed.</small>
                   </div>
-                  <div id="radar-error" class="radar-error" style="display: none">
+                  <div id="radar-error" class="radar-error" style="display: none;">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load radar imagery</span>
-                     <small>This could be due to a connection issue or server maintenance.
-                        Please try a different region, or check back later.</small>
+                     <small>This could be due to a connection issue or server maintenance. Please try a different
+                        station or
+                        product.</small>
                   </div>
                   <div id="radar-image-container" class="radar-image-container">
                      <img id="radar-image" class="radar-image" alt="NWS Radar" />
-                     <div id="radar-timestamp" class="radar-timestamp"></div>
                   </div>
                </div>
             </div>
@@ -175,33 +181,36 @@
                   <div class="satellite-select-container">
                      <label for="satellite-product-select" class="satellite-label">Product:</label>
                      <select id="satellite-product-select" class="satellite-select">
-                        <option value="GEOCOLOR">GeoColor</option>
+                        <option value="GEOCOLOR" selected>GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                     <button id="satellite-play-pause" class="satellite-button" aria-label="Play satellite animation">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                  </div>
+                  <div class="satellite-select-container">
+                     <label for="satellite-type-select" class="satellite-label">Type:</label>
+                     <select id="satellite-type-select" class="satellite-select">
+                        <option value="static" selected>Static</option>
+                        <option value="animated">Animated Loop</option>
+                     </select>
                   </div>
                </div>
                <div class="satellite-content">
-                  <div id="satellite-loading" class="satellite-loading">
+                  <div id="satellite-loading" class="satellite-loading" style="display: none;">
                      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                      <span>Loading satellite imagery...</span>
-                     <small>This may take a moment depending on your connection
-                        speed.</small>
+                     <small>This may take a moment depending on your connection speed.</small>
                   </div>
-                  <div id="satellite-error" class="satellite-error" style="display: none">
+                  <div id="satellite-error" class="satellite-error" style="display: none;">
                      <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                      <span>Unable to load satellite imagery</span>
-                     <small>This could be due to a connection issue or NOAA server
-                        maintenance. Please try a different sector or product, or check
-                        back later.</small>
+                     <small>This could be due to a connection issue or NOAA server maintenance. Please try a different
+                        product.</small>
                   </div>
                   <div id="satellite-image-container" class="satellite-image-container">
-                     <img id="satellite-image" class="satellite-image" alt="GOES-16 Satellite" />
+                     <img id="satellite-image" class="satellite-image satellite-image-cropped"
+                        alt="GOES-19 Satellite" />
                      <div id="satellite-timestamp" class="satellite-timestamp"></div>
                   </div>
                </div>
@@ -323,7 +332,8 @@
 
       <script src="./js/countyData.js" type="module"></script>
       <script src="./js/countyApp.js" type="module"></script>
-      <script src="../../js/modules/radar.js" type=" module"></script>
+      <script src="./js/radar.js" type="module"></script>
+      <script src="./js/satellite.js" type="module"></script>
 
       <!-- Back to Top Button -->
       <script>
