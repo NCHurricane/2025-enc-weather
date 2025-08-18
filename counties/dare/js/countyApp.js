@@ -1,4 +1,6 @@
-// counties/Bertie/js/countyApp.js
+// counties/dare/js/countyApp.js - Unified Multi-Zone Version
+// Based on Bertie's functionality + zone switching capabilities
+
 const warningColors = {
     "Tsunami Warning": "#FD6347",
     "Tornado Warning": "#FF0000",
@@ -235,6 +237,8 @@ import {
   getHourlyData,
   getAlerts,
   getAFD,
+  getCurrentZone,
+  switchZone
 } from "./countyData.js";
 import { initMeteogram } from './meteogram.js';
 
@@ -260,6 +264,8 @@ const SEL = {
   forecast: { container: "#forecast", detailed: "#detailed-forecast" },
   alerts: { container: "#alerts" },
   afd: { container: "#afd-content" },
+  zoneSelector: "#zone-selector",
+  refreshButton: "#global-refresh"
 };
 
 function $(sel) {
@@ -314,7 +320,7 @@ function ensureWeatherIcon() {
   return icon;
 }
 
-// Load station URLs from config
+// Load station URLs from config (zone-aware)
 async function loadStationUrls() {
   try {
     const configResponse = await fetch('./data/config.json');
@@ -323,10 +329,24 @@ async function loadStationUrls() {
     }
     
     const config = await configResponse.json();
-    const stations = config.stations || [];
+    
+    // Handle both single-zone and multi-zone configs
+    let allStations = [];
+    
+    if (config.county?.multiZone) {
+      // Multi-zone: collect stations from all zones
+      const zones = config.zones || {};
+      for (const zone of Object.values(zones)) {
+        const stations = zone.stations || [];
+        allStations = allStations.concat(stations);
+      }
+    } else {
+      // Single-zone: use stations directly
+      allStations = config.stations || [];
+    }
     
     // Create lookup object for station URLs
-    stations.forEach(station => {
+    allStations.forEach(station => {
       if (station.id && station.url) {
         stationUrls[station.id] = station.url;
       }
@@ -342,6 +362,94 @@ async function loadStationUrls() {
 // Config-driven station URL lookup
 function getStationUrl(stationId) {
   return stationUrls[stationId] || "#";
+}
+
+// NEW: Set up zone selector functionality for multi-zone counties
+function setupZoneSelector() {
+  const zoneSelector = $(SEL.zoneSelector);
+  if (!zoneSelector) {
+    console.log("[countyApp] No zone selector found - single zone county");
+    return;
+  }
+  
+  const zoneButtons = zoneSelector.querySelectorAll('.zone-btn');
+  if (zoneButtons.length === 0) {
+    console.log("[countyApp] No zone buttons found");
+    return;
+  }
+  
+  console.log(`[countyApp] Setting up zone selector with ${zoneButtons.length} zones`);
+  
+  // Add click handlers
+  zoneButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const selectedZone = e.target.dataset.zone;
+      
+      if (!selectedZone) {
+        console.error("[countyApp] No zone data on button");
+        return;
+      }
+      
+      console.log(`[countyApp] Zone button clicked: ${selectedZone}`);
+      
+      // Update active button
+      zoneButtons.forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      
+      // Switch to new zone
+      const success = switchZone(selectedZone);
+      if (success) {
+        // Show loading state
+        showLoading();
+        
+        // Reload all data for new zone
+        await loadAll();
+        
+        // Hide loading state
+        hideLoading();
+      } else {
+        console.error(`[countyApp] Failed to switch to zone: ${selectedZone}`);
+      }
+    });
+  });
+  
+  // Set initial active button based on current zone
+  const currentZone = getCurrentZone();
+  if (currentZone) {
+    zoneButtons.forEach(btn => {
+      if (btn.dataset.zone === currentZone.id) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+}
+
+// NEW: Show/hide loading state for zone switching
+function showLoading() {
+  document.body.classList.add('loading');
+  const zoneButtons = document.querySelectorAll('.zone-btn');
+  zoneButtons.forEach(btn => btn.disabled = true);
+}
+
+function hideLoading() {
+  document.body.classList.remove('loading');
+  const zoneButtons = document.querySelectorAll('.zone-btn');
+  zoneButtons.forEach(btn => btn.disabled = false);
+}
+
+// NEW: Set up refresh button
+function setupRefreshButton() {
+  const refreshBtn = $(SEL.refreshButton);
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      console.log("[countyApp] Manual refresh triggered");
+      showLoading();
+      await loadAll();
+      hideLoading();
+    });
+  }
 }
 
 async function renderCurrent() {
@@ -661,6 +769,13 @@ async function loadAll() {
   } catch (e) {
     console.warn('[countyApp] init failed (non-fatal)', e);
   }
+  
+  // Set up zone selector (must be after init to get current zone)
+  setupZoneSelector();
+  
+  // Set up refresh button
+  setupRefreshButton();
+  
   await renderCurrent();
   await renderForecast();
   

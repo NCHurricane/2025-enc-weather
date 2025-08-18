@@ -2,6 +2,55 @@
 /* COUNTY PAGE STYLES */
 /*--------------------*/
 
+/* Zone Selector Styles */
+.zone-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.zone-btn {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+} 
+
+.zone-btn:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.zone-btn.active {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+/* Mobile Zone Selector */
+@media (max-width: 768px) {
+  .zone-selector {
+    gap: 8px;
+    margin: 15px 0;
+  }
+  
+  .zone-btn {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+} */
+
 /* CURRENT CONDITIONS */
 .current-container {
   border-radius: 8px;

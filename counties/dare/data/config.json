@@ -1,0 +1,108 @@
+{
+  "county": {
+    "name": "Dare",
+    "state": "NC",
+    "timezone": "America/New_York",
+    "multiZone": true,
+    "defaultZone": "mainland"
+  },
+  "forecastOffice": {
+    "id": "MHX",
+    "name": "Newport/Morehead City"
+  },
+  "zones": {
+    "mainland": {
+      "displayName": "Mainland Dare",
+      "forecast": "NCZ047",
+      "lat": 35.9082,
+      "lon": -75.6757,
+      "city": "Manteo",
+      "stations": [
+        {
+          "id": "KMQI",
+          "name": "Dare County Regional Airport",
+          "friendlyName": "Dare County Airport",
+          "url": "https://forecast.weather.gov/data/obhistory/KMQI.html"
+        },
+        {
+          "id": "STCN7",
+          "name": "Dare Bomb Range",
+          "friendlyName": "Dare Bomb Range",
+          "url": "https://forecast.weather.gov/data/obhistory/STCN7.html"
+        },
+        {
+          "id": "TT653",
+          "name": "DBR Soil Monitor",
+          "friendlyName": "Stumpy Point",
+          "url": "https://forecast.weather.gov/data/obhistory/TT653.html"
+        },
+        {
+          "id": "K2DP",
+          "name": "Dare County Gunnery Range",
+          "friendlyName": "Dare County Gunnery Range",
+          "url": "https://forecast.weather.gov/data/obhistory/K2DP.html"
+        }
+      ]
+    },
+    "northern": {
+      "displayName": "Northern Beaches",
+      "forecast": "NCZ203",
+      "lat": 36.0646,
+      "lon": -75.7057,
+      "city": "Duck",
+      "stations": [
+        {
+          "id": "KFFA",
+          "name": "First Flight Airport",
+          "friendlyName": "Kill Devil Hills Airport",
+          "url": "https://forecast.weather.gov/data/obhistory/KFFA.html"
+        },
+        {
+          "id": "F6624",
+          "name": "F6624 CWOP - Southern Shore",
+          "friendlyName": "Southern Shore",
+          "url": "https://forecast.weather.gov/data/obhistory/F6624.html"
+        },
+        {
+          "id": "DUKN7",
+          "name": "NOAA - Duck",
+          "friendlyName": "Duck",
+          "url": "https://forecast.weather.gov/data/obhistory/DUKN7.html"
+        },
+        {
+          "id": "1046W",
+          "name": "Corolla Fire Station",
+          "friendlyName": "Corolla",
+          "url": "https://forecast.weather.gov/data/obhistory/1046W.html"
+        }
+      ]
+    },
+    "hatteras": {
+      "displayName": "Hatteras",
+      "forecast": "NCZ205",
+      "lat": 35.2195,
+      "lon": -75.6903,
+      "city": "Hatteras",
+      "stations": [
+        {
+          "id": "KHSE",
+          "name": "Billy Mitchell Airport",
+          "friendlyName": "Hatteras Airport",
+          "url": "https://forecast.weather.gov/data/obhistory/KHSE.html"
+        },
+        {
+          "id": "TT700",
+          "name": "TT700 - Buxton",
+          "friendlyName": "Buxton",
+          "url": "https://forecast.weather.gov/data/obhistory/TT700.html"
+        },
+        {
+          "id": "HCGN7",
+          "name": "USCG Station Hatteras",
+          "friendlyName": "USCG Hatteras",
+          "url": "https://forecast.weather.gov/data/obhistory/HCGN7.html"
+        }
+      ]
+    }
+  }
+}

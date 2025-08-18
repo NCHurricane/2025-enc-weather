@@ -1,4 +1,4 @@
-// counties/Bertie/js/countyApp.js
+// counties/[county]/js/countyApp.js
 const warningColors = {
     "Tsunami Warning": "#FD6347",
     "Tornado Warning": "#FF0000",
