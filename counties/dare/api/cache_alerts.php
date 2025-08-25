@@ -33,6 +33,30 @@ function atomic_write_json($filepath, $data) {
     return false;
 }
 
+function formatNwsDescription($text) {
+    $text = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $text = preg_replace("/\r?\n/", "<br>", $text);
+
+    $patterns = [
+        '/\* WHAT\.\.\./i',
+        '/\* WHERE\.\.\./i',
+        '/\* WHEN\.\.\./i',
+        '/\* IMPACTS?\.\.\./i'
+    ];
+    $replacements = [
+        '<strong>WHAT...</strong>',
+        '<strong>WHERE...</strong>',
+        '<strong>WHEN...</strong>',
+        '<strong>IMPACTS...</strong>'
+    ];
+    $text = preg_replace($patterns, $replacements, $text);
+
+    $text = preg_replace('/(<br>\s*){2,}/', '</p><p>', $text);
+    $text = '<p>' . $text . '</p>';
+
+    return $text;
+}
+
 /**
  * Fetch alerts for specific zone from NWS API
  */
@@ -81,6 +105,14 @@ function isAlertActive($alert) {
 function processAlert($alertFeature) {
     $props = $alertFeature['properties'] ?? [];
     
+    // Get raw description and format it
+    $rawDescription = $props['description'] ?? null;
+    $formattedDescription = $rawDescription ? formatNwsDescription($rawDescription) : null;
+    
+    // Get raw instruction and format it if present
+    $rawInstruction = $props['instruction'] ?? null;
+    $formattedInstruction = $rawInstruction ? formatNwsDescription($rawInstruction) : null;
+    
     return [
         'id' => $alertFeature['id'] ?? null,
         'type' => $props['event'] ?? null,
@@ -88,11 +120,11 @@ function processAlert($alertFeature) {
         'urgency' => $props['urgency'] ?? null,
         'status' => $props['status'] ?? null,
         'headline' => $props['headline'] ?? null,
-        'description' => $props['description'] ?? null,
+        'description' => $formattedDescription,        // Now formatted
+        'instruction' => $formattedInstruction,        // Also format instructions
         'onset' => $props['onset'] ?? null,
         'expires' => $props['expires'] ?? null,
-        'areaDesc' => $props['areaDesc'] ?? null,
-        'instruction' => $props['instruction'] ?? null
+        'areaDesc' => $props['areaDesc'] ?? null
     ];
 }
 

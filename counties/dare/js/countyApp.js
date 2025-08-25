@@ -2,117 +2,117 @@
 // Based on Bertie's functionality + zone switching capabilities
 
 const warningColors = {
-    "Tsunami Warning": "#FD6347",
-    "Tornado Warning": "#FF0000",
-    "Extreme Wind Warning": "#FF8C00",
-    "Severe Thunderstorm Warning": "#FFA500",
-    "Flash Flood Warning": "#8B0000",
-    "Flash Flood Statement": "#8B0000",
-    "Severe Weather Statement": "#00FFFF",
-    "Shelter In Place Warning": "#FA8072",
-    "Evacuation Immediate": "#7FFF00",
-    "Civil Danger Warning": "#FFB6C1",
-    "Nuclear Power Plant Warning": "#4B0082",
-    "Radiological Hazard Warning": "#4B0082",
-    "Hazardous Materials Warning": "#4B0082",
-    "Fire Warning": "#A0522D",
-    "Civil Emergency Message": "#FFB6C1",
-    "Law Enforcement Warning": "#C0C0C0",
-    "Storm Surge Warning": "#B524F7",
-    "Hurricane Force Wind Warning": "#CD5C5C",
-    "Hurricane Warning": "#DC143C",
-    "Typhoon Warning": "#DC143C",
-    "Special Marine Warning": "#FFA500",
-    "Blizzard Warning": "#FF4500",
-    "Snow Squall Warning": "#C71585",
-    "Ice Storm Warning": "#8B008B",
-    "Heavy Freezing Spray Warning": "#00BFFF",
-    "Winter Storm Warning": "#FF69B4",
-    "Lake Effect Snow Warning": "#008B8B",
-    "Dust Storm Warning": "#FFE4C4",
-    "Blowing Dust Warning": "#FFE4C4",
-    "High Wind Warning": "#DAA520",
-    "Tropical Storm Warning": "#B22222",
-    "Storm Warning": "#9400D3",
-    "Tsunami Advisory": "#D2691E",
-    "Tsunami Watch": "#FF00FF",
-    "Avalanche Warning": "#1E90FF",
-    "Earthquake Warning": "#8B4513",
-    "Volcano Warning": "#2F4F4F",
-    "Ashfall Warning": "#A9A9A9",
-    "Flood Warning": "#00FF00",
-    "Coastal Flood Warning": "#228B22",
-    "Lakeshore Flood Warning": "#228B22",
-    "Ashfall Advisory": "#696969",
-    "High Surf Warning": "#228B22",
-    "Extreme Heat Warning": "#C71585",
-    "Tornado Watch": "#FFFF00",
-    "Severe Thunderstorm Watch": "#DB7093",
-    "Flash Flood Watch": "#2E8B57",
-    "Gale Warning": "#DDA0DD",
-    "Flood Statement": "#00FF00",
-    "Extreme Cold Warning": "#0000FF",
-    "Freeze Warning": "#483D8B",
-    "Red Flag Warning": "#FF1493",
-    "Storm Surge Watch": "#DB7FF7",
-    "Hurricane Watch": "#FF00FF",
-    "Hurricane Force Wind Watch": "#9932CC",
-    "Typhoon Watch": "#FF00FF",
-    "Tropical Storm Watch": "#F08080",
-    "Storm Watch": "#FFE4B5",
-    "Tropical Cyclone Local Statement": "#FFE4B5",
-    "Winter Weather Advisory": "#7B68EE",
-    "Avalanche Advisory": "#CD853F",
-    "Cold Weather Advisory": "#AFEEEE",
-    "Heat Advisory": "#FF7F50",
-    "Flood Advisory": "#00FF7F",
-    "Coastal Flood Advisory": "#7CFC00",
-    "Lakeshore Flood Advisory": "#7CFC00",
-    "High Surf Advisory": "#BA55D3",
-    "Dense Fog Advisory": "#708090",
-    "Dense Smoke Advisory": "#F0E68C",
-    "Small Craft Advisory": "#D8BFD8",
-    "Brisk Wind Advisory": "#D8BFD8",
-    "Hazardous Seas Warning": "#D8BFD8",
-    "Dust Advisory": "#BDB76B",
-    "Blowing Dust Advisory": "#BDB76B",
-    "Lake Wind Advisory": "#D2B48C",
-    "Wind Advisory": "#D2B48C",
-    "Frost Advisory": "#6495ED",
-    "Freezing Fog Advisory": "#008080",
-    "Freezing Spray Advisory": "#00BFFF",
-    "Low Water Advisory": "#A52A2A",
-    "Local Area Emergency": "#C0C0C0",
-    "Winter Storm Watch": "#4682B4",
-    "Rip Current Statement": "#40E0D0",
-    "Beach Hazards Statement": "#40E0D0",
-    "Gale Watch": "#FFC0CB",
-    "Avalanche Watch": "#F4A460",
-    "Hazardous Seas Watch": "#483D8B",
-    "Heavy Freezing Spray Watch": "#BC8F8F",
-    "Flood Watch": "#2E8B57",
-    "Coastal Flood Watch": "#66CDAA",
-    "Lakeshore Flood Watch": "#66CDAA",
-    "High Wind Watch": "#B8860B",
-    "Extreme Heat Watch": "#800000",
-    "Extreme Cold Watch": "#5F9EA0",
-    "Freeze Watch": "#00FFFF",
-    "Fire Weather Watch": "#FFDEAD",
-    "Extreme Fire Danger": "#E9967A",
-    "911 Telephone Outage": "#C0C0C0",
-    "Coastal Flood Statement": "#6B8E23",
-    "Lakeshore Flood Statement": "#6B8E23",
-    "Special Weather Statement": "#FFE4B5",
-    "Marine Weather Statement": "#FFDAB9",
-    "Air Quality Alert": "#808080",
-    "Air Stagnation Advisory": "#808080",
-    "Hazardous Weather Outlook": "#EEE8AA",
-    "Hydrologic Outlook": "#90EE90",
-    "Short Term Forecast": "#98FB98",
-    "Administrative Message": "#C0C0C0",
-    "Test": "#F0FFFF",
-    "Child Abduction Emergency": "#FFFFFF",
-    "Blue Alert": "#FFFFFF"
+  "Tsunami Warning": "#FD6347",
+  "Tornado Warning": "#FF0000",
+  "Extreme Wind Warning": "#FF8C00",
+  "Severe Thunderstorm Warning": "#FFA500",
+  "Flash Flood Warning": "#8B0000",
+  "Flash Flood Statement": "#8B0000",
+  "Severe Weather Statement": "#00FFFF",
+  "Shelter In Place Warning": "#FA8072",
+  "Evacuation Immediate": "#7FFF00",
+  "Civil Danger Warning": "#FFB6C1",
+  "Nuclear Power Plant Warning": "#4B0082",
+  "Radiological Hazard Warning": "#4B0082",
+  "Hazardous Materials Warning": "#4B0082",
+  "Fire Warning": "#A0522D",
+  "Civil Emergency Message": "#FFB6C1",
+  "Law Enforcement Warning": "#C0C0C0",
+  "Storm Surge Warning": "#B524F7",
+  "Hurricane Force Wind Warning": "#CD5C5C",
+  "Hurricane Warning": "#DC143C",
+  "Typhoon Warning": "#DC143C",
+  "Special Marine Warning": "#FFA500",
+  "Blizzard Warning": "#FF4500",
+  "Snow Squall Warning": "#C71585",
+  "Ice Storm Warning": "#8B008B",
+  "Heavy Freezing Spray Warning": "#00BFFF",
+  "Winter Storm Warning": "#FF69B4",
+  "Lake Effect Snow Warning": "#008B8B",
+  "Dust Storm Warning": "#FFE4C4",
+  "Blowing Dust Warning": "#FFE4C4",
+  "High Wind Warning": "#DAA520",
+  "Tropical Storm Warning": "#B22222",
+  "Storm Warning": "#9400D3",
+  "Tsunami Advisory": "#D2691E",
+  "Tsunami Watch": "#FF00FF",
+  "Avalanche Warning": "#1E90FF",
+  "Earthquake Warning": "#8B4513",
+  "Volcano Warning": "#2F4F4F",
+  "Ashfall Warning": "#A9A9A9",
+  "Flood Warning": "#00FF00",
+  "Coastal Flood Warning": "#228B22",
+  "Lakeshore Flood Warning": "#228B22",
+  "Ashfall Advisory": "#696969",
+  "High Surf Warning": "#228B22",
+  "Extreme Heat Warning": "#C71585",
+  "Tornado Watch": "#FFFF00",
+  "Severe Thunderstorm Watch": "#DB7093",
+  "Flash Flood Watch": "#2E8B57",
+  "Gale Warning": "#DDA0DD",
+  "Flood Statement": "#00FF00",
+  "Extreme Cold Warning": "#0000FF",
+  "Freeze Warning": "#483D8B",
+  "Red Flag Warning": "#FF1493",
+  "Storm Surge Watch": "#DB7FF7",
+  "Hurricane Watch": "#FF00FF",
+  "Hurricane Force Wind Watch": "#9932CC",
+  "Typhoon Watch": "#FF00FF",
+  "Tropical Storm Watch": "#F08080",
+  "Storm Watch": "#FFE4B5",
+  "Tropical Cyclone Local Statement": "#FFE4B5",
+  "Winter Weather Advisory": "#7B68EE",
+  "Avalanche Advisory": "#CD853F",
+  "Cold Weather Advisory": "#AFEEEE",
+  "Heat Advisory": "#FF7F50",
+  "Flood Advisory": "#00FF7F",
+  "Coastal Flood Advisory": "#7CFC00",
+  "Lakeshore Flood Advisory": "#7CFC00",
+  "High Surf Advisory": "#BA55D3",
+  "Dense Fog Advisory": "#708090",
+  "Dense Smoke Advisory": "#F0E68C",
+  "Small Craft Advisory": "#D8BFD8",
+  "Brisk Wind Advisory": "#D8BFD8",
+  "Hazardous Seas Warning": "#D8BFD8",
+  "Dust Advisory": "#BDB76B",
+  "Blowing Dust Advisory": "#BDB76B",
+  "Lake Wind Advisory": "#D2B48C",
+  "Wind Advisory": "#D2B48C",
+  "Frost Advisory": "#6495ED",
+  "Freezing Fog Advisory": "#008080",
+  "Freezing Spray Advisory": "#00BFFF",
+  "Low Water Advisory": "#A52A2A",
+  "Local Area Emergency": "#C0C0C0",
+  "Winter Storm Watch": "#4682B4",
+  "Rip Current Statement": "#40E0D0",
+  "Beach Hazards Statement": "#40E0D0",
+  "Gale Watch": "#FFC0CB",
+  "Avalanche Watch": "#F4A460",
+  "Hazardous Seas Watch": "#483D8B",
+  "Heavy Freezing Spray Watch": "#BC8F8F",
+  "Flood Watch": "#2E8B57",
+  "Coastal Flood Watch": "#66CDAA",
+  "Lakeshore Flood Watch": "#66CDAA",
+  "High Wind Watch": "#B8860B",
+  "Extreme Heat Watch": "#800000",
+  "Extreme Cold Watch": "#5F9EA0",
+  "Freeze Watch": "#00FFFF",
+  "Fire Weather Watch": "#FFDEAD",
+  "Extreme Fire Danger": "#E9967A",
+  "911 Telephone Outage": "#C0C0C0",
+  "Coastal Flood Statement": "#6B8E23",
+  "Lakeshore Flood Statement": "#6B8E23",
+  "Special Weather Statement": "#FFE4B5",
+  "Marine Weather Statement": "#FFDAB9",
+  "Air Quality Alert": "#808080",
+  "Air Stagnation Advisory": "#808080",
+  "Hazardous Weather Outlook": "#EEE8AA",
+  "Hydrologic Outlook": "#90EE90",
+  "Short Term Forecast": "#98FB98",
+  "Administrative Message": "#C0C0C0",
+  Test: "#F0FFFF",
+  "Child Abduction Emergency": "#FFFFFF",
+  "Blue Alert": "#FFFFFF",
 };
 
 // Export priority mapping
@@ -225,9 +225,9 @@ const warningPriorities = {
   "Hydrologic Outlook": 106,
   "Short Term Forecast": 107,
   "Administrative Message": 108,
-  "Test": 109,
+  Test: 109,
   "Child Abduction Emergency": 110,
-  "Blue Alert": 111
+  "Blue Alert": 111,
 };
 
 import {
@@ -238,9 +238,9 @@ import {
   getAlerts,
   getAFD,
   getCurrentZone,
-  switchZone
+  switchZone,
 } from "./countyData.js";
-import { initMeteogram } from './meteogram.js';
+import { initMeteogram } from "./meteogram.js";
 
 // Station URLs lookup (config-driven)
 let stationUrls = {};
@@ -265,7 +265,6 @@ const SEL = {
   alerts: { container: "#alerts" },
   afd: { container: "#afd-content" },
   zoneSelector: "#zone-selector",
-  refreshButton: "#global-refresh"
 };
 
 function $(sel) {
@@ -323,16 +322,16 @@ function ensureWeatherIcon() {
 // Load station URLs from config (zone-aware)
 async function loadStationUrls() {
   try {
-    const configResponse = await fetch('./data/config.json');
+    const configResponse = await fetch("./data/config.json");
     if (!configResponse.ok) {
       throw new Error(`Failed to load config: ${configResponse.status}`);
     }
-    
+
     const config = await configResponse.json();
-    
+
     // Handle both single-zone and multi-zone configs
     let allStations = [];
-    
+
     if (config.county?.multiZone) {
       // Multi-zone: collect stations from all zones
       const zones = config.zones || {};
@@ -344,17 +343,21 @@ async function loadStationUrls() {
       // Single-zone: use stations directly
       allStations = config.stations || [];
     }
-    
+
     // Create lookup object for station URLs
-    allStations.forEach(station => {
+    allStations.forEach((station) => {
       if (station.id && station.url) {
         stationUrls[station.id] = station.url;
       }
     });
-    
-    console.log('Loaded station URLs for', Object.keys(stationUrls).length, 'stations');
+
+    console.log(
+      "Loaded station URLs for",
+      Object.keys(stationUrls).length,
+      "stations"
+    );
   } catch (error) {
-    console.warn('Failed to load station URLs:', error);
+    console.warn("Failed to load station URLs:", error);
     // Continue without URLs - chips will use "#" fallback
   }
 }
@@ -371,40 +374,42 @@ function setupZoneSelector() {
     console.log("[countyApp] No zone selector found - single zone county");
     return;
   }
-  
-  const zoneButtons = zoneSelector.querySelectorAll('.zone-btn');
+
+  const zoneButtons = zoneSelector.querySelectorAll(".zone-btn");
   if (zoneButtons.length === 0) {
     console.log("[countyApp] No zone buttons found");
     return;
   }
-  
-  console.log(`[countyApp] Setting up zone selector with ${zoneButtons.length} zones`);
-  
+
+  console.log(
+    `[countyApp] Setting up zone selector with ${zoneButtons.length} zones`
+  );
+
   // Add click handlers
-  zoneButtons.forEach(button => {
-    button.addEventListener('click', async (e) => {
+  zoneButtons.forEach((button) => {
+    button.addEventListener("click", async (e) => {
       const selectedZone = e.target.dataset.zone;
-      
+
       if (!selectedZone) {
         console.error("[countyApp] No zone data on button");
         return;
       }
-      
+
       console.log(`[countyApp] Zone button clicked: ${selectedZone}`);
-      
+
       // Update active button
-      zoneButtons.forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
-      
+      zoneButtons.forEach((btn) => btn.classList.remove("active"));
+      e.target.classList.add("active");
+
       // Switch to new zone
       const success = switchZone(selectedZone);
       if (success) {
         // Show loading state
         showLoading();
-        
+
         // Reload all data for new zone
         await loadAll();
-        
+
         // Hide loading state
         hideLoading();
       } else {
@@ -412,15 +417,15 @@ function setupZoneSelector() {
       }
     });
   });
-  
+
   // Set initial active button based on current zone
   const currentZone = getCurrentZone();
   if (currentZone) {
-    zoneButtons.forEach(btn => {
+    zoneButtons.forEach((btn) => {
       if (btn.dataset.zone === currentZone.id) {
-        btn.classList.add('active');
+        btn.classList.add("active");
       } else {
-        btn.classList.remove('active');
+        btn.classList.remove("active");
       }
     });
   }
@@ -428,22 +433,22 @@ function setupZoneSelector() {
 
 // NEW: Show/hide loading state for zone switching
 function showLoading() {
-  document.body.classList.add('loading');
-  const zoneButtons = document.querySelectorAll('.zone-btn');
-  zoneButtons.forEach(btn => btn.disabled = true);
+  document.body.classList.add("loading");
+  const zoneButtons = document.querySelectorAll(".zone-btn");
+  zoneButtons.forEach((btn) => (btn.disabled = true));
 }
 
 function hideLoading() {
-  document.body.classList.remove('loading');
-  const zoneButtons = document.querySelectorAll('.zone-btn');
-  zoneButtons.forEach(btn => btn.disabled = false);
+  document.body.classList.remove("loading");
+  const zoneButtons = document.querySelectorAll(".zone-btn");
+  zoneButtons.forEach((btn) => (btn.disabled = false));
 }
 
 // NEW: Set up refresh button
 function setupRefreshButton() {
   const refreshBtn = $(SEL.refreshButton);
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', async () => {
+    refreshBtn.addEventListener("click", async () => {
       console.log("[countyApp] Manual refresh triggered");
       showLoading();
       await loadAll();
@@ -541,7 +546,7 @@ async function renderCurrent() {
           const tv =
             s.temperature == null ? "N/A" : `${Math.round(s.temperature)}°F`;
           const url = getStationUrl(s.id);
-          
+
           // Only make clickable if we have a valid URL
           if (url === "#") {
             return `<div class="station-chip">
@@ -568,87 +573,107 @@ async function renderCurrent() {
 }
 
 // Enhanced renderForecast function for countyApp.js
-async function renderForecast(){
-  try{
+async function renderForecast() {
+  try {
     const fc = await getForecast();
     const periods = Array.isArray(fc?.periods) ? fc.periods : [];
-    
-    if(!periods.length){ 
-      setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>'); 
-      setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
-      return; 
+
+    if (!periods.length) {
+      setHTML(
+        SEL.forecast.container,
+        "<p>Forecast temporarily unavailable.</p>"
+      );
+      setHTML(
+        SEL.forecast.detailed,
+        '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
+      );
+      return;
     }
 
     // Enhanced forecast cards with color-coding and better styling
-    const cards = periods.map(p => {
-      const temp = p?.temperature;
-      const tempUnit = p?.temperatureUnit || 'F';
-      const isDaytime = p?.isDaytime;
-      
-      // Color-code temperature based on day/night
-      const tempColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
-      
-      // Format temperature with color-coded span
-      const tempDisplay = temp != null 
-        ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
-        : `<span class="value">N/A</span>`;
-      
-      // Handle missing data gracefully
-      const dayName = p?.name || 'N/A';
-      const shortForecast = p?.shortForecast || 'N/A';
-      const iconSrc = p?.icon || '';
-      const iconAlt = shortForecast;
-      
-      return `
+    const cards = periods
+      .map((p) => {
+        const temp = p?.temperature;
+        const tempUnit = p?.temperatureUnit || "F";
+        const isDaytime = p?.isDaytime;
+
+        // Color-code temperature based on day/night
+        const tempColor = isDaytime ? "#d50000" : "#1976d2"; // Red for day, blue for night
+
+        // Format temperature with color-coded span
+        const tempDisplay =
+          temp != null
+            ? `<span class="value" style="color: ${tempColor};">${Math.round(
+                temp
+              )}°</span>`
+            : `<span class="value">N/A</span>`;
+
+        // Handle missing data gracefully
+        const dayName = p?.name || "N/A";
+        const shortForecast = p?.shortForecast || "N/A";
+        const iconSrc = p?.icon || "";
+        const iconAlt = shortForecast;
+
+        return `
         <div class="forecast-item">
           <div class="forecast-cell forecast-day">${dayName}</div>
           <div class="forecast-cell forecast-icon">
-            ${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}">` : ''}
+            ${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}">` : ""}
           </div>
           <div class="forecast-cell forecast-temp">${tempDisplay}</div>
         </div>
       `;
-    }).join('');
-    
+      })
+      .join("");
+
     setHTML(SEL.forecast.container, cards);
-    
+
     // Also render the detailed forecast
     await renderDetailedForecast();
-    
-  } catch(e){
-    console.warn('[countyApp] forecast load failed', e);
-    setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>');
-    setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
+  } catch (e) {
+    console.warn("[countyApp] forecast load failed", e);
+    setHTML(SEL.forecast.container, "<p>Forecast temporarily unavailable.</p>");
+    setHTML(
+      SEL.forecast.detailed,
+      '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
+    );
   }
 }
 
-async function renderDetailedForecast(){
-  try{
+async function renderDetailedForecast() {
+  try {
     const fc = await getForecast();
     const periods = Array.isArray(fc?.periods) ? fc.periods : [];
-    
-    if(!periods.length){ 
-      setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'); 
-      return; 
+
+    if (!periods.length) {
+      setHTML(
+        SEL.forecast.detailed,
+        '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
+      );
+      return;
     }
 
     // Enhanced detailed forecast with rich layout
-    const detailedItems = periods.map(p => {
-      const isDaytime = p?.isDaytime;
-      
-      // Color-code day name based on day/night
-      const dayColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
-      
-      // Handle missing data gracefully
-      const dayName = p?.name || 'N/A';
-      const detailedText = p?.detailedForecast || p?.shortForecast || 'No forecast details available.';
-      const iconSrc = p?.icon || '';
-      const iconAlt = p?.shortForecast || 'Weather icon';
-      
-      // Format day name with color-coded span
-      const dayDisplay = `<span class="value" style="color: ${dayColor};">${dayName}</span>`;
-      
-      return `
+    const detailedItems = periods
+      .map((p) => {
+        const isDaytime = p?.isDaytime;
+
+        // Color-code day name based on day/night
+        const dayColor = isDaytime ? "#d50000" : "#1976d2"; // Red for day, blue for night
+
+        // Handle missing data gracefully
+        const dayName = p?.name || "N/A";
+        const detailedText =
+          p?.detailedForecast ||
+          p?.shortForecast ||
+          "No forecast details available.";
+        const iconSrc = p?.icon || "";
+        const iconAlt = p?.shortForecast || "Weather icon";
+
+        // Format day name with color-coded span
+        const dayDisplay = `<span class="value" style="color: ${dayColor};">${dayName}</span>`;
+
+        return `
         <div class="detailed-item">
           <div class="detailed-row">
             <div class="detailed-col-day">
@@ -656,7 +681,11 @@ async function renderDetailedForecast(){
             </div>
             <div class="detailed-col-icon">
               <div class="detailed-icon">
-                ${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}">` : '<span class="value">No Icon</span>'}
+                ${
+                  iconSrc
+                    ? `<img src="${iconSrc}" alt="${iconAlt}">`
+                    : '<span class="value">No Icon</span>'
+                }
               </div>
             </div>
             <div class="detailed-col-forecast">
@@ -665,15 +694,95 @@ async function renderDetailedForecast(){
           </div>
         </div>
       `;
-    }).join('');
-    
+      })
+      .join("");
+
     setHTML(SEL.forecast.detailed, detailedItems);
-    
-  } catch(e){
-    console.warn('[countyApp] detailed forecast load failed', e);
-    setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
+  } catch (e) {
+    console.warn("[countyApp] detailed forecast load failed", e);
+    setHTML(
+      SEL.forecast.detailed,
+      '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
+    );
   }
 }
+
+// async function renderAlerts() {
+//   try {
+//     const a = await getAlerts();
+//     if (!a || a.status !== "ok") {
+//       setHTML(SEL.alerts.container, "");
+//       return;
+//     }
+//     let list = Array.isArray(a.list) ? a.list : [];
+
+//     if (list.length === 0) {
+//       setHTML(
+//         SEL.alerts.container,
+//         `
+//         <div class="alert" style="background-color: #dc3545;">
+//           <div class="alert-none">
+//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
+//             <b>NO ACTIVE ALERTS</b>
+//           </div>
+//         </div>
+//       `
+//       );
+//       return;
+//     }
+
+//     // Sort alerts by priority (lower number = higher priority = shows first)
+//     const sortedAlerts = list.sort((a, b) => {
+//       const eventA = a.headline || a.event || a.type || "Unknown";
+//       const eventB = b.headline || b.event || b.type || "Unknown";
+//       const priorityA = warningPriorities[eventA] || 999;
+//       const priorityB = warningPriorities[eventB] || 999;
+//       return priorityA - priorityB;
+//     });
+
+//     const alertsHTML = sortedAlerts
+//       .map((alert, index) => {
+//         const eventName =
+//           alert.type || alert.expires || "Alert";
+//         const description = alert.description || alert.summary || "";
+
+//         // Get individual color for this alert type
+//         const alertColor = warningColors[eventName] || "#dc3545";
+
+//         // Add severity indicator (border thickness based on priority)
+//         const priority = warningPriorities[eventName] || 999;
+//         const borderWidth =
+//           priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
+
+//         return `
+//         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor};">
+//           <input type="checkbox" id="alert-${index}" class="alert-toggle">
+//           <label for="alert-${index}" class="alert-title">
+//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
+//             ${eventName}
+//           </label>
+//           <div class="alert-details">
+//             <p>${description}</p>
+//           </div>
+//         </div>
+//       `;
+//       })
+//       .join("");
+
+//     setHTML(SEL.alerts.container, alertsHTML);
+
+//     // Log alert priority order for debugging
+//     console.log(
+//       "Alerts sorted by priority:",
+//       sortedAlerts.map((a) => ({
+//         event: a.event || a.headline,
+//         priority: warningPriorities[a.event || a.headline] || 999,
+//       }))
+//     );
+//   } catch (e) {
+//     console.warn("[countyApp] alerts load failed", e);
+//   }
+// }
 
 async function renderAlerts() {
   try {
@@ -683,62 +792,72 @@ async function renderAlerts() {
       return;
     }
     let list = Array.isArray(a.list) ? a.list : [];
-    
+
     if (list.length === 0) {
-      setHTML(SEL.alerts.container, `
+      setHTML(
+        SEL.alerts.container,
+        `
         <div class="alert" style="background-color: #dc3545;">
           <div class="alert-none">
             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
             <b>NO ACTIVE ALERTS</b>
           </div>
         </div>
-      `);
+      `
+      );
       return;
     }
-    
+
     // Sort alerts by priority (lower number = higher priority = shows first)
     const sortedAlerts = list.sort((a, b) => {
-      const eventA = a.headline || a.event || a.type || "Unknown";
-      const eventB = b.headline || b.event || b.type || "Unknown";
+      const eventA = a.event || a.type || a.headline || "Unknown";
+      const eventB = b.event || b.type || b.headline || "Unknown";
       const priorityA = warningPriorities[eventA] || 999;
       const priorityB = warningPriorities[eventB] || 999;
       return priorityA - priorityB;
     });
-    
-    const alertsHTML = sortedAlerts.map((alert, index) => {
-      const eventName = alert.headline || alert.event || alert.type || "Alert";
-      const description = alert.description || alert.summary || "";
-      
-      // Get individual color for this alert type
-      const alertColor = warningColors[eventName] || "#dc3545";
-      
-      // Add severity indicator (border thickness based on priority)
-      const priority = warningPriorities[eventName] || 999;
-      const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
-      
-      return `
-        <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor};">
+
+    const alertsHTML = sortedAlerts
+      .map((alert, index) => {
+        // Use canonical NWS name for everything: title, color, priority
+        const eventName = alert.event || alert.type || alert.headline || "Alert";
+        const description = alert.description || alert.summary || "";
+
+        // Color based on event name
+        const alertColor = warningColors[eventName] || "#dc3545";
+
+        // Border weight reflects relative priority
+        const priority = warningPriorities[eventName] || 999;
+        const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
+
+        // Inline title shows expires when present
+        const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
+
+        return `
+        <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
           <input type="checkbox" id="alert-${index}" class="alert-toggle">
           <label for="alert-${index}" class="alert-title">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            ${eventName}
-            <span class="priority-badge" style="font-size: 0.7em; opacity: 0.8;">[Priority: ${priority}]</span>
+            
+            ${eventName}${expiresInline}
           </label>
           <div class="alert-details">
             <p>${description}</p>
           </div>
         </div>
       `;
-    }).join("");
-    
+      })
+      .join("");
+
     setHTML(SEL.alerts.container, alertsHTML);
-    
-    // Log alert priority order for debugging
-    console.log("Alerts sorted by priority:", sortedAlerts.map(a => ({
-      event: a.event || a.headline,
-      priority: warningPriorities[a.event || a.headline] || 999
-    })));
-    
+
+    // Debug: confirm sort keys and priorities line up with what users see
+    console.log(
+      "Alerts sorted by priority:",
+      sortedAlerts.map((a) => ({
+        event: a.event || a.type || a.headline,
+        priority: warningPriorities[a.event || a.type || a.headline] || 999,
+      }))
+    );
   } catch (e) {
     console.warn("[countyApp] alerts load failed", e);
   }
@@ -767,29 +886,29 @@ async function loadAll() {
     await init();
     await loadStationUrls(); // Load station URLs from config
   } catch (e) {
-    console.warn('[countyApp] init failed (non-fatal)', e);
+    console.warn("[countyApp] init failed (non-fatal)", e);
   }
-  
+
   // Set up zone selector (must be after init to get current zone)
   setupZoneSelector();
-  
+
   // Set up refresh button
   setupRefreshButton();
-  
+
   await renderCurrent();
   await renderForecast();
-  
+
   try {
     await getHourlyData();
-    
+
     // Initialize meteogram if container exists (no parameters needed)
-    if (document.getElementById('meteogram-chart-container')) {
+    if (document.getElementById("meteogram-chart-container")) {
       await initMeteogram();
     }
   } catch (e) {
-    console.warn('[countyApp] hourly/meteogram load failed (non-fatal)', e);
+    console.warn("[countyApp] hourly/meteogram load failed (non-fatal)", e);
   }
-  
+
   await renderAlerts();
   await renderAFD();
 }

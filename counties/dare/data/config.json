@@ -22,25 +22,25 @@
           "id": "KMQI",
           "name": "Dare County Regional Airport",
           "friendlyName": "Dare County Airport",
-          "url": "https://forecast.weather.gov/data/obhistory/KMQI.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=KMQI"
         },
         {
           "id": "STCN7",
           "name": "Dare Bomb Range",
           "friendlyName": "Dare Bomb Range",
-          "url": "https://forecast.weather.gov/data/obhistory/STCN7.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=STCN7"
         },
         {
           "id": "TT653",
           "name": "DBR Soil Monitor",
           "friendlyName": "Stumpy Point",
-          "url": "https://forecast.weather.gov/data/obhistory/TT653.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=TT653"
         },
         {
           "id": "K2DP",
           "name": "Dare County Gunnery Range",
           "friendlyName": "Dare County Gunnery Range",
-          "url": "https://forecast.weather.gov/data/obhistory/K2DP.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=K2DP"
         }
       ]
     },
@@ -55,25 +55,25 @@
           "id": "KFFA",
           "name": "First Flight Airport",
           "friendlyName": "Kill Devil Hills Airport",
-          "url": "https://forecast.weather.gov/data/obhistory/KFFA.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=KFFA"
         },
         {
           "id": "F6624",
           "name": "F6624 CWOP - Southern Shore",
           "friendlyName": "Southern Shore",
-          "url": "https://forecast.weather.gov/data/obhistory/F6624.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=F6624"
         },
         {
           "id": "DUKN7",
           "name": "NOAA - Duck",
           "friendlyName": "Duck",
-          "url": "https://forecast.weather.gov/data/obhistory/DUKN7.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=DUKN7"
         },
         {
           "id": "1046W",
           "name": "Corolla Fire Station",
           "friendlyName": "Corolla",
-          "url": "https://forecast.weather.gov/data/obhistory/1046W.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=1046W"
         }
       ]
     },
@@ -88,19 +88,19 @@
           "id": "KHSE",
           "name": "Billy Mitchell Airport",
           "friendlyName": "Hatteras Airport",
-          "url": "https://forecast.weather.gov/data/obhistory/KHSE.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=KHSE"
         },
         {
           "id": "TT700",
           "name": "TT700 - Buxton",
           "friendlyName": "Buxton",
-          "url": "https://forecast.weather.gov/data/obhistory/TT700.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=TT700"
         },
         {
           "id": "HCGN7",
           "name": "USCG Station Hatteras",
           "friendlyName": "USCG Hatteras",
-          "url": "https://forecast.weather.gov/data/obhistory/HCGN7.html"
+          "url": "https://www.weather.gov/wrh/timeseries?site=HCGN7"
         }
       ]
     }

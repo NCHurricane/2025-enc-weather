@@ -1,248 +1,197 @@
 <?php
-// cache_alerts.php - Multi-zone version for Dare County
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// counties/dare/api/cache_afd.php
+declare(strict_types=1);
 
-$dataDir = '../data';
+// AFD is county-wide (not zone-specific) and fetches from forecast office
+// For Dare County: uses MHX (Newport/Morehead City) forecast office
+
+$root = dirname(__DIR__);
+$dataDir = $root . '/data';
 $configPath = $dataDir . '/config.json';
-$userAgent = "NCHurricane.com Weather App/1.0";
+$outPath = $dataDir . '/discussion.json';
 
-// Create data directory if it doesn't exist
-if (!is_dir($dataDir)) {
-    mkdir($dataDir, 0755, true);
-}
-
-/**
- * Atomic write function to prevent partial file reads
- */
-function atomic_write_json($filepath, $data) {
-    $temp_file = $filepath . '.tmp';
-    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    
-    if (file_put_contents($temp_file, $json, LOCK_EX) !== false) {
-        if (rename($temp_file, $filepath)) {
-            return true;
-        }
-    }
-    
-    // Cleanup on failure
-    if (file_exists($temp_file)) {
-        unlink($temp_file);
-    }
-    
-    return false;
-}
-
-/**
- * Fetch alerts for specific zone from NWS API
- */
-function fetchZoneAlerts($zoneId, $userAgent) {
-    $url = "https://api.weather.gov/alerts/active/zone/{$zoneId}";
-    
+function http_get_json(string $url, int $timeout = 30, int $retries = 2) {
+  $attempt = 0;
+  $delay = 250000; // 0.25s
+  while (true) {
     $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: " . $userAgent,
-        "Accept: application/geo+json"
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_CONNECTTIMEOUT => $timeout,
+      CURLOPT_TIMEOUT => $timeout,
+      CURLOPT_USERAGENT => 'NCHurricaneCache/1.0',
+      CURLOPT_HTTPHEADER => ['Accept: application/geo+json, application/json;q=0.9'],
     ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $body = curl_exec($ch);
+    $err  = curl_errno($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
-    if ($httpCode === 200) {
-        $data = json_decode($result, true);
-        return $data['features'] ?? [];
+
+    if (!$err && $code >= 200 && $code < 300 && $body) {
+      $json = json_decode($body, true);
+      if (json_last_error() === JSON_ERROR_NONE) return $json;
     }
-    
-    error_log("Failed to fetch alerts for zone {$zoneId}: HTTP {$httpCode}");
-    return [];
+
+    if ($attempt >= $retries) return null;
+    usleep($delay);
+    $delay *= 2;
+    $attempt++;
+  }
+}
+
+function http_get_text(string $url, int $timeout = 30, int $retries = 2) {
+  $attempt = 0;
+  $delay = 250000; // 0.25s
+  while (true) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_CONNECTTIMEOUT => $timeout,
+      CURLOPT_TIMEOUT => $timeout,
+      CURLOPT_USERAGENT => 'NCHurricaneCache/1.0',
+    ]);
+    $body = curl_exec($ch);
+    $err  = curl_errno($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if (!$err && $code >= 200 && $code < 300 && $body) {
+      return $body;
+    }
+
+    if ($attempt >= $retries) return null;
+    usleep($delay);
+    $delay *= 2;
+    $attempt++;
+  }
+}
+
+function atomic_write_json(string $path, array $data): bool {
+  $tmp = $path . '.tmp';
+  $json = json_encode($data, JSON_UNESCAPED_SLASHES);
+  if ($json === false) return false;
+  if (file_put_contents($tmp, $json) === false) return false;
+  return rename($tmp, $path);
 }
 
 /**
- * Check if alert is still active
+ * Extract AFD text from HTML page
  */
-function isAlertActive($alert) {
-    $expires = $alert['properties']['expires'] ?? null;
+function extractAfdFromHtml(string $html): ?string {
+  // Try to find the AFD content in <pre> tags
+  if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $html, $matches)) {
+    $afdText = $matches[1];
     
-    if (!$expires) {
-        return true; // No expiration time means it's still active
-    }
+    // Clean up the text
+    $afdText = html_entity_decode($afdText, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $afdText = trim($afdText);
     
-    $expiresTime = strtotime($expires);
-    return $expiresTime > time();
+    return $afdText;
+  }
+  
+  return null;
 }
 
 /**
- * Process alert data
+ * Fetch AFD from NWS API (try JSON first, then HTML fallback)
  */
-function processAlert($alertFeature) {
-    $props = $alertFeature['properties'] ?? [];
-    
-    return [
-        'id' => $alertFeature['id'] ?? null,
-        'type' => $props['event'] ?? null,
-        'severity' => $props['severity'] ?? null,
-        'urgency' => $props['urgency'] ?? null,
-        'status' => $props['status'] ?? null,
-        'headline' => $props['headline'] ?? null,
-        'description' => $props['description'] ?? null,
-        'onset' => $props['onset'] ?? null,
-        'expires' => $props['expires'] ?? null,
-        'areaDesc' => $props['areaDesc'] ?? null,
-        'instruction' => $props['instruction'] ?? null
-    ];
-}
-
-/**
- * Process alerts for a zone
- */
-function processZoneAlerts($zoneConfig, $userAgent) {
-    $forecastZone = $zoneConfig['forecast'] ?? null;
-    
-    if (!$forecastZone) {
-        error_log("No forecast zone found in zone config");
-        return [];
-    }
-    
-    error_log("Fetching alerts for zone: {$forecastZone}");
-    
-    // Fetch alerts for this zone
-    $alertFeatures = fetchZoneAlerts($forecastZone, $userAgent);
-    
-    if (empty($alertFeatures)) {
-        error_log("No alerts found for zone {$forecastZone}");
-        return [];
-    }
-    
-    // Process and filter active alerts
-    $activeAlerts = [];
-    
-    foreach ($alertFeatures as $alertFeature) {
-        if (isAlertActive($alertFeature)) {
-            $processedAlert = processAlert($alertFeature);
-            $activeAlerts[] = $processedAlert;
-        }
-    }
-    
-    // Sort alerts by severity (most severe first)
-    $severityOrder = [
-        'Extreme' => 1,
-        'Severe' => 2,
-        'Moderate' => 3,
-        'Minor' => 4,
-        'Unknown' => 5
-    ];
-    
-    usort($activeAlerts, function($a, $b) use ($severityOrder) {
-        $aSeverity = $severityOrder[$a['severity']] ?? 5;
-        $bSeverity = $severityOrder[$b['severity']] ?? 5;
+function fetchAfd(string $officeId): ?string {
+  error_log("Fetching AFD for office: {$officeId}");
+  
+  // Try API endpoint first
+  $apiUrl = "https://api.weather.gov/products/types/AFD/locations/{$officeId}";
+  $apiData = http_get_json($apiUrl);
+  
+  if ($apiData && isset($apiData['@graph']) && is_array($apiData['@graph'])) {
+    // Get the most recent AFD
+    $products = $apiData['@graph'];
+    if (!empty($products)) {
+      $latestProduct = $products[0]; // First item should be most recent
+      $productUrl = $latestProduct['@id'] ?? null;
+      
+      if ($productUrl) {
+        error_log("Fetching AFD content from: {$productUrl}");
+        $productData = http_get_json($productUrl);
         
-        if ($aSeverity === $bSeverity) {
-            // Secondary sort by onset time (newer first)
-            $aOnset = strtotime($a['onset'] ?? '1970-01-01');
-            $bOnset = strtotime($b['onset'] ?? '1970-01-01');
-            return $bOnset - $aOnset;
+        if ($productData && isset($productData['productText'])) {
+          error_log("Successfully retrieved AFD via API");
+          return $productData['productText'];
         }
-        
-        return $aSeverity - $bSeverity;
-    });
-    
-    error_log("Found " . count($activeAlerts) . " active alerts for zone {$forecastZone}");
-    
-    return $activeAlerts;
+      }
+    }
+  }
+  
+  error_log("API method failed, trying HTML fallback");
+  
+  // Fallback to HTML scraping
+  $htmlUrl = "https://forecast.weather.gov/product.php?site={$officeId}&product=AFD&issuedby={$officeId}";
+  $html = http_get_text($htmlUrl);
+  
+  if ($html) {
+    $afdText = extractAfdFromHtml($html);
+    if ($afdText) {
+      error_log("Successfully retrieved AFD via HTML scraping");
+      return $afdText;
+    }
+  }
+  
+  error_log("Failed to retrieve AFD from both API and HTML methods");
+  return null;
 }
 
 /**
  * Main execution
  */
 try {
-    // Load configuration
-    if (!file_exists($configPath)) {
-        throw new Exception("Config file not found: {$configPath}");
-    }
-    
-    $configContent = file_get_contents($configPath);
-    $config = json_decode($configContent, true);
-    
-    if (!$config) {
-        throw new Exception("Failed to parse config.json");
-    }
-    
-    $countyName = $config['county']['name'] ?? 'Unknown';
-    $isMultiZone = $config['county']['multiZone'] ?? false;
-    
-    error_log("Processing alerts for {$countyName} County (multi-zone: " . ($isMultiZone ? 'yes' : 'no') . ")");
-    
-    if ($isMultiZone) {
-        // Multi-zone county: process each zone separately
-        $zones = $config['zones'] ?? [];
-        
-        foreach ($zones as $zoneName => $zoneConfig) {
-            error_log("Processing alerts for zone: {$zoneName}");
-            
-            // Create zone directory
-            $zoneDataDir = $dataDir . '/' . $zoneName;
-            if (!is_dir($zoneDataDir)) {
-                mkdir($zoneDataDir, 0755, true);
-            }
-            
-            // Process alerts for this zone
-            $alerts = processZoneAlerts($zoneConfig, $userAgent);
-            
-            // Build result for this zone
-            $result = [
-                'generated' => gmdate('Y-m-d\TH:i:s\Z'),
-                'zone' => $zoneConfig['forecast'] ?? null,
-                'alerts' => $alerts
-            ];
-            
-            // Write zone-specific file
-            $outPath = $zoneDataDir . '/alerts.json';
-            if (atomic_write_json($outPath, $result)) {
-                error_log("Successfully wrote alerts for zone {$zoneName} to {$outPath}");
-            } else {
-                error_log("Failed to write alerts for zone {$zoneName} to {$outPath}");
-            }
-        }
-        
-    } else {
-        // Single-zone county: process all zones into one file
-        error_log("Processing single-zone county alerts");
-        
-        $zones = $config['zones'] ?? [];
-        $forecastZone = $zones['forecast'] ?? null;
-        
-        if (!$forecastZone) {
-            throw new Exception("No forecast zone found in single-zone config");
-        }
-        
-        // Create a temporary zone config for processing
-        $tempZoneConfig = ['forecast' => $forecastZone];
-        $alerts = processZoneAlerts($tempZoneConfig, $userAgent);
-        
-        // Build result
-        $result = [
-            'generated' => gmdate('Y-m-d\TH:i:s\Z'),
-            'zone' => $forecastZone,
-            'alerts' => $alerts
-        ];
-        
-        // Write single file
-        $outPath = $dataDir . '/alerts.json';
-        if (atomic_write_json($outPath, $result)) {
-            error_log("Successfully wrote alerts to {$outPath}");
-        } else {
-            error_log("Failed to write alerts to {$outPath}");
-        }
-    }
-    
-    error_log("Alerts cache update completed for {$countyName} County");
-    
-} catch (Exception $e) {
-    error_log("Error in cache_alerts.php: " . $e->getMessage());
+  // Load configuration
+  if (!file_exists($configPath)) {
+    throw new Exception("Config file not found: {$configPath}");
+  }
+  
+  $config = json_decode(file_get_contents($configPath), true);
+  if (!$config) {
+    throw new Exception("Failed to parse config.json");
+  }
+
+  $countyName = $config['county']['name'] ?? 'Unknown';
+  $forecastOffice = $config['forecastOffice'] ?? null;
+  
+  if (!$forecastOffice || !isset($forecastOffice['id'])) {
+    throw new Exception("No forecast office found in config");
+  }
+  
+  $officeId = $forecastOffice['id'];
+  $officeName = $forecastOffice['name'] ?? $officeId;
+  
+  error_log("Processing AFD for {$countyName} County from {$officeName} ({$officeId})");
+  
+  // Fetch AFD text
+  $afdText = fetchAfd($officeId);
+  
+  if (!$afdText) {
+    throw new Exception("Failed to fetch AFD from {$officeId}");
+  }
+  
+  // Build result
+  $result = [
+    'generated' => gmdate('c'),
+    'office' => $officeId,
+    'text' => $afdText
+  ];
+  
+  // Write AFD file (county-wide, not zone-specific)
+  if (atomic_write_json($outPath, $result)) {
+    error_log("Successfully wrote AFD to {$outPath}");
+    echo "OK\n";
+  } else {
+    error_log("Failed to write AFD to {$outPath}");
+    echo "ERROR\n";
     exit(1);
+  }
+  
+} catch (Exception $e) {
+  error_log("Error in cache_afd.php: " . $e->getMessage());
+  echo "ERROR\n";
+  exit(1);
 }
 ?>
