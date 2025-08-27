@@ -41,6 +41,14 @@
       "url": "https://www.weather.gov/wrh/timeseries?site=TS338",
       "lat": 35.64,
       "lon": -76.8
+    },
+    {
+      "id": "HBKN7",
+      "name": "Hobucken",
+      "url": "https://www.weather.gov/wrh/timeseries?site=HBKN7",
+      "friendlyName": "Hobucken",
+      "lat": 35.38967,
+      "lon": -77.1235
     }
   ]
 }

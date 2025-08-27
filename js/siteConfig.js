@@ -55,8 +55,8 @@ window.siteConfig = {
         {
             name: "Washington",
             city: "Plymouth",
-            lat: 35.8668,
-            lon: -76.7488,
+            lat: 35.87776758833479,
+            lon: -76.61383000157353,
             url: "counties/washington/index.html",
             ugcCode: "NCZ045",
             zoneURL: "https://api.weather.gov/zones/forecast/NCZ045"

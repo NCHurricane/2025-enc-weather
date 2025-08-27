@@ -8,6 +8,7 @@
         "STATE": "37",
         "COUNTY": "015",
         "NAME": "Bertie",
+        "zoneCode": "NCZ030",
         "LSAD": "County",
         "CENSUSAREA": 699.27,
         "CITY": "Windsor"
@@ -473,6 +474,7 @@
         "STATE": "37",
         "COUNTY": "117",
         "NAME": "Martin",
+        "zoneCode": "NCZ029",
         "LSAD": "County",
         "CENSUSAREA": 461.217,
         "CITY": "Williamston"
@@ -6800,6 +6802,7 @@
         "STATE": "37",
         "COUNTY": "095",
         "NAME": "Ocracoke Island",
+        "zoneCode": "NCZ204",
         "LSAD": "County",
         "CENSUSAREA": 612.7,
         "CITY": "Ocracoke"
@@ -7465,6 +7468,7 @@
         "STATE": "37",
         "COUNTY": "013",
         "NAME": "Beaufort",
+        "zoneCode": "NCZ080",
         "LSAD": "County",
         "CENSUSAREA": 827.192,
         "CITY": "Washington"
@@ -7864,6 +7868,7 @@
         "STATE": "37",
         "COUNTY": "147",
         "NAME": "Pitt",
+        "zoneCode": "NCZ044",
         "LSAD": "County",
         "CENSUSAREA": 651.975,
         "CITY": "Greenville"
@@ -8383,6 +8388,7 @@
         "STATE": "37",
         "COUNTY": "177",
         "NAME": "Tyrrell",
+        "zoneCode": "NCZ046",
         "LSAD": "County",
         "CENSUSAREA": 389.035,
         "CITY": "Columbia"
@@ -8572,6 +8578,7 @@
         "STATE": "37",
         "COUNTY": "187",
         "NAME": "Washington",
+        "zoneCode": "NCZ045",
         "LSAD": "County",
         "CENSUSAREA": 348.135,
         "CITY": "Plymouth"

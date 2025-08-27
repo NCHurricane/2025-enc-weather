@@ -221,8 +221,9 @@
       <script src="https://unpkg.com/topojson-client@3"></script>
       <script src="https://d3js.org/d3.v7.min.js"></script>
 
-
+      <script type="module" src="js/modules/mapAggregator.js"></script>
       <script type="module">
+
          import { initCountyMap } from './js/modules/ncCountyMap.js';
          import { updateTropicalOutlook, checkActiveSystemsStatus } from './js/modules/tropical.js';
          import { initTropicalBanner } from './js/modules/tropical-banner.js';
@@ -232,11 +233,9 @@
          async function initIndexPage() {
             console.log('Initializing index page...');
 
-            await initWeatherApp(window.weatherConfig || {});
             const countyMap = initCountyMap();
             window.countyMap = countyMap;
 
-            // Use consolidated banner instead of separate functions
             initTropicalBanner();
 
             const radSat = initRadSat();
