@@ -64,11 +64,11 @@ export class NCCountyMap {
         lon: -75.99222514225927,
       },
       {
-        id: "ALIN7",
-        name: "Gum Neck",
-        county: "tyrrell",
-        lat: 35.72139,
-        lon: -76.19237,
+        id: "G5443",
+        name: "Wilmar",
+        county: "beaufort",
+        lat: 35.38967,
+        lon: -77.12350,
       },
     ];
 
@@ -139,7 +139,7 @@ export class NCCountyMap {
       .attr("y", y - 5)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .attr("font-size", "14px") // Smaller than county markers
+      .attr("font-size", "2.7rem") // Smaller than county markers
       .attr("fill", "#ffff00")
       .text(`${weather.temp}°`)
       .on("click", () => county.url && (window.location.href = county.url));
@@ -148,7 +148,7 @@ export class NCCountyMap {
     g.append("text")
       .attr("class", "marker-label")
       .attr("x", x)
-      .attr("y", y + 25)
+      .attr("y", y + 20)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr("font-size", this.options.markerFontSize) // Small station name
@@ -308,7 +308,7 @@ export class NCCountyMap {
     g.append("text")
       .attr("class", "marker-label")
       .attr("x", x)
-      .attr("y", y + 25)
+      .attr("y", y + 20)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr("font-size", this.options.markerFontSize)

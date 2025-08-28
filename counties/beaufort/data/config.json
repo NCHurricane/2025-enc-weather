@@ -49,6 +49,14 @@
       "friendlyName": "Hobucken",
       "lat": 35.38967,
       "lon": -77.1235
+    },
+    {
+      "id": "G5443",
+      "name": "Wilmar",
+      "url": "https://www.weather.gov/wrh/timeseries?site=G5443",
+      "friendlyName": "Wilmar",
+      "lat": 35.38967,
+      "lon": -77.1235
     }
   ]
 }
