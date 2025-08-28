@@ -43,7 +43,7 @@ window.siteConfig = {
             city: "Manteo",
             lat: 35.9082,
             lon: -75.6757,
-            url: "counties/dare/index.html",
+            url: "counties/dare/?zone=mainland",
             ugcCode: "NCZ047",
             zoneURL: "https://api.weather.gov/zones/forecast/NCZ047",
             alternateZones: [
@@ -75,7 +75,7 @@ window.siteConfig = {
             city: "Swan Quarter",
             lat: 35.4085,
             lon: -76.3302,
-            url: "counties/hyde/index.html",
+            url: "counties/hyde/?zone=mainland",
             ugcCode: "NCZ081",
             zoneURL: "https://api.weather.gov/zones/forecast/NCZ081",
             alternateZones: [

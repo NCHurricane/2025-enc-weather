@@ -19,125 +19,74 @@ const COUNTIES = [
  * Select best station from county data (handles both single and multi-zone)
  */
 function selectBestStationFromCounty(countyData, isMultiZone = false) {
-  if (!countyData) return null;
-
-  let allStations = [];
-
+  const usable = (st) =>
+    st?.data?.temperature !== null && (st.observation?.age_minutes ?? 999) < 60;
   if (isMultiZone) {
-    // Multi-zone: collect stations from all zones
-    Object.values(countyData).forEach((zoneData) => {
-      if (zoneData && zoneData.stations) {
-        Object.values(zoneData.stations).forEach((station) => {
-          if (station && station.data && station.data.temperature !== null) {
-            allStations.push(station);
-          }
-        });
+    for (const zoneName of Object.keys(countyData)) {
+      const zone = countyData[zoneName];
+      if (!zone?.stations) continue;
+      for (const st of Object.values(zone.stations)) {
+        if (usable(st)) return st; // first station wins
       }
-    });
-  } else {
-    // Single-zone: use stations directly
-    if (countyData.stations) {
-      Object.values(countyData.stations).forEach((station) => {
-        if (station && station.data && station.data.temperature !== null) {
-          allStations.push(station);
-        }
-      });
     }
+    return null;
+  } else {
+    if (!countyData.stations) return null;
+    for (const st of Object.values(countyData.stations)) {
+      if (usable(st)) return st;
+    }
+    return null;
   }
-
-  if (allStations.length === 0) return null;
-
-  // Select best station by data freshness and completeness
-  allStations.sort((a, b) => {
-    const ageA = a.observation?.age_minutes || 999;
-    const ageB = b.observation?.age_minutes || 999;
-
-    // Prefer fresher data
-    if (ageA !== ageB) return ageA - ageB;
-
-    // Prefer more complete data
-    const completeA =
-      (a.data.temperature !== null ? 1 : 0) +
-      (a.data.windSpeed !== null ? 1 : 0) +
-      (a.data.conditions !== null ? 1 : 0);
-    const completeB =
-      (b.data.temperature !== null ? 1 : 0) +
-      (b.data.windSpeed !== null ? 1 : 0) +
-      (b.data.conditions !== null ? 1 : 0);
-
-    return completeB - completeA;
-  });
-
-  return allStations[0];
 }
 
 /**
  * Fetch weather data for a specific county
  */
 async function fetchCountyWeather(countyName) {
+  const BUST_BUCKET_MS = 15 * 60 * 1000;
+  const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
   try {
-    // First, get county config to determine if multi-zone
     const configResponse = await fetch(
-      `counties/${countyName}/data/config.json`
+      `counties/${countyName}/data/config.json?cb=${bust}`,
+      { cache: "no-store" }
     );
-    if (!configResponse.ok) {
-      console.warn(`Config not found for ${countyName}`);
-      return null;
-    }
-
+    if (!configResponse.ok) return null;
     const config = await configResponse.json();
     const isMultiZone = config.county?.multiZone || false;
-
     let weatherData = null;
-
     if (isMultiZone) {
-      // Multi-zone: fetch from each zone and aggregate
       const zones = Object.keys(config.zones || {});
       const zoneData = {};
-
       for (const zone of zones) {
         try {
-          const zoneResponse = await fetch(
-            `counties/${countyName}/data/${zone}/current.json`
+          const resp = await fetch(
+            `counties/${countyName}/data/${zone}/current.json?cb=${bust}`,
+            { cache: "no-store" }
           );
-          if (zoneResponse.ok) {
-            zoneData[zone] = await zoneResponse.json();
-          }
-        } catch (err) {
-          console.warn(`Failed to fetch zone ${zone} for ${countyName}:`, err);
-        }
+          if (resp.ok) zoneData[zone] = await resp.json();
+        } catch {}
       }
-
       weatherData = zoneData;
     } else {
-      // Single-zone: fetch directly
       try {
-        const response = await fetch(
-          `counties/${countyName}/data/current.json`
+        const resp = await fetch(
+          `counties/${countyName}/data/current.json?cb=${bust}`,
+          { cache: "no-store" }
         );
-        if (response.ok) {
-          weatherData = await response.json();
-        }
-      } catch (err) {
-        console.warn(`Failed to fetch weather for ${countyName}:`, err);
-      }
+        if (resp.ok) weatherData = await resp.json();
+      } catch {}
     }
-
     if (!weatherData) return null;
-
-    // Select best station
     const bestStation = selectBestStationFromCounty(weatherData, isMultiZone);
     if (!bestStation) return null;
-
-    // Return in format expected by map
     return {
       temp: bestStation.data.temperature,
       conditions: bestStation.data.conditions || "N/A",
       stationName: bestStation.name || bestStation.id,
       age: bestStation.observation?.age_minutes || 0,
+      updatedIso: weatherData.generated || bestStation.observation?.timestamp,
     };
-  } catch (error) {
-    console.error(`Error fetching weather for ${countyName}:`, error);
+  } catch {
     return null;
   }
 }
@@ -146,12 +95,7 @@ async function fetchCountyWeather(countyName) {
  * Default weather data fallback (when no data available)
  */
 export function getDefaultWeatherData() {
-  return {
-    temp: "N/A",
-    conditions: "N/A",
-    stationName: "No Data",
-    age: 999,
-  };
+  return { temp: "N/A", conditions: "N/A", stationName: "No Data", age: 999 };
 }
 
 /**

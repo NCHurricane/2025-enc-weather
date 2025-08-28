@@ -1,1 +1,71 @@
-{"generated":"2025-08-27T00:48:21+00:00","stations":{"KOCW":{"id":"KOCW","name":"Washington-Warren Airport","observation":{"timestamp":"2025-08-27T00:05:00+00:00","age_minutes":43},"data":{"temperature":73,"dewpoint":64,"humidity":73,"pressure":1018.3,"windSpeed":0,"windDirection":"N","windGust":null,"visibility":10,"conditions":"Clear","heatIndex":74,"windChill":null,"icon":"https://api.weather.gov/icons/land/night/skc?size=large"}},"BNYN7":{"id":"BNYN7","name":"NC Forest Service - Bunyan","observation":{"timestamp":"2025-08-27T00:13:00+00:00","age_minutes":35},"data":{"temperature":73,"dewpoint":68,"humidity":84,"pressure":null,"windSpeed":0,"windDirection":"ENE","windGust":null,"visibility":null,"conditions":"","heatIndex":74,"windChill":null,"icon":null}},"TS338":{"id":"TS338","name":"NC Fire RAWS #4","observation":{"timestamp":"2025-08-26T23:46:00+00:00","age_minutes":62},"data":{"temperature":72,"dewpoint":67,"humidity":83,"pressure":null,"windSpeed":0,"windDirection":"E","windGust":null,"visibility":null,"conditions":"","heatIndex":73,"windChill":null,"icon":null}}}}
+{
+  "generated": "2025-08-27T00:48:21+00:00",
+  "stations": {
+    "KOCW": {
+      "id": "KOCW",
+      "name": "Washington-Warren Airport",
+      "observation": {
+        "timestamp": "2025-08-27T00:05:00+00:00",
+        "age_minutes": 43
+      },
+      "data": {
+        "temperature": 73,
+        "dewpoint": 64,
+        "humidity": 73,
+        "pressure": 1018.3,
+        "windSpeed": 0,
+        "windDirection": "N",
+        "windGust": null,
+        "visibility": 10,
+        "conditions": "Clear",
+        "heatIndex": 74,
+        "windChill": null,
+        "icon": "https://api.weather.gov/icons/land/night/skc?size=large"
+      }
+    },
+    "BNYN7": {
+      "id": "BNYN7",
+      "name": "NC Forest Service - Bunyan",
+      "observation": {
+        "timestamp": "2025-08-27T00:13:00+00:00",
+        "age_minutes": 35
+      },
+      "data": {
+        "temperature": 73,
+        "dewpoint": 68,
+        "humidity": 84,
+        "pressure": null,
+        "windSpeed": 0,
+        "windDirection": "ENE",
+        "windGust": null,
+        "visibility": null,
+        "conditions": "",
+        "heatIndex": 74,
+        "windChill": null,
+        "icon": null
+      }
+    },
+    "TS338": {
+      "id": "TS338",
+      "name": "NC Fire RAWS #4",
+      "observation": {
+        "timestamp": "2025-08-26T23:46:00+00:00",
+        "age_minutes": 62
+      },
+      "data": {
+        "temperature": 72,
+        "dewpoint": 67,
+        "humidity": 83,
+        "pressure": null,
+        "windSpeed": 0,
+        "windDirection": "E",
+        "windGust": null,
+        "visibility": null,
+        "conditions": "",
+        "heatIndex": 73,
+        "windChill": null,
+        "icon": null
+      }
+    }
+  }
+}

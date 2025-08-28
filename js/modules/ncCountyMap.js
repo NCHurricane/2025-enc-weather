@@ -47,7 +47,7 @@ export class NCCountyMap {
         lat: 35.2195,
         lon: -75.6903,
       },
-            {
+      {
         id: "STCN7",
         name: "Stumpy Point",
         county: "dare",
@@ -68,7 +68,7 @@ export class NCCountyMap {
         name: "Wilmar",
         county: "beaufort",
         lat: 35.38967,
-        lon: -77.12350,
+        lon: -77.1235,
       },
     ];
 
@@ -76,54 +76,41 @@ export class NCCountyMap {
   }
 
   // getStationData with debug logging for skipped stations
+  // getStationData with cache-busting and 60m freshness
   async getStationData(stationConfig) {
+    const BUST_BUCKET_MS = 15 * 60 * 1000;
+    const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
     const urls = [];
     if (stationConfig.zone) {
       urls.push(
-        `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json`
+        `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json?cb=${bust}`
       );
     }
-    urls.push(`counties/${stationConfig.county}/data/current.json`);
+    urls.push(`counties/${stationConfig.county}/data/current.json?cb=${bust}`);
 
     for (const url of urls) {
       try {
-        const response = await fetch(url);
-        if (!response || !response.ok) continue;
-
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) continue;
         const data = await response.json();
         const stationData = Object.values(data.stations || {}).find(
           (s) => s.id === stationConfig.id
         );
-        if (!stationData) {
-          console.warn(`Skipped ${stationConfig.id}: not found in ${url}`);
-          continue;
-        }
-        if (!stationData.data || stationData.data.temperature == null) {
-          console.warn(`Skipped ${stationConfig.id}: no temperature in ${url}`);
-          continue;
-        }
-
+        if (!stationData?.data?.temperature) continue;
         const ageMinutes = stationData.observation?.age_minutes ?? 999;
-        if (ageMinutes > 90) {
-          console.warn(
-            `Skipped ${stationConfig.id}: data stale (${ageMinutes} min old)`
-          );
-          continue;
-        }
-
+        if (ageMinutes > 60) continue;
         return {
           temp: Math.round(Number(stationData.data.temperature)),
           conditions: stationData.data.conditions || "N/A",
           stationName: stationData.name || stationConfig.name,
           age: ageMinutes,
+          updatedIso: data.generated || stationData.observation?.timestamp,
         };
       } catch (err) {
         console.warn(`Error fetching ${stationConfig.id} from ${url}:`, err);
         continue;
       }
     }
-
-    console.warn(`No usable data found for ${stationConfig.id}`);
     return null;
   }
 
@@ -138,24 +125,16 @@ export class NCCountyMap {
       .attr("x", x)
       .attr("y", y - 5)
       .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "middle")
-      .attr("font-size", "2.7rem") // Smaller than county markers
+      .attr("font-size", "2.7rem")
       .attr("fill", "#ffff00")
-      .text(`${weather.temp}°`)
-      .on("click", () => county.url && (window.location.href = county.url));
-
-    //Station name (optional - remove if you don't want labels)
+      .text(`${weather.temp}°`);
     g.append("text")
       .attr("class", "marker-label")
       .attr("x", x)
       .attr("y", y + 20)
       .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "middle")
-      .attr("font-size", this.options.markerFontSize) // Small station name
       .attr("fill", "#fff")
-      .text(stationConfig.name.toUpperCase())
-
-      .on("click", () => county.url && (window.location.href = county.url));
+      .text(stationConfig.name.toUpperCase());
   }
 
   async loadCountyData() {
@@ -446,7 +425,7 @@ export class NCCountyMap {
 }
 
 export function initCountyMap() {
-  const map = new NCCountyMap("nc-county-map");
-  map.init();
-  return map;
+const map = new NCCountyMap("nc-county-map");
+map.init();
+return map;
 }
