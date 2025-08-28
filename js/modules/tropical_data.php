@@ -1,129 +1,139 @@
 <?php
-
 /**
- * Tropical Storm Data Handler
- * 
- * This consolidated script serves multiple purposes:
- * 1. Acts as an API endpoint for browser-based JavaScript requests
- * 2. Handles caching of tropical storm data from NHC
- * 3. Can be run as a cron job to refresh the cache periodically
- * 
- * Usage as API: Simply request this script from the browser
- * Usage as cron: php /path/to/tropical_data.php --cron
+ * Tropical Storm Data Handler (NCHurricane 2025)
+ *
+ * Roles:
+ *  1) Writer: fetch NHC JSON and cache it (cron or manual)
+ *  2) API:   serve cached JSON to the browser
+ *
+ * Usage:
+ *  - Browser/API:  /js/modules/tropical_data.php
+ *  - Cron:         php8.4 /path/to/js/modules/tropical_data.php --cron
+ *
+ * Notes:
+ *  - Writes BOTH:
+ *      cache/nhc_current_storms.json        (legacy/primary)
+ *      cache/tropical_summary_at.json       (explicit for your JS readers)
+ *  - Atomic writes (temp + rename) to avoid partial files
+ *  - TTL: 30 minutes (1800s) per project playbook
+ *  - Per your request: NO references to any hurricane-season on/off logic.
  */
 
-// Basic error handling
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
+declare(strict_types=1);
 
-// Configuration
+// ---- CONFIG ----
 $config = [
-    'source_url' => 'https://www.nhc.noaa.gov/CurrentStorms.json',
-    'cache_file' => __DIR__ . '/cache/nhc_current_storms.json',
-    'cache_ttl' => 1800, // Cache Time-To-Live in seconds (30 minutes)
-    'user_agent' => 'NCHurricane.com Weather App/1.0 (Weather Data Handler)',
-    'log_file' => __DIR__ . '/logs/tropical_data.log'
+    // Primary source for current storms
+    'source_url'  => 'https://www.nhc.noaa.gov/CurrentStorms.json',
+
+    // Cache outputs (absolute, using script directory)
+    'cache_file'  => __DIR__ . '/cache/nhc_current_storms.json',
+    'summary_file'=> __DIR__ . '/cache/tropical_summary_at.json',
+
+    // TTL policy (seconds): 30 minutes
+    'cache_ttl'   => 1800,
+
+    // Headers + logging
+    'user_agent'  => 'NCHurricane.com Weather App/1.0 (Tropical Data Handler)',
+    'log_file'    => __DIR__ . '/logs/tropical_data.log'
 ];
 
-// Determine execution context
-$is_cli = (php_sapi_name() === 'cli');
-$is_cron = $is_cli && (isset($argv[1]) && $argv[1] === '--cron');
-$force_refresh = isset($_GET['refresh']) || $is_cron;
+// Execution context
+$is_cli   = (php_sapi_name() === 'cli');
+$is_cron  = $is_cli && in_array('--cron', $argv ?? [], true);
+$force    = isset($_GET['refresh']) || $is_cron;
 
-/**
- * UTILITY FUNCTIONS
- */
-
-/**
- * Ensures all necessary directories exist
- */
-function ensureDirectories()
-{
+// ---- UTILS ----
+function ensureDirectories(): void {
     global $config;
-
-    $directories = [
-        dirname($config['cache_file']), // Cache directory
-        dirname($config['log_file'])    // Log directory
+    $dirs = [
+        dirname($config['cache_file']),
+        dirname($config['summary_file']),
+        dirname($config['log_file'])
     ];
-
-    foreach ($directories as $dir) {
+    foreach ($dirs as $dir) {
         if (!is_dir($dir)) {
-            if (!mkdir($dir, 0777, true)) {
-                $error = error_get_last();
-                throw new Exception("Failed to create directory {$dir}: " .
-                    ($error ? $error['message'] : 'Unknown error'));
+            if (!@mkdir($dir, 0777, true)) {
+                $e = error_get_last();
+                throw new RuntimeException("Failed to create dir {$dir}: " . ($e['message'] ?? 'unknown'));
             }
-            chmod($dir, 0777); // Ensure writable permissions
+            @chmod($dir, 0777);
         }
     }
 }
 
-/**
- * Logs a message with timestamp
- * @param string $message Message to log
- * @param string $level Log level (INFO, WARNING, ERROR)
- */
-function logMessage($message, $level = "INFO")
-{
+function logMessage(string $msg, string $level = 'INFO'): void {
     global $config, $is_cli;
-
-    $date = date('Y-m-d H:i:s');
-    $log_entry = "[$date] [$level] $message\n";
-
-    // Append to log file
-    file_put_contents($config['log_file'], $log_entry, FILE_APPEND);
-
-    // Echo to console if CLI
+    $line = '[' . date('Y-m-d H:i:s') . "][{$level}] {$msg}\n";
     if ($is_cli) {
-        echo $log_entry;
+        // Send to STDERR for cron piping; file log too
+        file_put_contents('php://stderr', $line);
     }
+    @file_put_contents($config['log_file'], $line, FILE_APPEND);
 }
 
-/**
- * Checks if the cache file exists and is not expired
- * @return bool True if cache is fresh, false otherwise
- */
-function isCacheFresh()
-{
-    global $config;
-
-    if (!file_exists($config['cache_file'])) {
+function writeJsonAtomic(string $filepath, array $payload): bool {
+    $dir = dirname($filepath);
+    if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
+        logMessage("Cannot create cache dir: {$dir}", 'ERROR');
         return false;
     }
-
-    $cache_age = getCacheAge();
-    return ($cache_age < $config['cache_ttl']);
-}
-
-/**
- * Gets the age of the cache file in seconds
- * @return int Age in seconds or PHP_INT_MAX if file doesn't exist
- */
-function getCacheAge()
-{
-    global $config;
-
-    if (!file_exists($config['cache_file'])) {
-        return PHP_INT_MAX;
+    $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if ($json === false) {
+        logMessage("JSON encode failed for {$filepath}", 'ERROR');
+        return false;
     }
-
-    return time() - filemtime($config['cache_file']);
+    $tmp = $filepath . '.tmp-' . bin2hex(random_bytes(4));
+    $fp = @fopen($tmp, 'wb');
+    if (!$fp) {
+        logMessage("Cannot open temp file: {$tmp}", 'ERROR');
+        return false;
+    }
+    $ok = false;
+    try {
+        if (!flock($fp, LOCK_EX)) {
+            throw new RuntimeException("LOCK_EX failed: {$tmp}");
+        }
+        if (fwrite($fp, $json) === false) {
+            throw new RuntimeException("Write failed: {$tmp}");
+        }
+        fflush($fp);
+        $ok = true;
+    } catch (Throwable $t) {
+        logMessage($t->getMessage(), 'ERROR');
+    } finally {
+        fclose($fp);
+    }
+    if (!$ok) {
+        @unlink($tmp);
+        return false;
+    }
+    if (!@rename($tmp, $filepath)) {
+        @unlink($tmp);
+        logMessage("Atomic rename failed to {$filepath}", 'ERROR');
+        return false;
+    }
+    return true;
 }
 
-/**
- * Fetches data from the source URL
- * @param string $url Source URL
- * @return string|false Data or false on failure
- */
-function fetchData($url)
-{
+function isCacheFresh(string $file, int $ttl): bool {
+    if (!is_file($file)) return false;
+    return (time() - filemtime($file)) <= $ttl;
+}
+
+function getCacheAge(string $file): int {
+    if (!is_file($file)) return PHP_INT_MAX;
+    return time() - filemtime($file);
+}
+
+function fetchData(string $url): ?array {
     global $config;
 
     // Try file_get_contents first
     $context = stream_context_create([
         'http' => [
-            'method' => 'GET',
-            'header' => [
+            'method'  => 'GET',
+            'header'  => [
                 'User-Agent: ' . $config['user_agent'],
                 'Accept: application/json'
             ],
@@ -131,217 +141,130 @@ function fetchData($url)
             'follow_location' => 1
         ]
     ]);
+    $body = @file_get_contents($url, false, $context);
 
-    $data = @file_get_contents($url, false, $context);
-
-    // If file_get_contents failed, try cURL
-    if ($data === false) {
-        logMessage("file_get_contents failed, trying cURL");
-
+    if ($body === false) {
+        logMessage("file_get_contents failed; falling back to cURL");
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'User-Agent: ' . $config['user_agent'],
-                'Accept: application/json'
-            ],
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_USERAGENT      => $config['user_agent'],
             CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_HTTPHEADER     => ['Accept: application/json'],
         ]);
-
-        $data = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
         curl_close($ch);
-
-        if ($data === false || $http_code !== 200) {
-            logMessage("cURL failed with HTTP code: $http_code");
-            return false;
+        if ($body === false || $code < 200 || $code >= 300) {
+            logMessage("cURL failed (HTTP {$code}): {$err}", 'ERROR');
+            return null;
         }
     }
 
+    $data = json_decode($body, true);
+    if ($data === null) {
+        logMessage("JSON decode failed for {$url}", 'ERROR');
+        return null;
+    }
     return $data;
 }
 
-/**
- * Validates JSON data
- * @param string $data JSON string to validate
- * @return bool True if valid JSON, false otherwise
- */
-function isValidJson($data)
-{
-    if (empty($data)) {
-        return false;
-    }
-
-    json_decode($data);
-    return (json_last_error() === JSON_ERROR_NONE);
+function loadCache(): ?array {
+    global $config;
+    if (!is_file($config['cache_file'])) return null;
+    $raw = @file_get_contents($config['cache_file']);
+    if ($raw === false) return null;
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : null;
 }
 
-/**
- * Saves data to cache file
- * @param string $data Data to cache
- * @return bool True on success, false on failure
- */
-function saveCache($data)
-{
+function saveBothCaches(array $sourcePayload): bool {
     global $config;
 
-    // Add metadata to cached data
-    $cache_data = [
+    // We wrap the source payload with minimal metadata so both files share a shape.
+    $wrapped = [
         'metadata' => [
-            'cached_at' => time(),
-            'cached_at_formatted' => date('Y-m-d H:i:s'),
-            'source' => $config['source_url'],
-            'ttl' => $config['cache_ttl']
+            'cached_at'            => time(),
+            'cached_at_iso'        => date('c'),
+            'source'               => $config['source_url'],
+            'ttl_seconds'          => $config['cache_ttl'],
+            'note'                 => 'Atomic write; identical payload written to both files',
         ],
-        'data' => json_decode($data, true)
+        'data' => $sourcePayload
     ];
 
-    $result = file_put_contents(
-        $config['cache_file'],
-        json_encode($cache_data, JSON_PRETTY_PRINT)
-    );
+    $ok1 = writeJsonAtomic($config['cache_file'], $wrapped);
+    $ok2 = writeJsonAtomic($config['summary_file'], $wrapped);
 
-    return ($result !== false);
+    if (!$ok1 || !$ok2) {
+        if (!$ok1) logMessage('Failed to write cache_file', 'ERROR');
+        if (!$ok2) logMessage('Failed to write summary_file', 'ERROR');
+        return false;
+    }
+    logMessage('Wrote cache_file and summary_file successfully');
+    return true;
 }
 
-/**
- * Loads data from cache file
- * @return string|false Cached data or false on failure
- */
-function loadCache()
-{
-    global $config;
-
-    if (!file_exists($config['cache_file'])) {
-        logMessage("Cache file not found");
-        return false;
-    }
-
-    $cache_content = file_get_contents($config['cache_file']);
-    if ($cache_content === false) {
-        logMessage("Failed to read cache file");
-        return false;
-    }
-
-    // Parse cached data
-    $cache_data = json_decode($cache_content, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        logMessage("Invalid JSON in cache file");
-        return false;
-    }
-
-    // Return just the data portion (not metadata)
-    if (isset($cache_data['data'])) {
-        return json_encode($cache_data['data']);
-    } else {
-        // Old cache format, return as-is
-        return $cache_content;
-    }
-}
-
-// MAIN EXECUTION STARTS HERE
-
-// Ensure necessary directories exist
+// ---- MAIN ----
 try {
     ensureDirectories();
-} catch (Exception $e) {
-    if (!$is_cli) {
-        header('Content-Type: application/json');
-        echo json_encode(['activeStorms' => [], 'error' => $e->getMessage()]);
+
+    $fresh = isCacheFresh($config['cache_file'], $config['cache_ttl']);
+    if ($force) {
+        logMessage('Force refresh requested');
     } else {
-        echo "Error: " . $e->getMessage() . "\n";
+        logMessage('Cache age: ' . getCacheAge($config['cache_file']) . 's; fresh=' . ($fresh ? 'yes' : 'no'));
     }
-    exit(1);
-}
 
-// Set appropriate headers for browser requests
-if (!$is_cli) {
-    header('Content-Type: application/json');
-    header('Cache-Control: no-cache, must-revalidate');
-}
-
-// Start logging
-logMessage("Tropical data handler initiated" . ($is_cron ? " (cron mode)" : "") .
-    ($force_refresh ? " (forced refresh)" : ""));
-
-// Main process
-try {
-    // Check if we need fresh data
-    $need_fresh_data = $force_refresh || !isCacheFresh();
-
-    if ($need_fresh_data) {
-        // Fetch fresh data
-        logMessage("Fetching fresh data from NHC");
-        $data = fetchData($config['source_url']);
-
-        if ($data !== false) {
-            // Validate data
-            if (isValidJson($data)) {
-                // Save to cache
-                if (saveCache($data)) {
-                    logMessage("Fresh data cached successfully");
-                } else {
-                    logMessage("Failed to write cache file", "ERROR");
+    if ($force || !$fresh) {
+        $src = fetchData($config['source_url']);
+        if ($src !== null) {
+            if (!saveBothCaches($src)) {
+                // Failed to write new cache; try to serve the last-known-good cache
+                $cached = loadCache();
+                if ($cached === null) {
+                    throw new RuntimeException('No cache available after failed write');
                 }
-            } else {
-                logMessage("Received invalid JSON data", "ERROR");
-                $data = loadCache(); // Fall back to cache
             }
         } else {
-            logMessage("Failed to fetch data from source", "ERROR");
-            $data = loadCache(); // Fall back to cache
+            logMessage('Fetch failed; falling back to existing cache', 'ERROR');
+            $cached = loadCache();
+            if ($cached === null) {
+                throw new RuntimeException('No cache available and fetch failed');
+            }
         }
-    } else {
-        // Use cached data
-        logMessage("Using cached data (age: " . getCacheAge() . " seconds)");
-        $data = loadCache();
     }
 
-    // Output or return the data
+    // Serve current cache content (consistent API result)
+    $current = loadCache();
+    if ($current === null) {
+        // If still null, serve safe empty structure
+        $current = ['metadata' => ['cached_at' => null, 'cached_at_iso' => null], 'data' => []];
+    }
+
     if ($is_cli) {
-        logMessage("Process completed successfully");
-        if ($is_cron) {
-            exit(0); // Success for cron
-        } else {
-            echo "Data retrieved successfully.\n";
-            exit(0);
-        }
+        // For cron/logs
+        echo "OK " . ($current['metadata']['cached_at_iso'] ?? 'n/a') . PHP_EOL;
+        exit(0);
     } else {
-        // Browser request - return the JSON data
-        echo $data ?: json_encode(['activeStorms' => []]);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($current, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         exit;
     }
-} catch (Exception $e) {
-    $error_message = "Error: " . $e->getMessage();
-    logMessage($error_message, "ERROR");
 
+} catch (Throwable $e) {
+    logMessage('Unhandled exception: ' . $e->getMessage(), 'ERROR');
     if ($is_cli) {
-        echo $error_message . "\n";
-        exit(1); // Error code for CLI
+        fwrite(STDERR, "ERROR: " . $e->getMessage() . PHP_EOL);
+        exit(1);
     } else {
-        // Return empty data structure for browser requests
-        echo json_encode(['activeStorms' => [], 'error' => $error_message]);
+        header('Content-Type: application/json; charset=utf-8', true, 500);
+        echo json_encode(['error' => 'tropical_data failure', 'detail' => $e->getMessage()]);
         exit;
     }
 }
-
-/**
- * Example usage:
- * 
- * 1. From browser JavaScript:
- *    fetch('/js/modules/tropical_data.php')
- *      .then(response => response.json())
- *      .then(data => console.log(data));
- * 
- * 2. From cron (every 30 minutes):
- *    *30 * * * * /usr/bin/php /path/to/tropical_data.php --cron
- * 
- * 3. Force refresh from browser:
- *    fetch('/js/modules/tropical_data.php?refresh=1')
- * 
- * 4. Direct PHP inclusion:
- *    $tropical_data = json_decode(loadCache(), true);
- */

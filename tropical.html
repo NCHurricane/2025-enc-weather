@@ -13,8 +13,8 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="css/styles.css?v=4.22.25">
-      <link rel="stylesheet" href="css/tropical.css?v=4.22.25">
+      <link rel="stylesheet" href="css/styles.css?v=8.28.25">
+      <link rel="stylesheet" href="css/tropical.css?v=8.28.25">
    </head>
 
    <body>
@@ -115,12 +115,7 @@
                      </div>
                   </div>
                </div> <!-- Refresh Container -->
-               <div class="refresh-container" style="text-align: right; margin-top: 10px">
-                  <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                     aria-label="Refresh weather data">
-                     <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
-                  </button>
-               </div>
+
             </div>
 
 
@@ -147,11 +142,6 @@
                <div class="tropical-text-tab-content">
                   <!-- TWO Text Tab -->
                   <div class="tropical-text-panel" id="two-text-panel" role="tabpanel">
-                     <div class="tropical-text-timestamp" id="two-text-timestamp"></div>
-                     <div class="loading" id="two-text-loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        <span>Loading Tropical Weather Outlook...</span>
-                     </div>
                      <div class="error" id="two-text-error" style="display: none">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span>Unable to load Tropical Weather Outlook</span>
@@ -161,26 +151,16 @@
 
                   <!-- TWO Spanish Tab -->
                   <div class="tropical-text-panel" id="two-spanish-panel" role="tabpanel">
-                     <div class="tropical-text-timestamp" id="two-spanish-timestamp"></div>
                      <div class="tropical-text-content" id="two-spanish-content"></div>
-                     <div class="loading" id="two-spanish-loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        <span>Cargando Perspectiva del Tiempo Tropical...</span>
-                     </div>
                      <div class="error" id="two-spanish-error" style="display: none">
                         <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>No se pudo cargar la Perspectiva del Tiempo
-                           Tropical</span>
+                        <span>No se pudo cargar la Perspectiva del Tiempo Tropical</span>
                      </div>
                   </div>
 
                   <!-- Tropical Discussion Tab -->
                   <div class="tropical-text-panel" id="discussion-panel" role="tabpanel">
                      <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
-                     <div class="loading" id="discussion-loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        <span>Loading Tropical Weather Discussion...</span>
-                     </div>
                      <div class="error" id="discussion-error" style="display: none">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span>Unable to load Tropical Weather Discussion</span>
@@ -285,11 +265,9 @@
       </footer>
 
       <!-- CHANGE VERSION: -->
-      <!-- <script src="js/siteConfig.js?v=4.22.25"></script> -->
-      <!-- <script type="module" src="js/main.js?v=4.22.25"></script> -->
-      <script type="module" src="js/modules/tropical.js?v=4.22.25"></script>
+      <script type="module" src="js/modules/tropical.js?v=8.28.25a"></script>
       <script type="module">
-         import { initTropicalBanner } from './js/modules/tropical-banner.js';
+         import { initTropicalBanner } from './js/modules/tropical-banner.js?v=8.28.25a';
 
          // Initialize the tropical banner when the page loads
          document.addEventListener('DOMContentLoaded', function () {

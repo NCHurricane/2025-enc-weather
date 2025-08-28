@@ -433,48 +433,6 @@ pre {
     display: block;
 }
 
-/* REFRESH BUTTON */
-.global-refresh-btn {
-    background-color: var(--color-accent);
-    color: var(--color-text);
-    border: none;
-    border-radius: var(--border-radius);
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    box-shadow: var(--shadow-standard);
-    margin: 10px 15px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease, background-color 0.3s;
-}
-
-.global-refresh-btn:hover {
-    background-color: #63ff02;
-    color: #000;
-}
-
-.global-refresh-btn.refreshing {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(0.75);
-        box-shadow: 0 0 0 0 rgba(0, 156, 8, 0.643);
-    }
-
-    70% {
-        transform: scale(1.15);
-        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
-    }
-
-    100% {
-        transform: scale(0.75);
-        box-shadow: 0 0 0 0 rgba(0, 156, 8, 0.643);
-    }
-}
 
 /*--------------------*/
 /* FOOTER */
