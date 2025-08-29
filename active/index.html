@@ -3,16 +3,19 @@
 
     <head>
         <meta charset="utf-8" />
-        <title>NCHurricane — Active Storm</title>
+        <title>NCHurricane — Active Storms</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- Core site styles -->
+        <link rel="stylesheet" href="../css/styles.css" />
+        <link rel="stylesheet" href="../css/tropical.css" />
+        <link rel="stylesheet" href="../css/active.css" />
+
+        <meta name="description" content="Active tropical storm overview, hazards, graphics, and text products." />
         <link
             href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
             rel="stylesheet" />
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
-
-        <!-- Site styles -->
-        <link rel="stylesheet" href="../css/styles.css">
-        <link rel="stylesheet" href="../css/tropical.css">
     </head>
 
     <body>
@@ -20,11 +23,11 @@
             <div class="header-container">
                 <img src="../images/2025_banner.png" alt="NCHurricane.com Logo" />
                 <nav class="nav" aria-label="Main navigation">
-                    <ul class="nav-menu">
+                    <ul id="nav-menu" class="nav-menu">
                         <li><a href="../index.html">Home</a></li>
                         <li class="has-submenu">
                             <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
-                            <ul class="submenu">
+                            <ul id="nav-menu" class="submenu" aria-label="Counties submenu">
                                 <li><a href="../counties/beaufort/index.html">Beaufort</a></li>
                                 <li><a href="../counties/bertie/index.html">Bertie</a></li>
                                 <li><a href="../counties/dare/?zone=mainland">Dare</a></li>
@@ -35,9 +38,9 @@
                                 <li><a href="../counties/washington/index.html">Washington</a></li>
                             </ul>
                         </li>
-                        <li><a href="hazards.html">Hazards</a></li>
-                        <li><a href="#">Tropical</a></li>
-                        <li><a href="links.html">Links</a></li>
+                        <li><a href="../hazards.html">Hazards</a></li>
+                        <li><a href="../tropical.html">Tropical</a></li>
+                        <li><a href="../links.html">Links</a></li>
                     </ul>
                 </nav>
                 <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"
@@ -47,59 +50,110 @@
             </div>
         </header>
 
-        <main class="active-wrap">
-            <div class="storm-header">
-                <a href="/2025_weather/tropical.html" class="badge" aria-label="Back to Tropical">← Tropical</a>
-                <h1 id="storm-title">Active Storm</h1>
-                <span id="storm-id" class="badge" hidden></span>
-                <span class="last-updated">Updated: —</span>
-            </div>
+        <main class="container">
+            <h1 class="main-title">Active Tropical Cyclones</h1>
 
-            <!-- If no storm param: list active storms here -->
-            <section id="storm-list-section" class="card" hidden>
-                <h2>Active Systems</h2>
-                <div id="storm-list" class="storm-list"></div>
-                <p class="muted" id="storm-list-note">Select a storm to view details.</p>
+            <!-- Optional banner (keeps parity with Tropical page pattern) -->
+            <section id="active-storms-section" class="active-storms-section" aria-label="Active storms banner">
+                <div class="tropical-banner"></div>
             </section>
 
-            <section class="card" id="radii-card">
-                <h3>Wind Radii</h3>
-                <div id="radii-table"></div>
+            <section id="storm-list-section" class="other-container" aria-labelledby="storm-list-title">
+                <h2 id="storm-list-title" class="other-title section-title">Active Storms</h2>
+                <p id="storm-list-note" class="muted"></p>
+                <ul id="storm-list" class="storm-list"></ul>
             </section>
 
-            <!-- Overview row -->
-            <section class="grid" id="storm-overview-section" hidden>
-                <div class="card span-8" id="overview-card">
-                    <h3>Overview</h3>
-                    <dl class="kv" id="overview-kv"></dl>
+            <!-- Active header -->
+            <section class="storm-header-container" aria-labelledby="storm-header-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM OVERVIEW
                 </div>
-                <div class="card span-4" id="advisory-card">
-                    <h3>Latest Advisory</h3>
-                    <div id="advisory-content" class="muted">Not available.</div>
+                <div class="storm-header">
+                    <h3 id="storm-title" class="section-title" style="margin: 8px 0 0 0;">Active Storm</h3>
+                    <span id="storm-id" class="badge"></span>
+                    <dl id="overview-kv" class="overview-kv"></dl>
+                    <!-- Absolute ET per Playbook; storm.js sets this via formatAbs(...) -->
+                    <div class="last-updated" id="last-updated" aria-live="polite"></div>
                 </div>
             </section>
 
-            <!-- Track / Cone / Graphics placeholders -->
-            <section class="grid" id="storm-graphics-section" hidden>
-                <div class="card span-8">
-                    <h3>Track & Cone</h3>
-                    <div id="cone-graphic" class="muted">Cone graphic will appear here.</div>
+            <!-- Overview -->
+            <section class="active-overview-container" aria-labelledby="overview-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WIND RADII
                 </div>
-                <div class="card span-4">
-                    <h3>Wind / Surge / Rain</h3>
-                    <div id="hazards-graphic" class="muted">Hazards graphics will appear here.</div>
+                <div class="storm-overview-section" id="storm-overview-section">
+                    <!-- (Optional) Radii table that storm.js can fill if present -->
+                    <table id="radii-table" class="radii-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th scope="col">Quadrant</th>
+                                <th scope="col">34 kt</th>
+                                <th scope="col">50 kt</th>
+                                <th scope="col">64 kt</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </section>
 
-            <!-- Text products placeholders -->
-            <section class="grid" id="storm-text-section" hidden>
-                <div class="card span-6">
-                    <h3>Key Messages</h3>
-                    <div id="key-messages" class="muted">No key messages available.</div>
+            <!-- Watches & Warnings -->
+            <section class="hazards-container" aria-labelledby="hazards-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WATCHES AND WARNINGS
                 </div>
-                <div class="card span-6">
-                    <h3>Discussion</h3>
-                    <div id="storm-discussion" class="muted">No discussion available.</div>
+                <div id="storm-hazards-section">
+                    <div>
+                        <h3>Coastal</h3>
+                        <div id="coastal-alerts" class="muted">No alerts.</div>
+                    </div>
+                    <div>
+                        <h3>Inland</h3>
+                        <div id="inland-alerts" class="muted">No alerts.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Graphics -->
+            <section class="graphics-container" aria-labelledby="graphics-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM GRAPHICS
+                </div>
+                <div id="storm-graphics-section">
+                    <div>
+                        <h3>Track &amp; Cone</h3>
+                        <div id="cone-graphic" class="muted">Cone graphic will appear here.</div>
+                    </div>
+                    <div>
+                        <h3>Wind / Surge / Rain</h3>
+                        <div id="hazards-graphic" class="muted">Hazards graphics will appear here.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Text Products -->
+            <section class="text-products-container" aria-labelledby="text-products-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>TEXT PRODUCTS
+                </div>
+                <div id="storm-text-section">
+                    <!-- 🔧 NEW: Advisory placeholder API expects -->
+                    <div id="advisory-card" class="advisory-card">
+                        <div id="advisory-content" class="advisory-content"></div>
+                    </div>
+
+                    <div>
+                        <h3>Key Messages</h3>
+                        <div id="key-messages" class="muted">No key messages available.</div>
+                    </div>
+                    <div>
+                        <h3>Discussion</h3>
+                        <div id="storm-discussion" class="muted">No discussion available.</div>
+                    </div>
+
+
                 </div>
             </section>
         </main>
@@ -147,8 +201,12 @@
             </div>
         </footer>
 
-        <!-- Module -->
+        <!-- Keep your existing JS; these IDs match your previous wiring -->
         <script type="module" src="./js/storm.js?v=2025.08.28a"></script>
+        <script type="module">
+            import { initTropicalBanner } from '../js/modules/tropical-banner.js';
+            initTropicalBanner();
+        </script>
     </body>
 
 </html>

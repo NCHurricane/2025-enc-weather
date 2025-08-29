@@ -49,7 +49,7 @@ function expand_short_id(string $id, string $stormsRoot): string {
   }
   return $id;
 }
-$stormId = expand_short_id($stormParam, $stormsRoot);
+$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2)); // e.g. AL052025 → al05
 
 // ---------- source URL ----------
 $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
@@ -154,7 +154,7 @@ foreach ($data->fix as $fix) {
 }
 
 // ---------- write cache ----------
-$stormDir = $stormsRoot . '/' . $stormId;
+$stormDir = $stormsRoot . '/' . $shortId;
 if (!is_dir($stormDir)) {
   @mkdir($stormDir, 0775, true);
 }

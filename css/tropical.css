@@ -250,7 +250,7 @@ input[name="textTab"] {
 }
 
 .active-storms-section {
-  margin-bottom: 20px 0 10px;
+  margin: 20px 0 10px;
 }
 
 .active-systems-header {
@@ -428,120 +428,5 @@ input[name="textTab"] {
   .image-timestamp {
     font-size: 0.6rem;
   }
-}
-
-/* ===============================
-   Active Storm page (active/index.html)
-   Scoped under .active-wrap to avoid collisions
-   =============================== */
-
-.active-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-.active-wrap .storm-header {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.active-wrap .storm-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
-}
-
-.active-wrap .badge {
-  font-size: 0.9rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 0.5rem;
-  background: #eef3ff;
-  color: #2748b3;
-  text-decoration: none;
-}
-
-.active-wrap .badge:hover,
-.active-wrap .badge:focus-visible {
-  background: #e3ecff;
-}
-
-.active-wrap .last-updated {
-  margin-left: auto;
-  font-weight: 600;
-}
-
-/* Grid & cards */
-.active-wrap .grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.active-wrap .card {
-  background: var(--card-bg, #fff);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.active-wrap .span-4 { grid-column: span 4; }
-.active-wrap .span-6 { grid-column: span 6; }
-.active-wrap .span-8 { grid-column: span 8; }
-
-/* Utilities */
-.active-wrap .muted { color: #666; }
-
-/* Active storms list */
-.active-wrap .storm-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.active-wrap .storm-tile {
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  padding: 12px 14px;
-  text-decoration: none;
-  color: inherit;
-  min-width: 220px;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
-  background: #fff;
-}
-
-.active-wrap .storm-tile:hover {
-  background: #fafafa;
-}
-
-.active-wrap .storm-tile:focus-visible {
-  outline: 2px solid #2f6fed;
-  outline-offset: 2px;
-}
-
-/* Key/Value overview list */
-.active-wrap .kv {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 4px 10px;
-}
-
-.active-wrap .kv dt {
-  color: #666;
-}
-
-.active-wrap .kv dd {
-  margin: 0;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .active-wrap .span-4,
-  .active-wrap .span-6,
-  .active-wrap .span-8 {
-    grid-column: span 12;
-  }
-  .active-wrap .storm-header { gap: 0.5rem; }
 }
 
