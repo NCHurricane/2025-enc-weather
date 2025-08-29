@@ -51,40 +51,36 @@
         </header>
 
         <main class="container">
-            <h1 class="main-title">Active Tropical Cyclones</h1>
+            <h1 class="main-title" id="storm-title">Loading storm...</h1>
 
             <!-- Optional banner (keeps parity with Tropical page pattern) -->
             <section id="active-storms-section" class="active-storms-section" aria-label="Active storms banner">
                 <div class="tropical-banner"></div>
             </section>
 
-            <section id="storm-list-section" class="other-container" aria-labelledby="storm-list-title">
-                <h2 id="storm-list-title" class="other-title section-title">Active Storms</h2>
-                <p id="storm-list-note" class="muted"></p>
-                <ul id="storm-list" class="storm-list"></ul>
-            </section>
 
             <!-- Active header -->
             <section class="storm-header-container" aria-labelledby="storm-header-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM OVERVIEW
+                    <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM OVERVIEW
                 </div>
-                <div class="storm-header">
-                    <h3 id="storm-title" class="section-title" style="margin: 8px 0 0 0;">Active Storm</h3>
-                    <span id="storm-id" class="badge"></span>
-                    <dl id="overview-kv" class="overview-kv"></dl>
-                    <!-- Absolute ET per Playbook; storm.js sets this via formatAbs(...) -->
-                    <div class="last-updated" id="last-updated" aria-live="polite"></div>
+                <div class="storm-header-section" id="storm-header-section">
+                    <div class="storm-header">
+
+                        <div id="storm-id" class="badge"></div>
+                        <dl id="overview-kv" class="overview-kv"></dl>
+                        <!-- Absolute ET per Playbook; storm.js sets this via formatAbs(...) -->
+                        <div class="last-updated" id="last-updated" aria-live="polite"></div>
+                    </div>
                 </div>
             </section>
 
             <!-- Overview -->
-            <section class="active-overview-container" aria-labelledby="overview-title">
+            <section class="radii-container" aria-labelledby="overview-title">
                 <div class="section-title">
                     <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WIND RADII
                 </div>
-                <div class="storm-overview-section" id="storm-overview-section">
-                    <!-- (Optional) Radii table that storm.js can fill if present -->
+                <div class="radii-section" id="radii-section">
                     <table id="radii-table" class="radii-table" style="width:100%;">
                         <thead>
                             <tr>
@@ -104,7 +100,7 @@
                 <div class="section-title">
                     <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WATCHES AND WARNINGS
                 </div>
-                <div id="storm-hazards-section">
+                <div class="storm-hazards-section" id="storm-hazards-section">
                     <div>
                         <h3>Coastal</h3>
                         <div id="coastal-alerts" class="muted">No alerts.</div>
@@ -121,7 +117,7 @@
                 <div class="section-title">
                     <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM GRAPHICS
                 </div>
-                <div id="storm-graphics-section">
+                <div class="storm-graphics-section" id="storm-graphics-section">
                     <div>
                         <h3>Track &amp; Cone</h3>
                         <div id="cone-graphic" class="muted">Cone graphic will appear here.</div>
@@ -129,6 +125,10 @@
                     <div>
                         <h3>Wind / Surge / Rain</h3>
                         <div id="hazards-graphic" class="muted">Hazards graphics will appear here.</div>
+                    </div>
+                    <div>
+                        <h3>Key Messages</h3>
+                        <div id="key-messages" class="muted">No key messages available.</div>
                     </div>
                 </div>
             </section>
@@ -138,16 +138,12 @@
                 <div class="section-title">
                     <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>TEXT PRODUCTS
                 </div>
-                <div id="storm-text-section">
+                <div class="storm-text-section" id="storm-text-section">
                     <!-- 🔧 NEW: Advisory placeholder API expects -->
                     <div id="advisory-card" class="advisory-card">
                         <div id="advisory-content" class="advisory-content"></div>
                     </div>
 
-                    <div>
-                        <h3>Key Messages</h3>
-                        <div id="key-messages" class="muted">No key messages available.</div>
-                    </div>
                     <div>
                         <h3>Discussion</h3>
                         <div id="storm-discussion" class="muted">No discussion available.</div>

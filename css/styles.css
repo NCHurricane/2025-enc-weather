@@ -299,13 +299,7 @@ pre {
 .radar-container,
 .satellite-container,
 .meteogram-container,
-.other-container,
-.storm-header-container,
-.active-overview-container,
-.hazards-container,
-.graphics-container,
-.text-products-container,
-.notfound-container {
+.other-container {
   background-color: var(--color-primary);
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius);
@@ -323,13 +317,7 @@ pre {
 .satellite-title,
 .meteogram-title,
 .detailed-title,
-.storm-header-title,
-.section-title,
-.active-overview-title,
-.hazards-title,
-.graphics-title,
-.text-products-title,
-.notfound-title {
+.section-title {
   cursor: pointer;
   font-weight: bold;
   text-transform: uppercase;
