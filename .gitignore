@@ -76,5 +76,7 @@ images/isabel.webp
 active/api/tile-downloader.html
 active/api/tiles.php
 active/api/warm_tiles.php
-.gitignore
+js/data/tiles/imagery/
+active/api/download-tiles.ps1
 active/api/tile_downloader.php
+active/api/tiles_manifest_imagery.tsv
