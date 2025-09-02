@@ -228,3 +228,19 @@ export const warningPriorities = {
     "Child Abduction Emergency": 110,
     "Blue Alert": 111
 };
+
+// --- auto-alias TCV short codes to existing labels (no duplicates) ---
+(function () {
+  const map = (window.warningColors = window.warningColors || {});
+  const pairs = [
+    ["HU.W", "Hurricane Warning"],
+    ["HU.A", "Hurricane Watch"],
+    ["TR.W", "Tropical Storm Warning"],
+    ["TR.A", "Tropical Storm Watch"],
+    ["SS.W", "Storm Surge Warning"],
+    ["SS.A", "Storm Surge Watch"],
+  ];
+  for (const [code, label] of pairs) {
+    if (map[label] && !map[code]) map[code] = map[label];
+  }
+})();

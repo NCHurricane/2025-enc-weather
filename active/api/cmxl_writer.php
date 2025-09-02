@@ -17,6 +17,12 @@ function asNum($x){
   if ($s === '' || !is_numeric($s)) return null;
   return 0 + $s;
 }
+function asRadius($x){
+  $n = asNum($x);
+  if ($n === null) return 0;
+  if ($n < 0) return 0;       // clamp sentinels like -999 to 0
+  return (int) round($n);
+}
 
 // ---------- args: --storm=AL052025 or ?storm=AL052025 ----------
 $stormParam = strtoupper(trim($_GET['storm'] ?? ''));
@@ -122,10 +128,10 @@ foreach ($data->fix as $fix) {
     $key = $sp === '34' ? 'r34' : ($sp === '50' ? 'r50' : ($sp === '64' ? 'r64' : null));
     if ($key) {
       $r = [
-        'NE' => asNum($ws->radius[0] ?? null),
-        'SE' => asNum($ws->radius[1] ?? null),
-        'SW' => asNum($ws->radius[2] ?? null),
-        'NW' => asNum($ws->radius[3] ?? null),
+        'NE' => asRadius($ws->radius[0] ?? null),
+        'SE' => asRadius($ws->radius[1] ?? null),
+        'SW' => asRadius($ws->radius[2] ?? null),
+        'NW' => asRadius($ws->radius[3] ?? null),
         'validTime' => $vt,
         'hour' => $h,
       ];
@@ -138,10 +144,10 @@ foreach ($data->fix as $fix) {
   $sc = $cd->seaContours->waveHeight ?? null;
   if ($sc && trim((string)$sc) === '12') {
     $r = [
-      'NE' => asNum($sc->radius[0] ?? null),
-      'SE' => asNum($sc->radius[1] ?? null),
-      'SW' => asNum($sc->radius[2] ?? null),
-      'NW' => asNum($sc->radius[3] ?? null),
+      'NE' => asRadius($sc->radius[0] ?? null),
+      'SE' => asRadius($sc->radius[1] ?? null),
+      'SW' => asRadius($sc->radius[2] ?? null),
+      'NW' => asRadius($sc->radius[3] ?? null),
       'validTime' => $vt,
       'hour' => $h,
     ];

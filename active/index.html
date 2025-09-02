@@ -9,7 +9,7 @@
         <!-- Core site styles -->
         <link rel="stylesheet" href="../css/styles.css" />
         <link rel="stylesheet" href="../css/tropical.css" />
-        <link rel="stylesheet" href="../css/active.css" />
+        <link rel="stylesheet" href="./css/active.css" />
 
         <meta name="description" content="Active tropical storm overview, hazards, graphics, and text products." />
         <link
@@ -51,9 +51,9 @@
         </header>
 
         <main class="container">
-            <h1 class="main-title" id="storm-title">Loading storm...</h1>
+            <h1 class="main-title"><span id="storm-title">Loading name...</span>&nbsp;&nbsp;<span id="storm-id">...and
+                    designation</span></h1>
 
-            <!-- Optional banner (keeps parity with Tropical page pattern) -->
             <section id="active-storms-section" class="active-storms-section" aria-label="Active storms banner">
                 <div class="tropical-banner"></div>
             </section>
@@ -62,23 +62,50 @@
             <!-- Active header -->
             <section class="storm-header-container" aria-labelledby="storm-header-title">
                 <div class="section-title">
-                    <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM OVERVIEW
+                    <i class="fa-solid fa-hurricane fa-xl fontawesome-icon"></i>STORM OVERVIEW
                 </div>
                 <div class="storm-header-section" id="storm-header-section">
                     <div class="storm-header">
-
-                        <div id="storm-id" class="badge"></div>
-                        <dl id="overview-kv" class="overview-kv"></dl>
-                        <!-- Absolute ET per Playbook; storm.js sets this via formatAbs(...) -->
+                        <div id="overview-v2"></div>
                         <div class="last-updated" id="last-updated" aria-live="polite"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- Overview -->
+            <!-- Watches & Warnings -->
+            <section class="hazards-container" aria-labelledby="hazards-title">
+                <div class="section-title">
+                    <i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>WATCHES AND WARNINGS
+                </div>
+                <section class="storm-hazards-section">
+                    <div class="ww-grid">
+                        <div class="ww-mapcol">
+                            <canvas id="ww-wind-canvas" aria-label="Wind watches and warnings map"></canvas>
+                        </div>
+                        <div class="ww-textcol" id="ww-wind-text" aria-live="polite"></div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Storm Surge Watches & Warnings (separate container) -->
+            <section class="surge-container" aria-labelledby="surge-title">
+                <div class="section-title">
+                    <i class="fa-solid fa-water fa-xl fontawesome-icon"></i>STORM SURGE WATCHES AND WARNINGS
+                </div>
+                <section class="storm-surge-section">
+                    <div class="ww-grid">
+                        <div class="ww-mapcol">
+                            <canvas id="ww-surge-canvas" aria-label="Storm surge watches and warnings map"></canvas>
+                        </div>
+                        <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Radii -->
             <section class="radii-container" aria-labelledby="overview-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WIND RADII
+                    <i class=" fa-solid fa-wind fa-xl fontawesome-icon"></i>WIND RADII
                 </div>
                 <div class="radii-section" id="radii-section">
                     <table id="radii-table" class="radii-table" style="width:100%;">
@@ -95,27 +122,11 @@
                 </div>
             </section>
 
-            <!-- Watches & Warnings -->
-            <section class="hazards-container" aria-labelledby="hazards-title">
-                <div class="section-title">
-                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>WATCHES AND WARNINGS
-                </div>
-                <div class="storm-hazards-section" id="storm-hazards-section">
-                    <div>
-                        <h3>Coastal</h3>
-                        <div id="coastal-alerts" class="muted">No alerts.</div>
-                    </div>
-                    <div>
-                        <h3>Inland</h3>
-                        <div id="inland-alerts" class="muted">No alerts.</div>
-                    </div>
-                </div>
-            </section>
 
             <!-- Graphics -->
             <section class="graphics-container" aria-labelledby="graphics-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>STORM GRAPHICS
+                    <i class=" fa-solid fa-image fa-xl fontawesome-icon"></i>STORM GRAPHICS
                 </div>
                 <div class="storm-graphics-section" id="storm-graphics-section">
                     <div>
@@ -136,10 +147,9 @@
             <!-- Text Products -->
             <section class="text-products-container" aria-labelledby="text-products-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-location-dot fa-xl fontawesome-icon"></i>TEXT PRODUCTS
+                    <i class=" fa-solid fa-newspaper fa-xl fontawesome-icon"></i>TEXT PRODUCTS
                 </div>
                 <div class="storm-text-section" id="storm-text-section">
-                    <!-- 🔧 NEW: Advisory placeholder API expects -->
                     <div id="advisory-card" class="advisory-card">
                         <div id="advisory-content" class="advisory-content"></div>
                     </div>
@@ -198,7 +208,11 @@
         </footer>
 
         <!-- Keep your existing JS; these IDs match your previous wiring -->
-        <script type="module" src="./js/storm.js?v=2025.08.28a"></script>
+        <script src="/2025_weather/js/modules/warningColors.js?v=2025.09.01b"></script>
+        <script src="/2025_weather/active/js/ww-maps.js?v=2025.09.01b" defer></script>
+
+        <script type="module" src="./js/radii-visualization.js?v=2025.09.01b"></script>
+        <script type="module" src="./js/storm.js?v=2025.09.01b"></script>
         <script type="module">
             import { initTropicalBanner } from '../js/modules/tropical-banner.js';
             initTropicalBanner();
