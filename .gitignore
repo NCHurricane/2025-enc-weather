@@ -72,3 +72,9 @@ active/xml/17L.xml
 active/xml/18L_alt.xml
 active/xml/18L.xml
 active/xml/19L.xml
+images/isabel.webp
+active/api/tile-downloader.html
+active/api/tiles.php
+active/api/warm_tiles.php
+.gitignore
+active/api/tile_downloader.php
