@@ -31,6 +31,11 @@
     },
   };
 
+  // Local imagery dir + extensions to try (most .jpg, some .png)
+const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/imagery/tiles";
+  const LOCAL_IMAGERY_EXTS = ["jpg", "png"];
+  const LOCAL_TMS_Y = true; // ← try TMS inversion for local tiles only
+
   // --- XYZ tile provider config ---
   const TILE_PROVIDERS = {
     imagery:
@@ -46,13 +51,31 @@
   // Tile zoom bounds and behavior:
   // - TILE_MIN_Z / TILE_MAX_Z: hard clamps for tile z to avoid excessive requests or empty tiles.
   // - TILE_DPR_AWARE: when true, prefer one zoom level higher on high-DPI displays to reduce visible blur.
-  const TILE_MIN_Z = 4;
-  const TILE_MAX_Z = 12;
-  const TILE_DPR_AWARE = true;
+  const TILE_MIN_Z = 10;
+  const TILE_MAX_Z = 10;
+  // const TILE_DPR_AWARE = true;
 
   // simple in-memory tile cache
   const _tileCache = new Map(); // key: `${TILE_STYLE}|${z}|${x}|${y}` -> HTMLImageElement
   const _drawVersionByCanvas = new Map(); // canvasId -> version // bump each draw to prevent stale paints
+
+function tileUrlCandidates(style, z, x, y) {
+  const urls = [];
+
+  if (style === "imagery") {
+    // If your local set is TMS, invert Y only for the local candidate
+    const localY = LOCAL_TMS_Y ? (Math.pow(2, z) - 1 - y) : y;
+    for (const ext of LOCAL_IMAGERY_EXTS) {
+      urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}.${ext}`);
+    }
+  }
+
+  // Provider fallback (XYZ)
+  const tpl = TILE_PROVIDERS[style];
+  if (tpl) urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
+
+  return urls;
+}
 
   function getParam(name) {
     const u = new URL(window.location.href);
@@ -102,7 +125,11 @@
     // If enabled and devicePixelRatio indicates a high-DPI screen, prefer one zoom level higher
     // to reduce upscaling blur. Clamp to TILE_MAX_Z.
     try {
-      if (TILE_DPR_AWARE && typeof window !== "undefined" && window.devicePixelRatio > 1) {
+      if (
+        TILE_DPR_AWARE &&
+        typeof window !== "undefined" &&
+        window.devicePixelRatio > 1
+      ) {
         best = Math.min(TILE_MAX_Z, best + 1);
       }
     } catch (e) {
@@ -117,25 +144,56 @@
     return `${style}|${z}|${x}|${y}`;
   }
 
-  function ensureTile(style, z, x, y) {
-    const tpl = TILE_PROVIDERS[style];
-    if (!tpl) return Promise.resolve(null);
-    const key = _tileKey(style, z, x, y);
-    const cached = _tileCache.get(key);
-    if (cached) return Promise.resolve(cached);
-
-    const url = tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y);
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        _tileCache.set(key, img);
-        resolve(img);
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
+  function tileUrlCandidates(style, z, x, y) {
+  const urls = [];
+  if (style === "imagery") {
+    for (const ext of LOCAL_IMAGERY_EXTS) {
+      urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${y}.${ext}`);
+    }
   }
+  const tpl = TILE_PROVIDERS[style];      // your tiles.php template
+  if (tpl) urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
+  return urls;
+}
+
+  function ensureTile(style, z, x, y) {
+  const provider = TILE_PROVIDERS[style];
+  if (!provider) return Promise.resolve(null);
+
+  const key = `${style}|${z}|${x}|${y}`;
+  const cached = _tileCache.get(key);
+  if (cached) return Promise.resolve(cached);
+
+  const candidates = tileUrlCandidates(style, z, x, y);
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.decoding = "async";
+    img.loading = "lazy";
+
+    let i = 0;
+    const tryNext = () => {
+      if (i >= candidates.length) {
+        console.warn("[ww] tile fail (all candidates)", { z, x, y, candidates });
+        return resolve(null);
+      }
+      const url = candidates[i++];
+      console.info("[ww] try", url);
+      img.src = url;
+    };
+
+    img.onload = () => {
+      console.info("[ww] loaded", img.src);
+      _tileCache.set(key, img);
+      resolve(img);
+    };
+    img.onerror = tryNext;
+
+    tryNext();
+  });
+}
+
 
   /**
    * Paint XYZ tiles that cover the current domain, then (re)paint vectors to keep them on top.
@@ -186,6 +244,11 @@
         // bail if a newer draw started
         if (version !== _drawVersionByCanvas.get(canvasKey)) return;
 
+        console.info(
+          "[ww] first-candidate",
+          tileUrlCandidates(TILE_STYLE, z, tx, ty)[0]
+        );
+
         const img = await ensureTile(style, z, tx, ty);
         if (!img) continue;
         if (version !== _drawVersionByCanvas.get(canvasKey)) return;
@@ -212,7 +275,6 @@
           (f) => f?.properties?.hazard === hazard
         );
         drawFeatures(ctx, all, domain, rect, keysOrder);
-        if (!all.length) return;
 
         // Separate out PR/VI insets
         const pr = all.filter((f) => f.properties.state === "PR");
@@ -552,12 +614,22 @@
     };
   }
 
+  function isHidden(node) {
+    if (!node) return true;
+    // collapsed (no layout box) or any ancestor explicitly hidden
+    if (node.offsetParent === null) return true;
+    if (node.closest("[hidden]")) return true;
+    return false;
+  }
+
   function drawPanel(canvasId, featureCollection, hazard) {
+    console.info("[ww] drawPanel", canvasId, {
+      hazard,
+      count: (featureCollection?.features || []).length,
+    });
     const canvas = document.getElementById(canvasId);
-    if (!canvas) {
-      console.warn("Canvas not found:", canvasId);
-      return;
-    }
+    if (!canvas || isHidden(canvas)) return;
+
     const { width, height } = resizeCanvasToContainer(canvas);
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
@@ -566,7 +638,6 @@
       featureCollection?.features?.filter(
         (f) => f?.properties?.hazard === hazard
       ) ?? [];
-    if (!all.length) return;
 
     const rectMain = { x: 0, y: 0, w: width, h: height };
 
@@ -612,6 +683,11 @@
         w: Math.round(box.w * width),
         h: Math.round(box.h * height),
       };
+    }
+    if (all.length) {
+      const keysOrder =
+        hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
+      drawFeatures(ctx, all, auto, rectMain, keysOrder);
     }
     if (pr.length) {
       const box = INSETS.PR;
@@ -759,7 +835,6 @@
         data.display?.wind,
         "No active watches/warnings."
       );
-      drawPanel("ww-wind-canvas", data.features, "wind");
 
       // SURGE
       renderTextList(
@@ -767,7 +842,6 @@
         data.display?.surge,
         "No active watches/warnings."
       );
-      drawPanel("ww-surge-canvas", data.features, "surge");
 
       let raf = null;
       const onResize = () => {
@@ -778,6 +852,7 @@
         });
       };
       window.addEventListener("resize", onResize, { passive: true });
+      onResize();
     } catch (err) {
       console.error("Failed to load tcv.json:", err);
       renderTextList("ww-wind-text", null, "No active watches/warnings.");

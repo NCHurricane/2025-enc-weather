@@ -189,7 +189,9 @@
   border-radius: var(--border-radius);
 }
 
-#radii-section[hidden] {
+#radii-section[hidden],
+#ww-wind-canvas[hidden],
+#ww-surge-canvas[hidden] {
   display: none !important;
 }
 
@@ -355,10 +357,6 @@
   }
 }
 
-/* If you want the icon to rotate, add this class to the canvas when drawing */
-.cyclone-rotating {
-  animation: cyclone-spin 4s linear infinite;
-}
 
 /* Hide the old table when using visualization */
 .radii-table {

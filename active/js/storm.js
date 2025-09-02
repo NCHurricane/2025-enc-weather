@@ -7,7 +7,6 @@
  *
  * Logging: console.info|warn|error only
  */
-(() => {
   "use strict";
 
   /* ==============================
@@ -133,10 +132,22 @@
     ).filter((sec) => !sec.classList.contains("storm-header-container"));
 
     sections.forEach((section) => {
+      const container = section;
       const title = section.querySelector(":scope > .section-title");
       // first direct child div after the title = content wrapper
-      const kids = Array.from(section.children);
-      const content = kids.find((el) => el !== title && el.tagName === "DIV");
+      const kids = Array.from(container.children);
+      // Pick the first *element* after the title — works for DIV or SECTION
+      const titleIndex = kids.indexOf(title);
+      const content = kids.find(
+        (el, idx) => idx > titleIndex && el.nodeType === 1
+      );
+      if (!content) return; // safety
+
+      // Collapse on load except the header container
+      if (!container.classList.contains("storm-header-container")) {
+        content.hidden = true;
+        title.setAttribute("aria-expanded", "false");
+      }
 
       if (!title || !content) return;
 
@@ -171,7 +182,14 @@
         }
       };
 
-      title.addEventListener("click", toggle);
+      title.addEventListener("click", () => {
+        const willOpen = content.hidden === true;
+        content.hidden = !content.hidden;
+        title.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        if (willOpen) {
+          window.dispatchEvent(new Event("resize"));
+        }
+      });
       title.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -214,8 +232,7 @@
 
     const titleText = `${(sysType + " " + sysName).toUpperCase()}`;
     if (els.title) els.title.textContent = titleText;
-    if (els.stormId)
-      els.stormId.textContent = atcfID ? `\u2013 ${atcfID}` : "";
+    if (els.stormId) els.stormId.textContent = atcfID ? `\u2013 ${atcfID}` : "";
 
     const msgType = toNA(advisory?.messageType);
     const advNum = toNA(advisory?.advisoryNumber);
@@ -332,4 +349,4 @@
   } else {
     init();
   }
-})();
+
