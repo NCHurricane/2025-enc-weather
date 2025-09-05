@@ -7,9 +7,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <!-- Core site styles -->
-        <link rel="stylesheet" href="../css/styles.css" />
-        <link rel="stylesheet" href="../css/tropical.css" />
-        <link rel="stylesheet" href="./css/active.css" />
+        <link rel="stylesheet" href="../css/styles.css?v=2025.09.02a" />
+        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.02a" />
+        <link rel="stylesheet" href="./css/active.css?v=2025.09.02a" />
 
         <meta name="description" content="Active tropical storm overview, hazards, graphics, and text products." />
         <link
@@ -67,7 +67,6 @@
                 <div class="storm-header-section" id="storm-header-section">
                     <div class="storm-header">
                         <div id="overview-v2"></div>
-                        <div class="last-updated" id="last-updated" aria-live="polite"></div>
                     </div>
                 </div>
             </section>
@@ -208,13 +207,13 @@
         </footer>
 
         <!-- Keep your existing JS; these IDs match your previous wiring -->
-        <script type="module" src="/2025_weather/js/modules/warningColors.js?v=2025.09.01b"></script>
-        <script src="/2025_weather/active/js/ww-maps.js?v=2025.09.01b" defer></script>
+        <script type="module" src="/2025_weather/js/modules/warningColors.js?v=2025.09.2a"></script>
 
-        <script type="module" src="./js/radii-visualization.js?v=2025.09.01b"></script>
-        <script type="module" src="./js/storm.js?v=2025.09.01b"></script>
+        <script type="module" src="/2025_weather/active/js/radii-visualization.js?v=2025.09.2a"></script>
+        <script type="module" src="/2025_weather/active/js/storm.js?v=2025.09.2a"></script>
+        <script src="/2025_weather/active/js/ww-maps.js?v=2025.09.2a" defer></script>
         <script type="module">
-            import { initTropicalBanner } from '../js/modules/tropical-banner.js';
+            import { initTropicalBanner } from '/2025_weather/js/modules/tropical-banner.js';
             initTropicalBanner();
         </script>
     </body>

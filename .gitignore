@@ -79,3 +79,6 @@ js/data/tiles/imagery/
 active/api/download-tiles.ps1
 active/api/tile_downloader.php
 active/api/tiles_manifest_imagery.tsv
+active/storms/AL052025/advisory.json
+js/data/placenames.json
+active/storms/AL052025/tcv.json

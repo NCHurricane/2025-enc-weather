@@ -56,6 +56,41 @@ if ($xml === false) {
   bail(502, 'Failed to parse advisory XML.');
 }
 
+function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): string {
+  $s = trim((string)$dateTimeStr);
+  if ($s === '') return '';
+
+  // Try parsing "YYYYMMDD HH:MM:SS AM/PM TZ"
+  if (preg_match('/^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([AP]M)\s+([A-Z]{3,4})$/i', $s, $m)) {
+    $month  = (int)$m[2];
+    $day    = (int)$m[3];
+    $hour   = (int)$m[4];
+    $minute = (int)$m[5];
+    $ampm   = strtoupper($m[7]);
+    $tz     = strtoupper($m[8]);
+
+    // convert 12h -> 24h
+    if ($ampm === 'PM' && $hour !== 12) $hour += 12;
+    if ($ampm === 'AM' && $hour === 12) $hour  = 0;
+
+    // back to 12h for display
+    $displayHour = $hour === 0 ? 12 : ($hour > 12 ? $hour - 12 : $hour);
+    $displayAmPm = ($hour >= 12 ? 'PM' : 'AM');
+
+    // month names
+    static $MONTHS_SHORT = ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    // static $MONTHS_LONG  = ['', 'January','February','March','April','May','June','July','August','September','October','November','December'];
+    $monthName = ($monthStyle === 'long' ? $MONTHS_SHORT[$month] : $MONTHS_SHORT[$month]);
+
+    // e.g., "Aug 22 5:00 PM AST" or "August 22 5:00 PM AST"
+    return sprintf('%s %d %d:%02d %s %s',
+      $monthName, $day, $displayHour, $minute, $displayAmPm, $tz
+    );
+  }
+
+  return $s; // fallback if pattern doesn't match
+}
+
 function strval_safe($x): string { return trim((string)$x); }
 function intval_safe($x): ?int {
   $s = trim((string)$x);
@@ -89,7 +124,8 @@ $advisory = [
   'atcfID' => $storm,
   'generated' => gmdate('c'),
   'messageTimeUTC'   => isoUtcFromNhcUtc($xml->messageDateTimeUTC ?? ''),
-  'messageTimeLocal' => strval_safe($xml->messageDateTimeLocalStr ?? ($xml->messageDateTimeLocal ?? '')),
+  'messageTimeLocal' => formatToShortDateTime($xml->messageDateTimeLocal ?? ($xml->messageDateTimeLocalStr ?? '')),
+  'messageTimeUTC_formatted' => formatToShortDateTime($xml->messageDateTimeUTC ?? ''),
   'messageType'      => strval_safe($xml->messageType ?? ''),
   'advisoryNumber'   => intval_safe($xml->advisoryNumber ?? ''),
   'systemType'       => strval_safe($xml->systemType ?? ''),

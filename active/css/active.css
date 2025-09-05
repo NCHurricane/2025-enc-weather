@@ -67,103 +67,115 @@
 }
 
 /* =========================
-   Overview v2 (advisory.json)
+   Overview v2 (Compact Layout)
    ========================= */
 
-/* Title refinement (optional) */
+/* Title refinement */
 .main-title {
   line-height: 1.2;
 }
 .main-title #storm-id {
+  font-size: 1.5rem;
   margin-left: 0.25rem;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: 0.01em;
   opacity: 0.95;
 }
 
-/* Container */
+/* Base container */
 #overview-v2 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-/* Each row: label (fixed) + value (fluid), single column on mobile */
-#overview-v2 .ov-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 8px 14px;
-  align-items: baseline;
-  margin: 2px 0;
+/* Compact layout styles */
+.overview-v2.compact-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
+.ov-info-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  line-height: 1.3;
+}
 
+.ov-info-line .ov-label {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  margin-right: 0.25rem;
+  min-width: fit-content;
+}
+
+.ov-info-line .ov-value {
+  font-weight: 400;
+  flex: 1;
+}
+
+/* Center section */
+.ov-center-section {
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.ov-center-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.02em;
+}
+
+.ov-geo-point {
+  margin: 0.1rem 0;
+  text-transform: uppercase;
+}
+
+/* N/A icons */
 #overview-v2 .ov-value i.fa-circle-question {
   opacity: 0.7;
   margin-right: 6px;
 }
 
-/* Specific rows (easy hooks to style later) */
-#ov-message-type .ov-label {
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-#ov-message-type .ov-value {
+/* Per-row targeting (example: Advisory # label only) */
+.overview-v2 .ov-info-line[data-key="message-type"] .ov-value {
+  font-family: "Montserrat", sans-serif;
   text-transform: capitalize;
+  color: var(--accent-500);
   font-weight: 700;
-  letter-spacing: 0.02em;
-}
-#ov-advisory .ov-value {
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-#ov-issued .ov-value {
-  font-variant-numeric: tabular-nums;
-}
-#ov-location .ov-value {
-  font-variant-numeric: tabular-nums;
-}
-#ov-max-wind .ov-value,
-#ov-moving .ov-value {
-  letter-spacing: 0.01em;
-}
-#ov-pressure .ov-value {
-  font-variant-numeric: tabular-nums;
-}
-#ov-moving .ov-value {
-  text-transform: uppercase;
-}
-#ov-category .ov-value {
-  font-weight: 700;
-}
-/* Geo lead-in and points span full width (no label column) */
-#ov-geo-leadin .ov-label {
-  display: none;
-}
-#ov-geo-leadin .ov-value {
-  grid-column: 1 / -1;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  margin-top: 0.25rem;
-}
-#ov-geo-pt1 .ov-label,
-#ov-geo-pt2 .ov-label {
-  display: none;
-}
-#ov-geo-pt1 .ov-value,
-#ov-geo-pt2 .ov-value {
-  grid-column: 1 / -1;
 }
 
-/* Mobile: stack label above value, auto-colon */
+.overview-v2 .ov-info-line[data-key="category-value"] .ov-label,
+.overview-v2 .ov-info-line[data-key="category-value"] .ov-value {
+  font-family: 'Roboto', sans-serif;
+  text-transform: uppercase;
+  font-size: 2rem;
+  font-weight: 900;
+  color: red;
+}
+
+
+
+/* Replace non-standard :contains() usage */
+.overview-v2 .ov-info-line[data-key="movement"] .ov-value {
+  font-weight: 800;
+}
+
+/* Mobile responsive */
 @media (max-width: 640px) {
-  #overview-v2 .ov-row {
-    grid-template-columns: 1fr;
+  .ov-info-line {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  #overview-v2 .ov-label::after {
+
+  .ov-info-line .ov-label {
+    margin-bottom: 0.1rem;
+  }
+
+  .ov-info-line .ov-label::after {
     content: ":";
     margin-left: 0.25rem;
   }
@@ -357,7 +369,6 @@
   }
 }
 
-
 /* Hide the old table when using visualization */
 .radii-table {
   display: none;
@@ -451,7 +462,7 @@
 
 /* side-by-side layout for map (left) and text (right) */
 .storm-hazards-section .ww-grid,
-.storm-surge-section  .ww-grid {
+.storm-surge-section .ww-grid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 12px;
@@ -461,14 +472,14 @@
 /* prevent long lines from forcing overflow */
 .storm-hazards-section .ww-grid .ww-mapcol,
 .storm-hazards-section .ww-grid .ww-textcol,
-.storm-surge-section  .ww-grid .ww-mapcol,
-.storm-surge-section  .ww-grid .ww-textcol {
+.storm-surge-section .ww-grid .ww-mapcol,
+.storm-surge-section .ww-grid .ww-textcol {
   min-width: 0;
 }
 
 /* ensure the canvas behaves as a block element */
 .storm-hazards-section .ww-grid .ww-mapcol canvas,
-.storm-surge-section  .ww-grid .ww-mapcol canvas {
+.storm-surge-section .ww-grid .ww-mapcol canvas {
   display: block;
   width: 100%;
   height: auto; /* JS sets actual pixels */
@@ -477,7 +488,7 @@
 /* stack on narrow screens */
 @media (max-width: 900px) {
   .storm-hazards-section .ww-grid,
-  .storm-surge-section  .ww-grid {
+  .storm-surge-section .ww-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -17,11 +17,20 @@
     OPACITY_ALL: 0.3,
     // Compass & labels
     BASE_PAD: 20,
-    EXTRA_FRAME: 25, // extra outer room around compass
+    EXTRA_FRAME: 20, // extra outer room around compass
     LABEL_OFFSET: 18, // gap from compass circle to cardinal label
-    LABEL_SAFE_PAD: 12, // keep labels X px inside the canvas edge
+    LABEL_SAFE_PAD: 25, // keep labels X px inside the canvas edge
     VERTEX_LABEL_OFFSET: 10, // distance of vertex labels away from polygon
   };
+
+  // Use the same DPR everywhere in this module (matches your canvas DPR clamp = 2)
+  function devicePixelRatioSafe() {
+    const dpr = window.devicePixelRatio || 1;
+    return dpr < 1 ? 1 : dpr > 2 ? 2 : dpr;
+  }
+  function devPxFromCss(pxCss) {
+    return Math.max(1, Math.round(pxCss * devicePixelRatioSafe()));
+  }
 
   /* ======================
      Radii helper functions
@@ -87,7 +96,7 @@
       this.activeWind = "34";
       this.refreshGeometry();
     }
-    
+
     refreshGeometry() {
       this.centerX = this.canvas.width / 2;
       this.centerY = this.canvas.height / 2;
@@ -108,11 +117,23 @@
 
       if (this.activeWind === "all") {
         if (this.radiiData.r34)
-          this.drawRadii("r34", RADII_CONFIG.WIND_COLORS[34], RADII_CONFIG.OPACITY_ALL);
+          this.drawRadii(
+            "r34",
+            RADII_CONFIG.WIND_COLORS[34],
+            RADII_CONFIG.OPACITY_ALL
+          );
         if (this.radiiData.r50)
-          this.drawRadii("r50", RADII_CONFIG.WIND_COLORS[50], RADII_CONFIG.OPACITY_ALL);
+          this.drawRadii(
+            "r50",
+            RADII_CONFIG.WIND_COLORS[50],
+            RADII_CONFIG.OPACITY_ALL
+          );
         if (this.radiiData.r64)
-          this.drawRadii("r64", RADII_CONFIG.WIND_COLORS[64], RADII_CONFIG.OPACITY_ALL);
+          this.drawRadii(
+            "r64",
+            RADII_CONFIG.WIND_COLORS[64],
+            RADII_CONFIG.OPACITY_ALL
+          );
       } else {
         const key = `r${this.activeWind}`;
         if (this.radiiData[key])
@@ -131,7 +152,7 @@
       ctx.beginPath();
       ctx.arc(this.centerX, this.centerY, this.maxRadius, 0, Math.PI * 2);
       ctx.strokeStyle = "rgba(0,0,0,0.15)";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 * devicePixelRatioSafe();
       ctx.stroke();
 
       const grad = ctx.createRadialGradient(
@@ -156,7 +177,7 @@
       ctx.moveTo(this.centerX, this.centerY - this.maxRadius);
       ctx.lineTo(this.centerX, this.centerY + this.maxRadius);
       ctx.strokeStyle = "rgba(255,255,255,0.25)";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.stroke();
     }
 
@@ -170,14 +191,15 @@
         canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
       );
 
-      ctx.font = "bold 14px Roboto, Arial, sans-serif";
+      ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       [
         { label: "N", x: 0, y: -1 },
-        { label: "E", x: 1, y: 0 },
+        // { label: "E", x: 1, y: 0 },
         { label: "S", x: 0, y: 1 },
         { label: "W", x: -1, y: 0 },
       ].forEach((d) =>
@@ -189,7 +211,8 @@
       );
 
       // distance labels (E side)
-      ctx.font = "bold 12px Roboto, Arial, sans-serif";
+      ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.fillStyle = "rgba(255,255,255,0.55)";
       [100, 200, 300, 400, 500].forEach((dist) => {
         const r = (dist / 500) * this.maxRadius;
@@ -202,7 +225,7 @@
       const ctx = this.ctx;
       ctx.save();
       ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.setLineDash([2, 4]);
       for (let i = 1; i <= 5; i++) {
         const r = (i / 5) * this.maxRadius;
@@ -276,19 +299,21 @@
           .padStart(2, "0");
       ctx.fill();
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 * devicePixelRatioSafe();
       ctx.stroke();
 
       // vertex labels (single threshold only)
       if (this.activeWind !== "all") {
-        ctx.font = "bold 14px Roboto, Arial, sans-serif";
+        ctx.font = `bold ${devPxFromCss(16)}px Roboto, Arial, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        ctx.lineWidth = 1 * devicePixelRatioSafe();
         ctx.fillStyle = "#fff";
         P.forEach((pt) => {
           if (!pt.dist) return;
           const r =
-            (pt.dist / maxDist) * this.maxRadius + RADII_CONFIG.VERTEX_LABEL_OFFSET;
+            (pt.dist / maxDist) * this.maxRadius +
+            RADII_CONFIG.VERTEX_LABEL_OFFSET;
           const lx = this.centerX + r * Math.cos(pt.ang - Math.PI / 2);
           const ly = this.centerY + r * Math.sin(pt.ang - Math.PI / 2);
           ctx.fillText(`${pt.dist} nm`, lx, ly + 0.5);
@@ -297,16 +322,17 @@
     }
     drawStormCenter() {
       const ctx = this.ctx;
-      
+
       // Draw Font Awesome hurricane icon
-      ctx.font = "900 28px 'Font Awesome 6 Free'"; // Use 900 weight for solid icons
+      ctx.font = `900 ${devPxFromCss(28)}px 'Font Awesome 6 Free'`;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.fillStyle = "#d5ff3d53";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      
+
       // Unicode for fa-hurricane icon
       ctx.fillText("\uf751", this.centerX, this.centerY);
-      
+
       // Optional: Add a subtle glow effect
       ctx.shadowColor = "#d4ff3d";
       ctx.shadowBlur = 8;
@@ -368,7 +394,8 @@
     `;
 
     // Table host (hidden by CSS unless you want it shown)
-    const tableHost = document.getElementById("radii-table") || document.createElement("div");
+    const tableHost =
+      document.getElementById("radii-table") || document.createElement("div");
     if (!document.getElementById("radii-table")) {
       tableHost.id = "radii-table";
       tableHost.className = "radii-table";
@@ -388,34 +415,39 @@
       // Reset canvas inline styles first to get accurate container measurements
       canvas.style.width = "";
       canvas.style.height = "";
-      
+
       const cs = window.getComputedStyle(compassWrap);
       const padX =
         (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
       const padY =
         (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-      
+
       // Get the parent container's actual available space
       const containerRect = canvasContainer.getBoundingClientRect();
       const availableWidth = containerRect.width || canvasContainer.clientWidth;
-      const availableHeight = containerRect.height || canvasContainer.clientHeight || availableWidth;
-      
+      const availableHeight =
+        containerRect.height || canvasContainer.clientHeight || availableWidth;
+
       // Use the smaller dimension to maintain square aspect ratio
-      const cssSide = Math.min(RADII_CONFIG.CANVAS_MAX_PX, availableWidth, availableHeight);
+      const cssSide = Math.min(
+        RADII_CONFIG.CANVAS_MAX_PX,
+        availableWidth,
+        availableHeight
+      );
 
       // if the section is hidden, client sizes are 0 — bail and try again later
       if (!cssSide || !isFinite(cssSide) || cssSide <= 0) return false;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = devicePixelRatioSafe();
       canvas.style.width = cssSide + "px";
       canvas.style.height = cssSide + "px";
       canvas.width = Math.floor(cssSide * dpr);
       canvas.height = Math.floor(cssSide * dpr);
       return true;
     }
-    
+
     const drawer = new RadiiDrawer(ctx, canvas);
-    
+
     if (!resizeCanvas()) {
       // defer first draw until section is shown
     } else {
@@ -533,9 +565,9 @@
         }
       }, 100); // 100ms debounce
     }
-    
+
     window.addEventListener("resize", handleResize);
-    
+
     // Store refresh function on section for collapsible support
     section.__radiiRefresh = () => {
       // Small delay to ensure DOM has settled after section expansion
@@ -552,7 +584,6 @@
      Public API
      ================ */
   window.RadiiVisualization = {
-    render: renderRadiiVisualAndTable
+    render: renderRadiiVisualAndTable,
   };
-
 })();

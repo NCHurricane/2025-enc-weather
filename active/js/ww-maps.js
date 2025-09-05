@@ -32,9 +32,8 @@
   };
 
   // Local imagery dir + extensions to try (most .jpg, some .png)
-const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/imagery/tiles";
-  const LOCAL_IMAGERY_EXTS = ["jpg", "png"];
-  const LOCAL_TMS_Y = true; // ← try TMS inversion for local tiles only
+  const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/tiles/imagery";
+  const LOCAL_IMAGERY_EXTS = ["jpg"];
 
   // --- XYZ tile provider config ---
   const TILE_PROVIDERS = {
@@ -51,31 +50,55 @@ const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/imagery/tiles";
   // Tile zoom bounds and behavior:
   // - TILE_MIN_Z / TILE_MAX_Z: hard clamps for tile z to avoid excessive requests or empty tiles.
   // - TILE_DPR_AWARE: when true, prefer one zoom level higher on high-DPI displays to reduce visible blur.
-  const TILE_MIN_Z = 10;
-  const TILE_MAX_Z = 10;
+  const TILE_MIN_Z = 4;
+  const TILE_MAX_Z = 7;
   // const TILE_DPR_AWARE = true;
 
   // simple in-memory tile cache
   const _tileCache = new Map(); // key: `${TILE_STYLE}|${z}|${x}|${y}` -> HTMLImageElement
   const _drawVersionByCanvas = new Map(); // canvasId -> version // bump each draw to prevent stale paints
 
-function tileUrlCandidates(style, z, x, y) {
-  const urls = [];
+  let PLACENAMES = null;
 
-  if (style === "imagery") {
-    // If your local set is TMS, invert Y only for the local candidate
-    const localY = LOCAL_TMS_Y ? (Math.pow(2, z) - 1 - y) : y;
-    for (const ext of LOCAL_IMAGERY_EXTS) {
-      urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}.${ext}`);
-    }
+  function devicePixelRatioSafe() {
+    const dpr = window.devicePixelRatio || 1;
+    return dpr < 1 ? 1 : dpr > 2 ? 2 : dpr;
+  }
+  function devPxFromCss(pxCss) {
+    return Math.max(1, Math.round(pxCss * devicePixelRatioSafe()));
   }
 
-  // Provider fallback (XYZ)
-  const tpl = TILE_PROVIDERS[style];
-  if (tpl) urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
+  function loadPlacenames() {
+    // Path is relative to /2025_weather/active/js/ww-maps.js
+    // If you put the file at /2025_weather/active/data/placenames.json,
+    // this relative URL is correct:
+    return fetch("/2025_weather/js/data/placenames.json", {
+      cache: "force-cache",
+    })
+      .then((r) => r.json())
+      .then((arr) => {
+        PLACENAMES = arr;
+      });
+  }
 
-  return urls;
-}
+  function tileUrlCandidates(style, z, x, y) {
+    const urls = [];
+
+    if (style === "imagery") {
+      // Local imagery uses standard XYZ Y (no TMS inversion)
+      const localY = y;
+      for (const ext of LOCAL_IMAGERY_EXTS) {
+        urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}${ext}`);
+      }
+    }
+
+    // Provider fallback (XYZ)
+    const tpl = TILE_PROVIDERS[style];
+    if (tpl)
+      urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
+
+    return urls;
+  }
 
   function getParam(name) {
     const u = new URL(window.location.href);
@@ -122,20 +145,6 @@ function tileUrlCandidates(style, z, x, y) {
       }
     }
 
-    // If enabled and devicePixelRatio indicates a high-DPI screen, prefer one zoom level higher
-    // to reduce upscaling blur. Clamp to TILE_MAX_Z.
-    try {
-      if (
-        TILE_DPR_AWARE &&
-        typeof window !== "undefined" &&
-        window.devicePixelRatio > 1
-      ) {
-        best = Math.min(TILE_MAX_Z, best + 1);
-      }
-    } catch (e) {
-      // ignore and use computed best
-    }
-
     // final clamp (safety)
     return Math.max(TILE_MIN_Z, Math.min(TILE_MAX_Z, best));
   }
@@ -144,56 +153,70 @@ function tileUrlCandidates(style, z, x, y) {
     return `${style}|${z}|${x}|${y}`;
   }
 
-  function tileUrlCandidates(style, z, x, y) {
-  const urls = [];
-  if (style === "imagery") {
-    for (const ext of LOCAL_IMAGERY_EXTS) {
-      urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${y}.${ext}`);
-    }
-  }
-  const tpl = TILE_PROVIDERS[style];      // your tiles.php template
-  if (tpl) urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
-  return urls;
-}
-
   function ensureTile(style, z, x, y) {
-  const provider = TILE_PROVIDERS[style];
-  if (!provider) return Promise.resolve(null);
+    const provider = TILE_PROVIDERS[style];
+    if (!provider) return Promise.resolve(null);
 
-  const key = `${style}|${z}|${x}|${y}`;
-  const cached = _tileCache.get(key);
-  if (cached) return Promise.resolve(cached);
+    const key = `${style}|${z}|${x}|${y}`;
+    const cached = _tileCache.get(key);
+    if (cached) return Promise.resolve(cached);
 
-  const candidates = tileUrlCandidates(style, z, x, y);
+    const candidates = tileUrlCandidates(style, z, x, y);
 
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.loading = "lazy";
+    return new Promise((resolve) => {
+      let i = 0;
 
-    let i = 0;
-    const tryNext = () => {
-      if (i >= candidates.length) {
-        console.warn("[ww] tile fail (all candidates)", { z, x, y, candidates });
-        return resolve(null);
-      }
-      const url = candidates[i++];
-      console.info("[ww] try", url);
-      img.src = url;
-    };
+      const tryNext = () => {
+        if (i >= candidates.length) {
+          console.warn("[ww] tile fail (all candidates)", {
+            z,
+            x,
+            y,
+            candidates,
+          });
+          return resolve(null);
+        }
 
-    img.onload = () => {
-      console.info("[ww] loaded", img.src);
-      _tileCache.set(key, img);
-      resolve(img);
-    };
-    img.onerror = tryNext;
+        const url = candidates[i++];
 
-    tryNext();
-  });
-}
+        const attemptImg = new Image();
 
+        try {
+          const u = new URL(url, window.location.href);
+          if (u.origin !== window.location.origin) {
+            attemptImg.crossOrigin = "anonymous";
+          }
+        } catch (e) {}
+
+        attemptImg.decoding = "async";
+
+        let timedOut = false;
+        const timeoutId = setTimeout(() => {
+          timedOut = true;
+          console.warn("[ww] timeout loading", url);
+          tryNext();
+        }, 5000);
+
+        attemptImg.onload = () => {
+          if (timedOut) return;
+          clearTimeout(timeoutId);
+          _tileCache.set(key, attemptImg);
+          resolve(attemptImg);
+        };
+
+        attemptImg.onerror = (e) => {
+          if (timedOut) return;
+          clearTimeout(timeoutId);
+          console.error("[ww] load error", url, e);
+          tryNext();
+        };
+
+        attemptImg.src = url;
+      };
+
+      tryNext();
+    });
+  }
 
   /**
    * Paint XYZ tiles that cover the current domain, then (re)paint vectors to keep them on top.
@@ -212,6 +235,7 @@ function tileUrlCandidates(style, z, x, y) {
     if (!TILE_PROVIDERS[style]) return; // off
 
     const z = chooseTileZoom(domain, rect);
+    _lastZoomByCanvas.set(canvasKey, z);
 
     // world px extent of the current domain at this zoom
     const gxMin = lonToGlobalPx(domain.lonMin, z);
@@ -244,11 +268,6 @@ function tileUrlCandidates(style, z, x, y) {
         // bail if a newer draw started
         if (version !== _drawVersionByCanvas.get(canvasKey)) return;
 
-        console.info(
-          "[ww] first-candidate",
-          tileUrlCandidates(TILE_STYLE, z, tx, ty)[0]
-        );
-
         const img = await ensureTile(style, z, tx, ty);
         if (!img) continue;
         if (version !== _drawVersionByCanvas.get(canvasKey)) return;
@@ -269,29 +288,15 @@ function tileUrlCandidates(style, z, x, y) {
         // draw the tile
         ctx.drawImage(img, cx0, cy0, dx, dy);
 
-        // re-draw vector layers to keep them above tiles
+        // re-draw vector overlays ABOVE the tile
         drawBasemap(ctx, domain, rect);
         const all = (features?.features ?? []).filter(
           (f) => f?.properties?.hazard === hazard
         );
         drawFeatures(ctx, all, domain, rect, keysOrder);
 
-        // Separate out PR/VI insets
-        const pr = all.filter((f) => f.properties.state === "PR");
-        const vi = all.filter((f) => f.properties.state === "VI");
-
-        // Use non-inset features to auto-fit when insets exist; otherwise use all
-        const fitFeatures =
-          pr.length || vi.length
-            ? all.filter(
-                (f) =>
-                  f.properties.state !== "PR" && f.properties.state !== "VI"
-              )
-            : all;
-
-        // OLD: const auto = bboxOfFeatures(all) || DEFAULT_DOMAIN;
-        const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
-        drawFeatures(ctx, all, domain, rect, keysOrder);
+        // (then) labels above everything
+        drawPlacenames(ctx, domain, rect, canvasKey);
       }
     }
   }
@@ -394,32 +399,54 @@ function tileUrlCandidates(style, z, x, y) {
     }
   }
 
+  // Drop-in replacement for your drawBasemap function
+  // - draws each path twice: halo underlay, then opaque core
+  // - keeps your existing project() and BASEMAP usage
+  // - tweak widths/colors to taste
   function drawBasemap(ctx, domain, rect) {
     if (!BASEMAP?.features?.length) return;
+
+    const DPR =
+      typeof devicePixelRatioSafe === "function"
+        ? devicePixelRatioSafe()
+        : window.devicePixelRatio || 1;
+
     ctx.save();
-    ctx.lineWidth = 0.75;
-    ctx.strokeStyle = "rgba(32,32,32,.5)";
-    ctx.fillStyle = "transparent";
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+
     for (const f of BASEMAP.features) {
       if (!f.geometry) continue;
       const polys =
         f.geometry.type === "Polygon"
           ? [f.geometry.coordinates]
           : f.geometry.coordinates;
+
+      // build one path per feature
       ctx.beginPath();
       for (const poly of polys) {
         for (const ring of poly) {
-          ring.forEach((pt, i) => {
-            const [lon, lat] = pt;
+          for (let i = 0; i < ring.length; i++) {
+            const [lon, lat] = ring[i];
             const p = project(lon, lat, domain, rect);
             if (i === 0) ctx.moveTo(p.x, p.y);
             else ctx.lineTo(p.x, p.y);
-          });
+          }
           ctx.closePath();
         }
       }
+
+      // 1) Halo underlay (slightly wider, semi-opaque)
+      ctx.strokeStyle = "rgba(0,0,0,0.80)"; // or "rgba(255,255,255,0.90)" for a light halo
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 2) Opaque core (narrower, solid color)
+      ctx.strokeStyle = "#222"; // choose your core color
+      ctx.lineWidth = 0.75;
       ctx.stroke();
     }
+
     ctx.restore();
   }
 
@@ -525,6 +552,7 @@ function tileUrlCandidates(style, z, x, y) {
 
   // -------- Feature drawing --------
   function drawFeatures(ctx, features, domain, rect, keysInOrder) {
+    ctx.save(); // isolate fill/stroke/alpha changes
     for (const key of keysInOrder) {
       const color = colorForKey(key);
       for (const f of features) {
@@ -555,12 +583,13 @@ function tileUrlCandidates(style, z, x, y) {
         } catch {
           ctx.fill();
         } // support holes; fallback if needed
-        ctx.globalAlpha = 1.0;
-        ctx.lineWidth = 0.75;
-        ctx.strokeStyle = "#202020";
+        ctx.globalAlpha = 0.8;
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = "#000000ff";
         ctx.stroke();
       }
     }
+    ctx.restore(); // restore alpha and styles for whatever draws next
   }
 
   function bboxOfFeatures(features) {
@@ -622,14 +651,122 @@ function tileUrlCandidates(style, z, x, y) {
     return false;
   }
 
+  function getCanvasTargetSize(canvas) {
+    const parent = canvas.parentElement || canvas;
+    const cw = parent.clientWidth;
+    const ch = parent.clientHeight;
+    if (!cw || !ch) return null; // hidden or zero-size container
+    const dpr = devicePixelRatioSafe();
+    return { cw, ch, dpr };
+  }
+
+  function drawPlacenames(ctx, domain, rect, canvasId) {
+    if (!PLACENAMES || !PLACENAMES.length) return;
+
+    // Use the last zoom chosen for this canvas; default to 8 if unknown
+    const z = _lastZoomByCanvas.get(canvasId) ?? 8;
+
+    ctx.save();
+    ctx.globalAlpha = 1; // ensure labels draw fully opaque
+    ctx.font = `bold 14px Roboto, Arial, sans-serif`;
+    // (keep your halo scaling with DPR)
+    ctx.lineWidth = 1;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+
+    // Collision grid (fast, simple). One cell ≈ 64 CSS px.
+    const cell = 80;
+    const occ = new Set();
+
+    // Quick viewport bounds for culling
+    const lonMin = domain.lonMin,
+      lonMax = domain.lonMax;
+    const latMin = domain.latMin,
+      latMax = domain.latMax;
+
+    // Filter cheap, sort by priority (higher first)
+    const visible = [];
+    for (let i = 0; i < PLACENAMES.length; i++) {
+      const p = PLACENAMES[i];
+      if (z < p.minZoom) continue; // obey minZoom
+      const lon = p.lon,
+        lat = p.lat;
+      if (lon < lonMin || lon > lonMax || lat < latMin || lat > latMax)
+        continue;
+      visible.push(p);
+    }
+    visible.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    // Draw with halo for readability on imagery
+    for (let i = 0; i < visible.length; i++) {
+      const p = visible[i];
+      const pt = project(p.lon, p.lat, domain, rect);
+      const text = (p.text || "").toUpperCase();
+
+      // measure width for collision
+      const w = ctx.measureText(text).width;
+      const padX = 8,
+        padY = 7;
+      const anchorX = pt.x + 4;
+      const x0 = Math.floor(anchorX / cell);
+      const y0 = Math.floor((pt.y - padY) / cell);
+      const x1 = Math.floor((anchorX + w + padX) / cell);
+      const y1 = Math.floor((pt.y + padY) / cell);
+
+      let clash = false;
+      for (let gx = x0; gx <= x1 && !clash; gx++) {
+        for (let gy = y0; gy <= y1; gy++) {
+          if (occ.has(gx + "," + gy)) {
+            clash = true;
+            break;
+          }
+        }
+      }
+      if (clash) continue;
+      for (let gx = x0; gx <= x1; gx++) {
+        for (let gy = y0; gy <= y1; gy++) occ.add(gx + "," + gy);
+      }
+
+      // Halo then fill: consistent over imagery
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.strokeText(text, anchorX, pt.y);
+
+      ctx.fillStyle = "#fff";
+      ctx.fillText(text, anchorX, pt.y);
+    }
+
+    ctx.restore();
+  }
+
+  const _canvasPaintState = new Map(); // canvasId -> { cw, ch, dpr }
+  const _lastZoomByCanvas = new Map(); // canvasId -> number
+
   function drawPanel(canvasId, featureCollection, hazard) {
-    console.info("[ww] drawPanel", canvasId, {
-      hazard,
-      count: (featureCollection?.features || []).length,
-    });
     const canvas = document.getElementById(canvasId);
     if (!canvas || isHidden(canvas)) return;
 
+    // --- size check BEFORE resizing (preserve existing pixels on re-open)
+    const parent = canvas.parentElement || canvas;
+    const cw = parent.clientWidth;
+    const ch = parent.clientHeight;
+    if (!cw || !ch) return;
+    const dpr = devicePixelRatioSafe();
+
+    const prevState = _canvasPaintState.get(canvasId);
+    if (
+      prevState &&
+      prevState.cw === cw &&
+      prevState.ch === ch &&
+      prevState.dpr === dpr
+    ) {
+      // Same size as last paint: keep existing bitmap; skip all work.
+      return;
+    }
+
+    // Now it's safe to resize and repaint once
     const { width, height } = resizeCanvasToContainer(canvas);
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
@@ -653,10 +790,14 @@ function tileUrlCandidates(style, z, x, y) {
 
     const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
 
+    // Record the size we just painted at (so next same-size re-open is a no-op)
+    _canvasPaintState.set(canvasId, { cw, ch, dpr });
+
     // --- tiles underlay (async, incremental)
-    const prev = _drawVersionByCanvas.get(canvasId) || 0;
+    const prev = _drawVersionByCanvas.get(canvasId) || 0; // <-- was missing
     const version = prev + 1;
     _drawVersionByCanvas.set(canvasId, version);
+
     drawTilesLayer(
       ctx,
       auto,
@@ -684,11 +825,7 @@ function tileUrlCandidates(style, z, x, y) {
         h: Math.round(box.h * height),
       };
     }
-    if (all.length) {
-      const keysOrder =
-        hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
-      drawFeatures(ctx, all, auto, rectMain, keysOrder);
-    }
+
     if (pr.length) {
       const box = INSETS.PR;
       drawFeatures(
@@ -725,6 +862,7 @@ function tileUrlCandidates(style, z, x, y) {
       const r = insetRect(box);
       ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
     }
+    drawPlacenames(ctx, auto, rectMain, canvasId);
   }
 
   function hexToRgb(hex) {
@@ -800,9 +938,24 @@ function tileUrlCandidates(style, z, x, y) {
   }
 
   async function loadJSON(url) {
-    const res = await fetch(url, { cache: "no-cache" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
+    const r = await fetch(url, { cache: "no-store" }); // avoid stale cache differences
+    const ct = r.headers.get("content-type") || "";
+    const raw = await r.text();
+
+    // Strip UTF-8 BOM + trim (Firefox will choke if BOM present)
+    const t = raw.replace(/^\uFEFF/, "").trim();
+
+    // If server returned HTML/error, make it obvious
+    if (!r.ok || t.startsWith("<")) {
+      console.error("[tcv] non-JSON", {
+        url,
+        status: r.status,
+        ct,
+        head: t.slice(0, 120),
+      });
+      throw new Error(`Unexpected response for ${url}: ${r.status} (${ct})`);
+    }
+    return JSON.parse(t);
   }
 
   async function init() {
@@ -816,8 +969,10 @@ function tileUrlCandidates(style, z, x, y) {
     loadBasemap();
 
     try {
-      const url = `/2025_weather/active/storms/${stormId}/tcv.json?v=${Date.now()}`;
+      const url = `/2025_weather/active/storms/${stormId}/tcv.json`;
+      const placenamesPromise = loadPlacenames();
       const data = await loadJSON(url);
+      await placenamesPromise;
 
       // If thin payload, build features from events
       if (
@@ -825,7 +980,6 @@ function tileUrlCandidates(style, z, x, y) {
         !Array.isArray(data.features.features) ||
         data.features.features.length === 0
       ) {
-        console.info("tcv.json is thin — loading geometries from cache");
         data.features = await buildFeaturesFromEvents(data.events || []);
       }
 
