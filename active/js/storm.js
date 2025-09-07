@@ -59,8 +59,13 @@ function showBannerOnly() {
   });
 }
 
+// function isValidLongId(id) {
+//   return /^AL\d{2}\d{4}$/.test(id);
+// }
+
 function isValidLongId(id) {
-  return /^AL\d{2}\d{4}$/.test(id);
+  // Matches ALnnYYYY or EPnnYYYY (strictly uppercase)
+  return /^(?:AL|EP)\d{2}\d{4}$/.test(id);
 }
 
 async function getJson(url) {
@@ -322,7 +327,9 @@ function renderOverviewV2(advisory, longId) {
       : utcStr;
 
   const catRaw = advisory?.systemSaffirSimpsonCategory;
-  const showCategory = /^\d+$/.test(String(catRaw ?? ""));
+  const showCategory = String(
+    advisory?.systemSaffirSimpsonCategory ?? ""
+  ).trim();
 
   const loc =
     advisory?.loc && (advisory.loc.latText || advisory.loc.lonText)
@@ -364,17 +371,10 @@ function renderOverviewV2(advisory, longId) {
     createInfoLine("Movement:", moving, "movement"),
   ];
 
-  if (showCategory) {
-    lines.splice(
-      0,
-      0,
-      `
-      <div class="ov-info-line category-line" data-key="category-value">
-        <span class="ov-label ov-category-label">Category</span>
-        <span class="ov-value ov-category-value">${catRaw}</span>
-      </div>
-      `
-    );
+  const catText = String(advisory?.systemSaffirSimpsonCategory ?? "").trim();
+  if (catText) {
+    // put it at the top like before
+    lines.unshift(createInfoLine("", catText, "category"));
   }
 
   const centerSection = `

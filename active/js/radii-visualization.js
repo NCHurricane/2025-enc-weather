@@ -214,8 +214,8 @@
       ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
       ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.fillStyle = "rgba(255,255,255,0.55)";
-      [100, 200, 300, 400, 500].forEach((dist) => {
-        const r = (dist / 500) * this.maxRadius;
+      [100, 200, 300].forEach((dist) => {
+        const r = (dist / 300) * this.maxRadius;
         ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
         ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
       });
@@ -247,7 +247,7 @@
       const sw = Math.max(0, Number(q.SW) || 0);
       const nw = Math.max(0, Number(q.NW) || 0);
 
-      const maxDist = 500;
+      const maxDist = 300;
       const points = [
         { angle: Math.PI * 0.25, dist: ne },
         { angle: Math.PI * 0.75, dist: se },

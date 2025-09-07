@@ -2,20 +2,30 @@
 // /active/api/cxml_writer_ep.php
 // Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
 //   ../storms/{EPnnYYYY}/storm.json
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 echo "Script started\n";
 echo "PHP SAPI: " . PHP_SAPI . "\n";
 echo "Storm param: '" . ($_GET['storm'] ?? 'NOT SET') . "'\n";
 flush();
 
-declare(strict_types=1);
-error_reporting(E_ALL);
+
 
 // ---------- config ----------
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
 // ---------- helpers ----------
-function out($s){ fwrite(STDERR, "[".date('Y-m-d H:i:s')."] $s\n"); }
-function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
+function out($s){
+  $line = "[" . date('Y-m-d H:i:s') . "] $s";
+  if (PHP_SAPI === 'cli') {
+    fwrite(STDERR, $line . "\n");
+  } else {
+    error_log("[cxml_writer_ep] " . $line);
+    echo htmlspecialchars($line) . "<br>\n";
+    flush();
+  }
+}function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 
 function asText($x){ return trim((string)$x); }
 function asNum($x){
@@ -64,24 +74,23 @@ function expand_short_id(string $id, string $stormsRoot): string {
 
 // ---------- batch processing for all EP storms ----------
 if ($stormParam === 'ALL') {
-    processAllEPStormsCXML();
+    echo "Entering ALL mode - calling processAllEPStormsCXML()\n";
+    flush();
+    processAllEPStormsCXML($stormsRoot);
     exit;
 }
 
 // ---------- single storm processing ----------
 $stormId = expand_short_id($stormParam, $stormsRoot);
-$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
 try {
-    processSingleStormCXML($stormId);
+    processSingleStormCXML($stormId, $stormsRoot);
 } catch (Exception $e) {
     bail($e->getMessage());
 }
 
 // ---------- batch processing function ----------
-function processAllEPStormsCXML(): void {
-    global $stormsRoot;
-    
+function processAllEPStormsCXML(string $stormsRoot): void {
     // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
@@ -116,7 +125,7 @@ function processAllEPStormsCXML(): void {
         out("Processing {$stormId}...");
         
         try {
-            processSingleStormCXML($stormId);
+            processSingleStormCXML($stormId, $stormsRoot); // ← Pass $stormsRoot
             $successCount++;
             out("  SUCCESS: {$stormId}");
         } catch (Exception $e) {
@@ -128,9 +137,8 @@ function processAllEPStormsCXML(): void {
 }
 
 // ---------- single storm processing function ----------
-function processSingleStormCXML(string $stormId): void {
-    global $stormsRoot, $USER_AGENT;
-    
+function processSingleStormCXML(string $stormId, string $stormsRoot): void {
+    global $USER_AGENT;    
     $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
     
     // ---------- source URL ----------
@@ -236,7 +244,7 @@ function processSingleStormCXML(string $stormId): void {
     }
 
     // ---------- write cache ----------
-    $stormDir = $stormsRoot . '/' . $shortId;
+    $stormDir = $stormsRoot . '/' . strtoupper($stormId);  // EPnnYYYY
     if (!is_dir($stormDir)) {
         @mkdir($stormDir, 0775, true);
     }
