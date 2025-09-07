@@ -18,6 +18,8 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
+$LOWERCASE_ALL = false; // set true to force lowercase of all strings
+
 function bail(int $code, string $msg): void {
   http_response_code($code);
   echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_SLASHES);
@@ -27,6 +29,20 @@ function bail(int $code, string $msg): void {
 $storm = $_GET['storm'] ?? '';
 $storm = strtoupper(trim($storm));
 
+if (PHP_SAPI === 'cli') {
+    $storm = null;
+    foreach ($argv as $arg) {
+        if (str_starts_with($arg, '--storm=')) {
+            $storm = strtoupper(trim(substr($arg, 8)));
+            break;
+        }
+    }
+    if ($storm === null || $storm === '') {
+        $storm = 'ALL'; // Default to ALL for cron
+    }
+    $_GET['storm'] = $storm; // unify downstream access
+}
+
 if ($storm === 'ALL') {
     processAllEPStorms();
     exit;
@@ -34,30 +50,16 @@ if ($storm === 'ALL') {
     if (!preg_match('/^EP\d{2}\d{4}$/', $storm)) {
         bail(400, 'Invalid storm id. Expected EPnnYYYY.');
     }
-    // Continue with single storm processing
-}
-
-// CLI argument handling
-if (PHP_SAPI === 'cli') {
-    foreach ($argv as $arg) {
-        if (str_starts_with($arg, '--storm=')) {
-            $_GET['storm'] = substr($arg, 8);
-            break;
-        }
-    }
-    if (!isset($_GET['storm'])) {
-        $_GET['storm'] = 'ALL'; // Default to ALL for cron
-    }
 }
 
 function processSingleStorm(string $stormId): array {
     // Map EPnnYYYY -> EPnn/atcf-epnnYYYY.xml (Eastern Pacific only)
-    $number = substr($stormId, 2, 2);              
-    $folder = sprintf('EP%02d', (int)$number);   
+    $number = substr($stormId, 2, 2);              // nn
+    $folder = sprintf('EP%02d', (int)$number);   // EPnn
     $fname  = 'atcf-' . strtolower($stormId) . '.xml';
     $srcUrl = "https://www.nhc.noaa.gov/storm_graphics/{$folder}/{$fname}";
 
-    $rootDir = dirname(__DIR__, 1);              
+    $rootDir = dirname(__DIR__, 1);              // /active
     $cacheDir = $rootDir . '/storms/' . $stormId;
     $dest = $cacheDir . '/advisory.json';
 
@@ -68,7 +70,18 @@ function processSingleStorm(string $stormId): array {
     $ctx = stream_context_create(['http' => ['timeout' => 8]]);
     $raw = @file_get_contents($srcUrl, false, $ctx);
     if ($raw === false || strlen($raw) < 64) {
-        throw new Exception('Failed to fetch advisory XML.');
+        // Try FTP fallback
+        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
+        error_log("[advisory_writer_ep] Primary failed, trying FTP: {$ftpUrl}");
+
+        $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+        $raw = @file_get_contents($ftpUrl, false, $ftpCtx);
+
+        if ($raw === false || strlen($raw) < 64) {
+            throw new Exception('Failed to fetch advisory XML from both HTTPS and FTP sources.');
+        }
+
+        error_log("[advisory_writer_ep] FTP fallback successful for {$stormId}");
     }
 
     libxml_use_internal_errors(true);
@@ -149,7 +162,6 @@ function processSingleStorm(string $stormId): array {
 
     return ['storm' => $stormId, 'cached' => basename($dest)];
 }
-
 
 function processAllEPStorms(): void {
     // Path to current storms cache
@@ -287,6 +299,87 @@ function isoUtcFromNhcUtc($s): ?string {
   }
 }
 
+function processAllALStorms(): void {
+    // Path to current storms cache
+    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    
+    if (!file_exists($currentStormsPath)) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Current storms cache not found at {$currentStormsPath}\n";
+        } else {
+            bail(500, 'Current storms cache not available');
+        }
+        return;
+    }
+    
+    $rawStorms = file_get_contents($currentStormsPath);
+    $stormsData = json_decode($rawStorms, true);
+    
+    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Invalid storms data format\n";
+        } else {
+            bail(500, 'Invalid storms data');
+        }
+        return;
+    }
+    
+    $alStorms = [];
+    foreach ($stormsData['data']['activeStorms'] as $storm) {
+        $stormId = strtoupper(trim($storm['id'] ?? ''));
+        if (preg_match('/^EP\d{2}\d{4}$/', $stormId)) {  // Eastern Pacific filter
+            $alStorms[] = $stormId;
+        }
+    }
+    
+    if (empty($alStorms)) {
+        if (PHP_SAPI === 'cli') {
+            echo "INFO: No active AL storms found\n";
+        } else {
+            echo json_encode(['ok' => true, 'message' => 'No active AL storms', 'processed' => []], JSON_UNESCAPED_SLASHES);
+        }
+        return;
+    }
+    
+    $results = [];
+    foreach ($alStorms as $stormId) {
+        if (PHP_SAPI === 'cli') {
+            echo "Processing {$stormId}...\n";
+        }
+        
+        try {
+            $result = processSingleStorm($stormId);
+            $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  SUCCESS: {$stormId}\n";
+            }
+        } catch (Exception $e) {
+            $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  ERROR: {$stormId} - " . $e->getMessage() . "\n";
+            }
+        }
+    }
+    
+    if (PHP_SAPI === 'cli') {
+        $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
+        echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
+    } else {
+        echo json_encode(['ok' => true, 'processed' => $results], JSON_UNESCAPED_SLASHES);
+    }
+}
+
+
+// Single storm execution (fallback for existing behavior)
+try {
+    $result = processSingleStorm($storm);
+    echo json_encode(['ok' => true, 'storm' => $storm, 'cached' => $result['cached']], JSON_UNESCAPED_SLASHES);
+} catch (Exception $e) {
+    bail(500, $e->getMessage());
+}
+
 $advisory = [
   'atcfID' => $storm,
   'generated' => gmdate('c'),
@@ -340,11 +433,6 @@ if ($advisory['motion']['mph'] !== null) {
   $advisory['motion']['kph'] ??= (int)round($advisory['motion']['kts'] * 1.852);
 }
 
-// --- Optional normalization: lowercase values ---
-// Set to true to force all string values in the advisory to lowercase.
-// Otherwise a conservative selective-lowercase is applied to common textual fields.
-$LOWERCASE_ALL = false;
-
 function lc_str(string $s): string {
   if ($s === '') return $s;
   return function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s);
@@ -367,9 +455,14 @@ function apply_selective_lowercase(array $adv): array {
   }
 
   // motion.dirText
-  if (isset($adv['motion']) && is_array($adv['motion']) && isset($adv['motion']['dirText']) && is_string($adv['motion']['dirText'])) {
-    $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
-  }
+  if (
+      isset($adv['motion']) &&
+      is_array($adv['motion']) &&
+      isset($adv['motion']['dirText']) &&
+      is_string($adv['motion']['dirText'])
+  ) {
+      $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
+}
 
   // geo entries
   if (isset($adv['geo']) && is_array($adv['geo'])) {

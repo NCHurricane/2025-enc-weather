@@ -5,13 +5,6 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
-echo "Script started\n";
-echo "PHP SAPI: " . PHP_SAPI . "\n";
-echo "Storm param: '" . ($_GET['storm'] ?? 'NOT SET') . "'\n";
-flush();
-
-
-
 // ---------- config ----------
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
@@ -72,6 +65,9 @@ function expand_short_id(string $id, string $stormsRoot): string {
   return $id;
 }
 
+$stormId = expand_short_id($stormParam, $stormsRoot);
+$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
+
 // ---------- batch processing for all EP storms ----------
 if ($stormParam === 'ALL') {
     echo "Entering ALL mode - calling processAllEPStormsCXML()\n";
@@ -79,9 +75,6 @@ if ($stormParam === 'ALL') {
     processAllEPStormsCXML($stormsRoot);
     exit;
 }
-
-// ---------- single storm processing ----------
-$stormId = expand_short_id($stormParam, $stormsRoot);
 
 try {
     processSingleStormCXML($stormId, $stormsRoot);
@@ -161,8 +154,20 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $err  = curl_error($ch);
     curl_close($ch);
-    if (!$xmlRaw || $http !== 200) throw new Exception("fetch failed ($http) $err");
-
+    if (!$xmlRaw || $http !== 200) {
+    // Try FTP fallback
+    $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+    out("Primary failed, trying FTP: $ftpUrl");
+    
+    $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+    $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
+    
+    if (!$xmlRaw) {
+        throw new Exception("fetch failed from both HTTPS ($http $err) and FTP sources");
+    }
+    
+    out("FTP fallback successful for $stormId");
+}
     // ---------- parse ----------
     libxml_use_internal_errors(true);
     $xml = simplexml_load_string($xmlRaw);

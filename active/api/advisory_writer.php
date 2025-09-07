@@ -18,6 +18,8 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
+$LOWERCASE_ALL = false; // set true to force lowercase of all strings
+
 function bail(int $code, string $msg): void {
   http_response_code($code);
   echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_SLASHES);
@@ -26,34 +28,211 @@ function bail(int $code, string $msg): void {
 
 $storm = $_GET['storm'] ?? '';
 $storm = strtoupper(trim($storm));
-if (!preg_match('/^AL\d{2}\d{4}$/', $storm)) {
-  bail(400, 'Invalid storm id. Expected ALnnYYYY.');
+
+if (PHP_SAPI === 'cli') {
+    $storm = null;
+    foreach ($argv as $arg) {
+        if (str_starts_with($arg, '--storm=')) {
+            $storm = strtoupper(trim(substr($arg, 8)));
+            break;
+        }
+    }
+    if ($storm === null || $storm === '') {
+        $storm = 'ALL'; // Default to ALL for cron
+    }
+    $_GET['storm'] = $storm; // unify downstream access
 }
 
+if ($storm === 'ALL') {
+    processAllALStorms();
+    exit;
+} else {
+    if (!preg_match('/^AL\d{2}\d{4}$/', $storm)) {
+        bail(400, 'Invalid storm id. Expected ALnnYYYY.');
+    }
+}
+
+function processSingleStorm(string $stormId): array {
 // Map ALnnYYYY -> ATnn/atcf-alnnYYYY.xml (Atlantic only)
-$number = substr($storm, 2, 2);              // nn
+$number = substr($stormId, 2, 2);              // nn
 $folder = sprintf('AT%02d', (int)$number);   // ATnn
-$fname  = 'atcf-' . strtolower($storm) . '.xml';
+$fname  = 'atcf-' . strtolower($stormId) . '.xml';
 $srcUrl = "https://www.nhc.noaa.gov/storm_graphics/{$folder}/{$fname}";
 
 $rootDir = dirname(__DIR__, 1);              // /active
-$cacheDir = $rootDir . '/storms/' . $storm;
+$cacheDir = $rootDir . '/storms/' . $stormId;
 $dest = $cacheDir . '/advisory.json';
 
-if (!is_dir($cacheDir) && !mkdir($cacheDir, 0775, true)) {
-  bail(500, 'Unable to create cache directory.');
-}
+    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0775, true)) {
+        throw new Exception('Unable to create cache directory.');
+    }
 
 $ctx = stream_context_create(['http' => ['timeout' => 8]]);
 $raw = @file_get_contents($srcUrl, false, $ctx);
 if ($raw === false || strlen($raw) < 64) {
-  bail(502, 'Failed to fetch advisory XML.');
+  // Try FTP fallback
+  $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
+  error_log("[advisory_writer] Primary failed, trying FTP: {$ftpUrl}");
+
+  $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+  $raw = @file_get_contents($ftpUrl, false, $ftpCtx);
+
+  if ($raw === false || strlen($raw) < 64) {
+    throw new Exception('Failed to fetch advisory XML from both HTTPS and FTP sources.');
+  }
+
+  error_log("[advisory_writer] FTP fallback successful for {$stormId}");
 }
 
-libxml_use_internal_errors(true);
-$xml = simplexml_load_string($raw);
-if ($xml === false) {
-  bail(502, 'Failed to parse advisory XML.');
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_string($raw);
+    if ($xml === false) {
+        throw new Exception('Failed to parse advisory XML.');
+    }
+
+    $advisory = [
+        'atcfID' => $stormId,
+        'generated' => gmdate('c'),
+        'messageTimeUTC'   => isoUtcFromNhcUtc($xml->messageDateTimeUTC ?? ''),
+        'messageTimeLocal' => formatToShortDateTime($xml->messageDateTimeLocal ?? ($xml->messageDateTimeLocalStr ?? '')),
+        'messageTimeUTC_formatted' => formatToShortDateTime($xml->messageDateTimeUTC ?? ''),
+        'messageType'      => strval_safe($xml->messageType ?? ''),
+        'advisoryNumber'   => intval_safe($xml->advisoryNumber ?? ''),
+        'systemType'       => strval_safe($xml->systemType ?? ''),
+        'systemName'       => strval_safe($xml->systemName ?? ''),
+        'systemSaffirSimpsonCategory' => strval_safe($xml->systemSaffirSimpsonCategory ?? ''),
+        'loc' => [
+            'lat'     => is_numeric($xml->centerLocLatitude ?? null) ? (float)$xml->centerLocLatitude : null,
+            'lon'     => is_numeric($xml->centerLocLongitude ?? null) ? (float)$xml->centerLocLongitude : null,
+            'latText' => strval_safe($xml->centerLocLatitudeExpanded ?? ''),
+            'lonText' => strval_safe($xml->centerLocLongitudeExpanded ?? ''),
+        ],
+        'intensity' => [
+            'mph' => intval_safe($xml->systemIntensityMph ?? ''),
+            'kph' => intval_safe($xml->systemIntensityKph ?? ''),
+            'kts' => intval_safe($xml->systemIntensityKts ?? ''),
+            'mb'  => intval_safe($xml->systemMslpMb ?? ''),
+        ],
+        'motion' => [
+            'dirText' => strval_safe($xml->systemDirectionOfMotion ?? ''),
+            'mph'     => intval_safe($xml->systemSpeedMph ?? ''),
+            'kph'     => intval_safe($xml->systemSpeedKph ?? ''),
+            'kts'     => intval_safe($xml->systemSpeedKts ?? ''),
+        ],
+        'geo' => array_values(array_filter([
+            strval_safe($xml->systemGeoRefPt1 ?? ''),
+            strval_safe($xml->systemGeoRefPt2 ?? ''),
+        ], fn($s) => $s !== '')),
+        'message' => strval_safe($xml->message ?? ''),
+    ];
+
+    // Fill missing unit triplets (prefer mph, then kts)
+    if ($advisory['intensity']['mph'] !== null) {
+        $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['mph'] * 1.609344);
+        $advisory['intensity']['kts'] ??= (int)round($advisory['intensity']['mph'] / 1.15078);
+    } elseif ($advisory['intensity']['kts'] !== null) {
+        $advisory['intensity']['mph'] ??= (int)round($advisory['intensity']['kts'] * 1.15078);
+        $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['kts'] * 1.852);
+    }
+    if ($advisory['motion']['mph'] !== null) {
+        $advisory['motion']['kph'] ??= (int)round($advisory['motion']['mph'] * 1.609344);
+        $advisory['motion']['kts'] ??= (int)round($advisory['motion']['mph'] / 1.15078);
+    } elseif ($advisory['motion']['kts'] !== null) {
+        $advisory['motion']['mph'] ??= (int)round($advisory['motion']['kts'] * 1.15078);
+        $advisory['motion']['kph'] ??= (int)round($advisory['motion']['kts'] * 1.852);
+    }
+
+    // Apply normalization (use global variable)
+    global $LOWERCASE_ALL;
+    if ($LOWERCASE_ALL) {
+        $advisory = array_lowercase_values_recursive($advisory);
+    } else {
+        $advisory = apply_selective_lowercase($advisory);
+    }
+
+    // Atomic write
+    $tmp = $dest . '.tmp';
+    if (file_put_contents($tmp, json_encode($advisory, JSON_UNESCAPED_SLASHES)) === false) {
+        throw new Exception('Failed to write temp advisory.');
+    }
+    if (!rename($tmp, $dest)) {
+        @unlink($tmp);
+        throw new Exception('Failed to finalize advisory.');
+    }
+
+    return ['storm' => $stormId, 'cached' => basename($dest)];
+}
+
+function processAllEPStorms(): void {
+    // Path to current storms cache
+    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    
+    if (!file_exists($currentStormsPath)) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Current storms cache not found at {$currentStormsPath}\n";
+        } else {
+            bail(500, 'Current storms cache not available');
+        }
+        return;
+    }
+    
+    $rawStorms = file_get_contents($currentStormsPath);
+    $stormsData = json_decode($rawStorms, true);
+    
+    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Invalid storms data format\n";
+        } else {
+            bail(500, 'Invalid storms data');
+        }
+        return;
+    }
+    
+    $epStorms = [];
+    foreach ($stormsData['data']['activeStorms'] as $storm) {
+        $stormId = strtoupper(trim($storm['id'] ?? ''));
+        if (preg_match('/^AT\d{2}\d{4}$/', $stormId)) {
+            $epStorms[] = $stormId;
+        }
+    }
+    
+    if (empty($epStorms)) {
+        if (PHP_SAPI === 'cli') {
+            echo "INFO: No active AT storms found\n";
+        } else {
+            echo json_encode(['ok' => true, 'message' => 'No active AT storms', 'processed' => []], JSON_UNESCAPED_SLASHES);
+        }
+        return;
+    }
+    
+    $results = [];
+    foreach ($epStorms as $stormId) {
+        if (PHP_SAPI === 'cli') {
+            echo "Processing {$stormId}...\n";
+        }
+        
+        try {
+            $result = processSingleStorm($stormId);
+            $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  SUCCESS: {$stormId}\n";
+            }
+        } catch (Exception $e) {
+            $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  ERROR: {$stormId} - " . $e->getMessage() . "\n";
+            }
+        }
+    }
+    
+    if (PHP_SAPI === 'cli') {
+        $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
+        echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
+    } else {
+        echo json_encode(['ok' => true, 'processed' => $results], JSON_UNESCAPED_SLASHES);
+    }
 }
 
 function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): string {
@@ -120,6 +299,87 @@ function isoUtcFromNhcUtc($s): ?string {
   }
 }
 
+function processAllALStorms(): void {
+    // Path to current storms cache
+    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    
+    if (!file_exists($currentStormsPath)) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Current storms cache not found at {$currentStormsPath}\n";
+        } else {
+            bail(500, 'Current storms cache not available');
+        }
+        return;
+    }
+    
+    $rawStorms = file_get_contents($currentStormsPath);
+    $stormsData = json_decode($rawStorms, true);
+    
+    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
+        if (PHP_SAPI === 'cli') {
+            echo "ERROR: Invalid storms data format\n";
+        } else {
+            bail(500, 'Invalid storms data');
+        }
+        return;
+    }
+    
+    $alStorms = [];
+    foreach ($stormsData['data']['activeStorms'] as $storm) {
+        $stormId = strtoupper(trim($storm['id'] ?? ''));
+        if (preg_match('/^AL\d{2}\d{4}$/', $stormId)) {  // Atlantic filter
+            $alStorms[] = $stormId;
+        }
+    }
+    
+    if (empty($alStorms)) {
+        if (PHP_SAPI === 'cli') {
+            echo "INFO: No active AL storms found\n";
+        } else {
+            echo json_encode(['ok' => true, 'message' => 'No active AL storms', 'processed' => []], JSON_UNESCAPED_SLASHES);
+        }
+        return;
+    }
+    
+    $results = [];
+    foreach ($alStorms as $stormId) {
+        if (PHP_SAPI === 'cli') {
+            echo "Processing {$stormId}...\n";
+        }
+        
+        try {
+            $result = processSingleStorm($stormId);
+            $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  SUCCESS: {$stormId}\n";
+            }
+        } catch (Exception $e) {
+            $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
+            
+            if (PHP_SAPI === 'cli') {
+                echo "  ERROR: {$stormId} - " . $e->getMessage() . "\n";
+            }
+        }
+    }
+    
+    if (PHP_SAPI === 'cli') {
+        $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
+        echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
+    } else {
+        echo json_encode(['ok' => true, 'processed' => $results], JSON_UNESCAPED_SLASHES);
+    }
+}
+
+
+// Single storm execution (fallback for existing behavior)
+try {
+    $result = processSingleStorm($storm);
+    echo json_encode(['ok' => true, 'storm' => $storm, 'cached' => $result['cached']], JSON_UNESCAPED_SLASHES);
+} catch (Exception $e) {
+    bail(500, $e->getMessage());
+}
+
 $advisory = [
   'atcfID' => $storm,
   'generated' => gmdate('c'),
@@ -173,11 +433,6 @@ if ($advisory['motion']['mph'] !== null) {
   $advisory['motion']['kph'] ??= (int)round($advisory['motion']['kts'] * 1.852);
 }
 
-// --- Optional normalization: lowercase values ---
-// Set to true to force all string values in the advisory to lowercase.
-// Otherwise a conservative selective-lowercase is applied to common textual fields.
-$LOWERCASE_ALL = false;
-
 function lc_str(string $s): string {
   if ($s === '') return $s;
   return function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s);
@@ -200,9 +455,14 @@ function apply_selective_lowercase(array $adv): array {
   }
 
   // motion.dirText
-  if (isset($adv['motion']) && is_array($adv['motion']) && isset($adv['motion']['dirText']) && is_string($adv['motion']['dirText'])) {
+if (
+    isset($adv['motion']) &&
+    is_array($adv['motion']) &&
+    isset($adv['motion']['dirText']) &&
+    is_string($adv['motion']['dirText'])
+) {
     $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
-  }
+}
 
   // geo entries
   if (isset($adv['geo']) && is_array($adv['geo'])) {

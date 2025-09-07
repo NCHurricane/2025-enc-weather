@@ -45,7 +45,7 @@ function expand_short_id(string $id, string $stormsRoot): string {
   if ($list && ($raw = @file_get_contents($list))) {
     $arr = json_decode($raw, true);
     if (is_array($arr)) {
-      foreach ($arr as $s) {
+      foreach ($arr['data']['activeStorms'] as $s) {
         $sid = strtoupper((string)($s['id'] ?? ''));
         if ($sid && str_starts_with($sid, substr($id,0,2)) && substr($sid,2,2) === substr($id,2,2)) {
           return $sid; // ALnnYYYY
@@ -55,7 +55,77 @@ function expand_short_id(string $id, string $stormsRoot): string {
   }
   return $id;
 }
-$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2)); // e.g. AL052025 → al05
+
+$stormId = expand_short_id($stormParam, $stormsRoot);
+$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
+
+// ---------- batch processing for all AL storms ----------
+if ($stormParam === 'ALL') {
+    echo "Entering ALL mode - calling processAllALStormsCXML()\n";
+    flush();
+    processAllALStormsCXML($stormsRoot);
+    exit;
+}
+
+
+
+try {
+    processSingleStormCXML($stormId, $stormsRoot);
+} catch (Exception $e) {
+    bail($e->getMessage());
+}
+
+// ---------- batch processing function ----------
+function processAllALStormsCXML(string $stormsRoot): void {
+    // Path to current storms cache
+    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    
+    if (!file_exists($currentStormsPath)) {
+        out("ERROR: Current storms cache not found at {$currentStormsPath}");
+        exit(1);
+    }
+    
+    $rawStorms = file_get_contents($currentStormsPath);
+    $stormsData = json_decode($rawStorms, true);
+    
+    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
+        out("ERROR: Invalid storms data format");
+        exit(1);
+    }
+    
+    $alStorms = [];
+    foreach ($stormsData['data']['activeStorms'] as $storm) {
+        $stormId = strtoupper(trim($storm['id'] ?? ''));
+        if (preg_match('/^AL\d{2}\d{4}$/', $stormId)) {
+            $alStorms[] = $stormId;
+        }
+    }
+    
+    if (empty($alStorms)) {
+        out("INFO: No active AT storms found");
+        exit(0);
+    }
+    
+    $successCount = 0;
+    foreach ($alStorms as $stormId) {
+        out("Processing {$stormId}...");
+        
+        try {
+            processSingleStormCXML($stormId, $stormsRoot); // ← Pass $stormsRoot
+            $successCount++;
+            out("  SUCCESS: {$stormId}");
+        } catch (Exception $e) {
+            out("  ERROR: {$stormId} - " . $e->getMessage());
+        }
+    }
+    
+    out("Completed: {$successCount}/" . count($alStorms) . " storms processed successfully");
+}
+
+// ---------- single storm processing function ----------
+function processSingleStormCXML(string $stormId, string $stormsRoot): void {
+    global $USER_AGENT;    
+    $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
 // ---------- source URL ----------
 $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
@@ -77,12 +147,25 @@ $xmlRaw = curl_exec($ch);
 $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $err  = curl_error($ch);
 curl_close($ch);
-if (!$xmlRaw || $http !== 200) bail("fetch failed ($http) $err");
+if (!$xmlRaw || $http !== 200) {
+  // Try FTP fallback
+  $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+  out("Primary failed, trying FTP: $ftpUrl");
+
+  $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+  $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
+
+  if (!$xmlRaw) {
+    bail("fetch failed from both HTTPS ($http $err) and FTP sources");
+  }
+
+  out("FTP fallback successful for $stormId");
+}
 
 // ---------- parse ----------
 libxml_use_internal_errors(true);
 $xml = simplexml_load_string($xmlRaw);
-if (!$xml) bail('XML parse failed');
+    if (!$xml) throw new Exception('XML parse failed');
 
 $hdr  = $xml->header ?? null;
 $data = $xml->data->disturbance ?? null;
@@ -160,7 +243,7 @@ foreach ($data->fix as $fix) {
 }
 
 // ---------- write cache ----------
-$stormDir = $stormsRoot . '/' . $shortId;
+    $stormDir = $stormsRoot . '/' . strtoupper($stormId);  // ALnnYYYY
 if (!is_dir($stormDir)) {
   @mkdir($stormDir, 0775, true);
 }
@@ -174,11 +257,16 @@ $out = [
 ];
 
 $tmp = $cacheFile . '.tmp';
-if (@file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
-  bail("write tmp failed: $tmp");
-}
-@rename($tmp, $cacheFile) || bail("rename failed: $cacheFile");
+    if (@file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
+        throw new Exception("write tmp failed: $tmp");
+    }
+    if (!@rename($tmp, $cacheFile)) {
+        throw new Exception("rename failed: $cacheFile");
+    }
+
 
 @chmod($cacheFile, 0644);
 
 out("Wrote $cacheFile");
+  }
+  ?>
