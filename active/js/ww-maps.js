@@ -744,9 +744,30 @@
   const _canvasPaintState = new Map(); // canvasId -> { cw, ch, dpr }
   const _lastZoomByCanvas = new Map(); // canvasId -> number
 
-  function drawPanel(canvasId, featureCollection, hazard) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || isHidden(canvas)) return;
+function drawPanel(canvasId, featureCollection, hazard) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const feats = Array.isArray(featureCollection?.features) ? featureCollection.features : [];
+  const relevant = feats.filter(f => f?.properties?.hazard === hazard);
+
+  const grid   = canvas.closest('.ww-grid');
+  const mapCol = canvas.closest('.ww-mapcol');
+
+  if (relevant.length === 0) {
+    canvas.hidden = true;
+    mapCol?.classList.add('is-empty');   // optional
+    grid?.classList.add('no-map');       // collapse to one column
+    return;                               // stop; nothing to draw
+  }
+
+  // We have features: show map and restore 2-col layout
+  canvas.hidden = false;
+  mapCol?.classList.remove('is-empty');
+  grid?.classList.remove('no-map');
+
+  // If the section is currently collapsed/hidden, skip the expensive draw
+  if (typeof isHidden === 'function' && isHidden(canvas)) return;
 
     // --- size check BEFORE resizing (preserve existing pixels on re-open)
     const parent = canvas.parentElement || canvas;
@@ -990,12 +1011,28 @@
         "No active watches/warnings."
       );
 
+      // Hide/show wind section based on data
+      const windGrid = document.querySelector(".hazards-container .ww-grid");
+      if (!data.display?.wind?.length) {
+        if (windGrid) windGrid.hidden = true;
+      } else {
+        if (windGrid) windGrid.hidden = false;
+      }
+
       // SURGE
       renderTextList(
         "ww-surge-text",
         data.display?.surge,
         "No active watches/warnings."
       );
+
+      // Hide/show surge section based on data
+      const surgeGrid = document.querySelector(".surge-container .ww-grid");
+      if (!data.display?.surge?.length) {
+        if (surgeGrid) surgeGrid.hidden = true;
+      } else {
+        if (surgeGrid) surgeGrid.hidden = false;
+      }
 
       let raf = null;
       const onResize = () => {
@@ -1007,11 +1044,17 @@
       };
       window.addEventListener("resize", onResize, { passive: true });
       onResize();
-    } catch (err) {
-      console.error("Failed to load tcv.json:", err);
-      renderTextList("ww-wind-text", null, "No active watches/warnings.");
-      renderTextList("ww-surge-text", null, "No active watches/warnings.");
-    }
+      } catch (err) {
+        console.error("Failed to load tcv.json:", err);
+        renderTextList("ww-wind-text", null, "No active watches/warnings.");
+        renderTextList("ww-surge-text", null, "No active watches/warnings.");
+        
+        // Hide both sections on error
+        const windSection = document.querySelector(".hazards-container .ww-grid");
+        const surgeSection = document.querySelector(".surge-container .ww-grid");
+        if (windSection) windSection.hidden = true;
+        if (surgeSection) surgeSection.hidden = true;
+      }
   }
 
   if (document.readyState === "loading") {

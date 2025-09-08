@@ -492,3 +492,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+.ww-grid.no-map {
+  grid-template-columns: 1fr;
+}
+.ww-grid.no-map .ww-textcol {
+  grid-column: 1 / -1;
+}
+/* optional */
+.ww-mapcol.is-empty {
+  display: none;
+}
