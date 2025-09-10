@@ -402,6 +402,45 @@ function renderOverviewV2(advisory, longId) {
       node.innerHTML = `<i class="fa-solid fa-circle-question" aria-hidden="true"></i><span class="sr-only">Not available</span>&nbsp;N/A`;
     }
   });
+
+  // Load satellite loop
+  loadSatelliteLoop(advisory, longId);
+}
+
+/* ================
+     Satellite Loop
+     ================ */
+async function loadSatelliteLoop(advisory, longId) {
+  if (!advisory?.latitudeNumeric || !advisory?.longitudeNumeric) {
+    console.warn("No lat/lon in advisory for satellite loop");
+    return;
+  }
+
+  const lat = advisory.latitudeNumeric;
+  const lon = advisory.longitudeNumeric;
+  const id = advisory.atcfID || longId;
+
+  try {
+    const response = await fetch(`api/satellite_loop.php?lat=${lat}&lon=${lon}&type=storm&id=${id}`);
+    const data = await response.json();
+    if (data.url) {
+      const img = document.getElementById('satellite-img');
+      const loading = document.getElementById('satellite-loading');
+      if (img) {
+        img.src = data.url;
+        img.style.display = 'block';
+        img.onload = () => {
+          if (loading) loading.style.display = 'none';
+        };
+      }
+    } else if (data.error) {
+      console.error("Satellite loop error:", data.error);
+      const loading = document.getElementById('satellite-loading');
+      if (loading) loading.textContent = 'Satellite imagery not available';
+    }
+  } catch (e) {
+    console.error("Failed to load satellite loop:", e);
+  }
 }
 
 /* ================

@@ -13,6 +13,10 @@ class SatelliteModule {
         // Eastern US sector URLs - NC is center-left, much better positioning
         this.sector = 'eus'; // Eastern US sector
         this.satellite = 'GOES19'; // Using GOES-19 for EUS
+        
+        // County coordinates (Beaufort)
+        this.lat = 35.57056;
+        this.lon = -77.04972;
     }
 
     init() {
@@ -48,6 +52,12 @@ class SatelliteModule {
     buildSatelliteUrl() {
         const product = this.productSelect.value;
         const type = this.typeSelect.value;
+        
+        if (type === 'animated') {
+            // Use custom loop from PHP script
+            const product = this.productSelect.value;
+            return `../../active/api/satellite_loop.php?lat=${this.lat}&lon=${this.lon}&type=county&id=beaufort&product=${product}`;
+        }
         
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/${this.satellite}/ABI/SECTOR/${this.sector}/${product}/`;
         
@@ -96,6 +106,7 @@ class SatelliteModule {
 
     loadSatelliteImage() {
         const url = this.buildSatelliteUrl();
+        const type = this.typeSelect.value;
         
         if (!url) {
             this.showError();
@@ -104,30 +115,46 @@ class SatelliteModule {
 
         this.showLoading();
 
-        // Create a new image to test loading
-        const img = new Image();
-        
-        img.onload = () => {
-            // Image loaded successfully
-            this.satelliteImage.src = url;
+        if (type === 'animated') {
+            // Fetch JSON from PHP script
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.url) {
+                        this.satelliteImage.src = data.url;
+                        this.satelliteImage.alt = `Custom Satellite Loop`;
+                        this.hideLoading();
+                        this.updateTimestamp();
+                    } else {
+                        console.error('No URL in response:', data);
+                        this.showError();
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to fetch satellite loop:', error);
+                    this.showError();
+                });
+        } else {
+            // Static image
+            const img = new Image();
             
-            // Update alt text
-            const productText = this.productSelect.options[this.productSelect.selectedIndex].text;
-            const typeText = this.typeSelect.options[this.typeSelect.selectedIndex].text;
-            this.satelliteImage.alt = `GOES-19 ${productText} ${typeText} - Eastern US`;
-            
-            this.hideLoading();
-            this.updateTimestamp();
-        };
+            img.onload = () => {
+                this.satelliteImage.src = url;
+                
+                const productText = this.productSelect.options[this.productSelect.selectedIndex].text;
+                this.satelliteImage.alt = `GOES-19 ${productText} Static - Eastern US`;
+                
+                this.hideLoading();
+                this.updateTimestamp();
+            };
 
-        img.onerror = () => {
-            // Image failed to load
-            console.error('Failed to load satellite image:', url);
-            this.showError();
-        };
+            img.onerror = () => {
+                console.error('Failed to load satellite image:', url);
+                this.showError();
+            };
 
-        // Start loading
-        img.src = url;
+            img.src = url;
+        }
     }
 }
 
