@@ -1,5 +1,5 @@
 <h1 align="center">NCHurricane.com 2025 Test Update</h1>
-<h2>Not yet deployed</h2>
+<h2 align="center">Not yet deployed</h2>
 
 <p align="center">
   <img src="images/2025-NCH-logo.png" alt="NCHurricane.com" height="80" />
