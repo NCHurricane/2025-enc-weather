@@ -40,7 +40,7 @@ Eastern North Carolina weather dashboards with close‑to‑realtime county aler
 - **Data Sources**
   - National Weather Service API and ATOM (forecasts, alerts, observations)
   - NOAA GOES‑East satellite imagery
-  - Note: Map tile servers are not used
+  - Map tiles from USGS NationalMap used for tropical watches and warnings map.
 
 ## Counties & Zones
 
@@ -124,6 +124,7 @@ Eastern North Carolina weather dashboards with close‑to‑realtime county aler
 
 - National Weather Service (NWS) API and ATOM
 - NOAA/NESDIS GOES‑East
+- USGS National Map
 - For life/property decisions, use official sources: https://weather.gov and https://nhc.noaa.gov
 
 ## Policies
@@ -161,6 +162,7 @@ Eastern North Carolina weather dashboards with close‑to‑realtime county aler
 
 ## Roadmap
 
+- Implmentation of storm floater caching and presentation.
 - Expanded docs for county configs and zone management
 - Optional retry/backoff in backend fetchers
 - Contribution guidelines/tests when contributions open
