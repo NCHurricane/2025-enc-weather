@@ -97,7 +97,7 @@ Eastern North Carolina weather dashboards with close‑to‑realtime county aler
 
 ## Local Development
 
-- Requirements: PHP 8.x locally; modern browser (IE not supported)
+- Requirements: PHP 8.x locally; modern browser (IE not supported - and really, IE?)
 - Quick start (serve from project root):
 
   ```bash
