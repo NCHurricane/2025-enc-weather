@@ -3,8 +3,7 @@ js/modules/logs/*.log
 *.txt
 *.zip
 *.bat
-images/*.webp
-images/*.png
+images/
 js/data/CurrentStorms.json
 js/data/CurrentStormsBackup.json
 js/data/gz_2010_us-050_00_500k.json
@@ -12,3 +11,5 @@ fonts/
 test/
 js/data/tiles/imagery/
 js/data/placenames.json
+.vscode/
+.DS_Store
