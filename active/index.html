@@ -7,9 +7,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <!-- Core site styles -->
-        <link rel="stylesheet" href="../css/styles.css?v=2025.09.02a" />
-        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.02a" />
-        <link rel="stylesheet" href="./css/active.css?v=2025.09.02a" />
+        <link rel="stylesheet" href="../css/styles.css?v=2025.09.13" />
+        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.13" />
+        <link rel="stylesheet" href="./css/active.css?v=2025.09.13b" />
+        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.13d" />
 
         <meta name="description" content="Active tropical storm overview, hazards, graphics, and text products." />
         <link
@@ -19,36 +20,7 @@
     </head>
 
     <body>
-        <header class="header">
-            <div class="header-container">
-                <img src="../images/2025_banner.png" alt="NCHurricane.com Logo" />
-                <nav class="nav" aria-label="Main navigation">
-                    <ul id="nav-menu" class="nav-menu">
-                        <li><a href="../index.html">Home</a></li>
-                        <li class="has-submenu">
-                            <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
-                            <ul id="nav-menu" class="submenu" aria-label="Counties submenu">
-                                <li><a href="../counties/beaufort/index.html">Beaufort</a></li>
-                                <li><a href="../counties/bertie/index.html">Bertie</a></li>
-                                <li><a href="../counties/dare/?zone=mainland">Dare</a></li>
-                                <li><a href="../counties/hyde/?zone=mainland">Hyde</a></li>
-                                <li><a href="../counties/martin/index.html">Martin</a></li>
-                                <li><a href="../counties/pitt/index.html">Pitt</a></li>
-                                <li><a href="../counties/tyrrell/index.html">Tyrrell</a></li>
-                                <li><a href="../counties/washington/index.html">Washington</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="../hazards.html">Hazards</a></li>
-                        <li><a href="../tropical.html">Tropical</a></li>
-                        <li><a href="../links.html">Links</a></li>
-                    </ul>
-                </nav>
-                <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"
-                    aria-controls="nav-menu">
-                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
-                </button>
-            </div>
-        </header>
+        <header class="header"></header>
 
         <main class="container">
             <h1 class="main-title"><span id="storm-title">Loading name...</span>&nbsp;&nbsp;<span id="storm-id">...and
@@ -71,10 +43,11 @@
                 </div>
             </section>
 
+
             <!-- Watches & Warnings -->
             <section class="hazards-container" aria-labelledby="hazards-title">
                 <div class="section-title">
-                    <i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>WATCHES AND WARNINGS
+                    <i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>WATCHES &frasl; WARNINGS
                 </div>
                 <section class="storm-hazards-section">
                     <div class="ww-grid">
@@ -89,7 +62,7 @@
             <!-- Storm Surge Watches & Warnings (separate container) -->
             <section class="surge-container" aria-labelledby="surge-title">
                 <div class="section-title">
-                    <i class="fa-solid fa-water fa-xl fontawesome-icon"></i>STORM SURGE WATCHES AND WARNINGS
+                    <i class="fa-solid fa-water fa-xl fontawesome-icon"></i>STORM SURGE ALERTS
                 </div>
                 <section class="storm-surge-section">
                     <div class="ww-grid">
@@ -99,6 +72,26 @@
                         <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
                     </div>
                 </section>
+            </section>
+
+            <!-- Text Products -->
+            <section class="text-products-container" aria-labelledby="text-products-title">
+                <div class="section-title">
+                    <i class=" fa-solid fa-newspaper fa-xl fontawesome-icon"></i>TEXT ADVISORY PRODUCTS
+                </div>
+                <div class="storm-text-section" id="storm-text-section">
+                    <!-- Text products interface will be dynamically generated here -->
+                </div>
+            </section>
+
+            <!-- Track and Messages Graphics -->
+            <section class="graphics-container" aria-labelledby="graphics-title">
+                <div class="section-title">
+                    <i class="fa-solid fa-route fa-xl fontawesome-icon"></i>TRACK &frasl; MESSAGES
+                </div>
+                <div class="track-messages-section" id="track-messages-section">
+                    <!-- Track and messages graphics will be dynamically generated here -->
+                </div>
             </section>
 
             <!-- Radii -->
@@ -121,53 +114,36 @@
                 </div>
             </section>
 
-
-            <!-- Graphics -->
-            <section class="graphics-container" aria-labelledby="graphics-title">
+            <!-- Wind Graphics -->
+            <section class="wind-graphics-container" aria-labelledby="wind-graphics-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-image fa-xl fontawesome-icon"></i>STORM GRAPHICS
+                    <i class="fa-solid fa-wind fa-xl fontawesome-icon"></i>WIND GRAPHICS
                 </div>
-                <div class="storm-graphics-section" id="storm-graphics-section">
-                    <div>
-                        <h3>Track &amp; Cone</h3>
-                        <div id="cone-graphic" class="muted">Cone graphic will appear here.</div>
-                    </div>
-                    <div>
-                        <h3>Wind / Surge / Rain</h3>
-                        <div id="hazards-graphic" class="muted">Hazards graphics will appear here.</div>
-                    </div>
-                    <div>
-                        <h3>Key Messages</h3>
-                        <div id="key-messages" class="muted">No key messages available.</div>
-                    </div>
-                    <div>
-                        <h3>Satellite Loop</h3>
-                        <div id="satellite-loop" class="muted">
-                            <img id="satellite-img" alt="Satellite imagery loop" style="max-width:100%; height:auto; display:none;">
-                            <div id="satellite-loading">Loading satellite imagery...</div>
-                        </div>
-                    </div>
+                <div class="wind-graphics-section" id="wind-graphics-section">
+                    <!-- Wind graphics will be dynamically generated here -->
                 </div>
             </section>
 
-            <!-- Text Products -->
-            <section class="text-products-container" aria-labelledby="text-products-title">
+            <!-- Wind Probability Graphics -->
+            <section class="wind-probability-container" aria-labelledby="wind-probability-title">
                 <div class="section-title">
-                    <i class=" fa-solid fa-newspaper fa-xl fontawesome-icon"></i>TEXT PRODUCTS
+                    <i class="fa-solid fa-chart-line fa-xl fontawesome-icon"></i>WIND PROBABILITY GRAPHICS
                 </div>
-                <div class="storm-text-section" id="storm-text-section">
-                    <div id="advisory-card" class="advisory-card">
-                        <div id="advisory-content" class="advisory-content"></div>
-                    </div>
-
-                    <div>
-                        <h3>Discussion</h3>
-                        <div id="storm-discussion" class="muted">No discussion available.</div>
-                    </div>
-
-
+                <div class="wind-probability-section" id="wind-probability-section">
+                    <!-- Wind probability graphics will be dynamically generated here -->
                 </div>
             </section>
+
+            <!-- Surge and Rain Graphics -->
+            <section class="surge-rain-container" aria-labelledby="surge-rain-title">
+                <div class="section-title">
+                    <i class="fa-solid fa-cloud-rain fa-xl fontawesome-icon"></i>STORM SURGE &frasl; RAIN GRAPHICS
+                </div>
+                <div class="surge-rain-section" id="surge-rain-section">
+                    <!-- Surge and rain graphics will be dynamically generated here -->
+                </div>
+            </section>
+
         </main>
 
         <footer class="footer">
@@ -215,13 +191,21 @@
 
         <!-- Keep your existing JS; these IDs match your previous wiring -->
         <script type="module" src="/2025_weather/js/modules/warningColors.js?v=2025.09.2a"></script>
-
-        <script type="module" src="/2025_weather/active/js/radii-visualization.js?v=2025.09.2a"></script>
-        <script type="module" src="/2025_weather/active/js/storm.js?v=2025.09.2a"></script>
-        <script src="/2025_weather/active/js/ww-maps.js?v=2025.09.2a" defer></script>
+        <script type="module" src="/2025_weather/active/js/radii-visualization.js?v=2025.09.13"></script>
+        <script type="module" src="/2025_weather/active/js/storm-graphics.js?v=2025.09.13d"></script>
+        <script type="module" src="/2025_weather/active/js/storm.js?v=2025.09.15"></script>
+        <script type="module" src="/2025_weather/active/js/storm_text.js?v=2025.09.13b"></script>
+        <script src="/2025_weather/active/js/ww-maps.js?v=2025.09.13" defer></script>
         <script type="module">
-            import { initTropicalBanner } from '/2025_weather/js/modules/tropical-banner.js';
+            import { initTropicalBanner } from '/2025_weather/js/modules/tropical-banner.js?v=2025.09.13';
             initTropicalBanner();
+        </script>
+        <script type="module">
+            import { NavigationModule } from '../js/modules/navigation.js';
+
+            document.addEventListener('DOMContentLoaded', () => {
+                NavigationModule.init('../');
+            });
         </script>
     </body>
 

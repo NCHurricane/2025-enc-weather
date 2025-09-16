@@ -1,15 +1,21 @@
-/* ===========================
-   Active Page Styles (active.css)
-   Scope: /active/index.html
-   Uses variables from styles.css
-   =========================== */
+/*=================================================================*/
+/*                        ACTIVE PAGE STYLES                      */
+/*                       Scope: /active/index.html                */
+/*                     Uses variables from styles.css             */
+/*=================================================================*/
 
-/* ---- Common styling elements ---- */
+/*-----------------------------------------------------------------*/
+/* SHARED CONTAINER STYLES                                        */
+/*-----------------------------------------------------------------*/
+/* Main section containers */
 .storm-header-container,
 .radii-container,
 .hazards-container,
 .surge-container,
 .graphics-container,
+.wind-graphics-container,
+.wind-probability-container,
+.surge-rain-container,
 .text-products-container,
 .notfound-container {
   background-color: var(--color-primary);
@@ -21,6 +27,7 @@
   box-shadow: var(--shadow-standard);
 }
 
+/* Section title styling */
 .storm-header-title,
 .radii-title,
 .hazards-title,
@@ -33,12 +40,37 @@
   display: block;
 }
 
+/* Plus/minus icons for collapsible sections */
+.section-title::after {
+  font-family: "Font Awesome 6 Free";
+  content: "\f067"; /* Plus icon */
+  font-weight: 900;
+  margin-left: 8px;
+  float: right;
+  transition: transform 0.3s ease;
+}
+
+/* When expanded (aria-expanded="true"), show minus icon */
+.section-title[aria-expanded="true"]::after {
+  content: "\f068"; /* Minus icon */
+  transform: rotate(180deg);
+}
+
+/* Storm overview doesn't collapse, so no icon */
+.storm-header-container .section-title::after {
+  display: none;
+}
+
+/* Content sections within containers */
 .storm-header-section,
 .radii-compass-section,
 .storm-hazards-section,
 .storm-graphics-section,
-.storm-text-section,
-.storm-surge-section {
+.storm-surge-section,
+.track-messages-section,
+.wind-graphics-section,
+.wind-probability-section,
+.surge-rain-section {
   color: var(--color-text);
   background-color: #fff5ee;
   padding: var(--padding-section);
@@ -46,34 +78,45 @@
   border-radius: var(--border-radius);
 }
 
-/* ---- Header row inside the panel ---- */
+.storm-text-section {
+  margin: 15px 0;
+}
+
+/*-----------------------------------------------------------------*/
+/* STORM HEADER SECTION                                           */
+/*-----------------------------------------------------------------*/
+/* Header layout */
 .storm-header {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 10px 14px;
 }
+
 .storm-header .section-title,
 .storm-header .map-title {
   margin: 0;
   line-height: 1.1;
 }
+
 #storm-id.badge {
   margin-left: 4px;
 }
+
 #last-updated.last-updated {
   font-size: 0.9rem;
   opacity: 0.95;
 }
 
-/* =========================
-   Overview v2 (Compact Layout)
-   ========================= */
+/*-----------------------------------------------------------------*/
+/* STORM OVERVIEW V2 (COMPACT LAYOUT)                             */
+/*-----------------------------------------------------------------*/
 
-/* Title refinement */
+/* Main title styling */
 .main-title {
   line-height: 1.2;
 }
+
 .main-title #storm-id {
   font-size: 1.5rem;
   margin-left: 0.25rem;
@@ -82,7 +125,7 @@
   opacity: 0.95;
 }
 
-/* Base container */
+/* Overview container */
 #overview-v2 {
   display: flex;
   flex-direction: column;
@@ -96,6 +139,7 @@
   gap: 0.25rem;
 }
 
+/* Information lines */
 .ov-info-line {
   display: flex;
   flex-wrap: wrap;
@@ -115,7 +159,7 @@
   flex: 1;
 }
 
-/* Center section */
+/* Center section styling */
 .ov-center-section {
   margin-top: 1rem;
   text-align: left;
@@ -140,7 +184,7 @@
   margin-right: 6px;
 }
 
-/* Per-row targeting (example: Advisory # label only) */
+/* Specific field styling */
 .overview-v2 .ov-info-line[data-key="message-type"] .ov-value {
   font-family: "Montserrat", sans-serif;
   text-transform: capitalize;
@@ -151,6 +195,7 @@
 .overview-v2 .ov-info-line[data-key="category"] .ov-label {
   display: none;
 }
+
 .overview-v2 .ov-info-line[data-key="category"] .ov-value {
   font-family: "Roboto", sans-serif;
   text-transform: uppercase;
@@ -159,7 +204,6 @@
   color: red;
 }
 
-/* Replace non-standard :contains() usage */
 .overview-v2 .ov-info-line[data-key="movement"] .ov-value {
   font-weight: 800;
 }
@@ -181,15 +225,28 @@
   }
 }
 
-/**
- * Wind Radii Compass Visualization Styles
- * Add to active.css after the existing radii-table styles
- */
+/*-----------------------------------------------------------------*/
+/* WIND RADII VISUALIZATION                                        */
+/*-----------------------------------------------------------------*/
+/* Hidden sections */
+#radii-section[hidden],
+#ww-wind-canvas[hidden],
+#ww-surge-canvas[hidden] {
+  display: none !important;
+}
 
-/* ===========================
-   Wind Radii Visualization
-   =========================== */
+.radii-section {
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  margin: 15px 0 0 0;
+  padding: 15px;
+  border-radius: 8px;
+}
 
+/* Radii compass section background */
 .radii-compass-section {
   color: var(--color-text);
   background-image: url("../../images/isabel.webp");
@@ -197,17 +254,10 @@
   background-position: center;
   background-repeat: no-repeat;
   padding: var(--padding-section);
-  margin: 15px 0 0 0;
   border-radius: var(--border-radius);
 }
 
-#radii-section[hidden],
-#ww-wind-canvas[hidden],
-#ww-surge-canvas[hidden] {
-  display: none !important;
-}
-
-/* Container for the compass visualization */
+/* Compass visualization container */
 .radii-compass {
   position: relative;
   width: 100%;
@@ -215,9 +265,11 @@
   margin: 0 auto;
   aspect-ratio: 1;
   padding: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Canvas element */
+/* Canvas element styling */
 .radii-canvas {
   width: 100%;
   height: 100%;
@@ -225,63 +277,71 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 50%;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
-/* Control buttons for wind speed selection */
+/* Control buttons */
 .radii-hour-controls,
 .radii-controls {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 15px 0;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  background-color: var(--color-text-light);
+  border-bottom: 2px solid var(--color-primary);
+  padding: 0;
+  gap: 0;
 }
 
 .radii-btn,
 .radii-hour-btn {
-  padding: 6px 12px;
-  background: var(--color-text-light);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 8px;
+  background-color: var(--color-background);
+  border: none;
   color: var(--color-text);
-  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+  font-size: 0.9em;
+  font-weight: 400;
+  text-align: center;
   font-family: "Roboto", Arial, sans-serif;
+  position: relative;
 }
 
 .radii-btn:hover,
 .radii-hour-btn:hover {
-  background: var(--color-background);
-  color: var(--color-text);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background-color: var(--color-background);
+  font-weight: bold;
 }
 
 .radii-btn.active,
 .radii-hour-btn.active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-text);
-  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  font-weight: bold;
+  z-index: 1;
 }
 
-.radii-btn.active:hover,
-.radii-hour-btn.active:hover {
-  background: #ff5555;
-  border-color: #ff5555;
+.radii-btn.active::after,
+.radii-hour-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-accent);
 }
 
+/* Wind speed specific colors */
 #radii-34 {
   background: #ffd93d;
 }
+
 #radii-50 {
   background: #ff9f1c;
 }
+
 #radii-64 {
   background: #ff6b6b;
 }
@@ -317,18 +377,399 @@
   z-index: 10;
 }
 
-/* Mobile responsiveness */
+/* Fallback styles */
+.radii-table {
+  display: none;
+}
+
+.radii-controls .muted {
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+  padding: 10px;
+}
+
+/* Animation for cyclone icon */
+@keyframes cyclone-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*-----------------------------------------------------------------*/
+/* PLACEHOLDER SECTIONS                                            */
+/*-----------------------------------------------------------------*/
+/* Hidden sections */
+#storm-hazards-section[hidden],
+#storm-graphics-section[hidden],
+#storm-text-section[hidden] {
+  display: none !important;
+}
+
+/* Hazard alert containers */
+#coastal-alerts,
+#inland-alerts {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* Graphics placeholders */
+#cone-graphic,
+#hazards-graphic {
+  /* min-height: 300px; */
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Text product cards */
+.advisory-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.advisory-content {
+  white-space: pre-wrap;
+  line-height: 1.35;
+  opacity: 0.95;
+}
+
+/*-----------------------------------------------------------------*/
+/* GRID LAYOUTS FOR MAPS AND TEXT                                 */
+/*-----------------------------------------------------------------*/
+/* Side-by-side layout for map and text */
+.storm-hazards-section .ww-grid,
+.storm-surge-section .ww-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+/* Prevent overflow in grid columns */
+.storm-hazards-section .ww-grid .ww-mapcol,
+.storm-hazards-section .ww-grid .ww-textcol,
+.storm-surge-section .ww-grid .ww-mapcol,
+.storm-surge-section .ww-grid .ww-textcol {
+  min-width: 0;
+}
+
+/* Canvas styling within grid */
+.storm-hazards-section .ww-grid .ww-mapcol canvas,
+.storm-surge-section .ww-grid .ww-mapcol canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* No map layout */
+.ww-grid.no-map {
+  grid-template-columns: 1fr;
+}
+
+.ww-grid.no-map .ww-textcol {
+  grid-column: 1 / -1;
+}
+
+.ww-mapcol.is-empty {
+  display: none;
+}
+
+/*-----------------------------------------------------------------*/
+/* TEXT PRODUCTS TABBED INTERFACE                                 */
+/*-----------------------------------------------------------------*/
+/* Interface container */
+.text-products-interface {
+  background-color: var(--color-background);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* Tab navigation */
+.text-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  background-color: var(--color-text-light);
+  border-bottom: 2px solid var(--color-primary);
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+/* Individual tabs */
+.text-tab,
+.text-tab .text-tab.spanish {
+  background-color: var(--color-background);
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+  font-weight: 400;
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  border-bottom: 2px solid var(--color-primary); /* Added */
+}
+
+.text-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+.text-tab:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.text-tab.active {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  font-weight: bold;
+  border-bottom: 3px solid var(--color-accent); /* Yellow accent border when active */
+}
+
+.text-tab.active::after {
+  content: none;
+}
+
+/* Tab content elements */
+.tab-name {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tab-desc {
+  display: block;
+  font-size: 0.75em;
+  opacity: 0.8;
+  line-height: 1.2;
+}
+
+/* Content container */
+.text-content-container {
+  background-color: var(--color-background);
+  min-height: 400px;
+  position: relative;
+}
+
+.text-content-panel {
+  height: 100%;
+  display: none; /* Hide all panels by default */
+}
+
+.text-content-panel.active {
+  display: block; /* Show only the active panel */
+}
+
+/* Text content area */
+.text-content {
+  background-color: var(--color-background);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: "Fira Code", "Courier New", monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  margin: 0;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 15px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Scrollbar styling */
+.text-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.text-content::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+.text-content::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.text-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Action buttons */
+.text-actions {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.nhc-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-primary);
+}
+
+.nhc-link-btn:hover {
+  background-color: var(--color-primary-dark, #1a4b63);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nhc-link-btn:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.nhc-link-btn i {
+  font-size: 0.9em;
+}
+
+/*-----------------------------------------------------------------*/
+/* RESPONSIVE DESIGN                                               */
+/*-----------------------------------------------------------------*/
+/* Mobile responsive - General layout */
+@media (max-width: 1024px) {
+  .storm-list {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-kv {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+/* Mobile responsive - Grid layouts */
+@media (max-width: 900px) {
+  .storm-hazards-section .ww-grid,
+  .storm-surge-section .ww-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile responsive - Text products and radii controls */
 @media (max-width: 768px) {
+  .radii-hour-controls,
+  .radii-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  }
+  .text-tab,
+  .radii-hour-btn,
+  .radii-btn {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .text-tabs {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .text-tab {
+    font-size: 0.7rem;
+    padding: 10px 6px;
+  }
+
+  .tab-desc {
+    display: none;
+  }
+
+  /* Radii controls responsive */
   .radii-compass {
     max-width: 350px;
   }
 
+  .radii-hour-controls,
   .radii-controls {
-    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   }
 
-  .radii-btn {
-    padding: 5px 10px;
+  .radii-btn,
+  .radii-hour-btn {
+    font-size: 0.8em;
+    padding: 10px 6px;
+  }
+}
+
+/* Only for text-tabs: 3 rows flex layout on mobile, last row fills with two tabs */
+@media (max-width: 768px) {
+  .text-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 0;
+  }
+  .text-tab {
+    flex: 1 1 33.3333%;
+    max-width: 33.3333%;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  /* Remove centering for 7/8 tabs from previous solution */
+  .text-tab:nth-child(7):nth-last-child(1),
+  .text-tab:nth-child(7):nth-last-child(2),
+  .text-tab:nth-child(8):nth-last-child(1) {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 50%;
+    flex-basis: 50%;
+  }
+  .text-tab:nth-child(8):nth-last-child(1) {
+    /* For 8th tab, also set max-width/flex-basis */
+    max-width: 50%;
+    flex-basis: 50%;
+  }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 360px) {
+  .text-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .text-tab {
+    padding: 10px 8px;
+    font-size: 0.8em;
+  }
+
+  .radii-hour-controls,
+  .radii-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .radii-btn,
+  .radii-hour-btn {
+    padding: 10px 8px;
     font-size: 0.8rem;
   }
 
@@ -338,9 +779,38 @@
   }
 }
 
+/* Mobile responsive - Small screens */
+@media (max-width: 640px) {
+  .overview-kv {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-kv dt {
+    opacity: 0.8;
+  }
+
+  .overview-kv dd {
+    padding-bottom: 6px;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Mobile responsive - Extra small screens */
 @media (max-width: 480px) {
+  .text-content {
+    font-size: 0.8em;
+    padding: 10px;
+    max-height: 300px;
+  }
+
+  .text-content-panel {
+    padding: 15px;
+  }
+
+  /* Radii controls for small screens */
   .radii-compass {
     max-width: 300px;
+    padding: 8px;
   }
 
   .radii-btn {
@@ -359,147 +829,123 @@
   }
 }
 
-/* Animation for the cyclone icon (optional) */
-@keyframes cyclone-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 400px) {
+  .radii-compass {
+    max-width: 280px;
+    padding: 5px; /* Further reduce padding */
   }
-  to {
-    transform: rotate(360deg);
+
+  .radii-compass-section {
+    padding: 10px; /* Reduce section padding */
   }
 }
 
-/* Hide the old table when using visualization */
-.radii-table {
-  display: none;
-}
-
-/* Fallback message when no data */
-.radii-controls .muted {
-  text-align: center;
-  opacity: 0.7;
-  font-style: italic;
-  padding: 10px;
-}
-
-/* ===========================
-   Hazards placeholders
-   =========================== */
-#storm-hazards-section[hidden] {
-  display: none !important;
-}
-#coastal-alerts,
-#inland-alerts {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-/* ===========================
-   Graphics placeholders
-   =========================== */
-#storm-graphics-section[hidden] {
-  display: none !important;
-}
-#cone-graphic,
-#hazards-graphic {
-  min-height: 300px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  font-style: italic;
-  opacity: 0.9;
-}
-
-/* ===========================
-   Text products
-   =========================== */
-#storm-text-section[hidden] {
-  display: none !important;
-}
-.advisory-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-.advisory-content {
-  white-space: pre-wrap;
-  line-height: 1.35;
-  opacity: 0.95;
-}
-
-/* Utilities */
-.muted {
-  opacity: 0.85;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .storm-list {
+/* Extra small mobile screens */
+@media (max-width: 360px) {
+  .text-tabs {
     grid-template-columns: 1fr;
   }
-  .overview-kv {
-    grid-template-columns: 200px 1fr;
+
+  .text-tab {
+    padding: 10px 8px;
+    font-size: 0.8em;
+  }
+
+  .radii-compass {
+    max-width: 260px;
+    padding: 3px;
+  }
+
+  .radii-compass-section {
+    padding: 8px;
+  }
+
+  .radii-hour-controls,
+  .radii-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .radii-btn,
+  .radii-hour-btn {
+    padding: 10px 8px;
+    font-size: 0.8rem;
+  }
+
+  .radii-legend {
+    font-size: 0.8rem;
+    gap: 10px;
   }
 }
+
+/* Mobile responsive - Small screens */
 @media (max-width: 640px) {
   .overview-kv {
     grid-template-columns: 1fr;
   }
+
   .overview-kv dt {
     opacity: 0.8;
   }
+
   .overview-kv dd {
     padding-bottom: 6px;
     border-bottom: 1px dotted rgba(255, 255, 255, 0.12);
   }
 }
 
-/* side-by-side layout for map (left) and text (right) */
-.storm-hazards-section .ww-grid,
-.storm-surge-section .ww-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-}
-
-/* prevent long lines from forcing overflow */
-.storm-hazards-section .ww-grid .ww-mapcol,
-.storm-hazards-section .ww-grid .ww-textcol,
-.storm-surge-section .ww-grid .ww-mapcol,
-.storm-surge-section .ww-grid .ww-textcol {
-  min-width: 0;
-}
-
-/* ensure the canvas behaves as a block element */
-.storm-hazards-section .ww-grid .ww-mapcol canvas,
-.storm-surge-section .ww-grid .ww-mapcol canvas {
-  display: block;
-  width: 100%;
-  height: auto; /* JS sets actual pixels */
-}
-
-/* stack on narrow screens */
-@media (max-width: 900px) {
-  .storm-hazards-section .ww-grid,
-  .storm-surge-section .ww-grid {
-    grid-template-columns: 1fr;
+/* Mobile responsive - Extra small screens */
+@media (max-width: 480px) {
+  .text-content {
+    font-size: 0.8em;
+    padding: 10px;
+    max-height: 300px;
   }
-}
 
-.ww-grid.no-map {
-  grid-template-columns: 1fr;
-}
-.ww-grid.no-map .ww-textcol {
-  grid-column: 1 / -1;
-}
-/* optional */
-.ww-mapcol.is-empty {
-  display: none;
+  .text-content-panel {
+    padding: 15px;
+  }
+
+  /* Radii controls for small screens */
+  .radii-compass {
+    max-width: 300px;
+  }
+
+  .radii-btn {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+  }
+
+  .legend-color {
+    width: 100%;
+    height: auto;
+    padding: 2px;
+    height: auto;
+    padding: 2px;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+  }
+
+  .legend-color {
+    width: 100%;
+    height: auto;
+    padding: 2px;
+    height: auto;
+    padding: 2px;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+  }
+
+  .legend-color {
+    width: 100%;
+    height: auto;
+    padding: 2px;
+  }
 }

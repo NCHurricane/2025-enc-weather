@@ -9,6 +9,8 @@
  */
 "use strict";
 
+import { initStormGraphics } from './storm-graphics.js';
+
 /* ==============================
      Config "knobs" (easy tuning)
      ============================== */
@@ -152,13 +154,6 @@ function setupSectionCollapsibles() {
       (el, idx) => idx > titleIndex && el.nodeType === 1
     );
     if (!content) return; // safety
-
-    // Collapse on load except the header container
-    if (!container.classList.contains("storm-header-container")) {
-      content.hidden = true;
-      title.setAttribute("aria-expanded", "false");
-    }
-
     if (!title || !content) return;
 
     // ARIA wiring
@@ -170,14 +165,23 @@ function setupSectionCollapsibles() {
     title.setAttribute("tabindex", "0");
     title.setAttribute("aria-controls", content.id);
 
-    // Start collapsed
-    title.setAttribute("aria-expanded", "false");
-    content.hidden = true;
+    // Persisted state per section container (session only)
+    const containerClass = Array.from(container.classList).find((c) => c.endsWith("-container")) || container.classList[0] || "section";
+    const storageKey = `active:collapsible:${containerClass}`;
+    const savedState = sessionStorage.getItem(storageKey); // 'open' | 'closed' | null
+    // By default, all sections are closed unless user opened them (except overview, which is not collapsible)
+    const startOpen = savedState === 'open';
+
+    title.setAttribute("aria-expanded", startOpen ? "true" : "false");
+    content.hidden = !startOpen;
 
     const toggle = () => {
       const expanded = title.getAttribute("aria-expanded") === "true";
       title.setAttribute("aria-expanded", String(!expanded));
       content.hidden = expanded;
+
+      // Save new state for this session only
+      sessionStorage.setItem(storageKey, !expanded ? 'open' : 'closed');
 
       if (!expanded) {
         // section just opened: give layout a tick, then refresh if available
@@ -196,6 +200,7 @@ function setupSectionCollapsibles() {
       const willOpen = content.hidden === true;
       content.hidden = !content.hidden;
       title.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      sessionStorage.setItem(storageKey, willOpen ? 'open' : 'closed');
       if (willOpen) {
         window.dispatchEvent(new Event("resize"));
       }
@@ -372,7 +377,7 @@ function renderOverviewV2(advisory, longId) {
   ];
 
   const catText = String(advisory?.systemSaffirSimpsonCategory ?? "").trim();
-  if (catText) {
+  if (catText && catText.toLowerCase() !== "n/a") {
     // put it at the top like before
     lines.unshift(createInfoLine("", catText, "category"));
   }
@@ -402,45 +407,6 @@ function renderOverviewV2(advisory, longId) {
       node.innerHTML = `<i class="fa-solid fa-circle-question" aria-hidden="true"></i><span class="sr-only">Not available</span>&nbsp;N/A`;
     }
   });
-
-  // Load satellite loop
-  loadSatelliteLoop(advisory, longId);
-}
-
-/* ================
-     Satellite Loop
-     ================ */
-async function loadSatelliteLoop(advisory, longId) {
-  if (!advisory?.latitudeNumeric || !advisory?.longitudeNumeric) {
-    console.warn("No lat/lon in advisory for satellite loop");
-    return;
-  }
-
-  const lat = advisory.latitudeNumeric;
-  const lon = advisory.longitudeNumeric;
-  const id = advisory.atcfID || longId;
-
-  try {
-    const response = await fetch(`api/satellite_loop.php?lat=${lat}&lon=${lon}&type=storm&id=${id}`);
-    const data = await response.json();
-    if (data.url) {
-      const img = document.getElementById('satellite-img');
-      const loading = document.getElementById('satellite-loading');
-      if (img) {
-        img.src = data.url;
-        img.style.display = 'block';
-        img.onload = () => {
-          if (loading) loading.style.display = 'none';
-        };
-      }
-    } else if (data.error) {
-      console.error("Satellite loop error:", data.error);
-      const loading = document.getElementById('satellite-loading');
-      if (loading) loading.textContent = 'Satellite imagery not available';
-    }
-  } catch (e) {
-    console.error("Failed to load satellite loop:", e);
-  }
 }
 
 /* ================
@@ -448,12 +414,15 @@ async function loadSatelliteLoop(advisory, longId) {
      ================ */
 async function init() {
   const raw = getStormParam();
-  if (!raw) return showBannerOnly();
+  if (!raw) {
+    window.location.href = "/2025_weather/404.html";
+    return;
+  }
 
   const longId = raw.toUpperCase();
   if (!isValidLongId(longId)) {
-    console.warn("Invalid storm id; expected ALnnYYYY:", raw);
-    return showBannerOnly();
+    window.location.href = "/2025_weather/404.html";
+    return;
   }
 
   const [advisory, cache] = await Promise.all([
@@ -461,7 +430,13 @@ async function init() {
     loadRadiiCache(longId),
   ]);
 
-  renderOverviewV2(advisory || { atcfID: longId }, longId);
+  // If advisory.json is missing, treat as 404
+  if (!advisory) {
+    window.location.href = "/2025_weather/404.html";
+    return;
+  }
+
+  renderOverviewV2(advisory, longId);
 
   // Delegate radii visualization to the external module
   try {
@@ -477,6 +452,23 @@ async function init() {
     }
   } catch (e) {
     console.error("Radii render failed:", e);
+  }
+
+  // Initialize graphics module with storm data
+  try {
+    if (advisory && longId) {
+      // Create a storm data object with the expected structure
+      const stormData = {
+        id: longId,
+        name: advisory?.systemName || "Active Storm",
+        type: advisory?.systemType || ""
+      };
+      
+      // Call the imported function directly
+      initStormGraphics(stormData);
+    }
+  } catch (error) {
+    console.error("Error initializing storm graphics:", error);
   }
 }
 

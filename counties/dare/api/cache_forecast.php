@@ -98,8 +98,8 @@ function processForecastPeriods($periods) {
     foreach ($periods as $period) {
         // Ensure icon uses large size
         $icon = $period['icon'] ?? null;
-        if ($icon && !strpos($icon, 'size=')) {
-            $icon .= '?size=large';
+        if ($icon) {
+            $icon = str_replace('size=medium', 'size=large', $icon);
         }
         
         $processed[] = [

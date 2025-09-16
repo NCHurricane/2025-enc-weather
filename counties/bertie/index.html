@@ -31,35 +31,7 @@
 
    <body>
       <!-- Header -->
-      <header class="header">
-         <div class="header-container">
-            <img src="../../images/2025_banner.png" alt="NCHurricane.com Logo" />
-            <nav class="nav" aria-label="Main navigation">
-               <ul class="nav-menu">
-                  <li><a href="../../index.html">Home</a></li>
-                  <li class="has-submenu">
-                     <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
-                     <ul class="submenu">
-                        <li><a href="../beaufort/">Beaufort</a></li>
-                        <li><a href="index.html">Bertie</a></li>
-                        <li><a href="../dare/?zone=mainland">Dare</a></li>
-                        <li><a href="../hyde/?zone=mainland">Hyde</a></li>
-                        <li><a href="../martin/">Martin</a></li>
-                        <li><a href="../pitt/">Pitt</a></li>
-                        <li><a href="../tyrrell/">Tyrrell</a></li>
-                        <li><a href="../washington/">Washington</a></li>
-                     </ul>
-                  </li>
-                  <li><a href="../../hazards.html">Hazards</a></li>
-                  <li><a href="../../tropical.html">Tropical</a></li>
-                  <li><a href="../../links.html">Links</a></li>
-               </ul>
-            </nav>
-            <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
-               <i class="fa-solid fa-bars" aria-hidden="true"></i>
-            </button>
-         </div>
-      </header>
+      <header class="header"></header>
 
       <main class="container">
          <!-- CHANGE THE PLACE NAME -->
@@ -92,10 +64,10 @@
             <div id="alerts"></div>
          </section>
 
-         <!-- Other Locations Section -->
+         <!-- Nearby Locations Section -->
          <section class="other-container section-title" aria-labelledby="other-heading">
             <div>
-               <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>OTHER LOCATIONS
+               <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>Nearby Locations
             </div>
             <div id="other-stations"></div>
          </section>
@@ -261,10 +233,6 @@
                         <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
                         <label for="param-precipitation">Precip</label>
                      </div>
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-skycover" class="meteogram-param-checkbox" />
-                        <label for="param-skycover">Sky</label>
-                     </div>
                   </div>
                   <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
                      <canvas id="meteogramChart"></canvas>
@@ -358,6 +326,15 @@
             }
          });
       </script>
+
+      <script type="module">
+         import { NavigationModule } from '../../js/modules/navigation.js';
+
+         document.addEventListener('DOMContentLoaded', () => {
+            NavigationModule.init('../../');
+         });
+      </script>
+
       <a href="#" class="back-to-top" aria-label="Back to top" style="display: none">
          <i class="fa-solid fa-up-long"></i>
       </a>

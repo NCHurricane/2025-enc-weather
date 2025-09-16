@@ -50,13 +50,21 @@
   // Tile zoom bounds and behavior:
   // - TILE_MIN_Z / TILE_MAX_Z: hard clamps for tile z to avoid excessive requests or empty tiles.
   // - TILE_DPR_AWARE: when true, prefer one zoom level higher on high-DPI displays to reduce visible blur.
-  const TILE_MIN_Z = 10;
-  const TILE_MAX_Z = 10;
-  // const TILE_DPR_AWARE = true;
+  const TILE_MIN_Z = 5; // Raised from 3 to avoid overly large tiles
+  const TILE_MAX_Z = 7; // Raised from 5 to allow detailed tiles with place names
+  const TILE_DPR_AWARE = false; // Set to false to avoid unnecessary zoom increases
 
   // simple in-memory tile cache
   const _tileCache = new Map(); // key: `${TILE_STYLE}|${z}|${x}|${y}` -> HTMLImageElement
   const _drawVersionByCanvas = new Map(); // canvasId -> version // bump each draw to prevent stale paints
+
+  // Place names configuration
+  const PLACENAMES_URL = "/2025_weather/js/data/placenames.json";
+  const SHOW_PLACENAMES = true; // Set to false to disable place names
+  const MIN_ZOOM_FOR_PLACENAMES = 6;
+  const PLACENAMES_ZOOM_OFFSET = -1;
+
+  let PLACENAMES = null; // Will hold the loaded place names data
 
   function tileUrlCandidates(style, z, x, y) {
     const urls = [];
@@ -145,14 +153,14 @@
   }
 
   function ensureTile(style, z, x, y) {
-    const provider = TILE_PROVIDERS[style];
-    if (!provider) return Promise.resolve(null);
-
     const key = `${style}|${z}|${x}|${y}`;
     const cached = _tileCache.get(key);
     if (cached) return Promise.resolve(cached);
 
     const candidates = tileUrlCandidates(style, z, x, y);
+
+    // If no candidates available, return null
+    if (!candidates.length) return Promise.resolve(null);
 
     return new Promise((resolve) => {
       const img = new Image();
@@ -164,10 +172,17 @@
         img.crossOrigin = "anonymous";
       }
       img.decoding = "async";
-      img.loading = "lazy";
+      // img.loading = "lazy";
 
       let i = 0;
+      let timeoutId = null;
+
       const tryNext = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+
         if (i >= candidates.length) {
           console.warn("[ww] tile fail (all candidates)", {
             z,
@@ -177,18 +192,26 @@
           });
           return resolve(null);
         }
+
         const url = candidates[i++];
         console.info("[ww] try", url);
+
+        // Set up timeout for this specific URL attempt
+        timeoutId = setTimeout(() => {
+          console.warn("[ww] timeout loading", url);
+          img.onload = null;
+          img.onerror = null;
+          tryNext();
+        }, 10000);
+
         img.src = url;
-        console.info("[ww] setting src to", url);
-        const testImg = new Image();
-        testImg.onload = () =>
-          console.info("[ww] test img loaded successfully");
-        testImg.onerror = () => console.error("[ww] test img failed");
-        testImg.src = url;
       };
 
       img.onload = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
         console.info("[ww] loaded", img.src);
         _tileCache.set(key, img);
         resolve(img);
@@ -197,19 +220,6 @@
       img.onerror = (e) => {
         console.error("[ww] load error", img.src, e);
         tryNext();
-      };
-
-      // Add timeout to catch hanging requests
-      const timeout = setTimeout(() => {
-        console.warn("[ww] timeout loading", img.src);
-        tryNext();
-      }, 5000);
-
-      // Clear timeout on successful load
-      const originalOnload = img.onload;
-      img.onload = () => {
-        clearTimeout(timeout);
-        originalOnload();
       };
 
       tryNext();
@@ -301,6 +311,9 @@
         );
         drawFeatures(ctx, all, domain, rect, keysOrder);
 
+        // Draw place names on top of everything
+        drawPlacenames(ctx, domain, rect, z);
+
         // Separate out PR/VI insets
         const pr = all.filter((f) => f.properties.state === "PR");
         const vi = all.filter((f) => f.properties.state === "VI");
@@ -317,6 +330,9 @@
         // OLD: const auto = bboxOfFeatures(all) || DEFAULT_DOMAIN;
         const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
         drawFeatures(ctx, all, domain, rect, keysOrder);
+
+        // Draw place names on the auto-fitted view as well
+        drawPlacenames(ctx, auto, rect, z);
       }
     }
   }
@@ -419,6 +435,19 @@
     }
   }
 
+  // -------- Place Names --------
+  async function loadPlacenames() {
+    if (!SHOW_PLACENAMES) return;
+    try {
+      const res = await fetch(PLACENAMES_URL, { cache: "force-cache" });
+      if (!res.ok) return;
+      PLACENAMES = await res.json();
+      console.info("[ww] loaded", PLACENAMES?.length || 0, "place names");
+    } catch (err) {
+      console.warn("[ww] failed to load place names:", err);
+    }
+  }
+
   function drawBasemap(ctx, domain, rect) {
     if (!BASEMAP?.features?.length) return;
     ctx.save();
@@ -444,6 +473,49 @@
         }
       }
       ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPlacenames(ctx, domain, rect, zoom) {
+    if (!SHOW_PLACENAMES || !PLACENAMES || zoom < MIN_ZOOM_FOR_PLACENAMES) return;
+
+    ctx.save();
+    ctx.font = "12px Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#c3ff00ff";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.lineWidth = 1;
+
+    for (const place of PLACENAMES) {
+      const { text, lat, lon, minZoom, priority } = place;
+      
+      // Apply zoom offset to make places show earlier/later
+      const effectiveMinZoom = (minZoom || MIN_ZOOM_FOR_PLACENAMES) + PLACENAMES_ZOOM_OFFSET;
+      
+      // Skip if current zoom is below this place's effective minimum zoom
+      if (zoom < effectiveMinZoom) continue;
+      
+      // Skip if outside current domain
+      if (lon < domain.lonMin || lon > domain.lonMax || 
+          lat < domain.latMin || lat > domain.latMax) continue;
+
+      const p = project(lon, lat, domain, rect);
+      
+      // Skip if outside canvas bounds
+      if (p.x < 0 || p.x > rect.w || p.y < 0 || p.y > rect.h) continue;
+
+      // Adjust font size based on priority (higher priority = larger font)
+      const fontSize = priority >= 15 ? 14 : priority >= 10 ? 12 : 10;
+      ctx.font = `${fontSize}px Arial, sans-serif`;
+
+      // Convert text to uppercase
+      const displayText = text.toUpperCase();
+
+      // Draw text with outline for readability
+      ctx.strokeText(displayText, p.x, p.y);
+      ctx.fillText(displayText, p.x, p.y);
     }
     ctx.restore();
   }
@@ -718,6 +790,10 @@
     // ✅ use the real set when drawing
     drawFeatures(ctx, all, auto, rectMain, keysOrder);
 
+    // Draw place names on the main map
+    const currentZoom = chooseTileZoom(auto, rectMain);
+    drawPlacenames(ctx, auto, rectMain, currentZoom);
+
     function insetRect(box) {
       return {
         x: Math.round(box.x * width),
@@ -730,6 +806,10 @@
       const keysOrder =
         hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
       drawFeatures(ctx, all, auto, rectMain, keysOrder);
+      
+      // Draw place names for this view as well
+      const currentZoom = chooseTileZoom(auto, rectMain);
+      drawPlacenames(ctx, auto, rectMain, currentZoom);
     }
     if (pr.length) {
       const box = INSETS.PR;
@@ -856,6 +936,9 @@
 
     // fire and forget: basemap (optional)
     loadBasemap();
+    
+    // fire and forget: place names (optional)
+    loadPlacenames();
 
     try {
       const url = `/2025_weather/active/storms/${stormId}/tcv.json?v=${Date.now()}`;

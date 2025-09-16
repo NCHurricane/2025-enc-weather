@@ -8,6 +8,7 @@
 
         <!-- Core site styles only -->
         <link rel="stylesheet" href="./css/styles.css" />
+        <link rel="stylesheet" href="./css/active.css" />
 
         <!-- Font Awesome (needed for the hamburger icon in the header) -->
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
@@ -16,32 +17,15 @@
     </head>
 
     <body>
-        <header class="header">
-            <div class="header-container">
-                <a href="/2025_weather/index.html" class="site-brand" aria-label="Home">
-                    <img src="./images/2025_banner.png" alt="NCHurricane.com Logo" />
-                </a>
-                <nav class="nav" aria-label="Main navigation">
-                    <button class="nav-toggle" aria-controls="nav-menu" aria-expanded="false"
-                        aria-label="Toggle navigation">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <ul id="nav-menu" class="nav-menu">
-                        <li><a href="/2025_weather/index.html">Home</a></li>
-                        <li><a href="/2025_weather/tropical.html">Tropical</a></li>
-                        <li><a href="/2025_weather/hazards.html">Hazards</a></li>
-                        <li><a href="/2025_weather/links.html">Links</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
+        <!-- Navigation will be dynamically generated here -->
+        <header class="header"></header>
 
         <main class="container">
             <h1 class="main-title">404: NO ACTIVE PAGE</h1>
 
             <!-- Single panel, same “section container” look as other pages -->
             <section class="notfound-container" aria-labelledby="notfound-title">
-                <div id="notfound-title" class="notfound-title section-title">
+                <div id="notfound-title" class="notfound-title">
                     <i class="fa-solid fa-hurricane fa-xl" style="color: yellow;"></i>&nbsp;&nbsp;Time to evacuate this
                     page
                 </div>
@@ -51,8 +35,8 @@
                         JUST LIKE A CATEGORY 6 HURRICANE,<br />THE PAGE YOU'RE LOOKING FOR DOESN'T EXIST.
                     </p>
                     <img src="./images/evac.webp" alt="Evacuation sign illustration" class="evac-illustration" />
-                    <figcaption class="muted" style="text-align: center; margin-top: 6px">
-                        (Swap this text or image whenever you like.)
+                    <figcaption class="notfound-caption muted" style="text-align: center; margin-top: 6px">
+                        #EuroNailedSandy
                     </figcaption>
                 </figure>
             </section>
@@ -101,6 +85,15 @@
                 </p>
             </div>
         </footer>
+
+        <script type="module">
+            import { NavigationModule } from './js/modules/navigation.js';
+
+            document.addEventListener('DOMContentLoaded', () => {
+                NavigationModule.init('./');
+            });
+        </script>
+
     </body>
 
 </html>

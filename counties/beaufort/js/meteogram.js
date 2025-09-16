@@ -101,8 +101,7 @@ const humidity = period.relativeHumidity || null;  // Now available as percentag
       humidity,  // Will be null  
       precipChance,
       windSpeed,
-      windDirection,
-      skyCover: null // Not available in your data
+      windDirection
     });
   });
 

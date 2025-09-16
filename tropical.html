@@ -13,41 +13,13 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="css/styles.css?v=8.28.25">
-      <link rel="stylesheet" href="css/tropical.css?v=8.28.25">
+      <link rel="stylesheet" href="css/styles.css?v=9.14.25">
+      <link rel="stylesheet" href="css/tropical.css?v=9.14.25">
    </head>
 
    <body>
       <!-- Header -->
-      <header class="header">
-         <div class="header-container">
-            <img src="images/2025_banner.png" alt="NCHurricane.com Logo" />
-            <nav class="nav" aria-label="Main navigation">
-               <ul class="nav-menu">
-                  <li><a href="index.html">Home</a></li>
-                  <li class="has-submenu">
-                     <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
-                     <ul class="submenu">
-                        <li><a href="counties/beaufort/index.html">Beaufort</a></li>
-                        <li><a href="counties/bertie/index.html">Bertie</a></li>
-                        <li><a href="counties/dare/?zone=mainland">Dare</a></li>
-                        <li><a href="counties/hyde/?zone=mainland">Hyde</a></li>
-                        <li><a href="counties/martin/index.html">Martin</a></li>
-                        <li><a href="counties/pitt/index.html">Pitt</a></li>
-                        <li><a href="counties/tyrrell/index.html">Tyrrell</a></li>
-                        <li><a href="counties/washington/index.html">Washington</a></li>
-                     </ul>
-                  </li>
-                  <li><a href="hazards.html">Hazards</a></li>
-                  <li><a href="tropical.html">Tropical</a></li>
-                  <li><a href="links.html">Links</a></li>
-               </ul>
-            </nav>
-            <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
-               <i class="fa-solid fa-bars" aria-hidden="true"></i>
-            </button>
-         </div>
-      </header>
+      <header class="header"></header>
 
       <main class="container">
          <h1 class="main-title">Atlantic Tropical Weather</h1>
@@ -70,48 +42,73 @@
                <input type="radio" name="graphicsTab" id="graphics-seven-day" />
                <input type="radio" name="graphicsTab" id="graphics-surface" />
 
-               <div class="tropical-graphics-tab-labels" role="tablist">
-                  <label for="graphics-current" class="tropical-graphics-tab" role="tab"
-                     aria-selected="true">Current</label>
-                  <label for="graphics-two-day" class="tropical-graphics-tab" role="tab">2-Day</label>
-                  <label for="graphics-seven-day" class="tropical-graphics-tab" role="tab">7-Day</label>
-                  <label for="graphics-surface" class="tropical-graphics-tab" role="tab">Surface Analysis</label>
-               </div>
+
 
                <div class="tropical-graphics-tab-content">
+                  <div class="tropical-graphics-tab-labels" role="tablist">
+                     <label for="graphics-current" class="tropical-graphics-tab" role="tab"
+                        aria-selected="true">Current</label>
+                     <label for="graphics-two-day" class="tropical-graphics-tab" role="tab">2-Day</label>
+                     <label for="graphics-seven-day" class="tropical-graphics-tab" role="tab">7-Day</label>
+                     <label for="graphics-surface" class="tropical-graphics-tab" role="tab">Surface Analysis</label>
+                  </div>
                   <!-- Current Activity Tab -->
                   <div class="tropical-graphics-panel" id="current-activity-panel" role="tabpanel">
-                     <div class="image-timestamp" id="current-activity-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="current-activity-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
                            alt="Current Tropical Activity" />
+                     </div>
+                     <div class="text-actions" id="graphics-current-actions">
+                        <a href="https://www.nhc.noaa.gov" class="nhc-link-btn" id="graphics-current-link"
+                           target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC
+                        </a>
                      </div>
                   </div>
 
                   <!-- Two-Day Outlook Tab -->
                   <div class="tropical-graphics-panel" id="two-day-panel" role="tabpanel">
-                     <div class="image-timestamp" id="two-day-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="two-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png"
                            alt="Two-Day Tropical Weather Outlook" />
+                     </div>
+                     <div class="text-actions" id="graphics-two-day-actions">
+                        <a href="https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=2" class="nhc-link-btn"
+                           id="graphics-two-day-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC
+                        </a>
                      </div>
                   </div>
 
                   <!-- Seven-Day Outlook Tab -->
                   <div class="tropical-graphics-panel" id="seven-day-panel" role="tabpanel">
-                     <div class="image-timestamp" id="seven-day-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="seven-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png"
                            alt="Seven-Day Tropical Weather Outlook" />
+                     </div>
+                     <div class="text-actions" id="graphics-seven-day-actions">
+                        <a href="https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=7" class="nhc-link-btn"
+                           id="graphics-seven-day-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC
+                        </a>
                      </div>
                   </div>
 
                   <!-- Surface Analysis Tab -->
                   <div class="tropical-graphics-panel" id="surface-panel" role="tabpanel">
-                     <div class="image-timestamp" id="surface-timestamp"></div>
                      <div class="tropical-image-container">
                         <img id="surface-img" src="https://ocean.weather.gov/A_sfc_full_ocean_color.png"
                            alt="Atlantic Surface Analysis" />
+                     </div>
+                     <div class="text-actions" id="graphics-surface-actions">
+                        <a href="https://www.nhc.noaa.gov/marine/" class="nhc-link-btn" id="graphics-surface-link"
+                           target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC
+                        </a>
                      </div>
                   </div>
                </div> <!-- Refresh Container -->
@@ -147,25 +144,42 @@
                         <span>Unable to load Tropical Weather Outlook</span>
                      </div>
                      <div class="tropical-text-content" id="two-text-content"></div>
+                     <div class="text-actions" id="two-text-actions" style="display: none;">
+                        <a href="#" class="nhc-link-btn" id="two-text-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC Website
+                        </a>
+                     </div>
                   </div>
 
                   <!-- TWO Spanish Tab -->
                   <div class="tropical-text-panel" id="two-spanish-panel" role="tabpanel">
-                     <div class="tropical-text-content" id="two-spanish-content"></div>
                      <div class="error" id="two-spanish-error" style="display: none">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span>No se pudo cargar la Perspectiva del Tiempo Tropical</span>
+                     </div>
+                     <div class="tropical-text-content" id="two-spanish-content"></div>
+                     <div class="text-actions" id="two-spanish-actions" style="display: none;">
+                        <a href="#" class="nhc-link-btn" id="two-spanish-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           Ver en el Sitio Web del NHC
+                        </a>
                      </div>
                   </div>
 
                   <!-- Tropical Discussion Tab -->
                   <div class="tropical-text-panel" id="discussion-panel" role="tabpanel">
-                     <div class="tropical-text-timestamp" id="discussion-timestamp"></div>
                      <div class="error" id="discussion-error" style="display: none">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span>Unable to load Tropical Weather Discussion</span>
                      </div>
                      <div class="tropical-text-content" id="discussion-content"></div>
+                     <div class="text-actions" id="discussion-actions" style="display: none;">
+                        <a href="#" class="nhc-link-btn" id="discussion-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC Website
+                        </a>
+                     </div>
                   </div>
                </div>
             </div>
@@ -180,7 +194,29 @@
             </label>
             <div class="tropical-satellite-tabs">
 
+               <!-- Product and Controls Selection - Full Width Row -->
+
+
                <div class="tropical-satellite-controls">
+
+                  <!-- Sector Selection -->
+                  <div class="tropical-satellite-sector-container">
+                     <div class="tropical-satellite-sector-tabs">
+                        <input type="radio" name="satellite-sector" id="sector-taw" value="taw" checked>
+                        <input type="radio" name="satellite-sector" id="sector-na" value="na">
+                        <input type="radio" name="satellite-sector" id="sector-eus" value="eus">
+                        <input type="radio" name="satellite-sector" id="sector-car" value="car">
+                        <input type="radio" name="satellite-sector" id="sector-ga" value="ga">
+
+                        <div class="tropical-satellite-sector-labels">
+                           <label for="sector-taw" class="tropical-satellite-sector-tab">Trop Atl</label>
+                           <label for="sector-na" class="tropical-satellite-sector-tab">N Atl</label>
+                           <label for="sector-eus" class="tropical-satellite-sector-tab">E US</label>
+                           <label for="sector-car" class="tropical-satellite-sector-tab">Carib</label>
+                           <label for="sector-ga" class="tropical-satellite-sector-tab">Gulf</label>
+                        </div>
+                     </div>
+                  </div>
                   <div class="tropical-satellite-select-container">
                      <label for="tropical-satellite-product-select" class="tropical-satellite-label">Product:</label>
                      <select id="tropical-satellite-product-select" class="tropical-satellite-select">
@@ -190,6 +226,7 @@
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
+
                      <button id="tropical-satellite-play-pause" class="tropical-satellite-button"
                         aria-label="Play satellite animation">
                         <i class="fa-solid fa-play" aria-hidden="true"></i>
@@ -214,6 +251,12 @@
                   <div id="tropical-satellite-image-container" class="tropical-satellite-image-container">
                      <img id="tropical-satellite-image" class="tropical-satellite-image"
                         alt="GOES-16 Tropical Atlantic Satellite" />
+                  </div>
+                  <div class="text-actions" id="satellite-actions" style="display: none;">
+                     <a href="#" class="nhc-link-btn" id="satellite-link" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-external-link-alt"></i>
+                        View on NOAA
+                     </a>
                   </div>
                </div>
             </div>
@@ -265,7 +308,7 @@
       </footer>
 
       <!-- CHANGE VERSION: -->
-      <script type="module" src="js/modules/tropical.js?v=8.28.25a"></script>
+      <script type="module" src="js/modules/tropical.js?v=9.14.25"></script>
       <script type="module">
          import { initTropicalBanner } from './js/modules/tropical-banner.js?v=8.28.25a';
 
@@ -297,6 +340,15 @@
             }
          });
       </script>
+
+      <script type="module">
+         import { NavigationModule } from './js/modules/navigation.js';
+
+         document.addEventListener('DOMContentLoaded', () => {
+            NavigationModule.init('./');
+         });
+      </script>
+
       <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
          <i class="fa-solid fa-up-long"></i>
       </a>

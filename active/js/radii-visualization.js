@@ -10,7 +10,7 @@
      Config for radii visualization
      ============================== */
   const RADII_CONFIG = {
-    CANVAS_MAX_PX: 500,
+    CANVAS_MAX_PX: 600,
     MAX_FORECAST_HOUR: 36, // show Now, 12h, 24h, 36h only
     WIND_COLORS: { 34: "#ffd93d", 50: "#ff7f0e", 64: "#d62728" },
     OPACITY_SINGLE: 0.4,
@@ -181,61 +181,83 @@
       ctx.stroke();
     }
 
-    drawCompass() {
-      const ctx = this.ctx;
-      const canvasHalf = Math.min(this.canvas.width, this.canvas.height) / 2;
-      const idealLabelR =
-        this.maxRadius + RADII_CONFIG.LABEL_OFFSET + RADII_CONFIG.EXTRA_FRAME;
-      const labelR = Math.min(
-        idealLabelR,
-        canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
-      );
+drawCompass() {
+  const ctx = this.ctx;
+  const canvasHalf = Math.min(this.canvas.width, this.canvas.height) / 2;
+  const idealLabelR =
+    this.maxRadius + RADII_CONFIG.LABEL_OFFSET + RADII_CONFIG.EXTRA_FRAME;
+  const labelR = Math.min(
+    idealLabelR,
+    canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
+  );
 
-      ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
-      ctx.lineWidth = 1 * devicePixelRatioSafe();
-      ctx.fillStyle = "rgba(255,255,255,0.95)";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+  ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
+  ctx.lineWidth = 1 * devicePixelRatioSafe();
+  ctx.fillStyle = "rgba(255,255,255,0.95)";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-      [
-        { label: "N", x: 0, y: -1 },
-        // { label: "E", x: 1, y: 0 },
-        { label: "S", x: 0, y: 1 },
-        { label: "W", x: -1, y: 0 },
-      ].forEach((d) =>
-        ctx.fillText(
-          d.label,
-          this.centerX + d.x * labelR,
-          this.centerY + d.y * labelR
-        )
-      );
+  [
+    { label: "N", x: 0, y: -1 },
+    { label: "E", x: 1, y: 0 }, // Uncommented
+    { label: "S", x: 0, y: 1 },
+    { label: "W", x: -1, y: 0 },
+  ].forEach((d) =>
+    ctx.fillText(
+      d.label,
+      this.centerX + d.x * labelR,
+      this.centerY + d.y * labelR
+    )
+  );
 
       // distance labels (E side)
-      ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
-      ctx.lineWidth = 1 * devicePixelRatioSafe();
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      [100, 200, 300].forEach((dist) => {
-        const r = (dist / 300) * this.maxRadius;
-        ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
-        ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
-      });
-    }
+  ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
+  ctx.lineWidth = 1 * devicePixelRatioSafe();
+  ctx.fillStyle = "rgba(255,255,255,0.55)";
+  
+  const ringDistances = [100, 200, 300, 400, 500];
+  const maxDist = 500;
 
-    drawRangeCircles() {
-      const ctx = this.ctx;
-      ctx.save();
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-      ctx.lineWidth = 1 * devicePixelRatioSafe();
-      ctx.setLineDash([2, 4]);
-      for (let i = 1; i <= 5; i++) {
-        const r = (i / 5) * this.maxRadius;
-        ctx.beginPath();
-        ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+  ringDistances.forEach((dist) => {
+    const r = (dist / maxDist) * this.maxRadius;
+    ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
+    ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
+  });
 
+    // drawRangeCircles() {
+    //   const ctx = this.ctx;
+    //   ctx.save();
+    //   ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+    //   ctx.lineWidth = 1 * devicePixelRatioSafe();
+    //   ctx.setLineDash([2, 4]);
+    //   for (let i = 1; i <= 5; i++) {
+    //     const r = (i / 5) * this.maxRadius;
+    //     ctx.beginPath();
+    //     ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
+    //     ctx.stroke();
+    //   }
+  //   ctx.restore();
+}
+
+drawRangeCircles() {
+  const ctx = this.ctx;
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+  ctx.lineWidth = 1 * devicePixelRatioSafe();
+  ctx.setLineDash([2, 4]);
+  
+  const ringDistances = [100, 200, 300, 400, 500];
+  const maxDist = 500;
+  
+  ringDistances.forEach(dist => {
+    const r = (dist / maxDist) * this.maxRadius;
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  
+  ctx.restore();
+}
     drawRadii(radiiKey, color, opacity) {
       const ctx = this.ctx;
       const q = this.radiiData[radiiKey];
@@ -247,7 +269,7 @@
       const sw = Math.max(0, Number(q.SW) || 0);
       const nw = Math.max(0, Number(q.NW) || 0);
 
-      const maxDist = 300;
+      const maxDist = 500;
       const points = [
         { angle: Math.PI * 0.25, dist: ne },
         { angle: Math.PI * 0.75, dist: se },
@@ -428,21 +450,27 @@
       const availableHeight =
         containerRect.height || canvasContainer.clientHeight || availableWidth;
 
-      // Use the smaller dimension to maintain square aspect ratio
-      const cssSide = Math.min(
-        RADII_CONFIG.CANVAS_MAX_PX,
-        availableWidth,
-        availableHeight
+      // Calculate maximum safe size considering viewport constraints
+      const viewportWidth = window.innerWidth;
+      const maxSafeWidth = Math.min(
+        viewportWidth * 0.9, // Use 90% of viewport width as safe maximum
+        RADII_CONFIG.CANVAS_MAX_PX
       );
+
+      // Use the smaller dimension to maintain square aspect ratio
+      const cssSide = Math.min(maxSafeWidth, availableWidth, availableHeight);
 
       // if the section is hidden, client sizes are 0 — bail and try again later
       if (!cssSide || !isFinite(cssSide) || cssSide <= 0) return false;
 
+      // Add minimum size constraint to prevent canvas from being too small
+      const finalSize = Math.max(200, cssSide); // Minimum 200px
+
       const dpr = devicePixelRatioSafe();
-      canvas.style.width = cssSide + "px";
-      canvas.style.height = cssSide + "px";
-      canvas.width = Math.floor(cssSide * dpr);
-      canvas.height = Math.floor(cssSide * dpr);
+      canvas.style.width = finalSize + "px";
+      canvas.style.height = finalSize + "px";
+      canvas.width = Math.floor(finalSize * dpr);
+      canvas.height = Math.floor(finalSize * dpr);
       return true;
     }
 

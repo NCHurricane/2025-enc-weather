@@ -3,8 +3,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$dataDir = '../data';
-$configPath = $dataDir . '/config.json';
+$scriptDir = dirname(__FILE__);
+$dataDir = $scriptDir . '/../data';
+$configPath = $scriptDir . '/../data/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 
 // Create data directory if it doesn't exist

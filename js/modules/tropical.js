@@ -6,7 +6,7 @@
  * - Neutral fallbacks when a product is missing
  * - No season logic, no external imports
  */
-import { initSatellite } from "./satellite.js?v=8.28.25";
+import { initSatellite } from "./satellite.js?v=9.14.25";
 
 (() => {
   "use strict";
@@ -32,14 +32,27 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
     two: {
       content: $("#two-text-content"),
       ts: $("#two-text-timestamp"),
+      time: $("#two-text-time"),
+      actions: $("#two-text-actions"),
+      link: $("#two-text-link"),
     },
     twoEs: {
       content: $("#two-spanish-content"),
       ts: $("#two-spanish-timestamp"),
+      time: $("#two-spanish-time"),
+      actions: $("#two-spanish-actions"),
+      link: $("#two-spanish-link"),
     },
     disc: {
       content: $("#discussion-content"),
       ts: $("#discussion-timestamp"),
+      time: $("#discussion-time"),
+      actions: $("#discussion-actions"),
+      link: $("#discussion-link"),
+    },
+    satellite: {
+      actions: $("#satellite-actions"),
+      link: $("#satellite-link"),
     },
     // If you add a page-wide updated line, class="last-updated" will be used; otherwise no-op.
     lastUpdated: $(".last-updated"),
@@ -134,6 +147,30 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
     node.textContent = `Last Updated: ${fmtAbsFromAny(anyTs)}`;
   }
 
+  // Function to update satellite action button based on current sector
+  function updateSatelliteActionButton(sector) {
+    if (!targets.satellite.actions || !targets.satellite.link) return;
+    
+    const sectorUrls = {
+      'taw': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=taw',
+      'na': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=na',
+      'eus': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=eus',
+      'car': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=car',
+      'ga': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=ga'
+    };
+    
+    const url = sectorUrls[sector];
+    if (url) {
+      targets.satellite.link.href = url;
+      targets.satellite.actions.style.display = 'block';
+    } else {
+      targets.satellite.actions.style.display = 'none';
+    }
+  }
+
+  // Make function globally available for satellite module
+  window.updateSatelliteActionButton = updateSatelliteActionButton;
+
   async function getJSON(url) {
     try {
       const res = await fetch(`${url}?${tsParam()}`, {
@@ -168,17 +205,31 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
     }
     renderHtmlInto(n, html);
 
+    // Update timestamps
+    const ts =
+      data?.issueTime ?? // "1215 UTC Thu Aug 28 2025"
+      data?.pubDate ?? // "Thu, 28 Aug 2025 10:41:28 +0000"
+      data?.issued ??
+      data?.issue_time ??
+      data?.timestamp ??
+      data?.generated ??
+      data?.validTime ??
+      null;
+    
     if (targets.two.ts) {
-      const ts =
-        data?.issueTime ?? // "1215 UTC Thu Aug 28 2025"
-        data?.pubDate ?? // "Thu, 28 Aug 2025 10:41:28 +0000"
-        data?.issued ??
-        data?.issue_time ??
-        data?.timestamp ??
-        data?.generated ??
-        data?.validTime ??
-        null;
       setTimestamp(targets.two.ts, ts);
+    }
+    
+    if (targets.two.time) {
+      setTimestamp(targets.two.time, ts);
+    }
+
+    // Update action button if link is available
+    if (targets.two.actions && targets.two.link && data?.link) {
+      targets.two.link.href = data.link;
+      targets.two.actions.style.display = 'block';
+    } else if (targets.two.actions) {
+      targets.two.actions.style.display = 'none';
     }
   }
 
@@ -208,6 +259,18 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
         data?.validTime ??
         null;
       setTimestamp(targets.twoEs.ts, ts);
+      
+      if (targets.twoEs.time) {
+        setTimestamp(targets.twoEs.time, ts);
+      }
+    }
+
+    // Update action button if link is available
+    if (targets.twoEs.actions && targets.twoEs.link && data?.link) {
+      targets.twoEs.link.href = data.link;
+      targets.twoEs.actions.style.display = 'block';
+    } else if (targets.twoEs.actions) {
+      targets.twoEs.actions.style.display = 'none';
     }
   }
 
@@ -236,6 +299,18 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
         data?.validTime ??
         null;
       setTimestamp(targets.disc.ts, ts);
+      
+      if (targets.disc.time) {
+        setTimestamp(targets.disc.time, ts);
+      }
+    }
+
+    // Update action button if link is available
+    if (targets.disc.actions && targets.disc.link && data?.link) {
+      targets.disc.link.href = data.link;
+      targets.disc.actions.style.display = 'block';
+    } else if (targets.disc.actions) {
+      targets.disc.actions.style.display = 'none';
     }
   }
 
@@ -279,6 +354,7 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
     initSatellite({
       sector: "taw",
       selectorId: "tropical-satellite-product-select",
+      sectorSelectName: "satellite-sector",
       playButtonId: "tropical-satellite-play-pause",
       imageId: "tropical-satellite-image",
       containerId: "tropical-satellite-image-container",
@@ -286,6 +362,9 @@ import { initSatellite } from "./satellite.js?v=8.28.25";
       errorId: "tropical-satellite-error",
       timestampId: "tropical-satellite-timestamp",
     });
+
+    // Initialize satellite action button with default sector
+    updateSatelliteActionButton("taw");
 
     console.info("[tropical] text products initialized");
   }

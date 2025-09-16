@@ -20,7 +20,8 @@ const COUNTIES = [
  */
 function selectBestStationFromCounty(countyData, isMultiZone = false) {
   const usable = (st) =>
-    st?.data?.temperature !== null && (st.observation?.age_minutes ?? 999) < 60;
+    st?.data?.temperature !== null &&
+    (st.observation?.age_minutes ?? 999) < STATION_MAX_AGE_MINUTES;
   if (isMultiZone) {
     for (const zoneName of Object.keys(countyData)) {
       const zone = countyData[zoneName];
@@ -130,6 +131,8 @@ export async function fetchCurrentWeather(lat, lon) {
  * Main aggregator function - replaces the old fetchAlerts function
  */
 export async function fetchAlerts(lat, lon) {
+  const BUST_BUCKET_MS = 15 * 60 * 1000;
+  const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
   // Find county name from coordinates
   let countyName = null;
 
@@ -148,7 +151,8 @@ export async function fetchAlerts(lat, lon) {
   // Get county config to determine zones
   try {
     const configResponse = await fetch(
-      `counties/${countyName}/data/config.json`
+      `counties/${countyName}/data/config.json?cb=${bust}`,
+      { cache: "no-store" }
     );
     if (!configResponse.ok) return [];
 
@@ -167,7 +171,8 @@ export async function fetchAlerts(lat, lon) {
 
         try {
           const alertsResponse = await fetch(
-            `counties/${countyName}/data/${zoneName}/alerts.json`
+            `counties/${countyName}/data/${zoneName}/alerts.json?cb=${bust}`,
+            { cache: "no-store" }
           );
           if (alertsResponse.ok) {
             const alertsData = await alertsResponse.json();
@@ -194,7 +199,8 @@ export async function fetchAlerts(lat, lon) {
       // Single-zone: fetch directly and add zone info
       try {
         const alertsResponse = await fetch(
-          `counties/${countyName}/data/alerts.json`
+          `counties/${countyName}/data/alerts.json?cb=${bust}`,
+          { cache: "no-store" }
         );
         if (alertsResponse.ok) {
           const alertsData = await alertsResponse.json();
@@ -272,4 +278,12 @@ export async function updateMapData() {
   );
 
   return { weatherData, alertsData };
+}
+
+// Configurable maximum station data age (minutes). Default 90; can be changed at runtime via setStationMaxAgeMinutes.
+let STATION_MAX_AGE_MINUTES = 90;
+export function setStationMaxAgeMinutes(mins) {
+  if (typeof mins === "number" && mins > 0) {
+    STATION_MAX_AGE_MINUTES = mins;
+  }
 }

@@ -13,49 +13,21 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="css/styles.css?v=4.22.25">
-      <link rel="stylesheet" href="css/index.css?v=4.22.25">
+      <link rel="stylesheet" href="css/styles.css?v=09.13.25c" />
+      <link rel="stylesheet" href="css/index.css?v=09.13.25c" />
       <script>
          window.weatherConfig = {
             location: {
                lat: null,
-               lon: null
-            }
+               lon: null,
+            },
          };
       </script>
    </head>
 
    <body>
       <!-- Header -->
-      <header class="header">
-         <div class="header-container">
-            <img src="images/2025_banner.png" alt="NCHurricane.com Logo" />
-            <nav class="nav" aria-label="Main navigation">
-               <ul class="nav-menu">
-                  <li><a href="index.html">Home</a></li>
-                  <li class="has-submenu">
-                     <a href="#" aria-haspopup="true" aria-expanded="false">Counties</a>
-                     <ul class="submenu">
-                        <li><a href="counties/beaufort/index.html">Beaufort</a></li>
-                        <li><a href="counties/bertie/index.html">Bertie</a></li>
-                        <li><a href="counties/dare/?zone=mainland">Dare</a></li>
-                        <li><a href="counties/hyde/?zone=mainland">Hyde</a></li>
-                        <li><a href="counties/martin/index.html">Martin</a></li>
-                        <li><a href="counties/pitt/index.html">Pitt</a></li>
-                        <li><a href="counties/tyrrell/index.html">Tyrrell</a></li>
-                        <li><a href="counties/washington/index.html">Washington</a></li>
-                     </ul>
-                  </li>
-                  <li><a href="hazards.html">Hazards</a></li>
-                  <li><a href="tropical.html">Tropical</a></li>
-                  <li><a href="links.html">Links</a></li>
-               </ul>
-            </nav>
-            <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
-               <i class="fa-solid fa-bars" aria-hidden="true"></i>
-            </button>
-         </div>
-      </header>
+      <header class="header"></header>
 
       <main class="container">
          <h1 class="main-title">Eastern North Carolina Weather</h1>
@@ -75,62 +47,44 @@
                      </div>
 
                      <!-- Map legend outside the map container -->
-                     <div id="map-alerts-legend" class="map-legend" style="display: none;">
+                     <div id="map-alerts-legend" class="map-legend" style="display: none">
                         <!-- Legend content will be dynamically populated -->
-                     </div>
-
-                     <div class="refresh-container" style="text-align: right;">
-                        <button id="global-refresh" class="global-refresh-btn" title="Refresh All Data"
-                           aria-label="Refresh weather data">
-                           <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>&nbsp; CLICK TO REFRESH
-                        </button>
                      </div>
                   </div>
                </section>
             </div>
             <div class="dashboard-row">
-
                <!-- Radar/Satellite Section -->
                <section aria-labelledby="radsat-heading" class="radsat-container">
                   <div class="radsat-title">
                      <i class="fa-solid fa-satellite-dish fa-xl" aria-hidden="true"></i>
                      <h2 id="radsat-heading">Radar / Satellite</h2>
                   </div>
-                  <div class="radsat-tabs" role="tablist">
-                     <button class="tab-button active" role="tab" aria-selected="true" aria-controls="radar-panel"
-                        id="radar-tab">
-                        RADAR
-                     </button>
-                     <button class="tab-button" role="tab" aria-selected="false" aria-controls="satellite-panel"
-                        id="satellite-tab">
-                        SATELLITE
-                     </button>
-                  </div>
-                  <div class="radsat-image-container">
 
-                     <div class="radsat-content">
-                        <!-- Tab navigation -->
+                  <div class="radsat-tabs">
+                     <input type="radio" name="radsatTab" id="radar-tab" checked />
+                     <input type="radio" name="radsatTab" id="satellite-tab" />
 
+                     <div class="radsat-tab-labels" role="tablist">
+                        <label for="radar-tab" class="radsat-tab" role="tab" aria-selected="true">Radar</label>
+                        <label for="satellite-tab" class="radsat-tab" role="tab">Satellite</label>
+                     </div>
 
-
-                        <!-- Tab panels -->
-                        <div class="tab-panels">
-                           <!-- Radar Panel -->
-                           <div id="radar-panel" class="tab-panel active" role="tabpanel" aria-labelledby="radar-tab">
-                              <div class="image-container">
-                                 <img id="radar-image" src="https://radar.weather.gov/ridge/standard/KMHX_0.gif"
-                                    alt="KMHX Radar Image" class="weather-image" loading="lazy">
-                              </div>
+                     <div class="radsat-tab-content">
+                        <!-- Radar Panel -->
+                        <div id="radar-panel" class="radsat-panel" role="tabpanel">
+                           <div class="image-container">
+                              <img id="radar-image" src="https://radar.weather.gov/ridge/standard/KMHX_0.gif"
+                                 alt="KMHX Radar Image" class="weather-image" loading="lazy" />
                            </div>
+                        </div>
 
-                           <!-- Satellite Panel -->
-                           <div id="satellite-panel" class="tab-panel" role="tabpanel" aria-labelledby="satellite-tab"
-                              hidden>
-                              <div class="image-container">
-                                 <img id="satellite-image"
-                                    src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/se/GEOCOLOR/600x600.jpg"
-                                    alt="Southeast Satellite Image" class="weather-image" loading="lazy">
-                              </div>
+                        <!-- Satellite Panel -->
+                        <div id="satellite-panel" class="radsat-panel" role="tabpanel">
+                           <div class="image-container">
+                              <img id="satellite-image"
+                                 src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/se/GEOCOLOR/600x600.jpg"
+                                 alt="Southeast Satellite Image" class="weather-image" loading="lazy" />
                            </div>
                         </div>
                      </div>
@@ -154,21 +108,10 @@
                   <!-- Tropical outlook image -->
                   <div class="tropical-image-container">
                      <img id="tropical-outlook-image" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
-                        alt="Atlantic Tropical Weather Outlook" class="tropical-outlook-image" loading="lazy">
-                     <button class="expand-button" aria-label="Expand tropical outlook image">
-                        <i class="fa-solid fa-expand"></i>
-                     </button>
+                        alt="Atlantic Tropical Weather Outlook" class="tropical-outlook-image" loading="lazy" />
                   </div>
                </div>
             </section>
-         </div>
-
-         <!-- Lightbox for expanded images -->
-         <div id="image-lightbox" class="lightbox" hidden>
-            <button class="lightbox-close" aria-label="Close expanded image">
-               <i class="fa-solid fa-times"></i>
-            </button>
-            <img class="lightbox-image" alt="">
          </div>
       </main>
 
@@ -200,14 +143,14 @@
             </div>
             <p class="disclaimer">
                NCHurricane.com is for informative purposes only. Do not use the
-               information on this site to make decisions regarding protecting
-               your life and/or personal property. Rely only on information from
-               official sources of information, such as your
+               information on this site to make decisions regarding protecting your
+               life and/or personal property. Rely only on information from official
+               sources of information, such as your
                <a href="https://weather.gov" target="_blank">
                   <strong>local NWS office</strong> </a>,
                <a href="https://nhc.noaa.gov" target="_blank">
-                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions
-               in a severe weather event.
+                  <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions in a
+               severe weather event.
             </p>
             <p class="copyright">
                Copyright ©2003, 2025 NCHurricane.<br />Website design by
@@ -217,21 +160,20 @@
       </footer>
 
       <!-- With this consolidated approach -->
-      <script src="js/siteConfig.js?v=4.22.25"></script>
+      <script src="js/siteConfig.js?v=09.10.25c"></script>
       <script src="https://unpkg.com/topojson-client@3"></script>
       <script src="https://d3js.org/d3.v7.min.js"></script>
 
-      <script type="module" src="js/modules/mapAggregator.js"></script>
+      <script type="module" src="js/modules/mapAggregator.js?v=09.10.25c"></script>
       <script type="module">
-
-         import { initCountyMap } from './js/modules/ncCountyMap.js';
+         import { initCountyMap } from "./js/modules/ncCountyMap.js?v=09.10.25c";
          // import { updateTropicalOutlook, checkActiveSystemsStatus } from './js/modules/tropical.js';
-         import { initTropicalBanner } from './js/modules/tropical-banner.js';
+         import { initTropicalBanner } from "./js/modules/tropical-banner.js?v=09.10.25c";
          // import { initWeatherApp } from './js/modules/weatherApp.js';
-         import { initRadSat } from './js/modules/radSatModule.js';
+         import { initRadSat } from "./js/modules/radSatModule.js?v=09.10.25c";
 
          async function initIndexPage() {
-            console.log('Initializing index page...');
+            console.log("Initializing index page...");
 
             const countyMap = initCountyMap();
             window.countyMap = countyMap;
@@ -242,34 +184,44 @@
             window.radSat = radSat;
          }
 
-         document.addEventListener('DOMContentLoaded', initIndexPage);
+         document.addEventListener("DOMContentLoaded", initIndexPage);
       </script>
 
       <!-- Back to Top Button handler remains -->
       <script>
-         document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.querySelector('.back-to-top');
+         document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.querySelector(".back-to-top");
             if (btn) {
                // Set initial state
-               btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               btn.style.display = window.pageYOffset > 0 ? "block" : "none";
 
-               window.addEventListener('scroll', () => {
-                  btn.style.display = window.pageYOffset > 0 ? 'block' : 'none';
+               window.addEventListener("scroll", () => {
+                  btn.style.display = window.pageYOffset > 0 ? "block" : "none";
                });
 
                // Add click handler if needed
-               btn.addEventListener('click', function (e) {
+               btn.addEventListener("click", function (e) {
                   e.preventDefault();
                   window.scrollTo({
                      top: 0,
-                     behavior: 'smooth'
+                     behavior: "smooth",
                   });
                });
             }
          });
       </script>
-      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none;">
-         <i class="fa-solid fa-up-long"></i> </a>
+
+      <script type="module">
+         import { NavigationModule } from './js/modules/navigation.js';
+
+         document.addEventListener('DOMContentLoaded', () => {
+            NavigationModule.init('./');
+         });
+      </script>
+
+      <a href="#" class="back-to-top" aria-label="Back to top" style="display: none">
+         <i class="fa-solid fa-up-long"></i>
+      </a>
    </body>
 
 </html>

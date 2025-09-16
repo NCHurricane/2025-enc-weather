@@ -23,7 +23,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   min-height: 44px;
-} 
+}
 
 .zone-btn:hover {
   background-color: var(--color-accent);
@@ -43,7 +43,7 @@
     gap: 8px;
     margin: 15px 0;
   }
-  
+
   .zone-btn {
     padding: 10px 16px;
     font-size: 0.8rem;
@@ -64,13 +64,12 @@
   background-color: var(--gradient-header);
 }
 
-
 .weather-desc {
   border-radius: var(--border-radius);
   color: var(--color-text-light);
   background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
   padding: 0 10px 10px 20px;
-  width: 65%;
+  width: 90%;
 }
 
 .weather-desc .desc {
@@ -111,11 +110,14 @@
   top: 0;
   bottom: 0;
   width: 35%;
-  opacity: 0.7;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
   z-index: 0;
+  -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%);
+  mask-image: linear-gradient(to right, black 25%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .weather-desc {
@@ -186,7 +188,7 @@
 }
 
 .details .value {
-    color: white;
+  color: white;
 }
 
 #current-location,
@@ -596,383 +598,382 @@ canvas#meteogramChart {
 
 /* Radar Controls Layout */
 .radar-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 15px;
+  align-items: end;
 }
 
 .radar-select-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 180px;
 }
 
 .radar-label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: var(--color-text-light);
-    text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--color-text-light);
+  text-transform: uppercase;
 }
 
 .radar-select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 0.9rem;
-    color: var(--color-text);
-    min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  min-height: 38px;
 }
 
 .radar-select:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 2px rgba(255, 242, 0, 0.3);
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 242, 0, 0.3);
 }
 
 /* RADAR CONTENT - COUNTY PAGES */
 .radar-content {
-    position: relative;
-    background-color: #000;
-    border-radius: 4px;
-    overflow: hidden;
-    min-height: 300px;
+  position: relative;
+  background-color: #000;
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 300px;
 }
 
 .radar-image-container {
-    position: relative;
-    width: 100%;
-    text-align: center;
+  position: relative;
+  width: 100%;
+  text-align: center;
 }
 
 .radar-image {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .radar-timestamp {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-family: monospace;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-family: monospace;
 }
 
 .radar-loading,
 .radar-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    color: var(--color-text-light);
-    text-align: center;
-    min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--color-text-light);
+  text-align: center;
+  min-height: 250px;
 }
 
 .radar-loading,
 .radar-error {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 95%;
-    height: 100%;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    color: var(--color-text-light);
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 95%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--color-text-light);
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .radar-loading span,
 .radar-error span {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .radar-loading small,
 .radar-error small {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    max-width: 300px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  max-width: 300px;
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-   .radar-controls {
-        flex-direction: row; /* Keep horizontal instead of column */
-        gap: 10px; /* Reduce gap for tighter spacing */
-        align-items: end; /* Keep alignment */
-    }
-    
-    .radar-select-container {
-        min-width: unset;
-        flex: 1; /* Allow containers to share available space */
-    }
-    
-    .radar-label,
-    .radar-select {
-        font-size: 0.8rem;
-    }
-    
+  .radar-controls {
+    flex-direction: row; /* Keep horizontal instead of column */
+    gap: 10px; /* Reduce gap for tighter spacing */
+    align-items: end; /* Keep alignment */
+  }
+
+  .radar-select-container {
+    min-width: unset;
+    flex: 1; /* Allow containers to share available space */
+  }
+
+  .radar-label,
+  .radar-select {
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 600px) {
-    .radar-loading,
-    .radar-error {
-        padding: 30px 15px;
-        min-height: 200px;
-    }
-    
-    .radar-loading i,
-    .radar-error i {
-        font-size: 1.5rem;
-    }
-    
-    .radar-loading span,
-    .radar-error span {
-        font-size: 1rem;
-    }
-    
-    .radar-loading small,
-    .radar-error small {
-        font-size: 0.8rem;
-    }
+  .radar-loading,
+  .radar-error {
+    padding: 30px 15px;
+    min-height: 200px;
+  }
+
+  .radar-loading i,
+  .radar-error i {
+    font-size: 1.5rem;
+  }
+
+  .radar-loading span,
+  .radar-error span {
+    font-size: 1rem;
+  }
+
+  .radar-loading small,
+  .radar-error small {
+    font-size: 0.8rem;
+  }
 }
 
 /* Add these styles to your existing CSS for satellite cropping */
 
 /* Satellite Controls Layout */
 .satellite-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 15px;
+  align-items: end;
 }
 
 .satellite-select-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 140px;
 }
 
 .satellite-label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: var(--color-text-light);
-    text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--color-text-light);
+  text-transform: uppercase;
 }
 
 .satellite-select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 0.9rem;
-    color: var(--color-text);
-    min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  min-height: 38px;
 }
 
 .satellite-select:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 2px rgba(255, 242, 0, 0.3);
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 242, 0, 0.3);
 }
 
 /* Satellite Content */
 .satellite-content {
-    position: relative;
-    background-color: #000;
-    border-radius: 4px;
-    overflow: hidden;
+  position: relative;
+  background-color: #000;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .satellite-image-container {
-    position: relative;
-    width: 100%;
-    height: 400px; /* Fixed height for consistent cropping */
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 400px; /* Fixed height for consistent cropping */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Main cropping styles for NC region from Eastern US view */
 .satellite-image-cropped {
-    width: 100%;
-    height: 445%; 
-    object-fit: cover;
-    
-    /* Position to show NC area (center-left of EUS image) */
-    object-position: 0% 50%; /* Adjust these percentages to fine-tune NC position */
-    
-    /* Could also use minimal scaling if needed */
-    /* transform: scale(1.2) translate(-10%, 0%); */
+  width: 100%;
+  height: 445%;
+  object-fit: cover;
+
+  /* Position to show NC area (center-left of EUS image) */
+  object-position: 0% 50%; /* Adjust these percentages to fine-tune NC position */
+
+  /* Could also use minimal scaling if needed */
+  /* transform: scale(1.2) translate(-10%, 0%); */
 }
 
 /* For animated GIFs, might need slightly different positioning */
 .satellite-image-container img[src*=".gif"] {
-    object-position: 40% 50%; /* Slightly different position for animated EUS */
+  object-position: 40% 50%; /* Slightly different position for animated EUS */
 }
 
 .satellite-timestamp {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-family: monospace;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-family: monospace;
 }
 
 .satellite-loading,
 .satellite-error {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 95%;
-    height: 100%;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    color: var(--color-text-light);
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 95%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--color-text-light);
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .satellite-loading i,
 .satellite-error i {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    color: var(--color-accent);
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: var(--color-accent);
 }
 
 .satellite-loading span,
 .satellite-error span {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .satellite-loading small,
 .satellite-error small {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    max-width: 300px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  max-width: 300px;
 }
 
 /* Alternative cropping method using CSS transform */
 .satellite-image-transform {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform-origin: center;
-    transform: scale(2.5) translate(20%, -15%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  transform: scale(2.5) translate(20%, -15%);
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-    .satellite-controls {
-        flex-direction: row; /* Keep horizontal instead of column */
-        gap: 10px; /* Reduce gap for tighter spacing */
-        align-items: end; /* Keep alignment */
-    }
-    
-    .satellite-select-container {
-        min-width: unset;
-        flex: 1; /* Allow containers to share available space */
-    }
-    
-    .satellite-label,
-    .satellite-select {
-        font-size: 0.8rem;
-    }
-    
-    .satellite-image-container {
-        height: 300px; /* Smaller on mobile */
-    }
-    
-    /* Adjust cropping for mobile - EUS positioning */
-    .satellite-image-cropped {
+  .satellite-controls {
+    flex-direction: row; /* Keep horizontal instead of column */
+    gap: 10px; /* Reduce gap for tighter spacing */
+    align-items: end; /* Keep alignment */
+  }
+
+  .satellite-select-container {
+    min-width: unset;
+    flex: 1; /* Allow containers to share available space */
+  }
+
+  .satellite-label,
+  .satellite-select {
+    font-size: 0.8rem;
+  }
+
+  .satellite-image-container {
+    height: 300px; /* Smaller on mobile */
+  }
+
+  /* Adjust cropping for mobile - EUS positioning */
+  .satellite-image-cropped {
     width: 100%;
-    height: 425%; 
-   
+    height: 425%;
+
     object-position: 5% 50%;
-    }
-    
-    .satellite-timestamp {
-        font-size: 0.7rem;
-        bottom: 5px;
-        left: 5px;
-    }
+  }
+
+  .satellite-timestamp {
+    font-size: 0.7rem;
+    bottom: 5px;
+    left: 5px;
+  }
 }
 
 @media (max-width: 600px) {
-    .satellite-loading,
-    .satellite-error {
-        padding: 30px 15px;
-        min-height: 200px;
-    }
-    
-    .satellite-loading i,
-    .satellite-error i {
-        font-size: 1.5rem;
-    }
-    
-    .satellite-loading span,
-    .satellite-error span {
-        font-size: 1rem;
-    }
-    
-    .satellite-loading small,
-    .satellite-error small {
-        font-size: 0.8rem;
-    }
-    
-    .satellite-image-container {
-        height: 250px;
-    }
-        .satellite-image-cropped {
+  .satellite-loading,
+  .satellite-error {
+    padding: 30px 15px;
+    min-height: 200px;
+  }
+
+  .satellite-loading i,
+  .satellite-error i {
+    font-size: 1.5rem;
+  }
+
+  .satellite-loading span,
+  .satellite-error span {
+    font-size: 1rem;
+  }
+
+  .satellite-loading small,
+  .satellite-error small {
+    font-size: 0.8rem;
+  }
+
+  .satellite-image-container {
+    height: 250px;
+  }
+  .satellite-image-cropped {
     width: 100%;
-    height: 500%; 
-   
+    height: 500%;
+
     object-position: 25% 50%;
-    }
+  }
 }
 
 @media (max-width: 480px) {
-    .radar-controls,
-    .satellite-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .radar-select-container,
-    .satellite-select-container {
-      flex-direction: row;
-        width: 100%;
-    }
+  .radar-controls,
+  .satellite-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .radar-select-container,
+  .satellite-select-container {
+    flex-direction: row;
+    width: 100%;
+  }
 }
 
 /* Media Queries for County Pages */
@@ -1002,7 +1003,6 @@ canvas#meteogramChart {
 
   .weather-icon {
     width: 100%;
-    opacity: 0.7;
   }
 
   .weather-desc {

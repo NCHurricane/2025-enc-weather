@@ -52,21 +52,18 @@ class SatelliteModule {
     buildSatelliteUrl() {
         const product = this.productSelect.value;
         const type = this.typeSelect.value;
-        
-        if (type === 'animated') {
-            // Use custom loop from PHP script
-            const product = this.productSelect.value;
-            return `../../active/api/satellite_loop.php?lat=${this.lat}&lon=${this.lon}&type=county&id=beaufort&product=${product}`;
-        }
-        
+
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/${this.satellite}/ABI/SECTOR/${this.sector}/${product}/`;
-        
+
         if (type === 'static') {
-            // Static high-resolution image - using 2000x2000 as specified
+            // Static high-resolution image
             return `${baseUrl}2000x2000.jpg`;
-        } else {
-            // Animated GIF - EUS typically uses 500x500 for animated
+        } else if (type === 'animated') {
+            // Animated GIF - construct the URL directly
             return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
+        } else {
+            // Handle other types if necessary
+            return null;
         }
     }
 
@@ -107,7 +104,7 @@ class SatelliteModule {
     loadSatelliteImage() {
         const url = this.buildSatelliteUrl();
         const type = this.typeSelect.value;
-        
+
         if (!url) {
             this.showError();
             return;
@@ -116,34 +113,28 @@ class SatelliteModule {
         this.showLoading();
 
         if (type === 'animated') {
-            // Fetch JSON from PHP script
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.url) {
-                        this.satelliteImage.src = data.url;
-                        this.satelliteImage.alt = `Custom Satellite Loop`;
-                        this.hideLoading();
-                        this.updateTimestamp();
-                    } else {
-                        console.error('No URL in response:', data);
-                        this.showError();
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to fetch satellite loop:', error);
-                    this.showError();
-                });
-        } else {
-            // Static image
+            // Poll the animated GIF directly
             const img = new Image();
-            
             img.onload = () => {
                 this.satelliteImage.src = url;
-                
+                this.satelliteImage.alt = `Animated Satellite Loop`;
+                this.hideLoading();
+                this.updateTimestamp();
+            };
+
+            img.onerror = () => {
+                console.error('Failed to load animated satellite image:', url);
+                this.showError();
+            };
+
+            img.src = url; // Set the source to start loading the animated GIF
+        } else {
+            // Static image logic remains unchanged
+            const img = new Image();
+            img.onload = () => {
+                this.satelliteImage.src = url;
                 const productText = this.productSelect.options[this.productSelect.selectedIndex].text;
                 this.satelliteImage.alt = `GOES-19 ${productText} Static - Eastern US`;
-                
                 this.hideLoading();
                 this.updateTimestamp();
             };

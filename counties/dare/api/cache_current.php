@@ -112,7 +112,7 @@ function processZoneStations(array $stations, string $zoneName): array {
     error_log("Processing zone {$zoneName}, station: {$sid}");
     
     // NWS obs endpoint pattern: /stations/{id}/observations/latest
-    $url = "https://api.weather.gov/stations/{$sid}/observations/latest";
+    $url = "https://api.weather.gov/stations/{$sid}/observations/latest?require_qc=false";
     $json = http_get_json($url);
 
     $entry = [

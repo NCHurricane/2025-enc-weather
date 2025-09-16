@@ -9,11 +9,20 @@ import {
   getDefaultWeatherData,
 } from "./mapAggregator.js";
 
+const STATION_MAX_AGE_MINUTES = 90;
+
 export class NCCountyMap {
   constructor(containerId, options = {}) {
     this.container = document.getElementById(containerId);
-    this.width = options.width || 800;
-    this.height = options.height || 450;
+
+    // Set base dimensions for viewBox (internal coordinates)
+    this.baseWidth = 1200;
+    this.baseHeight = 675;
+
+    // These will be used for the viewBox
+    this.width = options.width || this.baseWidth;
+    this.height = options.height || this.baseHeight;
+
     this.countyFeatures = { type: "FeatureCollection", features: [] };
     this.weatherData = {};
     this.alertData = {};
@@ -22,7 +31,6 @@ export class NCCountyMap {
       highlightFill: "#1e88e5",
       strokeColor: "#ffffff",
       strokeWidth: 1,
-      markerFontSize: "16px",
       ...options,
     };
     this.zoneToCountyMap = {
@@ -44,6 +52,7 @@ export class NCCountyMap {
         name: "Hatteras",
         county: "dare",
         zone: "hatteras",
+        url: "counties/dare/?zone=hatteras",
         lat: 35.2195,
         lon: -75.6903,
       },
@@ -52,6 +61,7 @@ export class NCCountyMap {
         name: "Stumpy Point",
         county: "dare",
         zone: "mainland",
+        url: "counties/dare/?zone=mainland",
         lat: 35.70168,
         lon: -75.75714,
       },
@@ -60,6 +70,7 @@ export class NCCountyMap {
         name: "Engelhard",
         county: "hyde",
         zone: "mainland",
+        url: "counties/hyde/?zone=mainland",
         lat: 35.51226405320417,
         lon: -75.99222514225927,
       },
@@ -67,8 +78,33 @@ export class NCCountyMap {
         id: "G5443",
         name: "Wilmar",
         county: "beaufort",
+        url: "counties/beaufort/",
         lat: 35.38967,
         lon: -77.1235,
+      },
+      {
+        id: "TS338",
+        name: "Pinetown",
+        county: "beaufort",
+        url: "counties/beaufort/",
+        lat: 35.64122,
+        lon: -76.70067,
+      },
+      {
+        id: "HBKN7",
+        name: "Hobucken",
+        county: "beaufort",
+        url: "counties/beaufort/",
+        lat: 35.38967,
+        lon: -77.1235,
+      },
+      {
+        id: "ALIN7",
+        name: "Gum Neck",
+        county: "tyrrell",
+        url: "counties/tyrrell",
+        lat: 35.5449,
+        lon: -77.45209,
       },
     ];
 
@@ -80,25 +116,26 @@ export class NCCountyMap {
   async getStationData(stationConfig) {
     const BUST_BUCKET_MS = 15 * 60 * 1000;
     const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
-    const urls = [];
-    if (stationConfig.zone) {
-      urls.push(
-        `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json?cb=${bust}`
-      );
-    }
-    urls.push(`counties/${stationConfig.county}/data/current.json?cb=${bust}`);
+
+    // For multi-zone stations, only fetch the zone-specific current.json.
+    // Single-zone (no stationConfig.zone) uses the root current.json.
+    const urls = stationConfig.zone
+      ? [
+          `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json?cb=${bust}`,
+        ]
+      : [`counties/${stationConfig.county}/data/current.json?cb=${bust}`];
 
     for (const url of urls) {
       try {
         const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) continue;
+        if (!response.ok) continue; // Skip 404/other errors silently
         const data = await response.json();
         const stationData = Object.values(data.stations || {}).find(
           (s) => s.id === stationConfig.id
         );
         if (!stationData?.data?.temperature) continue;
         const ageMinutes = stationData.observation?.age_minutes ?? 999;
-        if (ageMinutes > 60) continue;
+        if (ageMinutes > STATION_MAX_AGE_MINUTES) continue;
         return {
           temp: Math.round(Number(stationData.data.temperature)),
           conditions: stationData.data.conditions || "N/A",
@@ -107,6 +144,7 @@ export class NCCountyMap {
           updatedIso: data.generated || stationData.observation?.timestamp,
         };
       } catch (err) {
+        // Keep quiet except for debugging unexpected failures
         console.warn(`Error fetching ${stationConfig.id} from ${url}:`, err);
         continue;
       }
@@ -119,22 +157,33 @@ export class NCCountyMap {
     const [x, y] = this.projection([stationConfig.lon, stationConfig.lat]);
     const g = this.svg.append("g").attr("class", "station-marker");
 
-    // Temperature marker (smaller than county markers)
+    const responsiveSettings = this.getResponsiveSettings();
+
+    const clickHandler = stationConfig.url
+      ? () => {
+          window.location.href = stationConfig.url;
+        }
+      : null;
+
     g.append("text")
       .attr("class", "marker-temp")
       .attr("x", x)
-      .attr("y", y - 5)
+      .attr("y", y + responsiveSettings.tempYOffset)
       .attr("text-anchor", "middle")
-      .attr("font-size", "2.7rem")
+      .attr("dominant-baseline", "middle")
       .attr("fill", "#ffff00")
-      .text(`${weather.temp}°`);
+      .text(`${weather.temp}`)
+      .on("click", clickHandler);
+
     g.append("text")
       .attr("class", "marker-label")
       .attr("x", x)
-      .attr("y", y + 20)
+      .attr("y", y + responsiveSettings.labelYOffset)
       .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
       .attr("fill", "#fff")
-      .text(stationConfig.name.toUpperCase());
+      .text(stationConfig.name.toUpperCase())
+      .on("click", clickHandler);
   }
 
   async loadCountyData() {
@@ -193,16 +242,26 @@ export class NCCountyMap {
 
   async init() {
     if (!this.container) {
-      console.error("Container not found");
+      console.error("Container not found for NCCountyMap");
       return;
     }
-    this.svg = this.d3
+    const wrapper = this.d3
       .select(this.container)
+      .append("div")
+      .style("position", "relative")
+      .style("width", "100%")
+      .style("padding-bottom", `${(this.height / this.width) * 100}%`) // Aspect ratio trick
+      .style("overflow", "hidden");
+
+    this.svg = wrapper
       .append("svg")
       .attr("viewBox", `0 0 ${this.width} ${this.height}`)
       .attr("preserveAspectRatio", "xMidYMid meet")
-      .style("width", "85%")
-      .style("height", "85%");
+      .style("position", "absolute")
+      .style("top", "0")
+      .style("left", "0")
+      .style("width", "100%")
+      .style("height", "100%");
 
     await this.loadCountyData();
     this.drawMap();
@@ -210,7 +269,71 @@ export class NCCountyMap {
   }
 
   async updateWeatherData() {
-    const counties = window.siteConfig?.counties || [];
+    // Provide fallback counties if siteConfig is missing or empty
+    const defaultCounties = [
+      {
+        name: "Dare",
+        city: "Manteo",
+        lat: 35.9082,
+        lon: -75.6757,
+        url: "/counties/dare/?=mainland",
+      },
+      {
+        name: "Hyde",
+        city: "Swan Quarter",
+        lat: 35.4546,
+        lon: -76.3272,
+        url: "/counties/hyde/?=mainland",
+      },
+      {
+        name: "Beaufort",
+        city: "Washington",
+        lat: 35.5466,
+        lon: -77.0497,
+        url: "/counties/beaufort/",
+      },
+      {
+        name: "Bertie",
+        city: "Windsor",
+        lat: 36.0015,
+        lon: -76.9459,
+        url: "/counties/bertie/",
+      },
+      {
+        name: "Martin",
+        city: "Williamston",
+        lat: 35.8546,
+        lon: -77.0544,
+        url: "/counties/martin/",
+      },
+      {
+        name: "Pitt",
+        city: "Greenville",
+        lat: 35.6127,
+        lon: -77.3664,
+        url: "/counties/pitt/",
+      },
+      {
+        name: "Washington",
+        city: "Plymouth",
+        lat: 35.8674,
+        lon: -76.7475,
+        url: "/counties/washington/",
+      },
+      {
+        name: "Tyrrell",
+        city: "Columbia",
+        lat: 35.9182,
+        lon: -76.2522,
+        url: "/counties/tyrrell/",
+      },
+    ];
+    const counties =
+      window.siteConfig &&
+      Array.isArray(window.siteConfig.counties) &&
+      window.siteConfig.counties.length > 0
+        ? window.siteConfig.counties
+        : defaultCounties;
 
     // Process county markers (existing code)
     await Promise.all(
@@ -248,7 +371,7 @@ export class NCCountyMap {
           if (weather) {
             this.addStationMarker(station, weather);
             console.log(
-              `Added station marker for ${station.id}: ${weather.temp}°`
+              `Added station marker for ${station.id}: ${weather.temp}`
             );
           } else {
             console.log(`No valid data for station ${station.id}`);
@@ -264,36 +387,65 @@ export class NCCountyMap {
 
   addWeatherMarker(lat, lon, weather, options = {}) {
     const [x, y] = this.projection([lon, lat]);
-    const fontSize = options.fontSize || this.options.markerFontSize;
     const fillColor = options.fillColor || "#ff0";
     const strokeWidth = options.strokeWidth || "0";
     const clickHandler = options.onClick || null;
+
+    // Get responsive settings based on viewport width
+    const responsiveSettings = this.getResponsiveSettings();
 
     const g = this.svg.append("g").attr("class", "weather-marker");
 
     g.append("text")
       .attr("class", "marker-temp")
       .attr("x", x)
-      .attr("y", y - 8)
+      .attr("y", y + responsiveSettings.tempYOffset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .attr("font-size", fontSize)
+      // Remove font-size attribute - let CSS handle it
       .attr("fill", fillColor)
       .attr("stroke", "#000")
       .attr("stroke-width", strokeWidth)
-      .text(`${weather.temp}°`)
+      .text(`${weather.temp}`)
       .on("click", clickHandler);
 
     g.append("text")
       .attr("class", "marker-label")
       .attr("x", x)
-      .attr("y", y + 20)
+      .attr("y", y + responsiveSettings.labelYOffset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .attr("font-size", this.options.markerFontSize)
+      // Remove font-size attribute - let CSS handle it
       .attr("fill", "#fff")
       .text(`${weather.city}`)
-      .on("click", () => county.url && (window.location.href = county.url));
+      .on("click", () => options.onClick && options.onClick());
+  }
+
+  // Update getResponsiveSettings to only return offsets
+  getResponsiveSettings() {
+    const width = window.innerWidth;
+
+    if (width <= 600) {
+      return {
+        tempYOffset: -15,
+        labelYOffset: 30,
+      };
+    } else if (width <= 768) {
+      return {
+        tempYOffset: -10,
+        labelYOffset: 30,
+      };
+    } else if (width <= 1024) {
+      return {
+        tempYOffset: -12,
+        labelYOffset: 25,
+      };
+    } else {
+      return {
+        tempYOffset: -15,
+        labelYOffset: 30,
+      };
+    }
   }
 
   colorZonesForCounty(countyKey, alerts) {
@@ -425,7 +577,7 @@ export class NCCountyMap {
 }
 
 export function initCountyMap() {
-const map = new NCCountyMap("nc-county-map");
-map.init();
-return map;
+  const map = new NCCountyMap("nc-county-map");
+  map.init();
+  return map;
 }

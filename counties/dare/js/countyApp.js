@@ -707,83 +707,6 @@ async function renderDetailedForecast() {
   }
 }
 
-// async function renderAlerts() {
-//   try {
-//     const a = await getAlerts();
-//     if (!a || a.status !== "ok") {
-//       setHTML(SEL.alerts.container, "");
-//       return;
-//     }
-//     let list = Array.isArray(a.list) ? a.list : [];
-
-//     if (list.length === 0) {
-//       setHTML(
-//         SEL.alerts.container,
-//         `
-//         <div class="alert" style="background-color: #dc3545;">
-//           <div class="alert-none">
-//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-//             <b>NO ACTIVE ALERTS</b>
-//           </div>
-//         </div>
-//       `
-//       );
-//       return;
-//     }
-
-//     // Sort alerts by priority (lower number = higher priority = shows first)
-//     const sortedAlerts = list.sort((a, b) => {
-//       const eventA = a.headline || a.event || a.type || "Unknown";
-//       const eventB = b.headline || b.event || b.type || "Unknown";
-//       const priorityA = warningPriorities[eventA] || 999;
-//       const priorityB = warningPriorities[eventB] || 999;
-//       return priorityA - priorityB;
-//     });
-
-//     const alertsHTML = sortedAlerts
-//       .map((alert, index) => {
-//         const eventName =
-//           alert.type || alert.expires || "Alert";
-//         const description = alert.description || alert.summary || "";
-
-//         // Get individual color for this alert type
-//         const alertColor = warningColors[eventName] || "#dc3545";
-
-//         // Add severity indicator (border thickness based on priority)
-//         const priority = warningPriorities[eventName] || 999;
-//         const borderWidth =
-//           priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
-
-//         return `
-//         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor};">
-//           <input type="checkbox" id="alert-${index}" class="alert-toggle">
-//           <label for="alert-${index}" class="alert-title">
-//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-//             ${eventName}
-//           </label>
-//           <div class="alert-details">
-//             <p>${description}</p>
-//           </div>
-//         </div>
-//       `;
-//       })
-//       .join("");
-
-//     setHTML(SEL.alerts.container, alertsHTML);
-
-//     // Log alert priority order for debugging
-//     console.log(
-//       "Alerts sorted by priority:",
-//       sortedAlerts.map((a) => ({
-//         event: a.event || a.headline,
-//         priority: warningPriorities[a.event || a.headline] || 999,
-//       }))
-//     );
-//   } catch (e) {
-//     console.warn("[countyApp] alerts load failed", e);
-//   }
-// }
-
 async function renderAlerts() {
   try {
     const a = await getAlerts();
@@ -799,8 +722,8 @@ async function renderAlerts() {
         `
         <div class="alert" style="background-color: #dc3545;">
           <div class="alert-none">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            <b>NO ACTIVE ALERTS</b>
+            <span class="alert-title-chip"><i class="fa-solid fa-circle-check fa-lg"></i>
+            <b>NO ACTIVE ALERTS</b></span>
           </div>
         </div>
       `
@@ -817,28 +740,23 @@ async function renderAlerts() {
       return priorityA - priorityB;
     });
 
-    const alertsHTML = sortedAlerts
+   const alertsHTML = sortedAlerts
       .map((alert, index) => {
-        // Use canonical NWS name for everything: title, color, priority
         const eventName = alert.event || alert.type || alert.headline || "Alert";
         const description = alert.description || alert.summary || "";
 
-        // Color based on event name
         const alertColor = warningColors[eventName] || "#dc3545";
-
-        // Border weight reflects relative priority
         const priority = warningPriorities[eventName] || 999;
         const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
 
-        // Inline title shows expires when present
-        const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
+        // single-line expiry so it fits in the chip
+        const expiresLabel = alert.expires ? ` until ${fmtTimeLocal(alert.expires)}` : "";
 
         return `
         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
           <input type="checkbox" id="alert-${index}" class="alert-toggle">
           <label for="alert-${index}" class="alert-title">
-            
-            ${eventName}${expiresInline}
+            <span class="alert-title-chip"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>${eventName}<br />${expiresLabel}</span>
           </label>
           <div class="alert-details">
             <p>${description}</p>

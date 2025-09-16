@@ -72,5 +72,31 @@ export class RadSatModule {
 
 // Initialize when DOM is ready
 export function initRadSat() {
-    return new RadSatModule();
+    // The radio button functionality is handled by CSS now
+    // This function can be simplified or used for other initialization
+    
+    // Optional: Add any additional functionality like image refresh
+    const radarImage = document.getElementById('radar-image');
+    const satelliteImage = document.getElementById('satellite-image');
+    
+    // Add cache-busting for image refresh if needed
+    function refreshImage(img) {
+        const src = img.src.split('?')[0];
+        img.src = `${src}?t=${Date.now()}`;
+    }
+    
+    // Optional: Refresh images periodically
+    setInterval(() => {
+        const radarChecked = document.getElementById('radar-tab').checked;
+        if (radarChecked && radarImage) {
+            refreshImage(radarImage);
+        } else if (satelliteImage) {
+            refreshImage(satelliteImage);
+        }
+    }, 300000); // Refresh every 5 minutes
+    
+    return {
+        refreshRadar: () => refreshImage(radarImage),
+        refreshSatellite: () => refreshImage(satelliteImage)
+    };
 }

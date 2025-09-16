@@ -29,7 +29,11 @@ function atomic_write_json($path,$arr){
   $tmp=$path.'.tmp'; $json=json_encode($arr, JSON_UNESCAPED_SLASHES);
   if($json===false) return false; if(file_put_contents($tmp,$json)===false) return false; return rename($tmp,$path);
 }
-function ensure_large_icon($url){ if(!$url) return $url; return (strpos($url,'size=large')!==false) ? $url : $url.(strpos($url,'?')!==false ? '&' : '?').'size=large'; }
+function ensure_large_icon($url) {
+  if (!$url) return $url;
+  // Replace size=medium with size=large
+  return str_replace('size=medium', 'size=large', $url);
+}
 
 // Helper function to convert Celsius to Fahrenheit
 function celsiusToFahrenheit($celsius) {

@@ -4,7 +4,7 @@ window.siteConfig = {
         {
             name: "Bertie",
             city: "Windsor",
-            lat: 35.9985,
+            lat: 36.0187,
             lon: -76.9461,
             url: "counties/bertie/index.html",
             ugcCode: "NCZ030",
@@ -16,6 +16,7 @@ window.siteConfig = {
             lat: 35.6115,
             lon: -77.3752,
             url: "counties/pitt/index.html",
+            station: "KPGV",
             ugcCode: "NCZ044",
             zoneURL: "https://api.weather.gov/zones/forecast/NCZ044"
         },
@@ -23,8 +24,9 @@ window.siteConfig = {
             name: "Beaufort",
             city: "Washington",
             lat: 35.5465,
-            lon: -77.0519,
+            lon: -76.9519,
             url: "counties/beaufort/index.html",
+            station: "KOCW",
             ugcCode: "NCZ080",
             zoneURL: "https://api.weather.gov/zones/forecast/NCZ080"
         },

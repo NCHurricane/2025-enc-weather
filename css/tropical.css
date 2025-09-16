@@ -1,10 +1,37 @@
-/*--------------------*/
-/* TROPICAL PAGE STYLES */
-/*--------------------*/
+/*=================================================================*/
+/*                        TROPICAL PAGE STYLES                    */
+/*=================================================================*/
 
-/* ------------------------ */
-/* Shared tab styling */
-/* ------------------------ */
+/*-----------------------------------------------------------------*/
+/* CSS CUSTOM PROPERTIES                                          */
+/*-----------------------------------------------------------------*/
+:root {
+  /* Typography */
+  --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-monospace: "Fira Code", "Courier New", monospace;
+
+  /* Colors */
+  --color-surface: #f8f9fa;
+  --color-border: #dee2e6;
+  --color-primary-light: #e3f2fd;
+  --color-primary-dark: #0056b3;
+  --color-secondary: #2c5530;
+  --color-secondary-light: #3a6b3f;
+  --color-text-muted: #6c757d;
+}
+
+body {
+  background-image: url("../images/isabel_bg.webp");
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/*-----------------------------------------------------------------*/
+/* CONTAINER STYLES                                               */
+/*-----------------------------------------------------------------*/
 .tropical-graphics-container,
 .tropical-text-container,
 .tropical-satellite-container {
@@ -16,6 +43,33 @@
   box-shadow: var(--shadow-standard);
 }
 
+.tropical-graphics-tabs {
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  border-radius: var(--border-radius);
+  padding: var(--padding-section);
+  margin: 15px 0 0 0;
+}
+
+.tropical-text-tabs {
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  border-radius: var(--border-radius);
+  padding: var(--padding-section);
+  margin: 15px 0 0 0;
+}
+
+/*-----------------------------------------------------------------*/
+/* COLLAPSIBLE SECTION TITLES                                     */
+/*-----------------------------------------------------------------*/
+
+/* Section titles */
 .tropical-graphics-title,
 .tropical-text-title,
 .tropical-satellite-title {
@@ -25,36 +79,41 @@
   display: block;
 }
 
+/* Hidden toggle inputs */
 .tropical-graphics-toggle,
 .tropical-text-toggle,
 .tropical-satellite-toggle {
   display: none;
 }
 
+/* Plus/minus icons */
 .tropical-graphics-title::after,
 .tropical-text-title::after,
 .tropical-satellite-title::after {
   font-family: "Font Awesome 6 Free";
-  content: "\f067";
+  content: "\f067"; /* Plus icon */
   font-weight: 900;
   margin-left: 8px;
   float: right;
   transition: transform 0.3s ease;
 }
 
+/* When expanded, show minus icon */
 .tropical-graphics-toggle:checked + .tropical-graphics-title::after,
 .tropical-text-toggle:checked + .tropical-text-title::after,
 .tropical-satellite-toggle:checked + .tropical-satellite-title::after {
-  content: "\f068";
+  content: "\f068"; /* Minus icon */
   transform: rotate(180deg);
 }
 
+/* Tab containers - hidden by default */
 .tropical-graphics-tabs,
 .tropical-text-tabs,
 .tropical-satellite-tabs {
   display: none;
 }
 
+/* Show tab containers when toggle is checked */
 .tropical-graphics-toggle:checked
   + .tropical-graphics-title
   + .tropical-graphics-tabs,
@@ -65,34 +124,119 @@
   display: block;
 }
 
-/* ------------------------ */
-/* Tab panel styling */
-/* ------------------------ */
-.tropical-graphics-tab-labels,
+.tropical-satellite-tabs {
+  background: linear-gradient(
+    180deg,
+    var(--color-gradient-start) 20%,
+    var(--color-gradient-end) 100%
+  );
+  border-radius: var(--border-radius);
+  padding: var(--padding-section);
+  margin: 15px 0 0 0;
+}
+
+/*-----------------------------------------------------------------*/
+/* TAB NAVIGATION                                                  */
+/*-----------------------------------------------------------------*/
+/* Tab labels container */
+.tropical-graphics-tab-labels {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--color-primary, #007acc);
+  margin: 0;
+  padding: 0;
+  border-radius: 8px 8px 0 0;
+}
+
 .tropical-text-tab-labels {
   display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin: 15px 0 10px;
   flex-wrap: wrap;
+  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  border-bottom: 2px solid var(--color-primary, #007acc);
+  margin: 0;
+  padding: 0;
+  border-radius: 8px 8px 0 0;
 }
 
-.tropical-graphics-tab,
-.tropical-text-tab {
-  background-color: var(--color-primary);
-  border-radius: var(--border-radius);
-  color: var(--color-text-light);
+/* Individual tab buttons */
+.tropical-graphics-tab {
+  flex: 1;
+  min-width: 120px;
+  background-color: var(--color-background);
+  color: var(--color-text, #333);
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  padding: 8px 15px;
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
+.tropical-text-tab {
+  flex: 1;
+  min-width: 120px;
+  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  color: var(--color-text, #333);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tropical-text-tab {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tropical-text-tab[hidden] {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tropical-graphics-tab:last-child {
+  border-right: none;
+  border-radius: 0 8px 0 0;
+}
+
+.tropical-graphics-tab:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.tropical-graphics-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text, #333);
+}
+
+.tropical-graphics-tab:focus {
+  outline: 2px solid var(--color-accent, #ff6b35);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Hidden radio inputs for tab functionality */
 input[name="graphicsTab"],
 input[name="textTab"] {
   display: none;
 }
 
+/*-----------------------------------------------------------------*/
+/* TAB CONTENT VISIBILITY                                         */
+/*-----------------------------------------------------------------*/
 /* Show active tab content */
 #graphics-current:checked
   ~ .tropical-graphics-tab-content
@@ -106,19 +250,55 @@ input[name="textTab"] {
   display: block;
 }
 
-/* Active tab styling */
+/* Active graphics tab styling - Fixed selectors */
 #graphics-current:checked
-  ~ .tropical-graphics-tab-labels
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
   label[for="graphics-current"],
 #graphics-two-day:checked
-  ~ .tropical-graphics-tab-labels
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
   label[for="graphics-two-day"],
 #graphics-seven-day:checked
-  ~ .tropical-graphics-tab-labels
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
   label[for="graphics-seven-day"],
 #graphics-surface:checked
-  ~ .tropical-graphics-tab-labels
-  label[for="graphics-surface"],
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
+  label[for="graphics-surface"] {
+  background-color: var(--color-primary, #007acc);
+  color: var(--color-text-light, #ffffff);
+  font-weight: bold;
+}
+
+/* Active graphics tab accent bar - Fixed selectors */
+#graphics-current:checked
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
+  label[for="graphics-current"]::after,
+#graphics-two-day:checked
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
+  label[for="graphics-two-day"]::after,
+#graphics-seven-day:checked
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
+  label[for="graphics-seven-day"]::after,
+#graphics-surface:checked
+  ~ .tropical-graphics-tab-content
+  .tropical-graphics-tab-labels
+  label[for="graphics-surface"]::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-accent, #ff6b35);
+}
+
+/* Active text tab styling */
 #text-two:checked ~ .tropical-text-tab-labels label[for="text-two"],
 #text-two-spanish:checked
   ~ .tropical-text-tab-labels
@@ -126,20 +306,34 @@ input[name="textTab"] {
 #text-discussion:checked
   ~ .tropical-text-tab-labels
   label[for="text-discussion"] {
-  background-color: var(--color-accent);
-  color: var(--color-text);
+  background-color: var(--color-primary, #007acc);
+  color: var(--color-text-light, #ffffff);
+  font-weight: bold;
 }
 
-/* ------------------------ */
-/* Graphics content styling */
-/* ------------------------ */
-.tropical-graphics-panel,
+/*-----------------------------------------------------------------*/
+/* PANEL CONTENT                                                   */
+/*-----------------------------------------------------------------*/
+/* Panel base styles */
+.tropical-graphics-panel {
+  display: none;
+  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  border-top: none;
+  color: var(--color-text);
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 .tropical-text-panel {
   display: none;
-  background-color: var(--color-text-light);
+
+  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  min-height: 400px;
+
+  border-top: none;
   color: var(--color-text);
-  padding: 15px;
-  border-radius: var(--border-radius);
   overflow-x: hidden;
   max-width: 100%;
 }
@@ -151,6 +345,9 @@ input[name="textTab"] {
   font-size: 1.2rem;
 }
 
+/*-----------------------------------------------------------------*/
+/* GRAPHICS CONTENT                                                */
+/*-----------------------------------------------------------------*/
 .tropical-image-container {
   position: relative;
   width: 100%;
@@ -164,73 +361,282 @@ input[name="textTab"] {
   border-radius: 5px;
 }
 
-.tropical-satellite-timestamp {
-  position: relative;
-  text-align: center;
-  font-weight: bold;
-  background-color: rgba(238, 238, 238, 0.7);
-  color: rgb(0, 0, 0);
-  padding: 5px 10px;
-  border-radius: 3px;
-  font-size: 0.8rem;
-}
-
+.tropical-satellite-timestamp,
 .image-timestamp {
   position: relative;
   text-align: center;
-  background-color: rgba(238, 238, 238, 0.7);
   font-weight: bold;
+  background-color: rgba(238, 238, 238, 0.7);
   color: rgb(0, 0, 0);
   padding: 5px 10px;
   border-radius: 3px;
   font-size: 0.8rem;
 }
 
-/* ------------------------ */
-/* Text content styling */
-/* ------------------------ */
+/*-----------------------------------------------------------------*/
+/* TEXT CONTENT                                                    */
+/*-----------------------------------------------------------------*/
+
+/* Text content container */
 .tropical-text-content {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5;
+  background-color: var(--color-text-light);
+  color: var(--color-text, #333);
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  line-height: 1.4;
+  margin: 0;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 15px;
   white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.tropical-text-content h3 {
+  font-family: var(--font-primary);
+  color: var(--color-primary, #007acc);
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
 }
 
 .tropical-text-content pre {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-monospace);
+  margin: 0;
+  white-space: pre-wrap;
 }
 
-.tropical-text-timestamp {
-  position: relative;
+/* Scrollbar styling */
+.tropical-text-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tropical-text-content::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+.tropical-text-content::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.tropical-text-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary, #007acc);
+}
+
+/* Text tab container */
+.tropical-text-tab-labels {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  border-bottom: 2px solid var(--color-primary, #007acc);
+  margin: 0;
+  padding: 0;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Individual text tab styling */
+.tropical-text-tab {
+  flex: 1;
+  min-width: 120px;
+  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  border: none;
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text, #333);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+  padding: 12px 8px;
   text-align: center;
-  font-weight: bold;
-  background-color: rgba(238, 238, 238, 0.7);
-  color: rgb(0, 0, 0);
-  padding: 5px 10px;
-  border-radius: 3px;
-  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  position: relative;
+  font-weight: 600;
 }
 
-/* keep only .error styles */
+.tropical-text-tab:last-child {
+  border-right: none;
+  border-radius: 0 8px 0 0;
+}
+
+.tropical-text-tab:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.tropical-text-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text, #333);
+}
+
+.tropical-text-tab:focus {
+  outline: 2px solid var(--color-accent, #ff6b35);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Active text tab states */
+#text-two:checked ~ .tropical-text-tab-labels label[for="text-two"],
+#text-two-spanish:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-two-spanish"],
+#text-discussion:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-discussion"] {
+  background-color: var(--color-primary, #007acc);
+  color: var(--color-text-light, #ffffff);
+  font-weight: bold;
+}
+
+/* Active tab accent bar */
+#text-two:checked ~ .tropical-text-tab-labels label[for="text-two"]::after,
+#text-two-spanish:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-two-spanish"]::after,
+#text-discussion:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-discussion"]::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-accent, #ff6b35);
+}
+
+/* Spanish tab special styling */
+label[for="text-two-spanish"] {
+  background-color: var(--color-background); /* Changed from var(--color-text-light) */
+  color: var(--color-text);
+}
+
+label[for="text-two-spanish"]:hover {
+  background-color: var(--color-accent);
+}
+
+#text-two-spanish:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-two-spanish"] {
+  background-color: var(--color-primary);
+}
+
+/* Text panel base styling */
+.tropical-text-panel {
+  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  min-height: 400px;
+}
+
+/* Text header and meta information */
+.text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.text-header h4 {
+  margin: 0;
+  color: var(--color-primary, #007acc);
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.text-meta {
+  text-align: right;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}
+
+.text-meta .product-time {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.text-meta .product-number {
+  display: block;
+  font-weight: bold;
+  color: var(--color-primary, #007acc);
+}
+
+/* Action buttons */
+.text-actions {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.nhc-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-primary, #007acc);
+  color: var(--color-text-light, #ffffff);
+  padding: 10px 20px;
+  border-radius: var(--border-radius, 8px);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-primary, #007acc);
+}
+
+.nhc-link-btn:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: var(--color-text-light, #ffffff);
+  text-decoration: none;
+}
+
+/* Timestamp styling */
+.tropical-text-timestamp {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 8px 12px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+  color: var(--color-text, #333);
+}
+
+.tropical-text-timestamp::before {
+  content: "📅";
+  margin-right: 8px;
+}
+
+/*-----------------------------------------------------------------*/
+/* ERROR STATES                                                    */
+/*-----------------------------------------------------------------*/
 .error {
   padding: 20px;
   text-align: center;
   color: #d9534f;
   display: none;
 }
+
 .error i {
   font-size: 2rem;
   margin-bottom: 10px;
   display: block;
 }
-.error {
-  color: #d9534f;
-  display: none;
+
+/*-----------------------------------------------------------------*/
+/* ACTIVE STORMS SECTION                                          */
+/*-----------------------------------------------------------------*/
+.active-storms-section {
+  margin: 20px 0 10px;
 }
 
-/* ------------------------ */
-/* Active Storms section */
-/* ------------------------ */
+/* No active systems message */
 .no-active-systems {
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -249,10 +655,7 @@ input[name="textTab"] {
   margin-right: 0.3em;
 }
 
-.active-storms-section {
-  margin: 20px 0 10px;
-}
-
+/* Active systems header */
 .active-systems-header {
   font-size: 0.9rem;
   background-color: #940000;
@@ -271,6 +674,7 @@ input[name="textTab"] {
   font-size: 0.9rem;
 }
 
+/* Active systems container */
 .active-systems-container {
   background-color: var(--color-primary);
   padding: var(--padding-section);
@@ -282,6 +686,7 @@ input[name="textTab"] {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Individual storm item */
 .active-system-item {
   display: flex;
   align-items: center;
@@ -315,18 +720,36 @@ input[name="textTab"] {
   margin-left: 5px;
 }
 
-/* ------------------------ */
-/* Satellite section */
-/* ------------------------ */
+/*-----------------------------------------------------------------*/
+/* SATELLITE SECTION                                               */
+/*-----------------------------------------------------------------*/
 #tropical-satellite-image-container {
-  aspect-ratio: 5 / 3;
-  /* For the 3600x2160 resolution (5:3 aspect ratio) */
+  /* Removed fixed aspect-ratio to prevent excess space */
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #tropical-satellite-image {
-  width: 100%;
   height: auto;
   object-fit: contain;
+  border-radius: 5px;
+  /* Width will be set dynamically by JavaScript */
+}
+
+/* Sector-specific image widths */
+#tropical-satellite-image.sector-taw,
+#tropical-satellite-image.sector-na {
+  width: 75%;
+  max-width: 100%;
+}
+
+#tropical-satellite-image.sector-eus,
+#tropical-satellite-image.sector-car,
+#tropical-satellite-image.sector-ga {
+  width: 50%;
+  max-width: 100%;
 }
 
 /* Satellite controls */
@@ -334,8 +757,6 @@ input[name="textTab"] {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
   padding: 5px;
   align-items: center;
 }
@@ -343,13 +764,16 @@ input[name="textTab"] {
 .tropical-satellite-select-container {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  color: var(--color-text-light);
+  gap: 15px;
+  width: 100%;
+  padding: 15px 0 10px;
 }
 
 .tropical-satellite-select {
   padding: 5px 10px;
   border-radius: 5px;
-  border: 1px solid #ccc;
   font-family: "Roboto", Arial, sans-serif;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -364,7 +788,6 @@ input[name="textTab"] {
 .tropical-satellite-button {
   padding: 5px 15px;
   border-radius: 5px;
-  border: 1px solid var(--color-accent);
   background-color: var(--color-primary);
   color: var(--color-text-light);
   cursor: pointer;
@@ -376,12 +799,115 @@ input[name="textTab"] {
   color: var(--color-text);
 }
 
-/* Media queries for responsive design */
+/* Satellite sector selection */
+.tropical-satellite-sector-container {
+  width: 100%;
+}
+
+
+/* Hide radio inputs for sector selection */
+input[name="satellite-sector"] {
+  display: none;
+}
+
+/* Sector tab labels container */
+.tropical-satellite-sector-labels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+}
+
+/* Individual sector tab buttons */
+.tropical-satellite-sector-tab {
+  flex: 1;
+  min-width: 100px;
+  background-color: var(--color-background);
+  color: var(--color-text, #333);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 0.8em;
+  padding: 8px 6px;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: none;
+  border-radius: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tropical-satellite-sector-tab:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.tropical-satellite-sector-tab:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.tropical-satellite-sector-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text, #333);
+}
+
+.tropical-satellite-sector-tab:focus {
+  outline: 2px solid var(--color-accent, #ff6b35);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+#tropical-satellite-product-select {
+  font-size: 0.8rem;
+}
+
+.tropical-satellite-label {
+  font-size: 0.9rem;
+}
+
+/* Active sector tab styling */
+#sector-taw:checked ~ .tropical-satellite-sector-labels label[for="sector-taw"],
+#sector-na:checked ~ .tropical-satellite-sector-labels label[for="sector-na"],
+#sector-eus:checked ~ .tropical-satellite-sector-labels label[for="sector-eus"],
+#sector-car:checked ~ .tropical-satellite-sector-labels label[for="sector-car"],
+#sector-ga:checked ~ .tropical-satellite-sector-labels label[for="sector-ga"] {
+  background-color: var(--color-primary, #007acc);
+  color: var(--color-text-light, #ffffff);
+  font-weight: bold;
+}
+
+/* Active sector tab accent bar */
+#sector-taw:checked ~ .tropical-satellite-sector-labels label[for="sector-taw"]::after,
+#sector-na:checked ~ .tropical-satellite-sector-labels label[for="sector-na"]::after,
+#sector-eus:checked ~ .tropical-satellite-sector-labels label[for="sector-eus"]::after,
+#sector-car:checked ~ .tropical-satellite-sector-labels label[for="sector-car"]::after,
+#sector-ga:checked ~ .tropical-satellite-sector-labels label[for="sector-ga"]::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-accent, #ff6b35);
+  border-radius: 0 0 4px 4px;
+}
+
+.tropical-satellite-sector-tab {
+  position: relative;
+}
+
+/*-----------------------------------------------------------------*/
+/* RESPONSIVE DESIGN                                               */
+/*-----------------------------------------------------------------*/
 @media (max-width: 768px) {
   .tropical-graphics-tab,
   .tropical-text-tab {
     font-size: 0.8rem;
     padding: 6px 10px;
+  }
+  
+  .tropical-satellite-sector-tab {
+    font-size: 0.7em;
+    padding: 6px 4px;
+    min-width: 80px;
   }
 }
 
@@ -428,5 +954,26 @@ input[name="textTab"] {
   .image-timestamp {
     font-size: 0.6rem;
   }
-}
+  
+  .tropical-satellite-sector-tab {
+    font-size: 0.6em;
+    padding: 4px 2px;
+    min-width: 60px;
+  }
+  
+  .tropical-satellite-sector-labels {
+    gap: 2px;
+  }
+  
+  /* Responsive satellite image widths for mobile */
+  #tropical-satellite-image.sector-taw,
+  #tropical-satellite-image.sector-na {
+    width: 90%;
+  }
 
+  #tropical-satellite-image.sector-eus,
+  #tropical-satellite-image.sector-car,
+  #tropical-satellite-image.sector-ga {
+    width: 70%;
+  }
+}
