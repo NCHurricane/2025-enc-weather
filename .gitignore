@@ -3,7 +3,6 @@ js/modules/logs/*.log
 *.txt
 *.zip
 *.bat
-images/
 js/data/CurrentStorms.json
 js/data/CurrentStormsBackup.json
 js/data/gz_2010_us-050_00_500k.json
