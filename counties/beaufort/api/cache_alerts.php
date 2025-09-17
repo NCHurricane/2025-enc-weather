@@ -1,21 +1,26 @@
 <?php
-// cache_alerts.php - Multi-zone version for Dare County
+/**
+ * NWS API/ATOM Alert Script - cache_alerts.php
+ * Fetches NWS API alerts and caches them as JSON.
+ *
+ * Single-zone county:
+ * - Beaufort County, NC (zone: NCZ020)
+ * - Beaufort County, NC (zone: NCC013)
+ * 
+ */
+
+declare(strict_types=1);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 $scriptDir = dirname(__FILE__);
 $dataDir = $scriptDir . '/../data';
 $configPath = $scriptDir . '/../data/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 
-// Create data directory if it doesn't exist
 if (!is_dir($dataDir)) {
     mkdir($dataDir, 0755, true);
 }
 
-/**
- * Atomic write function to prevent partial file reads
- */
 function atomic_write_json($filepath, $data) {
     $temp_file = $filepath . '.tmp';
     $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -26,7 +31,6 @@ function atomic_write_json($filepath, $data) {
         }
     }
     
-    // Cleanup on failure
     if (file_exists($temp_file)) {
         unlink($temp_file);
     }
@@ -58,9 +62,6 @@ function formatNwsDescription($text) {
     return $text;
 }
 
-/**
- * Fetch alerts for specific zone from NWS API
- */
 function fetchZoneAlerts($zoneId, $userAgent) {
     $url = "https://api.weather.gov/alerts/active/zone/{$zoneId}";
     
@@ -86,31 +87,23 @@ function fetchZoneAlerts($zoneId, $userAgent) {
     return [];
 }
 
-/**
- * Check if alert is still active
- */
 function isAlertActive($alert) {
     $expires = $alert['properties']['expires'] ?? null;
     
     if (!$expires) {
-        return true; // No expiration time means it's still active
+        return true;
     }
     
     $expiresTime = strtotime($expires);
     return $expiresTime > time();
 }
 
-/**
- * Process alert data
- */
 function processAlert($alertFeature) {
     $props = $alertFeature['properties'] ?? [];
     
-    // Get raw description and format it
     $rawDescription = $props['description'] ?? null;
     $formattedDescription = $rawDescription ? formatNwsDescription($rawDescription) : null;
     
-    // Get raw instruction and format it if present
     $rawInstruction = $props['instruction'] ?? null;
     $formattedInstruction = $rawInstruction ? formatNwsDescription($rawInstruction) : null;
     
@@ -121,17 +114,14 @@ function processAlert($alertFeature) {
         'urgency' => $props['urgency'] ?? null,
         'status' => $props['status'] ?? null,
         'headline' => $props['headline'] ?? null,
-        'description' => $formattedDescription,        // Now formatted
-        'instruction' => $formattedInstruction,        // Also format instructions
+        'description' => $formattedDescription,
+        'instruction' => $formattedInstruction,
         'onset' => $props['onset'] ?? null,
         'expires' => $props['expires'] ?? null,
         'areaDesc' => $props['areaDesc'] ?? null
     ];
 }
 
-/**
- * Process alerts for a zone
- */
 function processZoneAlerts($zoneConfig, $userAgent) {
     $forecastZone = $zoneConfig['forecast'] ?? null;
     
@@ -142,7 +132,6 @@ function processZoneAlerts($zoneConfig, $userAgent) {
     
     error_log("Fetching alerts for zone: {$forecastZone}");
     
-    // Fetch alerts for this zone
     $alertFeatures = fetchZoneAlerts($forecastZone, $userAgent);
     
     if (empty($alertFeatures)) {
@@ -150,7 +139,6 @@ function processZoneAlerts($zoneConfig, $userAgent) {
         return [];
     }
     
-    // Process and filter active alerts
     $activeAlerts = [];
     
     foreach ($alertFeatures as $alertFeature) {
@@ -160,7 +148,6 @@ function processZoneAlerts($zoneConfig, $userAgent) {
         }
     }
     
-    // Sort alerts by severity (most severe first)
     $severityOrder = [
         'Extreme' => 1,
         'Severe' => 2,
@@ -174,7 +161,6 @@ function processZoneAlerts($zoneConfig, $userAgent) {
         $bSeverity = $severityOrder[$b['severity']] ?? 5;
         
         if ($aSeverity === $bSeverity) {
-            // Secondary sort by onset time (newer first)
             $aOnset = strtotime($a['onset'] ?? '1970-01-01');
             $bOnset = strtotime($b['onset'] ?? '1970-01-01');
             return $bOnset - $aOnset;
@@ -188,11 +174,7 @@ function processZoneAlerts($zoneConfig, $userAgent) {
     return $activeAlerts;
 }
 
-/**
- * Main execution
- */
 try {
-    // Load configuration
     if (!file_exists($configPath)) {
         throw new Exception("Config file not found: {$configPath}");
     }
@@ -210,29 +192,24 @@ try {
     error_log("Processing alerts for {$countyName} County (multi-zone: " . ($isMultiZone ? 'yes' : 'no') . ")");
     
     if ($isMultiZone) {
-        // Multi-zone county: process each zone separately
         $zones = $config['zones'] ?? [];
         
         foreach ($zones as $zoneName => $zoneConfig) {
             error_log("Processing alerts for zone: {$zoneName}");
             
-            // Create zone directory
             $zoneDataDir = $dataDir . '/' . $zoneName;
             if (!is_dir($zoneDataDir)) {
                 mkdir($zoneDataDir, 0755, true);
             }
             
-            // Process alerts for this zone
             $alerts = processZoneAlerts($zoneConfig, $userAgent);
             
-            // Build result for this zone
             $result = [
                 'generated' => gmdate('Y-m-d\TH:i:s\Z'),
                 'zone' => $zoneConfig['forecast'] ?? null,
                 'alerts' => $alerts
             ];
             
-            // Write zone-specific file
             $outPath = $zoneDataDir . '/alerts.json';
             if (atomic_write_json($outPath, $result)) {
                 error_log("Successfully wrote alerts for zone {$zoneName} to {$outPath}");
@@ -242,7 +219,6 @@ try {
         }
         
     } else {
-        // Single-zone county: process all zones into one file
         error_log("Processing single-zone county alerts");
         
         $zones = $config['zones'] ?? [];
@@ -252,18 +228,15 @@ try {
             throw new Exception("No forecast zone found in single-zone config");
         }
         
-        // Create a temporary zone config for processing
         $tempZoneConfig = ['forecast' => $forecastZone];
         $alerts = processZoneAlerts($tempZoneConfig, $userAgent);
         
-        // Build result
         $result = [
             'generated' => gmdate('Y-m-d\TH:i:s\Z'),
             'zone' => $forecastZone,
             'alerts' => $alerts
         ];
         
-        // Write single file
         $outPath = $dataDir . '/alerts.json';
         if (atomic_write_json($outPath, $result)) {
             error_log("Successfully wrote alerts to {$outPath}");

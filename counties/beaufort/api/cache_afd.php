@@ -1,5 +1,12 @@
 <?php
-// counties/bertie/api/cache_afd.php
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Newport/Morehead City (MHX)
+ *
+ * For Beaufort County, NC Page
+ */
 declare(strict_types=1);
 
 $root = dirname(__DIR__);
@@ -7,12 +14,8 @@ $dataDir = $root . '/data';
 $config = json_decode(file_get_contents($dataDir . '/config.json'), true);
 $office = $config['forecastOffice']['id'] ?? 'MHX';
 
-// User agent for requests
 $userAgent = "NCHurricane.com Weather App/1.0 (admin@nchurricane.com)";
 
-/**
- * Fetch data with proper error handling
- */
 function fetchData($url, $userAgent, $retries = 3) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -34,17 +37,12 @@ function fetchData($url, $userAgent, $retries = 3) {
     return $result;
 }
 
-/**
- * Clean AFD text for display
- */
 function cleanAFDText($rawText) {
-    // Remove special characters and format for display
     $cleanText = preg_replace('/&&/', '', $rawText);
     $cleanText = preg_replace('/\r\n/', "\n", $cleanText);
     return trim($cleanText);
 }
 
-// Atomic write function
 function atomic_write_json($path, $data) {
     $temp = $path . '.tmp';
     $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
@@ -55,13 +53,11 @@ function atomic_write_json($path, $data) {
 
 error_log("AFD: Processing AFD for office: {$office}");
 
-// Use HTML parsing approach (more reliable)
 $afdUrl = "https://forecast.weather.gov/product.php?site={$office}&issuedby={$office}&product=AFD&format=txt&version=1&glossary=0";
 $response = fetchData($afdUrl, $userAgent);
 
 $text = '';
 if ($response) {
-    // Extract AFD text from HTML
     if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $response, $matches)) {
         $afdText = $matches[1];
         $text = cleanAFDText($afdText);

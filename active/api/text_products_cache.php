@@ -1,6 +1,6 @@
 <?php
 /**
- * NHC Text Products Cache Script
+ * NHC Text Products Cache Script - text_products_cache.php
  * 
  * This script polls the latest advisories from the NHC for current storms
  * in the Atlantic and Pacific basins. It reads active storms from the
@@ -18,35 +18,26 @@
  * with WMO naming convention (TCPAT1.json, TASEP2.json, etc.)
  */
 
-// Configuration
 define('CACHE_DIR', __DIR__ . '/../../js/modules/cache/');
 define('STORMS_DIR', __DIR__ . '/../storms/');
 define('LOG_DIR', __DIR__ . '/../../js/modules/logs/');
 define('USER_AGENT', 'Mozilla/5.0 (Weather App Cache Bot 1.0)');
 define('TIMEOUT', 30);
 
-// Ensure log directory exists
 if (!is_dir(LOG_DIR)) {
     mkdir(LOG_DIR, 0755, true);
 }
 
-/**
- * Log messages with timestamp
- */
 function logMessage($message, $level = 'INFO') {
     $timestamp = date('Y-m-d H:i:s');
     $logEntry = "[{$timestamp}] [{$level}] {$message}" . PHP_EOL;
     file_put_contents(LOG_DIR . 'text_products_cache.log', $logEntry, FILE_APPEND | LOCK_EX);
     
-    // Also output to console if running from command line
     if (php_sapi_name() === 'cli') {
         echo $logEntry;
     }
 }
 
-/**
- * Fetch content from URL with error handling
- */
 function fetchContent($url) {
     $context = stream_context_create([
         'http' => [
@@ -64,7 +55,6 @@ function fetchContent($url) {
         return false;
     }
     
-    // Check HTTP response code
     if (isset($http_response_header)) {
         $statusLine = $http_response_header[0];
         if (!preg_match('/HTTP\/\d\.\d\s+200\s+/', $statusLine)) {
@@ -76,11 +66,7 @@ function fetchContent($url) {
     return $content;
 }
 
-/**
- * Convert XML content to JSON with extracted text content
- */
 function xmlToJson($xmlContent) {
-    // Suppress XML parsing errors and handle them gracefully
     libxml_use_internal_errors(true);
     
     $xml = simplexml_load_string($xmlContent);
@@ -96,17 +82,13 @@ function xmlToJson($xmlContent) {
         return false;
     }
     
-    // Convert to array then to JSON for better structure
     $array = json_decode(json_encode($xml), true);
     
-    // Extract and format the text content from the description
     $textContent = null;
     if (isset($array['channel']['item']['description'])) {
         $rawDescription = $array['channel']['item']['description'];
         
-        // If description is empty or an array, try accessing the CDATA content directly from XML
         if (empty($rawDescription) || is_array($rawDescription)) {
-            // Access the original XML element to get CDATA content
             $descriptionElement = $xml->channel->item->description;
             if ($descriptionElement) {
                 $rawDescription = (string)$descriptionElement;
@@ -116,7 +98,6 @@ function xmlToJson($xmlContent) {
         $textContent = formatNHCTextContent($rawDescription);
     }
     
-    // Add metadata and formatted text
     $result = [
         'metadata' => [
             'cached_at' => time(),
@@ -131,41 +112,30 @@ function xmlToJson($xmlContent) {
     return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 }
 
-/**
- * Format NHC text content from XML description field
- */
 function formatNHCTextContent($rawDescription) {
     if (empty($rawDescription)) {
         return null;
     }
     
-    // Remove CDATA wrapper if present
     $text = $rawDescription;
     if (strpos($text, '<![CDATA[') !== false) {
         $text = str_replace(['<![CDATA[', ']]>'], '', $text);
     }
     
-    // Convert HTML line breaks to actual line breaks
     $text = str_replace('<br />', "\n", $text);
     $text = str_replace('<br/>', "\n", $text);
     $text = str_replace('<br>', "\n", $text);
     
-    // Clean up other HTML entities
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML401, 'UTF-8');
     
-    // Normalize line endings and clean up extra whitespace
     $text = preg_replace('/\r\n|\r/', "\n", $text);
-    $text = preg_replace('/\n\s*\n\s*\n/', "\n\n", $text); // Replace multiple blank lines with double
+    $text = preg_replace('/\n\s*\n\s*\n/', "\n\n", $text);
     $text = trim($text);
     
     return $text;
 }
 
-/**
- * Map storm number to NHC advisory number (1-5 rotating system)
- */
 function getAdvisoryNumber($stormId) {
-    // Extract storm number from ID (e.g., AL052025 -> 05, EP112025 -> 11)
     preg_match('/^(AL|EP)(\d{2})(\d{4})$/', $stormId, $matches);
     
     if (count($matches) !== 4) {
@@ -176,17 +146,11 @@ function getAdvisoryNumber($stormId) {
     $basin = $matches[1];
     $stormNumber = intval($matches[2]);
     
-    // NHC uses rotating numbers 1-5 for advisory headers
-    // Storm 1,6,11,16,21... use advisory number 1
-    // Storm 2,7,12,17,22... use advisory number 2, etc.
     $advisoryNumber = (($stormNumber - 1) % 5) + 1;
     
     return $advisoryNumber;
 }
 
-/**
- * Get list of active storms from cache
- */
 function getActiveStorms() {
     $cacheFile = CACHE_DIR . 'nhc_current_storms.json';
     
@@ -203,7 +167,6 @@ function getActiveStorms() {
         return [];
     }
     
-    // If no active storms in cache, check existing storm directories
     if (empty($data['data']['activeStorms'])) {
         logMessage("No active storms in cache, checking existing storm directories", 'INFO');
         $storms = [];
@@ -225,12 +188,8 @@ function getActiveStorms() {
     return $data['data']['activeStorms'];
 }
 
-/**
- * Define all text product types and their URL patterns
- */
 function getTextProductTypes() {
     return [
-        // English Products
         'TCP' => [
             'name' => 'Tropical Cyclone Public Advisory',
             'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCP{BASIN}{NUM}.xml',
@@ -257,7 +216,6 @@ function getTextProductTypes() {
             'required' => false
         ],
         
-        // Spanish Products (only for Atlantic)
         'TAS' => [
             'name' => 'Tropical Cyclone Public Advisory (Spanish)',
             'url_pattern' => 'https://www.nhc.noaa.gov/xml/TAS{BASIN}{NUM}.xml',
@@ -279,9 +237,6 @@ function getTextProductTypes() {
     ];
 }
 
-/**
- * Get Monthly Tropical Weather Summary URLs
- */
 function getMonthlyProducts() {
     return [
         'TWSAT' => [
@@ -295,22 +250,17 @@ function getMonthlyProducts() {
     ];
 }
 
-/**
- * Cache text products for a specific storm
- */
 function cacheStormProducts($stormId) {
     $advisoryNumber = getAdvisoryNumber($stormId);
     if ($advisoryNumber === false) {
         return false;
     }
     
-    // Determine basin
     $basin = substr($stormId, 0, 2);
     $basinCode = ($basin === 'AL') ? 'AT' : 'EP';
     
     $stormDir = STORMS_DIR . $stormId . '/';
     
-    // Create storm directory if it doesn't exist
     if (!is_dir($stormDir)) {
         if (!mkdir($stormDir, 0755, true)) {
             logMessage("Failed to create storm directory: {$stormDir}", 'ERROR');
@@ -323,7 +273,6 @@ function cacheStormProducts($stormId) {
     $totalAttempts = 0;
     
     foreach ($products as $productCode => $product) {
-        // Skip Spanish products for Pacific storms
         if (isset($product['atlantic_only']) && $product['atlantic_only'] && $basin !== 'AL') {
             continue;
         }
@@ -367,9 +316,6 @@ function cacheStormProducts($stormId) {
     return $successCount > 0;
 }
 
-/**
- * Cache monthly products
- */
 function cacheMonthlyProducts() {
     $products = getMonthlyProducts();
     $successCount = 0;
@@ -406,15 +352,11 @@ function cacheMonthlyProducts() {
     return $successCount;
 }
 
-/**
- * Main execution function
- */
 function main() {
     logMessage("Starting NHC text products cache update", 'INFO');
     
     $startTime = microtime(true);
     
-    // Get active storms
     $activeStorms = getActiveStorms();
     
     if (empty($activeStorms)) {
@@ -439,14 +381,12 @@ function main() {
         logMessage("Successfully processed products for {$stormsProcessed}/" . count($activeStorms) . " storms", 'INFO');
     }
     
-    // Cache monthly products
     $monthlyCount = cacheMonthlyProducts();
     logMessage("Cached {$monthlyCount}/2 monthly products", 'INFO');
     
     $executionTime = round(microtime(true) - $startTime, 2);
     logMessage("NHC text products cache update completed in {$executionTime} seconds", 'INFO');
     
-    // Return JSON response if called via web
     if (php_sapi_name() !== 'cli') {
         header('Content-Type: application/json');
         echo json_encode([
@@ -460,7 +400,6 @@ function main() {
     }
 }
 
-// Execute main function
 try {
     main();
 } catch (Exception $e) {

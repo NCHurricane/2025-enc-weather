@@ -1,4 +1,12 @@
-// counties/Bertie/js/countyApp.js
+// =======================
+// Bertie County, NC Page Builder - countyApp.js
+// Builds the front-end UI for Bertie County, NC weather page.
+//
+// Single-zone county:
+// - Bertie County, NC (zone: NCZ030)
+// - Bertie County, NC (zone: NCC015)
+// ========================
+
 const warningColors = {
     "Tsunami Warning": "#FD6347",
     "Tornado Warning": "#FF0000",

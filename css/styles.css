@@ -325,7 +325,8 @@ pre {
 .radar-container,
 .satellite-container,
 .meteogram-container,
-.other-container {
+.other-container,
+.notfound-container {
   background-color: rgba(0, 119, 204, 0.7);
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius);
@@ -343,7 +344,8 @@ pre {
 .satellite-title,
 .meteogram-title,
 .detailed-title,
-.section-title {
+.section-title,
+.notfound-title {
   cursor: pointer;
   font-weight: bold;
   text-transform: uppercase;

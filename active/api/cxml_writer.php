@@ -1,14 +1,18 @@
 <?php
-// /active/api/cxml_writer.php
-// Fetch NHC CXML for a storm, convert to compact JSON, and write cache:
-//   ../js/modules/cache/storms/{ALnnYYYY}/storm.json
+/**
+ * NHC CXML Writer, Atlantic - cxml_writer.php
+ * Fetch NHC CXML for Atlantic storms, convert to compact JSON, and write cache:
+ *   ../storms/{ALnnYYYY}/storm.json
+ *
+ * Query:
+ *   ?storm=ALnnYYYY  or ?storm=ALL
+ */
+
 declare(strict_types=1);
 error_reporting(E_ALL);
 
-// ---------- config ----------
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
-// ---------- helpers ----------
 function out($s){ fwrite(STDERR, "[".date('Y-m-d H:i:s')."] $s\n"); }
 function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 function asText($x){ return trim((string)$x); }
@@ -20,11 +24,10 @@ function asNum($x){
 function asRadius($x){
   $n = asNum($x);
   if ($n === null) return 0;
-  if ($n < 0) return 0;       // clamp sentinels like -999 to 0
+  if ($n < 0) return 0;
   return (int) round($n);
 }
 
-// ---------- args: --storm=AL052025 or ?storm=AL052025 ----------
 $stormParam = strtoupper(trim($_GET['storm'] ?? ''));
 if (!$stormParam && PHP_SAPI === 'cli') {
   foreach ($argv as $arg) {
@@ -32,7 +35,6 @@ if (!$stormParam && PHP_SAPI === 'cli') {
       $stormParam = strtoupper(substr($arg, 8)); 
       break; 
     }
-    // Add support for --all argument
     if ($arg === '--all') {
       $stormParam = 'ALL';
       break;
@@ -40,17 +42,14 @@ if (!$stormParam && PHP_SAPI === 'cli') {
   }
 }
 
-// Update error message to include --all option
 if ($stormParam === '') bail('missing --storm=ALnnYYYY or --all');
 
-// ---------- resolve cache root ----------
 $cacheRoot = realpath(__DIR__ . '/..');
 if ($cacheRoot === false) $cacheRoot = __DIR__ . '/..';
 $stormsRoot = $cacheRoot . '/storms';
 
-// ---------- expand short id (ALnn -> ALnnYYYY) using current storms cache if possible ----------
 function expand_short_id(string $id, string $stormsRoot): string {
-  if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id; // already long or unknown format
+  if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id;
   $list = realpath(__DIR__ . '/../../js/modules/cache/nhc_current_storms.json');
   if ($list && ($raw = @file_get_contents($list))) {
     $arr = json_decode($raw, true);
@@ -58,7 +57,7 @@ function expand_short_id(string $id, string $stormsRoot): string {
       foreach ($arr['data']['activeStorms'] as $s) {
         $sid = strtoupper((string)($s['id'] ?? ''));
         if ($sid && str_starts_with($sid, substr($id,0,2)) && substr($sid,2,2) === substr($id,2,2)) {
-          return $sid; // ALnnYYYY
+          return $sid;
         }
       }
     }
@@ -69,7 +68,6 @@ function expand_short_id(string $id, string $stormsRoot): string {
 $stormId = expand_short_id($stormParam, $stormsRoot);
 $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
-// ---------- batch processing for all AL storms ----------
 if ($stormParam === 'ALL') {
     echo "Entering ALL mode - calling processAllALStormsCXML()\n";
     flush();
@@ -85,9 +83,7 @@ try {
     bail($e->getMessage());
 }
 
-// ---------- batch processing function ----------
 function processAllALStormsCXML(string $stormsRoot): void {
-    // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($currentStormsPath)) {
@@ -121,7 +117,7 @@ function processAllALStormsCXML(string $stormsRoot): void {
         out("Processing {$stormId}...");
         
         try {
-            processSingleStormCXML($stormId, $stormsRoot); // ← Pass $stormsRoot
+            processSingleStormCXML($stormId, $stormsRoot);
             $successCount++;
             out("  SUCCESS: {$stormId}");
         } catch (Exception $e) {
@@ -132,16 +128,13 @@ function processAllALStormsCXML(string $stormsRoot): void {
     out("Completed: {$successCount}/" . count($alStorms) . " storms processed successfully");
 }
 
-// ---------- single storm processing function ----------
 function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     global $USER_AGENT;    
     $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
-// ---------- source URL ----------
 $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
 out("Fetch: $srcUrl");
 
-// ---------- fetch ----------
 $ch = curl_init($srcUrl);
 curl_setopt_array($ch, [
   CURLOPT_RETURNTRANSFER => true,
@@ -158,7 +151,6 @@ $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $err  = curl_error($ch);
 curl_close($ch);
 if (!$xmlRaw || $http !== 200) {
-  // Try FTP fallback
   $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
   out("Primary failed, trying FTP: $ftpUrl");
 
@@ -172,7 +164,6 @@ if (!$xmlRaw || $http !== 200) {
   out("FTP fallback successful for $stormId");
 }
 
-// ---------- parse ----------
 libxml_use_internal_errors(true);
 $xml = simplexml_load_string($xmlRaw);
     if (!$xml) throw new Exception('XML parse failed');
@@ -184,7 +175,7 @@ $meta = [
   'id'       => asText($data->localID ?? ''),
   'name'     => asText($data->cycloneName ?? ''),
   'advisory' => preg_replace('/^\D+/', '', asText($hdr->generatingApplication->applicationType ?? '')),
-  'created'  => asText($hdr->creationTime ?? ''), // ISO Z
+  'created'  => asText($hdr->creationTime ?? ''),
 ];
 
 $currentFix = null;
@@ -214,7 +205,6 @@ foreach ($data->fix as $fix) {
     'type' => asText($cd->development ?? ''),
   ];
 
-  // wind radii (34/50/64 kt)
   $wc = $cd->windContours->windSpeed ?? [];
   foreach ($wc as $ws) {
     $sp = trim((string)$ws);
@@ -233,7 +223,6 @@ foreach ($data->fix as $fix) {
     }
   }
 
-  // 12 ft seas (optional)
   $sc = $cd->seaContours->waveHeight ?? null;
   if ($sc && trim((string)$sc) === '12') {
     $r = [
@@ -252,8 +241,7 @@ foreach ($data->fix as $fix) {
   $fixes[] = $one;
 }
 
-// ---------- write cache ----------
-    $stormDir = $stormsRoot . '/' . strtoupper($stormId);  // ALnnYYYY
+    $stormDir = $stormsRoot . '/' . strtoupper($stormId);
 if (!is_dir($stormDir)) {
   @mkdir($stormDir, 0775, true);
 }

@@ -1,5 +1,9 @@
-// counties/bertie/js/satellite.js
-// Simple satellite implementation with CSS cropping for NC region
+// ========================
+// Bertie County Satellite Module - satellite.js
+// Simple satellite implementation with two dropdowns
+//
+// It will be replaced with a more robust solution later.
+// ========================
 
 class SatelliteModule {
     constructor() {

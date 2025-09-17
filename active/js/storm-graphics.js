@@ -1,3 +1,18 @@
+// =============================
+// Storm Graphics Module — storm-graphics.js
+// Renders NHC storm graphics with an accessible tabbed UI.
+//
+// // Products handled:
+//  - 3- and 5-Day Track Forecasts
+//  - Key Messages (English and Spanish)
+//  - Wind Field and History
+//  - Earliest and Most Likely Arrival of Tropical-Storm-Force Winds
+//  - Wind Speed Probabilities for Hours 0-60 (Tropical Storm, Gale, Hurricane)
+//  - Storm Surge Peak Inundation
+//  - Rainfall Forecasts (WPC and International)
+//  - Excessive Rainfall Outlook (WPC)
+// ==============================
+
 class StormGraphics {
   constructor() {
     this.stormId = null;
@@ -8,21 +23,20 @@ class StormGraphics {
         containerId: 'track-messages-section',
         graphics: [],
         hasTabs: true,
-        defaultGraphic: 1 // 7-Day Track (index 1)
+        defaultGraphic: 1
       },
       {
         id: 'wind-graphics',
         containerId: 'wind-graphics-section',
         graphics: [],
         hasTabs: true,
-        defaultGraphic: 0 // Wind Field (index 0)
+        defaultGraphic: 0
       },
       {
         id: 'wind-probability',
         containerId: 'wind-probability-section',
         graphics: [],
         hasTabs: true,
-        // Only keep 000–060
         timeframes: ['000', '012', '024', '036', '048', '060']
       },
       {
@@ -31,7 +45,7 @@ class StormGraphics {
         graphics: [],
         conditional: true,
         hasTabs: true,
-        defaultGraphic: 0 // Peak Surge (index 0)
+        defaultGraphic: 0
       }
     ];
   }
@@ -78,7 +92,6 @@ class StormGraphics {
       }
     ];
 
-    // Wind Graphics
     this.sections[1].graphics = [
       {
         name: 'Field',
@@ -102,7 +115,6 @@ class StormGraphics {
       }
     ];
 
-    // Wind Probability (with timeframes)
     this.sections[2].graphics = [
       {
         name: 'TS',
@@ -124,10 +136,8 @@ class StormGraphics {
       }
     ];
 
-    // Surge and Rain - Note: rainfall graphics use different naming convention
-    // They need the last two digits of the year (25) from the full year (2025)
-    const fullYear = this.stormId.substring(4, 8); // Get full year from storm ID (e.g., "2025" from "AL052025")
-    const year = fullYear.substring(2, 4); // Get last two digits (e.g., "25" from "2025")
+    const fullYear = this.stormId.substring(4, 8);
+    const year = fullYear.substring(2, 4);
     
     this.sections[3].graphics = [
       {
@@ -155,7 +165,6 @@ class StormGraphics {
   }
 
   render() {
-    // Check if screen size changed and rebuild URLs if needed
     const currentIsDesktop = window.innerWidth >= 768;
     if (currentIsDesktop !== this.isDesktop) {
       this.isDesktop = currentIsDesktop;
@@ -169,17 +178,12 @@ class StormGraphics {
         return;
       }
 
-      // Collapsible behavior is handled globally in storm.js via ARIA
-
       let html;
       if (section.timeframes) {
-        // Wind probability section with timeframe tabs
         html = this.renderTabbedContent(section);
       } else if (section.hasTabs) {
-        // Other sections with individual graphic tabs
         html = this.renderSingleGraphicTabs(section);
       } else {
-        // If no tabs specified, still use single graphic tabs as default
         html = this.renderSingleGraphicTabs(section);
       }
 
@@ -192,7 +196,6 @@ class StormGraphics {
   renderTabbedContent(section) {
     let html = '<div class="graphics-interface">';
 
-    // First row - Time tabs
     html += '<div class="graphics-tabs time-tabs">';
     section.timeframes.forEach((time, index) => {
       const hours = parseInt(time);
@@ -205,7 +208,6 @@ class StormGraphics {
     });
     html += '</div>';
 
-    // Second row - Category tabs
     html += '<div class="graphics-tabs category-tabs">';
     section.graphics.forEach((graphic, index) => {
       html += `
@@ -216,12 +218,10 @@ class StormGraphics {
     });
     html += '</div>';
 
-    // Content area - Single graphic display
     html += '<div class="graphics-content-container">';
     html += '<div class="graphics-content-panel active" id="wind-probability-display">';
     html += '<div class="single-graphic" id="wind-probability-graphic">';
     
-    // Default graphic (Current + Tropical Storm Force)
     const defaultUrl = section.graphics[0].baseUrl + section.timeframes[0] + section.graphics[0].suffix;
     html += this.renderGraphicItem(section.graphics[0].name, defaultUrl);
     
@@ -234,7 +234,6 @@ class StormGraphics {
   renderSingleGraphicTabs(section) {
     let html = '<div class="graphics-interface">';
 
-    // Tabs
     html += '<div class="graphics-tabs">';
     section.graphics.forEach((graphic, index) => {
       const isActive = index === (section.defaultGraphic || 0);
@@ -246,7 +245,6 @@ class StormGraphics {
     });
     html += '</div>';
 
-    // Content
     html += '<div class="graphics-content-container">';
     section.graphics.forEach((graphic, index) => {
       const isActive = index === (section.defaultGraphic || 0);
@@ -279,12 +277,11 @@ class StormGraphics {
   }
 
   attachEventListeners() {
-    // Regular graphics tabs
     document.querySelectorAll('.graphics-tab:not(.time-tab):not(.category-tab)').forEach(button => {
       button.addEventListener('click', () => {
         const tabId = button.dataset.tab;
-        const tabGroup = button.parentElement;  // .graphics-tabs
-        const wrapper = tabGroup.parentElement; // .graphics-interface
+        const tabGroup = button.parentElement;
+        const wrapper = tabGroup.parentElement;
         const contentArea = wrapper.querySelector('.graphics-content-container');
 
         tabGroup.querySelectorAll('.graphics-tab').forEach(b => b.classList.remove('active'));

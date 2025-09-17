@@ -1,10 +1,16 @@
 <?php
-// counties/bertie/api/cache_current.php
-declare(strict_types=1);
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS API current conditions and caches them as JSON.
+ *
+ * Single-zone county:
+ * - Beaufort County, NC (zone: NCZ020)
+ * - Beaufort County, NC (zone: NCC013)
+ *
+ */
 
-// Requirements ref: instructions.txt (Current Conditions Cache) 
-// - poll all stations in config array format
-// - normalize units, compute age_minutes, allow nulls; write data/current.json
+declare(strict_types=1);
+error_reporting(E_ALL);
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
@@ -13,7 +19,7 @@ $outPath = $dataDir . '/current.json';
 
 function http_get_json(string $url, int $timeout = 10, int $retries = 2) {
   $attempt = 0;
-  $delay = 250000; // 0.25s
+  $delay = 250000;
   while (true) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -40,39 +46,38 @@ function http_get_json(string $url, int $timeout = 10, int $retries = 2) {
   }
 }
 
-// Unit conversion functions with unit code awareness
 function convert_temperature($value, $unitCode) {
   if ($value === null) return null;
   if ($unitCode === 'wmoUnit:degC') {
-    return round(($value * 9/5) + 32); // Celsius to Fahrenheit
+    return round(($value * 9/5) + 32);
   }
-  return round($value); // Already Fahrenheit or other
+  return round($value);
 }
 
 function convert_wind_speed($value, $unitCode) {
   if ($value === null) return null;
   if ($unitCode === 'wmoUnit:km_h-1') {
-    return round($value * 0.621371); // km/h to mph
+    return round($value * 0.621371);
   } elseif ($unitCode === 'wmoUnit:m_s-1') {
-    return round($value * 2.236936); // m/s to mph
+    return round($value * 2.236936);
   }
-  return round($value); // Already mph or other
+  return round($value);
 }
 
 function convert_pressure($value, $unitCode) {
   if ($value === null) return null;
   if ($unitCode === 'wmoUnit:Pa') {
-    return round($value / 100, 1); // Pascals to millibars
+    return round($value / 100, 1);
   }
-  return round($value, 1); // Already millibars or other
+  return round($value, 1);
 }
 
 function convert_visibility($value, $unitCode) {
   if ($value === null) return null;
   if ($unitCode === 'wmoUnit:m') {
-    return round($value / 1609.344); // meters to miles
+    return round($value / 1609.344);
   }
-  return round($value); // Already miles or other
+  return round($value);
 }
 
 function atomic_write_json(string $path, array $data): bool {
@@ -104,7 +109,6 @@ $result = [
   'stations' => []
 ];
 
-// Process each station in the array
 foreach ($stations as $index => $station) {
   if (!isset($station['id'])) {
     error_log("Warning: Station at index {$index} missing ID, skipping");
@@ -116,7 +120,6 @@ foreach ($stations as $index => $station) {
   
   error_log("Processing station: {$sid}");
   
-  // NWS obs endpoint pattern: /stations/{id}/observations/latest
   $url = "https://api.weather.gov/stations/{$sid}/observations/latest?require_qc=false";
   $json = http_get_json($url);
 
@@ -153,7 +156,6 @@ foreach ($stations as $index => $station) {
     $entry['observation']['timestamp'] = $tObs;
     $entry['observation']['age_minutes'] = $ageMin;
 
-    // Extract values and unit codes
     $temp = $p['temperature']['value'] ?? null;
     $tempUnit = $p['temperature']['unitCode'] ?? null;
     
@@ -205,7 +207,6 @@ foreach ($stations as $index => $station) {
     error_log("Failed to get data for station: {$sid}");
   }
 
-  // Use station ID as key for easy lookup
   $result['stations'][$sid] = $entry;
 }
 

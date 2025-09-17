@@ -1,5 +1,14 @@
 <?php
-// cache_alerts.php - Multi-zone version for Dare County
+/**
+ * NWS API/ATOM Alert Script - cache_alerts.php
+ * Fetches NWS API alerts and caches them as JSON.
+ *
+ * Multi-zone county:
+ * - Dare County, NC (see config for all zones)
+ *
+ */
+
+declare(strict_types=1);
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

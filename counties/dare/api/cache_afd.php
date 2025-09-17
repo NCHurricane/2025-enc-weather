@@ -1,6 +1,15 @@
 <?php
-// counties/dare/api/cache_afd.php
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Newport/Morehead City (MHX)
+ *
+ * For Dare County, NC Page (multi-zone)
+ */
+
 declare(strict_types=1);
+error_reporting(E_ALL);
 
 // AFD is county-wide (not zone-specific) and fetches from forecast office
 // For Dare County: uses MHX (Newport/Morehead City) forecast office

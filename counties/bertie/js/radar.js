@@ -1,5 +1,9 @@
-// counties/bertie/js/radar.js
+// ========================
+// Bertie County Radar Module - radar.js
 // Simple radar implementation with two dropdowns
+//
+// It will be replaced with a more robust solution later.
+// ========================
 
 class RadarModule {
     constructor() {

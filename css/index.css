@@ -20,6 +20,16 @@ html {
   overflow-x: hidden;
 }
 
+.instructions {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 /* ======================== */
 /* SHARED COMPONENTS */
 /* ======================== */
