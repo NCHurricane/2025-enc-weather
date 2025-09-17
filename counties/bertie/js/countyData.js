@@ -1,14 +1,14 @@
-// ===== counties/bertie/js/countyData.js =====
-// FULL DROP-IN — replaces the existing file entirely
-// Purpose:
-//   • Current Conditions: live NWS fallback (GCRN7 → WNRN7 → KEDE), freshness ≤60 min
-//   • Forecast/Hourly/Alerts/AFD: read from local cache JSON (./data/*.json)
-//   • Units: km/h↔mph, m/s↔mph, Pa→mb, m→miles
-//   • Derived: Heat Index (°F) + Wind Chill (°F)
-//   • NEW (WMO rule): Only ONE of Heat Index OR Wind Chill is returned as non-null
-//       - Heat Index when T ≥ 80°F AND RH ≥ 40%
-//       - Wind Chill when T ≤ 50°F AND wind ≥ 3 mph
-//       - If both mathematically appear due to edge rounding, prefer HI when T ≥ 65°F, otherwise WC
+// ========================
+// Bertie County Page Data Handler - countyData.js
+//
+// Products:
+//   • Current Conditions
+//   • Forecast/Hourly/Alerts/AFD
+//
+// Units Conversion: km/h↔mph, m/s↔mph, Pa→mb, m→miles
+//
+// Derived: Heat Index(°F) + Wind Chill(°F)
+// ========================
 
 const FRESH_MINUTES = 120; // accept obs ≤ 60 minutes old
 

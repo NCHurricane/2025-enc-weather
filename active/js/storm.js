@@ -1,48 +1,31 @@
-/**
- * storm.js – Active storm page (static cache reader)
- * Overview v2 (advisory.json) + Radii (storm.json with current + forecast)
- * - Accepts only ?storm=ALnnYYYY (Atlantic)
- * - Overview comes exclusively from advisory.json
- * - Radii visualization delegated to radii-visualization.js module
- *
- * Logging: console.info|warn|error only
- */
+// ==============================
+// Active Storm Page Cache Reader - storm.js
+// Reads advisory.json and storm.json from cache and renders the data to the page.
+//
+// Products Rendered:
+// - Storm Header
+// - Overview v1 (legacy, hidden)
+// - Overview v2 (current)
+// - Radii Table (if radii data present)
+// ==============================
+
 "use strict";
 
 import { initStormGraphics } from './storm-graphics.js';
 
-/* ==============================
-     Config "knobs" (easy tuning)
-     ============================== */
 const CONFIG = {
   STORMS_ROOT: "./storms",
 };
 
-/* ================
-     DOM shortcuts
-     ================ */
 const $ = (sel) => document.querySelector(sel);
 const els = {
   title: $("#storm-title"),
   stormId: $("#storm-id"),
   overview: document.getElementById("overview-v2"),
 
-  // Radii
-  radiiTable: $("#radii-table"), // optional; created if absent
-
-  // (placeholders kept for future sections)
-  advisoryCard: $("#advisory-card"),
-  advisoryContent: $("#advisory-content"),
-  graphicsSection: $("#storm-graphics-section"),
-  coneGraphic: $("#cone-graphic"),
-  hazardsGraphic: $("#hazards-graphic"),
-  keyMessages: $("#key-messages"),
-  discussion: $("#storm-discussion"),
+  radiiTable: $("#radii-table"),
 };
 
-/* ================
-     Utilities
-     ================ */
 function getStormParam() {
   const p = new URLSearchParams(location.search);
   return (p.get("storm") || "").trim();
@@ -61,12 +44,7 @@ function showBannerOnly() {
   });
 }
 
-// function isValidLongId(id) {
-//   return /^AL\d{2}\d{4}$/.test(id);
-// }
-
 function isValidLongId(id) {
-  // Matches ALnnYYYY or EPnnYYYY (strictly uppercase)
   return /^(?:AL|EP)\d{2}\d{4}$/.test(id);
 }
 
@@ -83,9 +61,6 @@ async function getJson(url) {
   }
 }
 
-/* ================
-     Data loaders
-     ================ */
 async function loadAdvisoryCache(longId) {
   const url = `${CONFIG.STORMS_ROOT}/${encodeURIComponent(
     longId
@@ -100,9 +75,6 @@ async function loadRadiiCache(longId) {
   return await getJson(url);
 }
 
-/* ============================
-     Formatting helpers (overview)
-     ============================ */
 function fmtTripletSlash(tri) {
   const mph = tri?.mph ?? null,
     kts = tri?.kts ?? null,
@@ -130,11 +102,7 @@ function formatUtcShort(ts) {
   );
 }
 
-/* ============================
-   Collapsible sections (active)
-   ============================ */
 function setupSectionCollapsibles() {
-  // All sections whose class ends with "-container", except the header
   const sections = Array.from(
     document.querySelectorAll('section[class$="-container"]')
   ).filter(
@@ -146,30 +114,24 @@ function setupSectionCollapsibles() {
   sections.forEach((section) => {
     const container = section;
     const title = section.querySelector(":scope > .section-title");
-    // first direct child div after the title = content wrapper
     const kids = Array.from(container.children);
-    // Pick the first *element* after the title — works for DIV or SECTION
     const titleIndex = kids.indexOf(title);
     const content = kids.find(
       (el, idx) => idx > titleIndex && el.nodeType === 1
     );
-    if (!content) return; // safety
+    if (!content) return;
     if (!title || !content) return;
 
-    // ARIA wiring
     if (!content.id) {
-      // ensure an id so aria-controls is valid
       content.id = `${section.classList[0] || "section"}-content`;
     }
     title.setAttribute("role", "button");
     title.setAttribute("tabindex", "0");
     title.setAttribute("aria-controls", content.id);
 
-    // Persisted state per section container (session only)
     const containerClass = Array.from(container.classList).find((c) => c.endsWith("-container")) || container.classList[0] || "section";
     const storageKey = `active:collapsible:${containerClass}`;
-    const savedState = sessionStorage.getItem(storageKey); // 'open' | 'closed' | null
-    // By default, all sections are closed unless user opened them (except overview, which is not collapsible)
+    const savedState = sessionStorage.getItem(storageKey);
     const startOpen = savedState === 'open';
 
     title.setAttribute("aria-expanded", startOpen ? "true" : "false");
@@ -180,16 +142,13 @@ function setupSectionCollapsibles() {
       title.setAttribute("aria-expanded", String(!expanded));
       content.hidden = expanded;
 
-      // Save new state for this session only
       sessionStorage.setItem(storageKey, !expanded ? 'open' : 'closed');
 
       if (!expanded) {
-        // section just opened: give layout a tick, then refresh if available
         requestAnimationFrame(() => {
           if (typeof content.__radiiRefresh === "function") {
             content.__radiiRefresh();
           } else {
-            // fallback: poke global resize so any listeners recompute
             window.dispatchEvent(new Event("resize"));
           }
         });
@@ -235,9 +194,6 @@ const toNA = (v) =>
     ? "—"
     : v;
 
-/* ============================
-     Overview v2 renderer
-     ============================ */
 function createInfoLine(label, value, options = {}) {
   const { className = "", wrapValue = true, fullWidth = false } = options;
   const labelSpan = label ? `<span class="ov-label">${label}</span>` : "";
@@ -263,7 +219,6 @@ function renderOverviewV2(advisory, longId) {
   const sysName = (advisory?.systemName || "—").toString();
   const atcfID = (advisory?.atcfID || longId || "").toString().toUpperCase();
 
-  // helper to turn a label into a stable key like "advisory-number"
   const toKey = (s) =>
     String(s)
       .toLowerCase()
@@ -295,20 +250,17 @@ function renderOverviewV2(advisory, longId) {
     const s = (raw || "").trim();
     if (!s) return "";
 
-    // If the string starts with 1–3 N/E/S/W letters (e.g., N, NW, ENE), grab it
     const m = s.match(/^([NSEW]{1,3})\b(.*)$/i);
-    if (!m) return s; // e.g., "Stationary" – leave as-is
+    if (!m) return s;
 
     const cardinal = m[1].toUpperCase();
-    const rest = m[2].toLowerCase(); // " OR 65 DEGREES" -> " or 65 degrees"
+    const rest = m[2].toLowerCase();
     return `${cardinal}${rest}`;
   }
 
-  // Inline key/value pair to embed inside another row
   function inlineKV(label, value, key) {
     const v =
       value == null || value === "" || value === "—" ? "—" : String(value);
-    // If value is missing, omit the whole pair so you don't show "# —"
     if (v === "—") return "";
     return `<span class="ov-inline" data-key="${key}">
             <span class="ov-label">${label}</span>
@@ -378,7 +330,6 @@ function renderOverviewV2(advisory, longId) {
 
   const catText = String(advisory?.systemSaffirSimpsonCategory ?? "").trim();
   if (catText && catText.toLowerCase() !== "n/a") {
-    // put it at the top like before
     lines.unshift(createInfoLine("", catText, "category"));
   }
 
@@ -401,7 +352,6 @@ function renderOverviewV2(advisory, longId) {
 
   els.overview.innerHTML = html;
 
-  // Handle N/A icons
   els.overview.querySelectorAll(".ov-value").forEach((node) => {
     if (node.textContent === "—") {
       node.innerHTML = `<i class="fa-solid fa-circle-question" aria-hidden="true"></i><span class="sr-only">Not available</span>&nbsp;N/A`;
@@ -409,9 +359,6 @@ function renderOverviewV2(advisory, longId) {
   });
 }
 
-/* ================
-     Init
-     ================ */
 async function init() {
   const raw = getStormParam();
   if (!raw) {
@@ -430,7 +377,6 @@ async function init() {
     loadRadiiCache(longId),
   ]);
 
-  // If advisory.json is missing, treat as 404
   if (!advisory) {
     window.location.href = "/2025_weather/404.html";
     return;
@@ -438,7 +384,6 @@ async function init() {
 
   renderOverviewV2(advisory, longId);
 
-  // Delegate radii visualization to the external module
   try {
     const rad = cache?.radii || null;
     const fixes = Array.isArray(cache?.fixes) ? cache.fixes : null;
@@ -454,17 +399,14 @@ async function init() {
     console.error("Radii render failed:", e);
   }
 
-  // Initialize graphics module with storm data
   try {
     if (advisory && longId) {
-      // Create a storm data object with the expected structure
       const stormData = {
         id: longId,
         name: advisory?.systemName || "Active Storm",
         type: advisory?.systemType || ""
       };
       
-      // Call the imported function directly
       initStormGraphics(stormData);
     }
   } catch (error) {

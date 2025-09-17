@@ -1,9 +1,16 @@
 <?php
-// counties/bertie/api/cache_forecast.php
-declare(strict_types=1);
+/**
+ * NWS API Forecast Script - cache_forecast.php
+ * Fetches NWS API forecast data and caches it as JSON.
+ *
+ * Single-zone county:
+ * - Beaufort County, NC (zone: NCZ020)
+ * - Beaufort County, NC (zone: NCC013)
+ *
+ */
 
-// Spec: use lat/lon -> gridpoint -> forecast & hourly; ensure icons size=large;
-// write forecast.json and hourly.json.
+declare(strict_types=1);
+error_reporting(E_ALL);
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
@@ -31,11 +38,9 @@ function atomic_write_json($path,$arr){
 }
 function ensure_large_icon($url) {
   if (!$url) return $url;
-  // Replace size=medium with size=large
   return str_replace('size=medium', 'size=large', $url);
 }
 
-// Helper function to convert Celsius to Fahrenheit
 function celsiusToFahrenheit($celsius) {
   return $celsius !== null ? round(($celsius * 9/5) + 32) : null;
 }
@@ -50,7 +55,6 @@ $hourly   = $hrUrl ? http_get_json($hrUrl) : null;
 
 $nowIso = gmdate('c');
 
-// Build forecast.json
 $outForecast = [
   'generated' => $nowIso,
   'location' => [
@@ -81,18 +85,14 @@ if ($forecast && isset($forecast['properties']['periods'])) {
 
 atomic_write_json($dataDir . '/forecast.json', $outForecast);
 
-// Build hourly.json (write raw-ish but present) - ENHANCED with dewpoint and humidity
 $outHourly = [
   'generated' => $nowIso,
   'hours' => []
 ];
 if ($hourly && isset($hourly['properties']['periods'])) {
   foreach ($hourly['properties']['periods'] as $h) {
-    // Extract dewpoint from NWS format: { unitCode: "wmoUnit:degC", value: 24.444 }
     $dewpointCelsius = $h['dewpoint']['value'] ?? null;
     $dewpointFahrenheit = celsiusToFahrenheit($dewpointCelsius);
-    
-    // Extract relative humidity from NWS format: { unitCode: "wmoUnit:percent", value: 78 }
     $relativeHumidity = $h['relativeHumidity']['value'] ?? null;
     $relativeHumidityRounded = $relativeHumidity !== null ? round($relativeHumidity) : null;
     
@@ -100,8 +100,8 @@ if ($hourly && isset($hourly['properties']['periods'])) {
       'startTime' => $h['startTime'] ?? null,
       'temperature' => $h['temperature'] ?? null,
       'temperatureUnit' => $h['temperatureUnit'] ?? 'F',
-      'dewpoint' => $dewpointFahrenheit,  // NEW: Converted to Fahrenheit
-      'relativeHumidity' => $relativeHumidityRounded,  // NEW: Rounded percentage
+      'dewpoint' => $dewpointFahrenheit,
+      'relativeHumidity' => $relativeHumidityRounded,
       'windSpeed' => $h['windSpeed'] ?? null,
       'windDirection' => $h['windDirection'] ?? null,
       'shortForecast' => $h['shortForecast'] ?? null,

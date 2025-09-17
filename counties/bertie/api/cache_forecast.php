@@ -1,5 +1,14 @@
 <?php
-// counties/bertie/api/cache_forecast.php
+/**
+ * NWS API Forecast Script - cache_forecast.php
+ * Fetches NWS API forecast data and caches it as JSON.
+ *
+ * Single-zone county:
+ * - Bertie County, NC (zone: NCZ030)
+ * - Bertie County, NC (zone: NCC015)
+ *
+ */
+
 declare(strict_types=1);
 
 // Spec: use lat/lon -> gridpoint -> forecast & hourly; ensure icons size=large;

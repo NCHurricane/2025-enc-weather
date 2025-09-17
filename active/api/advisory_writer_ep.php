@@ -1,13 +1,11 @@
 <?php
-declare(strict_types=1);
-
 /**
- * advisory_writer.php
- * Fetches NHC advisory XML (Atlantic only) and caches a compact advisory.json under:
- *   /active/storms/ALnnYYYY/advisory.json
+ * NHC Advisory Writer, Eastern Pacific - advisory_writer.php
+ * Fetches NHC advisory XML (Pacific only) and caches a compact advisory.json under:
+ *   /active/storms/EPnnYYYY/advisory.json
  *
  * Query:
- *   ?storm=ALnnYYYY  (required; Atlantic only)
+ *   ?storm=EPnnYYYY  or ?storm=ALL
  *
  * Notes:
  * - Atomic write (tmp -> rename)
@@ -15,10 +13,12 @@ declare(strict_types=1);
  * - `messageTimeLocal` is passed through verbatim (no conversions)
  */
 
+declare(strict_types=1);
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
-$LOWERCASE_ALL = false; // set true to force lowercase of all strings
+$LOWERCASE_ALL = false;
 
 function bail(int $code, string $msg): void {
   http_response_code($code);
@@ -38,9 +38,9 @@ if (PHP_SAPI === 'cli') {
         }
     }
     if ($storm === null || $storm === '') {
-        $storm = 'ALL'; // Default to ALL for cron
+        $storm = 'ALL';
     }
-    $_GET['storm'] = $storm; // unify downstream access
+    $_GET['storm'] = $storm;
 }
 
 if ($storm === 'ALL') {
@@ -53,13 +53,12 @@ if ($storm === 'ALL') {
 }
 
 function processSingleStorm(string $stormId): array {
-    // Map EPnnYYYY -> EPnn/atcf-epnnYYYY.xml (Eastern Pacific only)
-    $number = substr($stormId, 2, 2);              // nn
-    $folder = sprintf('EP%02d', (int)$number);   // EPnn
+    $number = substr($stormId, 2, 2);
+    $folder = sprintf('EP%02d', (int)$number);
     $fname  = 'atcf-' . strtolower($stormId) . '.xml';
     $srcUrl = "https://www.nhc.noaa.gov/storm_graphics/{$folder}/{$fname}";
 
-    $rootDir = dirname(__DIR__, 1);              // /active
+    $rootDir = dirname(__DIR__, 1); 
     $cacheDir = $rootDir . '/storms/' . $stormId;
     $dest = $cacheDir . '/advisory.json';
 
@@ -70,7 +69,6 @@ function processSingleStorm(string $stormId): array {
     $ctx = stream_context_create(['http' => ['timeout' => 8]]);
     $raw = @file_get_contents($srcUrl, false, $ctx);
     if ($raw === false || strlen($raw) < 64) {
-        // Try FTP fallback
         $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
         error_log("[advisory_writer_ep] Primary failed, trying FTP: {$ftpUrl}");
 
@@ -126,7 +124,6 @@ function processSingleStorm(string $stormId): array {
         'message' => strval_safe($xml->message ?? ''),
     ];
 
-    // Fill missing unit triplets (prefer mph, then kts)
     if ($advisory['intensity']['mph'] !== null) {
         $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['mph'] * 1.609344);
         $advisory['intensity']['kts'] ??= (int)round($advisory['intensity']['mph'] / 1.15078);
@@ -142,7 +139,6 @@ function processSingleStorm(string $stormId): array {
         $advisory['motion']['kph'] ??= (int)round($advisory['motion']['kts'] * 1.852);
     }
 
-    // Apply normalization (use global variable)
     global $LOWERCASE_ALL;
     if ($LOWERCASE_ALL) {
         $advisory = array_lowercase_values_recursive($advisory);
@@ -150,7 +146,6 @@ function processSingleStorm(string $stormId): array {
         $advisory = apply_selective_lowercase($advisory);
     }
 
-    // Atomic write
     $tmp = $dest . '.tmp';
     if (file_put_contents($tmp, json_encode($advisory, JSON_UNESCAPED_SLASHES)) === false) {
         throw new Exception('Failed to write temp advisory.');
@@ -164,7 +159,6 @@ function processSingleStorm(string $stormId): array {
 }
 
 function processAllEPStorms(): void {
-    // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($currentStormsPath)) {
@@ -239,7 +233,6 @@ function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): stri
   $s = trim((string)$dateTimeStr);
   if ($s === '') return '';
 
-  // Try parsing "YYYYMMDD HH:MM:SS AM/PM TZ"
   if (preg_match('/^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([AP]M)\s+([A-Z]{3,4})$/i', $s, $m)) {
     $month  = (int)$m[2];
     $day    = (int)$m[3];
@@ -248,26 +241,21 @@ function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): stri
     $ampm   = strtoupper($m[7]);
     $tz     = strtoupper($m[8]);
 
-    // convert 12h -> 24h
     if ($ampm === 'PM' && $hour !== 12) $hour += 12;
     if ($ampm === 'AM' && $hour === 12) $hour  = 0;
 
-    // back to 12h for display
     $displayHour = $hour === 0 ? 12 : ($hour > 12 ? $hour - 12 : $hour);
     $displayAmPm = ($hour >= 12 ? 'PM' : 'AM');
 
-    // month names
     static $MONTHS_SHORT = ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    // static $MONTHS_LONG  = ['', 'January','February','March','April','May','June','July','August','September','October','November','December'];
     $monthName = ($monthStyle === 'long' ? $MONTHS_SHORT[$month] : $MONTHS_SHORT[$month]);
 
-    // e.g., "Aug 22 5:00 PM AST" or "August 22 5:00 PM AST"
     return sprintf('%s %d %d:%02d %s %s',
       $monthName, $day, $displayHour, $minute, $displayAmPm, $tz
     );
   }
 
-  return $s; // fallback if pattern doesn't match
+  return $s;
 }
 
 function strval_safe($x): string { return trim((string)$x); }
@@ -278,19 +266,15 @@ function intval_safe($x): ?int {
   return (int)$s;
 }
 function isoUtcFromNhcUtc($s): ?string {
-  // Inputs look like: 20250822 09:00:00 PM UTC  OR sometimes already ISO-ish
   $s = trim((string)$s);
   if ($s === '') return null;
-  // Try "YYYYMMDD HH:MM:SS AM/PM UTC"
   if (preg_match('/^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([AP]M)\s+UTC$/i', $s, $m)) {
     $hour = (int)$m[4] % 12;
     if (strtoupper($m[7]) === 'PM') $hour += 12;
     return sprintf('%04d-%02d-%02dT%02d:%02d:%02dZ',
       (int)$m[1], (int)$m[2], (int)$m[3], $hour, (int)$m[5], (int)$m[6]);
   }
-  // Try already-Z or similar
   if (preg_match('/Z$/', $s)) return $s;
-  // Fallback: attempt DateTime parse as UTC
   try {
     $dt = new DateTime($s, new DateTimeZone('UTC'));
     return $dt->format('c');
@@ -300,7 +284,6 @@ function isoUtcFromNhcUtc($s): ?string {
 }
 
 function processAllALStorms(): void {
-    // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($currentStormsPath)) {
@@ -327,7 +310,7 @@ function processAllALStorms(): void {
     $alStorms = [];
     foreach ($stormsData['data']['activeStorms'] as $storm) {
         $stormId = strtoupper(trim($storm['id'] ?? ''));
-        if (preg_match('/^EP\d{2}\d{4}$/', $stormId)) {  // Eastern Pacific filter
+        if (preg_match('/^EP\d{2}\d{4}$/', $stormId)) {
             $alStorms[] = $stormId;
         }
     }
@@ -371,8 +354,6 @@ function processAllALStorms(): void {
     }
 }
 
-
-// Single storm execution (fallback for existing behavior)
 try {
     $result = processSingleStorm($storm);
     echo json_encode(['ok' => true, 'storm' => $storm, 'cached' => $result['cached']], JSON_UNESCAPED_SLASHES);
@@ -390,7 +371,7 @@ $advisory = [
   'advisoryNumber'   => intval_safe($xml->advisoryNumber ?? ''),
   'systemType'       => strval_safe($xml->systemType ?? ''),
   'systemName'       => strval_safe($xml->systemName ?? ''),
-  'systemSaffirSimpsonCategory' => strval_safe($xml->systemSaffirSimpsonCategory ?? ''), // may be "N/A" or number
+  'systemSaffirSimpsonCategory' => strval_safe($xml->systemSaffirSimpsonCategory ?? ''),
   'loc' => [
     'lat'     => is_numeric($xml->centerLocLatitude ?? null) ? (float)$xml->centerLocLatitude : null,
     'lon'     => is_numeric($xml->centerLocLongitude ?? null) ? (float)$xml->centerLocLongitude : null,
@@ -398,7 +379,6 @@ $advisory = [
     'lonText' => strval_safe($xml->centerLocLongitudeExpanded ?? ''),
   ],
   'intensity' => [
-    // If one unit is missing, compute from another
     'mph' => intval_safe($xml->systemIntensityMph ?? ''),
     'kph' => intval_safe($xml->systemIntensityKph ?? ''),
     'kts' => intval_safe($xml->systemIntensityKts ?? ''),
@@ -417,7 +397,6 @@ $advisory = [
   'message' => strval_safe($xml->message ?? ''),
 ];
 
-// Fill missing unit triplets (prefer mph, then kts)
 if ($advisory['intensity']['mph'] !== null) {
   $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['mph'] * 1.609344);
   $advisory['intensity']['kts'] ??= (int)round($advisory['intensity']['mph'] / 1.15078);
@@ -449,12 +428,10 @@ function array_lowercase_values_recursive(array $a): array {
 }
 
 function apply_selective_lowercase(array $adv): array {
-  // Lowercase top-level textual fields we generally want normalized
   foreach (['atcfID','messageType','systemType','systemName','systemSaffirSimpsonCategory','message'] as $k) {
     if (isset($adv[$k]) && is_string($adv[$k])) $adv[$k] = lc_str($adv[$k]);
   }
 
-  // motion.dirText
   if (
       isset($adv['motion']) &&
       is_array($adv['motion']) &&
@@ -464,7 +441,6 @@ function apply_selective_lowercase(array $adv): array {
       $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
 }
 
-  // geo entries
   if (isset($adv['geo']) && is_array($adv['geo'])) {
     $adv['geo'] = array_map(fn($s) => is_string($s) ? lc_str($s) : $s, $adv['geo']);
   }
@@ -472,14 +448,12 @@ function apply_selective_lowercase(array $adv): array {
   return $adv;
 }
 
-// Apply normalization according to the flag
 if ($LOWERCASE_ALL) {
   $advisory = array_lowercase_values_recursive($advisory);
 } else {
   $advisory = apply_selective_lowercase($advisory);
 }
 
-// Atomic write
 $tmp = $dest . '.tmp';
 if (file_put_contents($tmp, json_encode($advisory, JSON_UNESCAPED_SLASHES)) === false) {
   bail(500, 'Failed to write temp advisory.');

@@ -1,5 +1,13 @@
 <?php
-// cache_forecast.php - Fixed version with Bertie-compatible hourly format
+/**
+ * NWS API Forecast Script - cache_forecast.php
+ * Fetches NWS API forecast data and caches it as JSON.
+ *
+ * Multi-zone county:
+ * - Dare County, NC (see config for all zones)
+ *
+ */
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

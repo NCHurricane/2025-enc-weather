@@ -1,6 +1,7 @@
-// Path: counties/bertie/js/meteogram.js
+// ==============================
+// Bertie County Meteogram Builder - meteogram.js
 // Purpose: County-specific meteogram using getHourlyData() from countyData.js
-// =========================
+// ==============================
 
 import { getHourlyData } from './countyData.js';
 

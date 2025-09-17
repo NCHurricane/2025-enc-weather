@@ -1,20 +1,15 @@
 <?php
-declare(strict_types=1);
-error_reporting(E_ALL);
-
 /**
- * NHC TCV -> per-storm JSON writer for Eastern Pacific storms (thin by default).
+ * NHC TCV Writer, Eastern Pacific - tcv_writer_ep.php
  * Outputs: active/storms/EPnnYYYY/tcv.json
  * Caches zone geometries: /js/data/zones/cache/{ZONE}.json
  *
- * CLI:
- *   php tcv_writer_ep.php --storm=EP052025 [--file=/abs/path/MIATCVEP5_sample.txt] [--embed=0|1]
- *   php tcv_writer_ep.php --storm=ALL
- *
- * HTTP:
- *   /active/api/tcv_writer_ep.php?storm=EP052025[&file=/abs/path/sample.txt][&embed=0|1]
- *   /active/api/tcv_writer_ep.php?storm=ALL
+* Query:
+ *   ?storm=EPnnYYYY  or ?storm=ALL
  */
+
+declare(strict_types=1);
+error_reporting(E_ALL);
 
 function argOrGet(string $key, ?string $default=null): ?string {
   if (PHP_SAPI==='cli') {
@@ -32,7 +27,6 @@ function ok(array $d): void {
   echo json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES); exit;
 }
 
-// CLI argument handling
 if (PHP_SAPI === 'cli') {
     foreach ($argv as $arg) {
         if (str_starts_with($arg, '--storm=')) {
@@ -41,31 +35,26 @@ if (PHP_SAPI === 'cli') {
         }
     }
     if (!isset($_GET['storm'])) {
-        $_GET['storm'] = 'ALL'; // Default to ALL for cron
+        $_GET['storm'] = 'ALL';
     }
 }
 
 $stormId = argOrGet('storm');
 
-// Batch processing mode
 if ($stormId === 'ALL') {
     processAllEPStormsTCV();
     exit;
 }
 
-// Single storm validation
 if (!$stormId || !preg_match('/^EP(\d{2})\d{4}$/i',$stormId,$m)) fail('Provide storm like EPnnYYYY');
 
-// Process single storm
 try {
     processSingleStormTCV($stormId);
 } catch (Exception $e) {
     fail($e->getMessage(), 500);
 }
 
-// ---------- batch processing function ----------
 function processAllEPStormsTCV(): void {
-    // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($currentStormsPath)) {
@@ -136,7 +125,6 @@ function processAllEPStormsTCV(): void {
     }
 }
 
-// ---------- single storm processing function ----------
 function processSingleStormTCV(string $stormId): array {
     if (!preg_match('/^EP(\d{2})\d{4}$/i',$stormId,$m)) {
         throw new Exception('Invalid storm format. Expected EPnnYYYY');
@@ -144,7 +132,7 @@ function processSingleStormTCV(string $stormId): array {
     
     $stormNum=(int)$m[1];
     $tcvIdx=($stormNum%5===0)?5:($stormNum%5);
-    $embed = (int)(argOrGet('embed','0') ?? '0') === 1; // THIN by default
+    $embed = (int)(argOrGet('embed','0') ?? '0') === 1;
 
     $activeRoot = dirname(__DIR__);
     $siteRoot   = dirname($activeRoot);
@@ -175,7 +163,6 @@ function processSingleStormTCV(string $stormId): array {
       ];
     }
 
-    // Get TCV text (dev file or live)
     $devFile=argOrGet('file');
     if ($devFile) {
       if (!is_file($devFile)) {
@@ -203,7 +190,6 @@ function processSingleStormTCV(string $stormId): array {
       }
     }
 
-    // ---------------- helpers ----------------
     function expandZonesFromUGC(string $ugcLine): array {
       $line=trim($ugcLine);
       $line=preg_replace('/-\d{6}-\s*$/','',$line);
@@ -253,7 +239,6 @@ function processSingleStormTCV(string $stormId): array {
       return $feature;
     }
 
-    // -------- parse header meta --------
     $lines=preg_split("/\r\n|\n|\r/",$tcvRaw);
     $productId=$advisoryNum=$issuedIso=$disclaimer=null;
     foreach($lines as $ix=>$ln){
@@ -265,7 +250,6 @@ function processSingleStormTCV(string $stormId): array {
       }
     }
 
-    // -------- build final state per zone --------
     $final=[];
     for($i=0;$i<count($lines);$i++){
       $ln=trim($lines[$i]);
@@ -289,10 +273,9 @@ function processSingleStormTCV(string $stormId): array {
       }
     }
 
-    // -------- materialize events + warm cache; build display --------
     $events=[]; $display=['wind'=>[],'surge'=>[]];
     $groupBy=['wind'=>['HU.W'=>[], 'HU.A'=>[], 'TR.W'=>[], 'TR.A'=>[]], 'surge'=>['SS.W'=>[], 'SS.A'=>[]]];
-    $features=[]; // only filled if $embed
+    $features=[];
 
     function labelForCode(string $code): string {
       return match($code){
@@ -307,7 +290,6 @@ function processSingleStormTCV(string $stormId): array {
         if(!isset($phenMap[$phen])) continue;
         $sig=$phenMap[$phen]; $haz=($phen==='SS')?'surge':'wind'; $code="{$phen}.{$sig}";
         $type=zoneTypeFromId($zoneId);
-        // warm cache + prefer geometry props for name/state
         $feature=ensureZoneGeometry($zoneId,$type,$zonesCache);
         $fallback=$zoneMetaById[$zoneId] ?? ['name'=>$zoneId,'state'=>null];
         $zoneName=$feature['properties']['zoneName'] ?? ($fallback['name'] ?? $zoneId);
@@ -346,7 +328,7 @@ function processSingleStormTCV(string $stormId): array {
         'productId'=>$productId,'productCode'=>"MIATCVEP{$tcvIdx}",'source'=>$sourceUrl,'disclaimer'=>$disclaimer
       ],
       'events'=>$events,
-      'features'=>['type'=>'FeatureCollection','features'=>$features], // empty in thin mode
+      'features'=>['type'=>'FeatureCollection','features'=>$features],
       'display'=>$display
     ];
 

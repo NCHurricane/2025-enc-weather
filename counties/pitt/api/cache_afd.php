@@ -1,6 +1,9 @@
 <?php
 // counties/bertie/api/cache_afd.php
+
 declare(strict_types=1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

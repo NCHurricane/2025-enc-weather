@@ -1,4 +1,14 @@
 <?php
+/**
+ * NWS API/ATOM Alert Script - cache_alerts.php
+ * Fetches NWS API alerts and caches them as JSON.
+ *
+ * Single-zone county:
+ * - Bertie County, NC (zone: NCZ030)
+ * - Bertie County, NC (zone: NCC015)
+ * 
+ */
+
 // cache_alerts.php - Multi-zone version for Dare County
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

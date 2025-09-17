@@ -4,10 +4,39 @@
    <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="robots" content="index, follow" />
+      <meta name="theme-color" content="#0b1e3b" />
+      <link rel="canonical" href="https://nchurricane.com/counties/martin/" />
+
       <meta name="description"
-         content="Up-to-date weather information for Martin County, North Carolina using the National Weather Service API." />
+         content="Up-to-date weather for Martin County, North Carolina with current conditions, alerts, radar, satellite, and forecast from the National Weather Service." />
       <!-- CHANGE THE PLACE NAME -->
       <title>Martin County, North Carolina Weather - NCHurricane.com</title>
+
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="NCHurricane.com" />
+      <meta property="og:locale" content="en_US" />
+      <meta property="og:url" content="https://nchurricane.com/counties/martin/" />
+      <meta property="og:title" content="Martin County, NC Weather — NCHurricane" />
+      <meta property="og:description"
+         content="Current conditions, alerts, radar, satellite, and forecast for Martin County, North Carolina." />
+      <meta property="og:image" content="https://nchurricane.com/assets/images/2025-OG-Card.webp" />
+      <meta property="og:image:alt" content="Eastern North Carolina weather preview map and radar" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@chuckcopelandwx" />
+      <meta name="twitter:title" content="Martin County, NC Weather — NCHurricane" />
+      <meta name="twitter:description"
+         content="Current conditions, alerts, radar, satellite, and forecast for Martin County, North Carolina." />
+      <meta name="twitter:image" content="https://nchurricane.com/assets/images/2025-OG-Card.webp" />
+
+      <link rel="icon" href="/favicon.ico" sizes="any" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+      <link rel="dns-prefetch" href="//fonts.gstatic.com" />
       <link
          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
          rel="stylesheet" />
@@ -27,10 +56,17 @@
             background-image: url("../../images/county/martin.png");
          }
       </style>
+
+      <script type="application/ld+json">
+         [
+            {"@context":"https://schema.org","@type":"Organization","name":"NCHurricane","url":"https://nchurricane.com/","logo":"https://nchurricane.com/assets/img/logo.png"},
+            {"@context":"https://schema.org","@type":"WebPage","name":"Martin County, NC Weather","url":"https://nchurricane.com/counties/martin/","description":"Up-to-date weather for Martin County, North Carolina with current conditions, alerts, radar, satellite, and forecast from the National Weather Service.","isPartOf":{"@type":"WebSite","name":"NCHurricane.com","url":"https://nchurricane.com/"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://nchurricane.com/assets/images/2025-OG-Card.webp"},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nchurricane.com/"},{"@type":"ListItem","position":2,"name":"Counties","item":"https://nchurricane.com/counties/"},{"@type":"ListItem","position":3,"name":"Martin"}]}}
+         ]
+         </script>
    </head>
 
    <body>
-      <!-- Header -->
+      <!-- Navigation will be dynamically generated here -->
       <header class="header"></header>
 
       <main class="container">
@@ -315,14 +351,12 @@
          document.addEventListener("DOMContentLoaded", function () {
             const btn = document.querySelector(".back-to-top");
             if (btn) {
-               // Set initial state
                btn.style.display = window.pageYOffset > 0 ? "block" : "none";
 
                window.addEventListener("scroll", () => {
                   btn.style.display = window.pageYOffset > 0 ? "block" : "none";
                });
 
-               // Add click handler if needed
                btn.addEventListener("click", function (e) {
                   e.preventDefault();
                   window.scrollTo({

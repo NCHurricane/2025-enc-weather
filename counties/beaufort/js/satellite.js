@@ -1,5 +1,9 @@
-// counties/bertie/js/satellite.js
-// Simple satellite implementation with CSS cropping for NC region
+// =======================
+// Beaufort County Satellite Module - satellite.js
+// Simple satellite implementation with two dropdowns
+//
+// It will be replaced with a more robust solution later.
+// ========================
 
 class SatelliteModule {
     constructor() {
@@ -10,17 +14,15 @@ class SatelliteModule {
         this.loadingDiv = null;
         this.errorDiv = null;
         
-        // Eastern US sector URLs - NC is center-left, much better positioning
-        this.sector = 'eus'; // Eastern US sector
-        this.satellite = 'GOES19'; // Using GOES-19 for EUS
+        this.sector = 'eus';
+        this.satellite = 'GOES19';
         
-        // County coordinates (Beaufort)
+        // County coordinates (Beaufort as default)
         this.lat = 35.57056;
         this.lon = -77.04972;
     }
 
     init() {
-        // Get DOM elements
         this.productSelect = document.getElementById('satellite-product-select');
         this.typeSelect = document.getElementById('satellite-type-select');
         this.satelliteImage = document.getElementById('satellite-image');
@@ -33,7 +35,6 @@ class SatelliteModule {
             return false;
         }
 
-        // Add event listeners
         this.productSelect.addEventListener('change', () => {
             this.loadSatelliteImage();
         });
@@ -42,7 +43,6 @@ class SatelliteModule {
             this.loadSatelliteImage();
         });
 
-        // Initialize with default values
         this.loadSatelliteImage();
 
         console.log('Satellite module initialized');
@@ -56,13 +56,10 @@ class SatelliteModule {
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/${this.satellite}/ABI/SECTOR/${this.sector}/${product}/`;
 
         if (type === 'static') {
-            // Static high-resolution image
             return `${baseUrl}2000x2000.jpg`;
         } else if (type === 'animated') {
-            // Animated GIF - construct the URL directly
             return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
         } else {
-            // Handle other types if necessary
             return null;
         }
     }
@@ -70,7 +67,6 @@ class SatelliteModule {
     showLoading() {
         if (this.loadingDiv) this.loadingDiv.style.display = 'flex';
         if (this.errorDiv) this.errorDiv.style.display = 'none';
-        // Keep image container visible but loading overlay will cover it
     }
 
     hideLoading() {
@@ -113,7 +109,6 @@ class SatelliteModule {
         this.showLoading();
 
         if (type === 'animated') {
-            // Poll the animated GIF directly
             const img = new Image();
             img.onload = () => {
                 this.satelliteImage.src = url;
@@ -127,9 +122,8 @@ class SatelliteModule {
                 this.showError();
             };
 
-            img.src = url; // Set the source to start loading the animated GIF
+            img.src = url;
         } else {
-            // Static image logic remains unchanged
             const img = new Image();
             img.onload = () => {
                 this.satelliteImage.src = url;
@@ -149,7 +143,6 @@ class SatelliteModule {
     }
 }
 
-// Initialize when DOM is ready
 let satelliteModule = null;
 
 export function initSatellite() {
@@ -159,7 +152,6 @@ export function initSatellite() {
     return satelliteModule.init();
 }
 
-// Auto-initialize if satellite elements exist
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('satellite-product-select')) {
         initSatellite();

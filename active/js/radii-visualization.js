@@ -1,8 +1,9 @@
-/**
- * radii-visualization.js – Wind Radii Compass Visualization Module
- * Handles rendering of wind radii compass and controls
- * Extracted from storm.js for modularity
- */
+// =============================
+// Wind Radii Compass Visualization Module - radii-visualization.js
+// Handles rendering of wind radii compass and controls
+// Extracted from storm.js for modularity
+// ==============================
+
 (() => {
   "use strict";
 
@@ -11,7 +12,7 @@
      ============================== */
   const RADII_CONFIG = {
     CANVAS_MAX_PX: 600,
-    MAX_FORECAST_HOUR: 36, // show Now, 12h, 24h, 36h only
+    MAX_FORECAST_HOUR: 36,
     WIND_COLORS: { 34: "#ffd93d", 50: "#ff7f0e", 64: "#d62728" },
     OPACITY_SINGLE: 0.4,
     OPACITY_ALL: 0.3,
@@ -23,7 +24,6 @@
     VERTEX_LABEL_OFFSET: 10, // distance of vertex labels away from polygon
   };
 
-  // Use the same DPR everywhere in this module (matches your canvas DPR clamp = 2)
   function devicePixelRatioSafe() {
     const dpr = window.devicePixelRatio || 1;
     return dpr < 1 ? 1 : dpr > 2 ? 2 : dpr;
@@ -32,9 +32,6 @@
     return Math.max(1, Math.round(pxCss * devicePixelRatioSafe()));
   }
 
-  /* ======================
-     Radii helper functions
-     ====================== */
   function hasAnyRadii(fix) {
     if (!fix) return false;
     for (const k of ["r34", "r50", "r64"]) {
@@ -53,8 +50,8 @@
       let h = f?.hour;
       if (typeof h === "string") h = parseInt(h.replace(/\D+/g, ""), 10);
       if (!Number.isFinite(h)) continue;
-      if (h > RADII_CONFIG.MAX_FORECAST_HOUR) continue; // cap UI at 36h
-      if (!hasAnyRadii(f)) continue; // skip empty fixes
+      if (h > RADII_CONFIG.MAX_FORECAST_HOUR) continue;
+      if (!hasAnyRadii(f)) continue;
       set.add(h);
     }
     return Array.from(set).sort((a, b) => a - b);
@@ -85,9 +82,6 @@
     return true;
   }
 
-  /* -------------------------
-     RadiiDrawer Class
-     ------------------------- */
   class RadiiDrawer {
     constructor(ctx, canvas) {
       this.ctx = ctx;
@@ -199,7 +193,7 @@ drawCompass() {
 
   [
     { label: "N", x: 0, y: -1 },
-    { label: "E", x: 1, y: 0 }, // Uncommented
+    { label: "E", x: 1, y: 0 },
     { label: "S", x: 0, y: 1 },
     { label: "W", x: -1, y: 0 },
   ].forEach((d) =>
@@ -210,7 +204,6 @@ drawCompass() {
     )
   );
 
-      // distance labels (E side)
   ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
   ctx.lineWidth = 1 * devicePixelRatioSafe();
   ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -223,20 +216,6 @@ drawCompass() {
     ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
     ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
   });
-
-    // drawRangeCircles() {
-    //   const ctx = this.ctx;
-    //   ctx.save();
-    //   ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-    //   ctx.lineWidth = 1 * devicePixelRatioSafe();
-    //   ctx.setLineDash([2, 4]);
-    //   for (let i = 1; i <= 5; i++) {
-    //     const r = (i / 5) * this.maxRadius;
-    //     ctx.beginPath();
-    //     ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
-    //     ctx.stroke();
-    //   }
-  //   ctx.restore();
 }
 
 drawRangeCircles() {
@@ -263,7 +242,6 @@ drawRangeCircles() {
       const q = this.radiiData[radiiKey];
       if (!q) return;
 
-      // clamp (defense in depth; PHP writer already converts -999→0)
       const ne = Math.max(0, Number(q.NE) || 0);
       const se = Math.max(0, Number(q.SE) || 0);
       const sw = Math.max(0, Number(q.SW) || 0);
@@ -287,7 +265,6 @@ drawRangeCircles() {
         };
       });
 
-      // rounded polygon
       ctx.beginPath();
       const roundness = 0.2;
       for (let i = 0; i < P.length; i++) {
@@ -324,7 +301,7 @@ drawRangeCircles() {
       ctx.lineWidth = 2 * devicePixelRatioSafe();
       ctx.stroke();
 
-      // vertex labels (single threshold only)
+      // Style Vertex Labels
       if (this.activeWind !== "all") {
         ctx.font = `bold ${devPxFromCss(16)}px Roboto, Arial, sans-serif`;
         ctx.textAlign = "center";
@@ -345,17 +322,15 @@ drawRangeCircles() {
     drawStormCenter() {
       const ctx = this.ctx;
 
-      // Draw Font Awesome hurricane icon
+      //Font Awesome hurricane icon
       ctx.font = `900 ${devPxFromCss(28)}px 'Font Awesome 6 Free'`;
       ctx.lineWidth = 1 * devicePixelRatioSafe();
       ctx.fillStyle = "#d5ff3d53";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
-      // Unicode for fa-hurricane icon
       ctx.fillText("\uf751", this.centerX, this.centerY);
 
-      // Optional: Add a subtle glow effect
       ctx.shadowColor = "#d4ff3d";
       ctx.shadowBlur = 8;
       ctx.fillText("\uf751", this.centerX, this.centerY);
@@ -371,7 +346,6 @@ drawRangeCircles() {
     if (!section) return;
     section.innerHTML = "";
 
-    // Hour controls
     const hours = collectForecastHours(fixes);
     const hourControls = document.createElement("div");
     hourControls.className = "radii-hour-controls";
@@ -386,7 +360,6 @@ drawRangeCircles() {
       })
       .join("");
 
-    // Threshold controls
     const controls = document.createElement("div");
     controls.className = "radii-controls";
     controls.innerHTML = `
@@ -396,7 +369,6 @@ drawRangeCircles() {
       <button class="radii-btn" data-wind="all">All Winds</button>
     `;
 
-    // Canvas (wrapped for styling)
     const compassWrap = document.createElement("div");
     compassWrap.className = "radii-compass-section";
 
@@ -406,7 +378,6 @@ drawRangeCircles() {
       '<canvas id="radiiCanvas" class="radii-canvas"></canvas>';
     compassWrap.appendChild(canvasContainer);
 
-    // Legend
     const legend = document.createElement("div");
     legend.className = "radii-legend";
     legend.innerHTML = `
@@ -415,7 +386,6 @@ drawRangeCircles() {
       <div class="legend-item"><div class="legend-color" id="radii-64"><span>64 kt - Hurricane</span></div></div>
     `;
 
-    // Table host (hidden by CSS unless you want it shown)
     const tableHost =
       document.getElementById("radii-table") || document.createElement("div");
     if (!document.getElementById("radii-table")) {
@@ -429,12 +399,10 @@ drawRangeCircles() {
     section.appendChild(legend);
     section.appendChild(tableHost);
 
-    // Canvas setup (square, HiDPI, account for wrapper padding)
     const canvas = canvasContainer.querySelector("#radiiCanvas");
     const ctx = canvas.getContext("2d");
 
     function resizeCanvas() {
-      // Reset canvas inline styles first to get accurate container measurements
       canvas.style.width = "";
       canvas.style.height = "";
 
@@ -444,26 +412,21 @@ drawRangeCircles() {
       const padY =
         (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
 
-      // Get the parent container's actual available space
       const containerRect = canvasContainer.getBoundingClientRect();
       const availableWidth = containerRect.width || canvasContainer.clientWidth;
       const availableHeight =
         containerRect.height || canvasContainer.clientHeight || availableWidth;
 
-      // Calculate maximum safe size considering viewport constraints
       const viewportWidth = window.innerWidth;
       const maxSafeWidth = Math.min(
         viewportWidth * 0.9, // Use 90% of viewport width as safe maximum
         RADII_CONFIG.CANVAS_MAX_PX
       );
 
-      // Use the smaller dimension to maintain square aspect ratio
       const cssSide = Math.min(maxSafeWidth, availableWidth, availableHeight);
 
-      // if the section is hidden, client sizes are 0 — bail and try again later
       if (!cssSide || !isFinite(cssSide) || cssSide <= 0) return false;
 
-      // Add minimum size constraint to prevent canvas from being too small
       const finalSize = Math.max(200, cssSide); // Minimum 200px
 
       const dpr = devicePixelRatioSafe();
@@ -477,7 +440,6 @@ drawRangeCircles() {
     const drawer = new RadiiDrawer(ctx, canvas);
 
     if (!resizeCanvas()) {
-      // defer first draw until section is shown
     } else {
       drawer.draw();
     }
@@ -511,7 +473,6 @@ drawRangeCircles() {
         </table>`;
     }
 
-    // selection state
     let selectedHour = hours[0] || 0;
     let selectedWind = "34";
 
@@ -583,7 +544,6 @@ drawRangeCircles() {
       updateForSelection();
     });
 
-    // Debounced resize handler to prevent rapid successive resizes
     let resizeTimeout;
     function handleResize() {
       clearTimeout(resizeTimeout);
@@ -596,9 +556,7 @@ drawRangeCircles() {
 
     window.addEventListener("resize", handleResize);
 
-    // Store refresh function on section for collapsible support
     section.__radiiRefresh = () => {
-      // Small delay to ensure DOM has settled after section expansion
       setTimeout(() => {
         const ok = resizeCanvas();
         if (ok) drawer.draw();
@@ -608,9 +566,6 @@ drawRangeCircles() {
     updateForSelection();
   }
 
-  /* ================
-     Public API
-     ================ */
   window.RadiiVisualization = {
     render: renderRadiiVisualAndTable,
   };

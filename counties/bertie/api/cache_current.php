@@ -1,5 +1,13 @@
 <?php
-// counties/bertie/api/cache_current.php
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS API current conditions and caches them as JSON.
+ *
+ * Single-zone county:
+ * - Bertie County, NC (zone: NCZ030)
+ * - Bertie County, NC (zone: NCC015)
+ *
+ */
 declare(strict_types=1);
 
 // Requirements ref: instructions.txt (Current Conditions Cache) 

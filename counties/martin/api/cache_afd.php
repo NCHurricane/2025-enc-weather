@@ -1,6 +1,18 @@
 <?php
-// counties/bertie/api/cache_afd.php
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Newport/Morehead City (MHX)
+ *
+ * For Martin County, NC Page
+ * - Martin County, NC (zone: NCZ080)
+ * - Martin County, NC (zone: NCC013)
+ */
+
 declare(strict_types=1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

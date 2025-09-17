@@ -1,5 +1,13 @@
 <?php
-// counties/bertie/api/cache_afd.php
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Wakefield, VA (AKQ)
+ *
+ * For Bertie County, NC Page
+ */
+
 declare(strict_types=1);
 
 $root = dirname(__DIR__);

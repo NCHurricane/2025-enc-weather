@@ -1,17 +1,17 @@
-/**
- * storm_text.js - Text Products Module for Active Storm Pages
- * Handles loading and displaying NHC text products with tabbed interface
- * 
- * Products handled:
- * - TCP: Tropical Cyclone Public Advisory
- * - TCM: Tropical Cyclone Forecast/Advisory  
- * - TCD: Tropical Cyclone Discussion
- * - PWS: Wind Speed Probabilities
- * - TCU: Tropical Cyclone Update (optional)
- * - TAS: Spanish Public Advisory (Atlantic only)
- * - TDS: Spanish Discussion (Atlantic only)
- * - TUS: Spanish Update (Atlantic only)
- */
+// ==============================
+// Text Products Module for Active Storm Pages - storm_text.js
+// Handles loading and displaying NHC text products with tabbed interface
+// 
+// Products handled:
+// - TCP: Tropical Cyclone Public Advisory
+// - TCM: Tropical Cyclone Forecast/Advisory  
+// - TCD: Tropical Cyclone Discussion
+// - PWS: Wind Speed Probabilities
+// - TCU: Tropical Cyclone Update (optional)
+// - TAS: Spanish Public Advisory (Atlantic only)
+// - TDS: Spanish Discussion (Atlantic only)
+// - TUS: Spanish Update (Atlantic only)
+//
 "use strict";
 
 /* ==============================
@@ -26,9 +26,7 @@ const TEXT_CONFIG = {
   }
 };
 
-// Text product definitions with display names and priority order
 const TEXT_PRODUCTS = {
-  // English Products (all basins)
   TCP: {
     name: "Advisory",
     fileName: "TCP",
@@ -93,25 +91,18 @@ const TEXT_PRODUCTS = {
 
 };
 
-/* ================
-     DOM Elements
-     ================ */
 const textEls = {
   container: null,
   tabContainer: null,
   contentContainer: null
 };
 
-/* ================
-     Utilities
-     ================ */
 function getStormParam() {
   const p = new URLSearchParams(location.search);
   return (p.get("storm") || "").trim().toUpperCase();
 }
 
 function getAdvisoryNumber(stormId) {
-  // Extract storm number and map to NHC advisory number (1-5 rotating)
   const match = stormId.match(/^(AL|EP)(\d{2})(\d{4})$/);
   if (!match) return null;
   
@@ -147,9 +138,6 @@ async function fetchTextProduct(stormId, productType) {
   }
 }
 
-/* ================
-     Text Extraction
-     ================ */
 function extractTextFromProduct(productData) {
   if (!productData?.data?.channel?.item) {
     return {
@@ -161,7 +149,6 @@ function extractTextFromProduct(productData) {
   
   const item = productData.data.channel.item;
   
-  // First try to get the formatted text content from our cache
   if (productData.text_content && typeof productData.text_content === 'string') {
     return {
       content: productData.text_content,
@@ -170,7 +157,6 @@ function extractTextFromProduct(productData) {
     };
   }
   
-  // Fallback: try to extract from description field (for older cached files)
   let textContent = "";
   
   if (Array.isArray(item.description)) {
@@ -180,7 +166,6 @@ function extractTextFromProduct(productData) {
   }
   
   if (textContent && textContent.trim() !== '') {
-    // Format the text content (remove HTML tags, etc.)
     const formatted = formatNHCTextFromDescription(textContent);
     return {
       content: formatted,
@@ -189,7 +174,6 @@ function extractTextFromProduct(productData) {
     };
   }
   
-  // If no text content available, provide informative message
   const link = item.link || '';
   const linkText = link.replace('https://www.nhc.noaa.gov/text/', '').replace('.shtml', '');
   const pubDate = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Unknown';
@@ -212,24 +196,20 @@ function formatNHCTextFromDescription(rawText) {
   
   let text = rawText;
   
-  // Remove CDATA wrapper if present
   if (text.includes('<![CDATA[')) {
     text = text.replace(/<!\[CDATA\[/, '').replace(/\]\]>/, '');
   }
   
-  // Convert HTML line breaks to actual line breaks
   text = text.replace(/<br\s*\/?>/gi, '\n');
   
-  // Clean up HTML entities
   text = text.replace(/&nbsp;/g, ' ');
   text = text.replace(/&amp;/g, '&');
   text = text.replace(/&lt;/g, '<');
   text = text.replace(/&gt;/g, '>');
   text = text.replace(/&quot;/g, '"');
   
-  // Normalize line endings and clean up extra whitespace
   text = text.replace(/\r\n|\r/g, '\n');
-  text = text.replace(/\n\s*\n\s*\n/g, '\n\n'); // Replace multiple blank lines with double
+  text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
   text = text.trim();
   
   return text;
@@ -238,16 +218,12 @@ function formatNHCTextFromDescription(rawText) {
 function formatNHCText(rawText) {
   if (!rawText) return TEXT_CONFIG.FALLBACK_MESSAGES.notAvailable;
   
-  // Basic formatting to match NHC style
   return rawText
-    .replace(/\\n/g, '\n')  // Handle escaped newlines
-    .replace(/\\t/g, '\t')  // Handle escaped tabs
+    .replace(/\\n/g, '\n') 
+    .replace(/\\t/g, '\t')
     .trim();
 }
 
-/* ================
-     Tab Interface (Modified: Header removed)
-     ================ */
 function createTabInterface(availableProducts) {
   const tabsHtml = availableProducts.map(product => {
     const isSpanish = product.code.startsWith('T') && product.code.endsWith('S');
@@ -301,7 +277,6 @@ function setupTabEventListeners() {
     tab.addEventListener('keydown', (e) => handleTabKeydown(e, tabs, panels));
   });
   
-  // Activate first tab by default
   if (tabs.length > 0) {
     activateTab(tabs[0], panels);
   }
@@ -311,15 +286,13 @@ function activateTab(activeTab, panels) {
   const tabs = textEls.container.querySelectorAll('.text-tab');
   const productCode = activeTab.dataset.product;
   
-  // Update tab states
   tabs.forEach(tab => {
     const isActive = tab === activeTab;
     tab.setAttribute('aria-selected', isActive);
     tab.tabIndex = isActive ? 0 : -1;
     tab.classList.toggle('active', isActive);
   });
-  
-  // Update panel visibility - use both hidden attribute and active class for consistency
+
   panels.forEach(panel => {
     const isActive = panel.id === `content-${productCode}`;
     panel.hidden = !isActive;
@@ -345,7 +318,7 @@ function handleTabKeydown(event, tabs, panels) {
       targetIndex = tabs.length - 1;
       break;
     default:
-      return; // Don't prevent default for other keys
+      return;
   }
   
   event.preventDefault();
@@ -353,17 +326,12 @@ function handleTabKeydown(event, tabs, panels) {
   activateTab(tabs[targetIndex], panels);
 }
 
-/* ================
-     Content Loading
-     ================ */
 async function loadTextProducts(stormId) {
   const basin = stormId.substring(0, 2);
   const isAtlantic = basin === 'AL';
   
-  // Determine which products to show
   const availableProducts = Object.entries(TEXT_PRODUCTS)
     .filter(([code, config]) => {
-      // Skip Spanish products for Pacific storms
       if (config.atlanticOnly && !isAtlantic) return false;
       return true;
     })
@@ -375,21 +343,17 @@ async function loadTextProducts(stormId) {
       required: config.required
     }));
   
-  // Create the tab interface
   const interfaceHtml = createTabInterface(availableProducts);
   textEls.container.innerHTML = interfaceHtml;
   
-  // Set up event listeners
   setupTabEventListeners();
   
-  // Activate the first tab
   const firstTab = textEls.container.querySelector('.text-tab');
   const allPanels = textEls.container.querySelectorAll('.text-content-panel');
   if (firstTab && allPanels.length > 0) {
     activateTab(firstTab, allPanels);
   }
   
-  // Load each product
   for (const product of availableProducts) {
     loadSingleProduct(stormId, product.code);
   }
@@ -410,17 +374,13 @@ async function loadSingleProduct(stormId, productCode) {
       return;
     }
     
-    // Extract content and metadata
     const extracted = extractTextFromProduct(productData);
     textEl.textContent = extracted.content;
     
-    // Show/hide the NHC link button
     if (actionsEl && linkEl && extracted.link) {
       linkEl.href = extracted.link;
       actionsEl.style.display = 'block';
     }
-    
-    // Metadata update section removed - text header elements no longer exist
     
   } catch (error) {
     console.error(`Error loading ${productCode}:`, error);
@@ -428,11 +388,7 @@ async function loadSingleProduct(stormId, productCode) {
   }
 }
 
-/* ================
-     Public API
-     ================ */
 async function initTextProducts() {
-  // Find the text products container
   textEls.container = document.querySelector('#storm-text-section');
   
   if (!textEls.container) {
@@ -450,14 +406,12 @@ async function initTextProducts() {
   await loadTextProducts(stormId);
 }
 
-// Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initTextProducts, { once: true });
 } else {
   initTextProducts();
 }
 
-// Export for manual initialization if needed
 window.StormTextProducts = {
   init: initTextProducts,
   load: loadTextProducts

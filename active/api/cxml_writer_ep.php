@@ -1,14 +1,22 @@
 <?php
-// /active/api/cxml_writer_ep.php
+// NHC CXML Writer, Eastern Pacific - cxml_writer_ep.php
 // Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
 //   ../storms/{EPnnYYYY}/storm.json
+
+/**
+ * /active/api/cxml_writer_ep.php
+ * Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
+ *   ../storms/{EPnnYYYY}/storm.json
+ *
+ * Query:
+ *   ?storm=EPnnYYYY  or ?storm=ALL
+ */
+
 declare(strict_types=1);
 error_reporting(E_ALL);
 
-// ---------- config ----------
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
-// ---------- helpers ----------
 function out($s){
   $line = "[" . date('Y-m-d H:i:s') . "] $s";
   if (PHP_SAPI === 'cli') {
@@ -29,11 +37,10 @@ function asNum($x){
 function asRadius($x){
   $n = asNum($x);
   if ($n === null) return 0;
-  if ($n < 0) return 0;       // clamp sentinels like -999 to 0
+  if ($n < 0) return 0;
   return (int) round($n);
 }
 
-// ---------- args: --storm=EPnnYYYY or ?storm=EPnnYYYY ----------
 $stormParam = strtoupper(trim($_GET['storm'] ?? ''));
 if (!$stormParam && PHP_SAPI === 'cli') {
   foreach ($argv as $arg) {
@@ -41,7 +48,6 @@ if (!$stormParam && PHP_SAPI === 'cli') {
       $stormParam = strtoupper(substr($arg, 8)); 
       break; 
     }
-    // Add support for --all argument
     if ($arg === '--all') {
       $stormParam = 'ALL';
       break;
@@ -49,15 +55,12 @@ if (!$stormParam && PHP_SAPI === 'cli') {
   }
 }
 
-// Update error message to include --all option
 if ($stormParam === '') bail('missing --storm=EPnnYYYY or --all');
 
-// ---------- resolve cache root ----------
 $cacheRoot = realpath(__DIR__ . '/..');
 if ($cacheRoot === false) $cacheRoot = __DIR__ . '/..';
 $stormsRoot = $cacheRoot . '/storms';
 
-// ---------- expand short id function ----------
 function expand_short_id(string $id, string $stormsRoot): string {
   if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id;
   $list = realpath(__DIR__ . '/../../js/modules/cache/nhc_current_storms.json');
@@ -78,7 +81,6 @@ function expand_short_id(string $id, string $stormsRoot): string {
 $stormId = expand_short_id($stormParam, $stormsRoot);
 $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
-// ---------- batch processing for all EP storms ----------
 if ($stormParam === 'ALL') {
     echo "Entering ALL mode - calling processAllEPStormsCXML()\n";
     flush();
@@ -92,9 +94,7 @@ try {
     bail($e->getMessage());
 }
 
-// ---------- batch processing function ----------
 function processAllEPStormsCXML(string $stormsRoot): void {
-    // Path to current storms cache
     $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($currentStormsPath)) {
@@ -128,7 +128,7 @@ function processAllEPStormsCXML(string $stormsRoot): void {
         out("Processing {$stormId}...");
         
         try {
-            processSingleStormCXML($stormId, $stormsRoot); // ← Pass $stormsRoot
+            processSingleStormCXML($stormId, $stormsRoot);
             $successCount++;
             out("  SUCCESS: {$stormId}");
         } catch (Exception $e) {
@@ -139,16 +139,13 @@ function processAllEPStormsCXML(string $stormsRoot): void {
     out("Completed: {$successCount}/" . count($epStorms) . " storms processed successfully");
 }
 
-// ---------- single storm processing function ----------
 function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     global $USER_AGENT;    
     $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
     
-    // ---------- source URL ----------
     $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
     out("Fetch: $srcUrl");
 
-    // ---------- fetch ----------
     $ch = curl_init($srcUrl);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -165,7 +162,6 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     $err  = curl_error($ch);
     curl_close($ch);
     if (!$xmlRaw || $http !== 200) {
-    // Try FTP fallback
     $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
     out("Primary failed, trying FTP: $ftpUrl");
     
@@ -178,7 +174,6 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     
     out("FTP fallback successful for $stormId");
 }
-    // ---------- parse ----------
     libxml_use_internal_errors(true);
     $xml = simplexml_load_string($xmlRaw);
     if (!$xml) throw new Exception('XML parse failed');
@@ -190,7 +185,7 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
         'id'       => asText($data->localID ?? ''),
         'name'     => asText($data->cycloneName ?? ''),
         'advisory' => preg_replace('/^\D+/', '', asText($hdr->generatingApplication->applicationType ?? '')),
-        'created'  => asText($hdr->creationTime ?? ''), // ISO Z
+        'created'  => asText($hdr->creationTime ?? ''),
     ];
 
     $currentFix = null;
@@ -220,7 +215,6 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
             'type' => asText($cd->development ?? ''),
         ];
 
-        // wind radii (34/50/64 kt)
         $wc = $cd->windContours->windSpeed ?? [];
         foreach ($wc as $ws) {
             $sp = trim((string)$ws);
@@ -239,7 +233,6 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
             }
         }
 
-        // 12 ft seas (optional)
         $sc = $cd->seaContours->waveHeight ?? null;
         if ($sc && trim((string)$sc) === '12') {
             $r = [
@@ -258,8 +251,7 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
         $fixes[] = $one;
     }
 
-    // ---------- write cache ----------
-    $stormDir = $stormsRoot . '/' . strtoupper($stormId);  // EPnnYYYY
+    $stormDir = $stormsRoot . '/' . strtoupper($stormId);
     if (!is_dir($stormDir)) {
         @mkdir($stormDir, 0775, true);
     }

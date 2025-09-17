@@ -1,13 +1,19 @@
-/* eslint-disable no-undef */
+// =============================
+// Active Storm Page Alert Maps Module - ww-maps.js
+// Reads advisory.json and storm.json from cache and renders the data to the page.
+//
+// Products Rendered:
+// - Storm Alert Map
+// - Storm Surge Alert Map
+//
+// ==============================
+
 (() => {
-  // Global domain default (CONUS east + W Atl + Gulf)
   const DEFAULT_DOMAIN = { lonMin: -106, lonMax: -60, latMin: 18, latMax: 50 };
 
-  // Optional basemap file (if missing, we just skip it)
   const BASEMAP_URL =
     "/2025_weather/js/data/basemaps/us_states_counties.geojson";
 
-  // PR/USVI insets
   const INSETS = {
     PR: {
       lonMin: -67.6,
@@ -31,11 +37,9 @@
     },
   };
 
-  // Local imagery dir + extensions to try (most .jpg, some .png)
   const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/tiles/imagery";
   const LOCAL_IMAGERY_EXTS = ["jpg"];
 
-  // --- XYZ tile provider config ---
   const TILE_PROVIDERS = {
     imagery:
       "/2025_weather/active/api/tiles.php?style=imagery&z={z}&y={y}&x={x}",
@@ -44,40 +48,32 @@
     none: null,
   };
 
-  // choose 'topo', 'imagery', or 'none'
   const TILE_STYLE = "imagery";
 
-  // Tile zoom bounds and behavior:
-  // - TILE_MIN_Z / TILE_MAX_Z: hard clamps for tile z to avoid excessive requests or empty tiles.
-  // - TILE_DPR_AWARE: when true, prefer one zoom level higher on high-DPI displays to reduce visible blur.
-  const TILE_MIN_Z = 5; // Raised from 3 to avoid overly large tiles
-  const TILE_MAX_Z = 7; // Raised from 5 to allow detailed tiles with place names
-  const TILE_DPR_AWARE = false; // Set to false to avoid unnecessary zoom increases
+  const TILE_MIN_Z = 5;
+  const TILE_MAX_Z = 7;
+  const TILE_DPR_AWARE = false;
 
-  // simple in-memory tile cache
-  const _tileCache = new Map(); // key: `${TILE_STYLE}|${z}|${x}|${y}` -> HTMLImageElement
-  const _drawVersionByCanvas = new Map(); // canvasId -> version // bump each draw to prevent stale paints
+  const _tileCache = new Map();
+  const _drawVersionByCanvas = new Map();
 
-  // Place names configuration
   const PLACENAMES_URL = "/2025_weather/js/data/placenames.json";
-  const SHOW_PLACENAMES = true; // Set to false to disable place names
+  const SHOW_PLACENAMES = true;
   const MIN_ZOOM_FOR_PLACENAMES = 6;
   const PLACENAMES_ZOOM_OFFSET = -1;
 
-  let PLACENAMES = null; // Will hold the loaded place names data
+  let PLACENAMES = null;
 
   function tileUrlCandidates(style, z, x, y) {
     const urls = [];
 
     if (style === "imagery") {
-      // Local imagery uses standard XYZ Y (no TMS inversion)
       const localY = y;
       for (const ext of LOCAL_IMAGERY_EXTS) {
         urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}.jpg`);
       }
     }
 
-    // Provider fallback (XYZ)
     const tpl = TILE_PROVIDERS[style];
     if (tpl)
       urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
@@ -95,7 +91,6 @@
     return Math.log(Math.tan(Math.PI / 4 + lat / 2));
   }
 
-  // --- Web Mercator helpers for XYZ tiles ---
   const MAX_LAT = 85.05112878;
   function _clipLat(lat) {
     return Math.max(-MAX_LAT, Math.min(MAX_LAT, lat));
@@ -112,14 +107,10 @@
     return y * n;
   }
 
-  // choose the smallest z where domain has >= ~1.25x the canvas width in world pixels (to avoid blur)
-  // This version clamps between TILE_MIN_Z and TILE_MAX_Z and (optionally) prefers a higher zoom on high-DPI devices.
   function chooseTileZoom(domain, rect) {
     const target = rect.w * 1.25;
-    // start with a reasonable default
     let best = 6;
 
-    // search within configured bounds
     for (let z = TILE_MIN_Z; z <= TILE_MAX_Z; z++) {
       const gxMin = lonToGlobalPx(domain.lonMin, z);
       const gxMax = lonToGlobalPx(domain.lonMax, z);
@@ -130,8 +121,6 @@
       }
     }
 
-    // If enabled and devicePixelRatio indicates a high-DPI screen, prefer one zoom level higher
-    // to reduce upscaling blur. Clamp to TILE_MAX_Z.
     try {
       if (
         TILE_DPR_AWARE &&
@@ -141,10 +130,8 @@
         best = Math.min(TILE_MAX_Z, best + 1);
       }
     } catch (e) {
-      // ignore and use computed best
     }
 
-    // final clamp (safety)
     return Math.max(TILE_MIN_Z, Math.min(TILE_MAX_Z, best));
   }
 
@@ -159,12 +146,10 @@
 
     const candidates = tileUrlCandidates(style, z, x, y);
 
-    // If no candidates available, return null
     if (!candidates.length) return Promise.resolve(null);
 
     return new Promise((resolve) => {
       const img = new Image();
-      // Only set crossOrigin for external URLs, not local files
       const isLocal = candidates.some((url) =>
         url.startsWith("/2025_weather/")
       );
@@ -172,7 +157,6 @@
         img.crossOrigin = "anonymous";
       }
       img.decoding = "async";
-      // img.loading = "lazy";
 
       let i = 0;
       let timeoutId = null;
@@ -196,7 +180,6 @@
         const url = candidates[i++];
         console.info("[ww] try", url);
 
-        // Set up timeout for this specific URL attempt
         timeoutId = setTimeout(() => {
           console.warn("[ww] timeout loading", url);
           img.onload = null;
@@ -226,10 +209,6 @@
     });
   }
 
-  /**
-   * Paint XYZ tiles that cover the current domain, then (re)paint vectors to keep them on top.
-   * Draws incrementally as tiles load. Uses drawVersion to avoid stale paints after resize.
-   */
   async function drawTilesLayer(
     ctx,
     domain,
@@ -244,11 +223,10 @@
       hasProvider: !!TILE_PROVIDERS[TILE_STYLE],
     });
     const style = TILE_STYLE;
-    if (!TILE_PROVIDERS[style]) return; // off
+    if (!TILE_PROVIDERS[style]) return;
 
     const z = chooseTileZoom(domain, rect);
 
-    // world px extent of the current domain at this zoom
     const gxMin = lonToGlobalPx(domain.lonMin, z);
     const gxMax = lonToGlobalPx(domain.lonMax, z);
     const gyMin = Math.min(
@@ -260,23 +238,19 @@
       latToGlobalPx(domain.latMin, z)
     );
 
-    // tile index ranges
     const x0 = Math.floor(gxMin / 256);
     const x1 = Math.floor((gxMax - 1) / 256);
     const y0 = Math.floor(gyMin / 256);
     const y1 = Math.floor((gyMax - 1) / 256);
 
-    // helper to map world px -> canvas px
     const mapX = (px) => rect.x + ((px - gxMin) / (gxMax - gxMin)) * rect.w;
     const mapY = (py) => rect.y + ((py - gyMin) / (gyMax - gyMin)) * rect.h;
 
     const keysOrder =
       hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
 
-    // fetch & draw each tile; re-stroke vectors after each tile so polygons stay on top
     for (let ty = y0; ty <= y1; ty++) {
       for (let tx = x0; tx <= x1; tx++) {
-        // bail if a newer draw started
         if (version !== _drawVersionByCanvas.get(canvasKey)) return;
 
         console.info(
@@ -301,24 +275,19 @@
         const dx = cx1 - cx0,
           dy = cy1 - cy0;
 
-        // draw the tile
         ctx.drawImage(img, cx0, cy0, dx, dy);
 
-        // re-draw vector layers to keep them above tiles
         drawBasemap(ctx, domain, rect);
         const all = (features?.features ?? []).filter(
           (f) => f?.properties?.hazard === hazard
         );
         drawFeatures(ctx, all, domain, rect, keysOrder);
 
-        // Draw place names on top of everything
         drawPlacenames(ctx, domain, rect, z);
 
-        // Separate out PR/VI insets
         const pr = all.filter((f) => f.properties.state === "PR");
         const vi = all.filter((f) => f.properties.state === "VI");
 
-        // Use non-inset features to auto-fit when insets exist; otherwise use all
         const fitFeatures =
           pr.length || vi.length
             ? all.filter(
@@ -327,11 +296,9 @@
               )
             : all;
 
-        // OLD: const auto = bboxOfFeatures(all) || DEFAULT_DOMAIN;
         const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
         drawFeatures(ctx, all, domain, rect, keysOrder);
 
-        // Draw place names on the auto-fitted view as well
         drawPlacenames(ctx, auto, rect, z);
       }
     }
@@ -357,7 +324,6 @@
     return { width: cw, height: ch };
   }
 
-  // -------- Colors (robust resolver) --------
   function normalizeKey(s) {
     return String(s)
       .toLowerCase()
@@ -393,11 +359,9 @@
     const wc = window.warningColors || {};
     const label = labelForKey(code);
 
-    // 1) Prefer direct hits
     if (typeof wc[code] === "string") return wc[code];
     if (typeof wc[label] === "string") return wc[label];
 
-    // 2) Try a few common label variants
     const variants = [
       label.toUpperCase(),
       label.replace(/\s+/g, ""),
@@ -408,7 +372,6 @@
       if (typeof wc[v] === "string") return wc[v];
     }
 
-    // 3) Local fallbacks for TCV short codes (safe defaults)
     const FALLBACKS = {
       "HU.W": wc["Hurricane Warning"] || "#DC143C",
       "HU.A": wc["Hurricane Watch"] || "#FFA500",
@@ -423,8 +386,7 @@
     return "#999999";
   }
 
-  // -------- Basemap --------
-  let BASEMAP = null; // FeatureCollection (states/coastlines, simplified)
+  let BASEMAP = null;
   async function loadBasemap() {
     try {
       const res = await fetch(BASEMAP_URL, { cache: "force-cache" });
@@ -435,7 +397,6 @@
     }
   }
 
-  // -------- Place Names --------
   async function loadPlacenames() {
     if (!SHOW_PLACENAMES) return;
     try {
@@ -491,29 +452,22 @@
     for (const place of PLACENAMES) {
       const { text, lat, lon, minZoom, priority } = place;
       
-      // Apply zoom offset to make places show earlier/later
       const effectiveMinZoom = (minZoom || MIN_ZOOM_FOR_PLACENAMES) + PLACENAMES_ZOOM_OFFSET;
       
-      // Skip if current zoom is below this place's effective minimum zoom
       if (zoom < effectiveMinZoom) continue;
       
-      // Skip if outside current domain
       if (lon < domain.lonMin || lon > domain.lonMax || 
           lat < domain.latMin || lat > domain.latMax) continue;
 
       const p = project(lon, lat, domain, rect);
       
-      // Skip if outside canvas bounds
       if (p.x < 0 || p.x > rect.w || p.y < 0 || p.y > rect.h) continue;
 
-      // Adjust font size based on priority (higher priority = larger font)
       const fontSize = priority >= 15 ? 14 : priority >= 10 ? 12 : 10;
       ctx.font = `${fontSize}px Arial, sans-serif`;
 
-      // Convert text to uppercase
       const displayText = text.toUpperCase();
 
-      // Draw text with outline for readability
       ctx.strokeText(displayText, p.x, p.y);
       ctx.fillText(displayText, p.x, p.y);
     }
@@ -521,14 +475,12 @@
   }
 
   async function fetchZoneFeature(zoneId, zoneType) {
-    // 1) try local cache
     const localUrl = `/2025_weather/js/data/zones/cache/${zoneId}.json?v=${Date.now()}`;
     try {
       const r = await fetch(localUrl, { cache: "no-cache" });
       if (r.ok) return r.json();
     } catch {}
 
-    // 2) fallback to NWS (CORS is allowed)
     const nwsUrl = `https://api.weather.gov/zones/${zoneType}/${zoneId}`;
     try {
       const r = await fetch(nwsUrl, {
@@ -554,22 +506,18 @@
     }
   }
 
-  // Build a FeatureCollection from events when tcv.json is "thin"
   async function buildFeaturesFromEvents(events) {
     const out = [];
-    // unique per-zone fetch
     const byZone = new Map();
     for (const ev of events) {
       const key = ev.zoneId;
       if (!byZone.has(key))
         byZone.set(key, { zoneType: ev.zoneType || "forecast" });
     }
-    // fetch all geometries (sequential to be gentle; change to Promise.all if you prefer)
     for (const [zoneId, meta] of byZone) {
       const f = await fetchZoneFeature(zoneId, meta.zoneType);
       if (f) byZone.set(zoneId, { ...meta, feature: f });
     }
-    // now duplicate per hazard/phen/sig like the embedded format
     for (const ev of events) {
       const base = byZone.get(ev.zoneId);
       const f = base?.feature;
@@ -590,7 +538,6 @@
     return { type: "FeatureCollection", features: out };
   }
 
-  // Flatten any GeoJSON geometry to an array of polygons (each polygon = array of rings)
   function flattenRings(geom) {
     const out = [];
     if (!geom || !geom.type) return out;
@@ -614,7 +561,6 @@
         break;
       }
       default:
-        // Ignore non-area types (Point/LineString/…)
         break;
     }
     return out;
@@ -651,7 +597,7 @@
           ctx.fill("evenodd");
         } catch {
           ctx.fill();
-        } // support holes; fallback if needed
+        }
         ctx.globalAlpha = 1.0;
         ctx.lineWidth = 0.75;
         ctx.strokeStyle = "#202020";
@@ -697,7 +643,7 @@
       !Number.isFinite(latMin) ||
       !Number.isFinite(latMax)
     ) {
-      return null; // caller will fall back to DEFAULT_DOMAIN
+      return null;
     }
 
     const lonPad = Math.max(1, (lonMax - lonMin) * 0.06);
@@ -713,7 +659,6 @@
 
   function isHidden(node) {
     if (!node) return true;
-    // collapsed (no layout box) or any ancestor explicitly hidden
     if (node.offsetParent === null) return true;
     if (node.closest("[hidden]")) return true;
     return false;
@@ -749,7 +694,6 @@
 
     const rectMain = { x: 0, y: 0, w: width, h: height };
 
-    // Optional: exclude PR/VI from main bbox so the CONUS fit is tighter
     const pr = all.filter((f) => f.properties.state === "PR");
     const vi = all.filter((f) => f.properties.state === "VI");
     const fitFeatures =
@@ -761,7 +705,6 @@
 
     const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
 
-    // --- tiles underlay (async, incremental)
     const prev = _drawVersionByCanvas.get(canvasId) || 0;
     const version = prev + 1;
     _drawVersionByCanvas.set(canvasId, version);
@@ -781,16 +724,13 @@
       canvasId
     );
 
-    // vectors immediately on top
     drawBasemap(ctx, auto, rectMain);
 
     const keysOrder =
       hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
 
-    // ✅ use the real set when drawing
     drawFeatures(ctx, all, auto, rectMain, keysOrder);
 
-    // Draw place names on the main map
     const currentZoom = chooseTileZoom(auto, rectMain);
     drawPlacenames(ctx, auto, rectMain, currentZoom);
 
@@ -807,7 +747,6 @@
         hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
       drawFeatures(ctx, all, auto, rectMain, keysOrder);
       
-      // Draw place names for this view as well
       const currentZoom = chooseTileZoom(auto, rectMain);
       drawPlacenames(ctx, auto, rectMain, currentZoom);
     }
@@ -865,7 +804,6 @@
   function readableTextColor(bgHex) {
     const rgb = hexToRgb(bgHex);
     if (!rgb) return "#000";
-    // WCAG-ish luminance check
     const srgb = ["r", "g", "b"].map((k) => {
       const v = rgb[k] / 255;
       return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
@@ -895,15 +833,14 @@
       title.className = "ww-block-title";
       title.textContent = block.label;
 
-      // colorize header to match polygons
-      const bg = colorForKey(block.key); // e.g., 'HU.A', 'TR.W', 'SS.A'
+      const bg = colorForKey(block.key);
       const fg = readableTextColor(bg);
       title.style.backgroundColor = bg;
       title.style.color = fg;
       title.style.padding = "0.35rem 0.5rem";
       title.style.borderRadius = "0.375rem";
       title.style.fontWeight = "600";
-      title.style.display = "inline-block"; // hug text
+      title.style.display = "inline-block";
       title.style.marginBottom = "0.25rem";
 
       h.appendChild(title);
@@ -934,17 +871,13 @@
       return;
     }
 
-    // fire and forget: basemap (optional)
     loadBasemap();
-    
-    // fire and forget: place names (optional)
     loadPlacenames();
 
     try {
       const url = `/2025_weather/active/storms/${stormId}/tcv.json?v=${Date.now()}`;
       const data = await loadJSON(url);
 
-      // If thin payload, build features from events
       if (
         !data.features ||
         !Array.isArray(data.features.features) ||
@@ -954,14 +887,12 @@
         data.features = await buildFeaturesFromEvents(data.events || []);
       }
 
-      // WIND
       renderTextList(
         "ww-wind-text",
         data.display?.wind,
         "No active watches/warnings."
       );
 
-      // SURGE
       renderTextList(
         "ww-surge-text",
         data.display?.surge,
