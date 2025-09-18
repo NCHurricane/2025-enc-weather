@@ -4,6 +4,70 @@
 /*                     Uses variables from styles.css             */
 /*=================================================================*/
 
+/* Base (mobile-first) */
+:root {
+  /* 1..10 scale */
+  --map-label-priority-1: 9;
+  --map-label-priority-2: 9.4;
+  --map-label-priority-3: 9.9;
+  --map-label-priority-4: 10.3;
+  --map-label-priority-5: 10.8;
+  --map-label-priority-6: 11.2;
+  --map-label-priority-7: 11.6;
+  --map-label-priority-8: 12.0;
+  --map-label-priority-9: 12.5;
+  --map-label-priority-10: 13;
+
+  /* Colors */
+  --map-label-color-1: #ffffff;
+  --map-label-color-2: #ffffff;
+  --map-label-color-3: #ffffff;
+  --map-label-color-4: #ffffff;
+  --map-label-color-5: #ffffff;
+  --map-label-color-6: #ffffff;
+  --map-label-color-7: #ffffff;
+  --map-label-color-8: #ffffff;
+  --map-label-color-9: #ffe600;
+  --map-label-color-10: #ffee00;
+
+  /* Base: show all priorities */
+  --map-label-min-priority: 5;
+}
+
+/* Medium (hide lowest 1–2) */
+@media (max-width: 900px) {
+  :root {
+    --map-label-min-priority: 10;
+  }
+}
+
+/* Small (hide 1–6, show only 7–10) */
+@media (max-width: 768px) {
+  :root {
+    --map-label-min-priority: 8;
+  }
+}
+
+/* XL breakpoint: even tighter */
+@media (max-width: 900px) {
+  :root {
+    --map-label-priority-1: 8;
+    --map-label-priority-2: 8.3;
+    --map-label-priority-3: 8.6;
+    --map-label-priority-4: 8.9;
+    --map-label-priority-5: 9.2;
+    --map-label-priority-6: 9.5;
+    --map-label-priority-7: 9.8;
+    --map-label-priority-8: 10.1;
+    --map-label-priority-9: 10.5;
+    --map-label-priority-10: 11;
+  }
+    :root {
+    --map-label-min-priority: 3;
+  }
+}
+
+
 /*-----------------------------------------------------------------*/
 /* SHARED CONTAINER STYLES                                        */
 /*-----------------------------------------------------------------*/

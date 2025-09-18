@@ -1,13 +1,4 @@
-// =============================
-// Active Storm Page Alert Maps Module - ww-maps.js
-// Reads advisory.json and storm.json from cache and renders the data to the page.
-//
-// Products Rendered:
-// - Storm Alert Map
-// - Storm Surge Alert Map
-//
-// ==============================
-
+/* eslint-disable no-undef */
 (() => {
   const DEFAULT_DOMAIN = { lonMin: -106, lonMax: -60, latMin: 18, latMax: 50 };
 
@@ -47,37 +38,100 @@
     shaded: "/2025_weather/active/api/tiles.php?style=shaded&z={z}&y={y}&x={x}",
     none: null,
   };
-
   const TILE_STYLE = "imagery";
-
   const TILE_MIN_Z = 5;
-  const TILE_MAX_Z = 7;
+  const TILE_MAX_Z = 6;
   const TILE_DPR_AWARE = false;
+
+  const DEBUG_TILES = false;
+  const TILE_CONCURRENCY = 6;
 
   const _tileCache = new Map();
   const _drawVersionByCanvas = new Map();
 
-  const PLACENAMES_URL = "/2025_weather/js/data/placenames.json";
+  // Place names
+  // const PLACENAMES_URL = "/2025_weather/js/data/placenames.json";
+  const PLACENAMES_URL = "/2025_weather/js/data/coastal_placenames.json";
+
   const SHOW_PLACENAMES = true;
   const MIN_ZOOM_FOR_PLACENAMES = 6;
   const PLACENAMES_ZOOM_OFFSET = -1;
 
+  // Collision / label config
+  const LABEL_PADDING_PX = 4;
+  const LABEL_LINE_HEIGHT = 1.15;
+  const LABEL_MAX_PER_ZOOM = 120;
+  const LABEL_DYNAMIC_CAP = true;
+  const LABEL_ZOOM_CAPS = { 6: 60, 7: 80, 8: 100, 9: 120 };
+
+  // NEW: cached label font sizes (pulled from CSS custom properties)
+  let _labelFontCache = null;
+  let _labelFontCacheWidth = 0;
+  let _labelColorCache = null;
+
+  function readLabelFontSizes() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const grab = (n, fallback) => {
+      const v = parseFloat(
+        rootStyle.getPropertyValue(`--map-label-priority-${n}`).trim()
+      );
+      return Number.isFinite(v) ? v : fallback;
+    };
+    const arr = [];
+    let last = 10; // fallback seed
+    for (let i = 1; i <= 10; i++) {
+      last = grab(i, last);
+      arr[i] = last;
+    }
+    return arr;
+  }
+
+  function readLabelColors() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const arr = [];
+    let last = "#ffffff";
+    for (let i = 1; i <= 10; i++) {
+      const raw = rootStyle.getPropertyValue(`--map-label-color-${i}`).trim();
+      last = raw || last;
+      arr[i] = last;
+    }
+    return arr;
+  }
+
+  function getLabelFontSize(priority) {
+    const w = window.innerWidth || 0;
+    if (!_labelFontCache || _labelFontCacheWidth !== w) {
+      _labelFontCache = readLabelFontSizes();
+      _labelColorCache = readLabelColors();
+      _labelFontCacheWidth = w;
+    }
+    const p = Math.max(1, Math.min(10, priority | 0));
+    return _labelFontCache[p];
+  }
+
+  function getLabelColor(priority) {
+    if (!_labelColorCache) _labelColorCache = readLabelColors();
+    const p = Math.max(1, Math.min(10, priority | 0));
+    return _labelColorCache[p];
+  }
+
+  // Optional local zone cache bust switch
+  const LOCAL_ZONE_CACHE_BUST = false;
+
   let PLACENAMES = null;
+  let BASEMAP = null;
 
   function tileUrlCandidates(style, z, x, y) {
     const urls = [];
-
     if (style === "imagery") {
       const localY = y;
       for (const ext of LOCAL_IMAGERY_EXTS) {
-        urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}.jpg`);
+        urls.push(`${LOCAL_IMAGERY_ROOT}/${z}/${x}/${localY}.${ext}`);
       }
     }
-
     const tpl = TILE_PROVIDERS[style];
     if (tpl)
       urls.push(tpl.replace("{z}", z).replace("{x}", x).replace("{y}", y));
-
     return urls;
   }
 
@@ -95,7 +149,6 @@
   function _clipLat(lat) {
     return Math.max(-MAX_LAT, Math.min(MAX_LAT, lat));
   }
-
   function lonToGlobalPx(lon, z) {
     const n = 256 * Math.pow(2, z);
     return ((lon + 180) / 360) * n;
@@ -109,34 +162,21 @@
 
   function chooseTileZoom(domain, rect) {
     const target = rect.w * 1.25;
-    let best = 6;
-
+    let best = TILE_MIN_Z;
     for (let z = TILE_MIN_Z; z <= TILE_MAX_Z; z++) {
       const gxMin = lonToGlobalPx(domain.lonMin, z);
       const gxMax = lonToGlobalPx(domain.lonMax, z);
-      const widthPx = Math.abs(gxMax - gxMin);
-      if (widthPx >= target) {
+      if (Math.abs(gxMax - gxMin) >= target) {
         best = z;
         break;
       }
     }
-
     try {
-      if (
-        TILE_DPR_AWARE &&
-        typeof window !== "undefined" &&
-        window.devicePixelRatio > 1
-      ) {
+      if (TILE_DPR_AWARE && window.devicePixelRatio > 1) {
         best = Math.min(TILE_MAX_Z, best + 1);
       }
-    } catch (e) {
-    }
-
+    } catch {}
     return Math.max(TILE_MIN_Z, Math.min(TILE_MAX_Z, best));
-  }
-
-  function _tileKey(style, z, x, y) {
-    return `${style}|${z}|${x}|${y}`;
   }
 
   function ensureTile(style, z, x, y) {
@@ -145,178 +185,58 @@
     if (cached) return Promise.resolve(cached);
 
     const candidates = tileUrlCandidates(style, z, x, y);
-
     if (!candidates.length) return Promise.resolve(null);
 
     return new Promise((resolve) => {
       const img = new Image();
-      const isLocal = candidates.some((url) =>
-        url.startsWith("/2025_weather/")
-      );
-      if (!isLocal) {
-        img.crossOrigin = "anonymous";
-      }
+      const isLocal = candidates.some((u) => u.startsWith("/2025_weather/"));
+      if (!isLocal) img.crossOrigin = "anonymous";
       img.decoding = "async";
 
       let i = 0;
       let timeoutId = null;
 
       const tryNext = () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-
+        if (timeoutId) clearTimeout(timeoutId);
         if (i >= candidates.length) {
-          console.warn("[ww] tile fail (all candidates)", {
-            z,
-            x,
-            y,
-            candidates,
-          });
+          if (DEBUG_TILES) console.warn("[ww] tile fail", { z, x, y });
           return resolve(null);
         }
-
         const url = candidates[i++];
-        console.info("[ww] try", url);
-
+        if (DEBUG_TILES) console.info("[ww] try", url);
         timeoutId = setTimeout(() => {
-          console.warn("[ww] timeout loading", url);
-          img.onload = null;
-          img.onerror = null;
+          img.onload = img.onerror = null;
           tryNext();
-        }, 10000);
-
+        }, 8000);
         img.src = url;
       };
-
       img.onload = () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        console.info("[ww] loaded", img.src);
+        if (timeoutId) clearTimeout(timeoutId);
         _tileCache.set(key, img);
+        if (DEBUG_TILES) console.info("[ww] loaded", img.src);
         resolve(img);
       };
-
-      img.onerror = (e) => {
-        console.error("[ww] load error", img.src, e);
-        tryNext();
-      };
-
+      img.onerror = () => tryNext();
       tryNext();
     });
   }
 
-  async function drawTilesLayer(
-    ctx,
-    domain,
-    rect,
-    features,
-    hazard,
-    version,
-    canvasKey
-  ) {
-    console.info("[ww] drawTilesLayer called", {
-      style: TILE_STYLE,
-      hasProvider: !!TILE_PROVIDERS[TILE_STYLE],
-    });
-    const style = TILE_STYLE;
-    if (!TILE_PROVIDERS[style]) return;
-
-    const z = chooseTileZoom(domain, rect);
-
-    const gxMin = lonToGlobalPx(domain.lonMin, z);
-    const gxMax = lonToGlobalPx(domain.lonMax, z);
-    const gyMin = Math.min(
-      latToGlobalPx(domain.latMax, z),
-      latToGlobalPx(domain.latMin, z)
-    );
-    const gyMax = Math.max(
-      latToGlobalPx(domain.latMax, z),
-      latToGlobalPx(domain.latMin, z)
-    );
-
-    const x0 = Math.floor(gxMin / 256);
-    const x1 = Math.floor((gxMax - 1) / 256);
-    const y0 = Math.floor(gyMin / 256);
-    const y1 = Math.floor((gyMax - 1) / 256);
-
-    const mapX = (px) => rect.x + ((px - gxMin) / (gxMax - gxMin)) * rect.w;
-    const mapY = (py) => rect.y + ((py - gyMin) / (gyMax - gyMin)) * rect.h;
-
-    const keysOrder =
-      hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
-
-    for (let ty = y0; ty <= y1; ty++) {
-      for (let tx = x0; tx <= x1; tx++) {
-        if (version !== _drawVersionByCanvas.get(canvasKey)) return;
-
-        console.info(
-          "[ww] first-candidate",
-          tileUrlCandidates(TILE_STYLE, z, tx, ty)[0]
-        );
-
-        const img = await ensureTile(style, z, tx, ty);
-        if (!img) continue;
-        if (version !== _drawVersionByCanvas.get(canvasKey)) return;
-
-        const px0 = tx * 256,
-          py0 = ty * 256;
-        const px1 = px0 + 256,
-          py1 = py0 + 256;
-
-        const cx0 = mapX(px0),
-          cy0 = mapY(py0);
-        const cx1 = mapX(px1),
-          cy1 = mapY(py1);
-
-        const dx = cx1 - cx0,
-          dy = cy1 - cy0;
-
-        ctx.drawImage(img, cx0, cy0, dx, dy);
-
-        drawBasemap(ctx, domain, rect);
-        const all = (features?.features ?? []).filter(
-          (f) => f?.properties?.hazard === hazard
-        );
-        drawFeatures(ctx, all, domain, rect, keysOrder);
-
-        drawPlacenames(ctx, domain, rect, z);
-
-        const pr = all.filter((f) => f.properties.state === "PR");
-        const vi = all.filter((f) => f.properties.state === "VI");
-
-        const fitFeatures =
-          pr.length || vi.length
-            ? all.filter(
-                (f) =>
-                  f.properties.state !== "PR" && f.properties.state !== "VI"
-              )
-            : all;
-
-        const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
-        drawFeatures(ctx, all, domain, rect, keysOrder);
-
-        drawPlacenames(ctx, auto, rect, z);
-      }
-    }
-  }
-
+  // -------- Map math --------
   function project(lon, lat, domain, rect) {
-    const x = (lon - domain.lonMin) / (domain.lonMax - domain.lonMin);
-    const yNorm =
-      (mercY(lat) - mercY(domain.latMin)) /
-      (mercY(domain.latMax) - mercY(domain.latMin));
+    const dx = domain.lonMax - domain.lonMin;
+    const dyMerc = mercY(domain.latMax) - mercY(domain.latMin);
+    if (dx === 0 || dyMerc === 0) {
+      return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+    }
+    const x = (lon - domain.lonMin) / dx;
+    const yNorm = (mercY(lat) - mercY(domain.latMin)) / dyMerc;
     return { x: rect.x + x * rect.w, y: rect.y + (1 - yNorm) * rect.h };
   }
 
   function resizeCanvasToContainer(canvas) {
     const parent = canvas.parentElement;
     const cw = parent.clientWidth;
-    const isNarrow = cw < 600;
-    const ch = Math.round(cw * (isNarrow ? 1.0 : 0.625));
+    const ch = Math.round(cw * 0.625);
     if (canvas.width !== cw || canvas.height !== ch) {
       canvas.width = cw;
       canvas.height = ch;
@@ -324,6 +244,7 @@
     return { width: cw, height: ch };
   }
 
+  // -------- Colors --------
   function normalizeKey(s) {
     return String(s)
       .toLowerCase()
@@ -358,20 +279,15 @@
   function colorForKey(code) {
     const wc = window.warningColors || {};
     const label = labelForKey(code);
-
     if (typeof wc[code] === "string") return wc[code];
     if (typeof wc[label] === "string") return wc[label];
-
     const variants = [
       label.toUpperCase(),
       label.replace(/\s+/g, ""),
       label.replace(/\s+/g, "-"),
       label.toLowerCase(),
     ];
-    for (const v of variants) {
-      if (typeof wc[v] === "string") return wc[v];
-    }
-
+    for (const v of variants) if (typeof wc[v] === "string") return wc[v];
     const FALLBACKS = {
       "HU.W": wc["Hurricane Warning"] || "#DC143C",
       "HU.A": wc["Hurricane Watch"] || "#FFA500",
@@ -381,32 +297,26 @@
       "SS.A": wc["Storm Surge Watch"] || "#DA70D6",
     };
     if (FALLBACKS[code]) return FALLBACKS[code];
-
-    console.warn("Missing color for", code, "— using fallback");
     return "#999999";
   }
 
-  let BASEMAP = null;
+  // -------- Basemap --------
   async function loadBasemap() {
     try {
       const res = await fetch(BASEMAP_URL, { cache: "force-cache" });
       if (!res.ok) return;
       BASEMAP = await res.json();
-    } catch (_) {
-      /* ignore */
-    }
+    } catch {}
   }
 
+  // -------- Place Names --------
   async function loadPlacenames() {
     if (!SHOW_PLACENAMES) return;
     try {
       const res = await fetch(PLACENAMES_URL, { cache: "force-cache" });
       if (!res.ok) return;
       PLACENAMES = await res.json();
-      console.info("[ww] loaded", PLACENAMES?.length || 0, "place names");
-    } catch (err) {
-      console.warn("[ww] failed to load place names:", err);
-    }
+    } catch {}
   }
 
   function drawBasemap(ctx, domain, rect) {
@@ -438,49 +348,124 @@
     ctx.restore();
   }
 
+  function getMinLabelPriority() {
+    const v = getComputedStyle(document.documentElement)
+      .getPropertyValue("--map-label-min-priority")
+      .trim();
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? Math.min(10, Math.max(1, n)) : 1;
+  }
+
   function drawPlacenames(ctx, domain, rect, zoom) {
-    if (!SHOW_PLACENAMES || !PLACENAMES || zoom < MIN_ZOOM_FOR_PLACENAMES) return;
+    if (!SHOW_PLACENAMES || !PLACENAMES || zoom < MIN_ZOOM_FOR_PLACENAMES)
+      return;
 
-    ctx.save();
-    ctx.font = "12px Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#c3ff00ff";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-    ctx.lineWidth = 1;
+    let maxLabels = LABEL_MAX_PER_ZOOM;
+    if (LABEL_DYNAMIC_CAP) {
+      if (LABEL_ZOOM_CAPS[zoom] != null) maxLabels = LABEL_ZOOM_CAPS[zoom];
+      else {
+        maxLabels = Math.min(
+          LABEL_MAX_PER_ZOOM,
+          40 + (zoom - MIN_ZOOM_FOR_PLACENAMES) * 25
+        );
+      }
+    }
 
+    const minP = getMinLabelPriority();
+
+    const candidates = [];
     for (const place of PLACENAMES) {
-      const { text, lat, lon, minZoom, priority } = place;
-      
-      const effectiveMinZoom = (minZoom || MIN_ZOOM_FOR_PLACENAMES) + PLACENAMES_ZOOM_OFFSET;
-      
+      const { text, lat, lon, minZoom, priority = 1 } = place;
+      const effectiveMinZoom =
+        (minZoom || MIN_ZOOM_FOR_PLACENAMES) + PLACENAMES_ZOOM_OFFSET;
       if (zoom < effectiveMinZoom) continue;
-      
-      if (lon < domain.lonMin || lon > domain.lonMax || 
-          lat < domain.latMin || lat > domain.latMax) continue;
+      if (
+        lon < domain.lonMin ||
+        lon > domain.lonMax ||
+        lat < domain.latMin ||
+        lat > domain.latMax
+      )
+        continue;
 
       const p = project(lon, lat, domain, rect);
-      
-      if (p.x < 0 || p.x > rect.w || p.y < 0 || p.y > rect.h) continue;
+      if (
+        p.x < rect.x ||
+        p.x > rect.x + rect.w ||
+        p.y < rect.y ||
+        p.y > rect.y + rect.h
+      )
+        continue;
 
-      const fontSize = priority >= 15 ? 14 : priority >= 10 ? 12 : 10;
-      ctx.font = `${fontSize}px Arial, sans-serif`;
+      const fontSize = getLabelFontSize(priority);
 
-      const displayText = text.toUpperCase();
+      candidates.push({
+        x: p.x,
+        y: p.y,
+        fontSize,
+        priority,
+        text: (text || "").toUpperCase(),
+      });
+    }
 
-      ctx.strokeText(displayText, p.x, p.y);
-      ctx.fillText(displayText, p.x, p.y);
+    candidates.sort((a, b) => {
+      if (b.priority !== a.priority) return b.priority - a.priority;
+      if (b.fontSize !== a.fontSize) return b.fontSize - a.fontSize;
+      return a.text.localeCompare(b.text);
+    });
+
+    const filtered = candidates.filter((c) => c.priority >= minP);
+
+    const accepted = [];
+    const collides = (box) => {
+      for (const a of accepted) {
+        if (
+          box.x2 >= a.x1 &&
+          box.x1 <= a.x2 &&
+          box.y2 >= a.y1 &&
+          box.y1 <= a.y2
+        )
+          return true;
+      }
+      return false;
+    };
+
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.lineWidth = 2;
+
+    for (const c of filtered) {
+      if (accepted.length >= maxLabels) break;
+      ctx.font = `${c.fontSize}px Arial, sans-serif`;
+      const metrics = ctx.measureText(c.text);
+      const w = metrics.width || c.text.length * (c.fontSize * 0.6);
+      const h = c.fontSize * LABEL_LINE_HEIGHT;
+      const box = {
+        x1: c.x - w / 2 - LABEL_PADDING_PX,
+        y1: c.y - h / 2 - LABEL_PADDING_PX,
+        x2: c.x + w / 2 + LABEL_PADDING_PX,
+        y2: c.y + h / 2 + LABEL_PADDING_PX,
+      };
+      if (collides(box)) continue;
+      accepted.push(box);
+      ctx.strokeStyle = "rgba(0,0,0,0.75)";
+      ctx.fillStyle = getLabelColor(c.priority);
+      ctx.strokeText(c.text, c.x, c.y);
+      ctx.fillText(c.text, c.x, c.y);
     }
     ctx.restore();
   }
 
   async function fetchZoneFeature(zoneId, zoneType) {
-    const localUrl = `/2025_weather/js/data/zones/cache/${zoneId}.json?v=${Date.now()}`;
+    const cacheParam = LOCAL_ZONE_CACHE_BUST ? `?v=${Date.now()}` : "";
+    const localUrl = `/2025_weather/js/data/zones/cache/${zoneId}.json${cacheParam}`;
     try {
-      const r = await fetch(localUrl, { cache: "no-cache" });
+      const r = await fetch(localUrl, {
+        cache: LOCAL_ZONE_CACHE_BUST ? "no-cache" : "force-cache",
+      });
       if (r.ok) return r.json();
     } catch {}
-
     const nwsUrl = `https://api.weather.gov/zones/${zoneType}/${zoneId}`;
     try {
       const r = await fetch(nwsUrl, {
@@ -541,32 +526,25 @@
   function flattenRings(geom) {
     const out = [];
     if (!geom || !geom.type) return out;
-
     switch (geom.type) {
-      case "Polygon": {
+      case "Polygon":
         if (Array.isArray(geom.coordinates)) out.push(geom.coordinates);
         break;
-      }
-      case "MultiPolygon": {
-        if (Array.isArray(geom.coordinates)) {
+      case "MultiPolygon":
+        if (Array.isArray(geom.coordinates))
           for (const poly of geom.coordinates) out.push(poly);
-        }
         break;
-      }
-      case "GeometryCollection": {
-        const geoms = Array.isArray(geom.geometries) ? geom.geometries : [];
-        for (const g of geoms) {
-          for (const poly of flattenRings(g)) out.push(poly);
-        }
+      case "GeometryCollection":
+        if (Array.isArray(geom.geometries))
+          for (const g of geom.geometries)
+            for (const poly of flattenRings(g)) out.push(poly);
         break;
-      }
       default:
         break;
     }
     return out;
   }
 
-  // -------- Feature drawing --------
   function drawFeatures(ctx, features, domain, rect, keysInOrder) {
     for (const key of keysInOrder) {
       const color = colorForKey(key);
@@ -590,7 +568,6 @@
             ctx.closePath();
           }
         }
-
         ctx.fillStyle = color;
         ctx.globalAlpha = 0.6;
         try {
@@ -610,9 +587,8 @@
     let lonMin = Infinity,
       lonMax = -Infinity,
       latMin = Infinity,
-      latMax = -Infinity;
-    let count = 0;
-
+      latMax = -Infinity,
+      count = 0;
     const push = (lon, lat) => {
       const x = Number(lon),
         y = Number(lat);
@@ -623,32 +599,23 @@
       latMax = Math.max(latMax, y);
       count++;
     };
-
     for (const f of features) {
       const polys = flattenRings(f?.geometry);
-      for (const poly of polys) {
-        for (const ring of poly) {
-          for (const pt of ring) {
-            if (!Array.isArray(pt) || pt.length < 2) continue;
-            push(pt[0], pt[1]);
-          }
-        }
-      }
+      for (const poly of polys)
+        for (const ring of poly)
+          for (const pt of ring)
+            if (Array.isArray(pt) && pt.length >= 2) push(pt[0], pt[1]);
     }
-
     if (
       !count ||
       !Number.isFinite(lonMin) ||
       !Number.isFinite(lonMax) ||
       !Number.isFinite(latMin) ||
       !Number.isFinite(latMax)
-    ) {
+    )
       return null;
-    }
-
     const lonPad = Math.max(1, (lonMax - lonMin) * 0.06);
     const latPad = Math.max(0.5, (latMax - latMin) * 0.06);
-
     return {
       lonMin: Math.max(DEFAULT_DOMAIN.lonMin, lonMin - lonPad),
       lonMax: Math.min(DEFAULT_DOMAIN.lonMax, lonMax + lonPad),
@@ -664,26 +631,121 @@
     return false;
   }
 
-  function drawPanel(canvasId, featureCollection, hazard) {
-    console.info("[ww] drawPanel START", {
-      canvasId,
-      hazard,
-      canvas: !!document.getElementById(canvasId),
-    });
+  // -------- Refactored tile layer (reduced overdraw) --------
+  async function drawTilesLayer(
+    ctx,
+    domain,
+    rect,
+    features,
+    hazard,
+    version,
+    canvasKey
+  ) {
+    if (!TILE_PROVIDERS[TILE_STYLE]) return;
 
-    console.info("[ww] drawPanel", canvasId, {
-      hazard,
-      count: (featureCollection?.features || []).length,
-    });
+    const z = chooseTileZoom(domain, rect);
+
+    const gxMin = lonToGlobalPx(domain.lonMin, z);
+    const gxMax = lonToGlobalPx(domain.lonMax, z);
+    const gyMin = Math.min(
+      latToGlobalPx(domain.latMax, z),
+      latToGlobalPx(domain.latMin, z)
+    );
+    const gyMax = Math.max(
+      latToGlobalPx(domain.latMax, z),
+      latToGlobalPx(domain.latMin, z)
+    );
+
+    const x0 = Math.floor(gxMin / 256);
+    const x1 = Math.floor((gxMax - 1) / 256);
+    const y0 = Math.floor(gyMin / 256);
+    const y1 = Math.floor((gyMax - 1) / 256);
+
+    const mapX = (px) => rect.x + ((px - gxMin) / (gxMax - gxMin)) * rect.w;
+    const mapY = (py) => rect.y + ((py - gyMin) / (gyMax - gyMin)) * rect.h;
+
+    // Offscreen tile buffer to avoid repeatedly repainting overlays
+    const tileCanvas = document.createElement("canvas");
+    tileCanvas.width = ctx.canvas.width;
+    tileCanvas.height = ctx.canvas.height;
+    const tctx = tileCanvas.getContext("2d");
+
+    const tiles = [];
+    for (let ty = y0; ty <= y1; ty++) {
+      for (let tx = x0; tx <= x1; tx++) {
+        tiles.push({ tx, ty });
+      }
+    }
+
+    let overlayRaf = null;
+    let overlayDirty = false;
+
+    const all = (features?.features ?? []).filter(
+      (f) => f?.properties?.hazard === hazard
+    );
+    const keysOrder =
+      hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
+    const zoomForLabels = z;
+
+    const renderOverlays = () => {
+      if (version !== _drawVersionByCanvas.get(canvasKey)) return;
+      overlayRaf = null;
+      overlayDirty = false;
+      ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.drawImage(tileCanvas, rect.x, rect.y);
+      drawBasemap(ctx, domain, rect);
+      drawFeatures(ctx, all, domain, rect, keysOrder);
+      drawPlacenames(ctx, domain, rect, zoomForLabels);
+    };
+
+    const scheduleOverlay = () => {
+      if (overlayDirty) return;
+      overlayDirty = true;
+      overlayRaf = requestAnimationFrame(renderOverlays);
+    };
+
+    // Concurrency-limited loader
+    let index = 0;
+    async function worker() {
+      while (index < tiles.length) {
+        const i = index++;
+        const { tx, ty } = tiles[i];
+        if (version !== _drawVersionByCanvas.get(canvasKey)) return;
+
+        const img = await ensureTile(TILE_STYLE, z, tx, ty);
+        if (!img || version !== _drawVersionByCanvas.get(canvasKey)) return;
+
+        const px0 = tx * 256,
+          py0 = ty * 256;
+        const px1 = px0 + 256,
+          py1 = py0 + 256;
+        const cx0 = mapX(px0),
+          cy0 = mapY(py0);
+        const cx1 = mapX(px1),
+          cy1 = mapY(py1);
+        const dx = cx1 - cx0,
+          dy = cy1 - cy0;
+        tctx.drawImage(img, cx0, cy0, dx, dy);
+
+        scheduleOverlay();
+      }
+    }
+    const workers = [];
+    for (let i = 0; i < TILE_CONCURRENCY; i++) workers.push(worker());
+    await Promise.all(workers);
+
+    // Final overlay ensure (in case no tiles or all loaded before RAF)
+    if (version === _drawVersionByCanvas.get(canvasKey)) {
+      if (overlayRaf) cancelAnimationFrame(overlayRaf);
+      renderOverlays();
+    }
+  }
+
+  function drawPanel(canvasId, featureCollection, hazard) {
     const canvas = document.getElementById(canvasId);
-    console.info("[ww] canvas check", {
-      canvas: !!canvas,
-      hidden: canvas ? isHidden(canvas) : "no canvas",
-    });
     if (!canvas || isHidden(canvas)) return;
 
     const { width, height } = resizeCanvasToContainer(canvas);
-    console.info("[ww] canvas resized", { width, height });
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
 
@@ -709,11 +771,15 @@
     const version = prev + 1;
     _drawVersionByCanvas.set(canvasId, version);
 
-    console.info("[ww] about to call drawTilesLayer", {
-      style: TILE_STYLE,
-      provider: TILE_PROVIDERS["imagery"],
-    });
+    // Initial fast overlay (vectors + labels) before tiles arrive
+    drawBasemap(ctx, auto, rectMain);
+    const keysOrder =
+      hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
+    drawFeatures(ctx, all, auto, rectMain, keysOrder);
+    const currentZoom = chooseTileZoom(auto, rectMain);
+    drawPlacenames(ctx, auto, rectMain, currentZoom);
 
+    // Start tiles (async incremental, will repaint overlays efficiently)
     drawTilesLayer(
       ctx,
       auto,
@@ -724,16 +790,6 @@
       canvasId
     );
 
-    drawBasemap(ctx, auto, rectMain);
-
-    const keysOrder =
-      hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
-
-    drawFeatures(ctx, all, auto, rectMain, keysOrder);
-
-    const currentZoom = chooseTileZoom(auto, rectMain);
-    drawPlacenames(ctx, auto, rectMain, currentZoom);
-
     function insetRect(box) {
       return {
         x: Math.round(box.x * width),
@@ -742,14 +798,7 @@
         h: Math.round(box.h * height),
       };
     }
-    if (all.length) {
-      const keysOrder =
-        hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
-      drawFeatures(ctx, all, auto, rectMain, keysOrder);
-      
-      const currentZoom = chooseTileZoom(auto, rectMain);
-      drawPlacenames(ctx, auto, rectMain, currentZoom);
-    }
+
     if (pr.length) {
       const box = INSETS.PR;
       drawFeatures(
@@ -764,8 +813,8 @@
         insetRect(box),
         keysOrder
       );
-      ctx.strokeStyle = "#666";
       const r = insetRect(box);
+      ctx.strokeStyle = "#666";
       ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
     }
     if (vi.length) {
@@ -782,8 +831,8 @@
         insetRect(box),
         keysOrder
       );
-      ctx.strokeStyle = "#666";
       const r = insetRect(box);
+      ctx.strokeStyle = "#666";
       ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
     }
   }
@@ -814,12 +863,8 @@
 
   function renderTextList(containerId, displaySection, emptyMsg) {
     const el = document.getElementById(containerId);
-    if (!el) {
-      console.warn("Text container not found:", containerId);
-      return;
-    }
+    if (!el) return;
     el.innerHTML = "";
-
     if (!displaySection || !displaySection.length) {
       const p = document.createElement("p");
       p.textContent = emptyMsg;
@@ -832,19 +877,18 @@
       const title = document.createElement("div");
       title.className = "ww-block-title";
       title.textContent = block.label;
-
       const bg = colorForKey(block.key);
       const fg = readableTextColor(bg);
-      title.style.backgroundColor = bg;
-      title.style.color = fg;
-      title.style.padding = "0.35rem 0.5rem";
-      title.style.borderRadius = "0.375rem";
-      title.style.fontWeight = "600";
-      title.style.display = "inline-block";
-      title.style.marginBottom = "0.25rem";
-
+      Object.assign(title.style, {
+        backgroundColor: bg,
+        color: fg,
+        padding: "0.35rem 0.5rem",
+        borderRadius: "0.375rem",
+        fontWeight: "600",
+        display: "inline-block",
+        marginBottom: "0.25rem",
+      });
       h.appendChild(title);
-
       const list = document.createElement("ul");
       for (const st of block.states) {
         const stCode = st.state && st.state !== "UNK" ? st.state : "—";
@@ -866,10 +910,7 @@
 
   async function init() {
     const stormId = getParam("storm");
-    if (!stormId) {
-      console.error("Missing ?storm=ALnnYYYY");
-      return;
-    }
+    if (!stormId) return;
 
     loadBasemap();
     loadPlacenames();
@@ -883,7 +924,6 @@
         !Array.isArray(data.features.features) ||
         data.features.features.length === 0
       ) {
-        console.info("tcv.json is thin — loading geometries from cache");
         data.features = await buildFeaturesFromEvents(data.events || []);
       }
 
@@ -892,7 +932,6 @@
         data.display?.wind,
         "No active watches/warnings."
       );
-
       renderTextList(
         "ww-surge-text",
         data.display?.surge,
@@ -909,8 +948,7 @@
       };
       window.addEventListener("resize", onResize, { passive: true });
       onResize();
-    } catch (err) {
-      console.error("Failed to load tcv.json:", err);
+    } catch {
       renderTextList("ww-wind-text", null, "No active watches/warnings.");
       renderTextList("ww-surge-text", null, "No active watches/warnings.");
     }
