@@ -18,13 +18,20 @@ function argOrGet(string $key, ?string $default=null): ?string {
   return $_GET[$key] ?? $default;
 }
 function fail(string $m, int $code=400): void {
-  http_response_code($code);
-  header('Content-Type: application/json');
-  echo json_encode(['ok'=>false,'error'=>$m], JSON_PRETTY_PRINT); exit;
+  if (PHP_SAPI !== 'cli') {
+    http_response_code($code);
+    header('Content-Type: application/json');
+  }
+  echo json_encode(['ok'=>false,'error'=>$m], JSON_PRETTY_PRINT); 
+  exit;
 }
+
 function ok(array $d): void {
-  header('Content-Type: application/json');
-  echo json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES); exit;
+  if (PHP_SAPI !== 'cli') {
+    header('Content-Type: application/json');
+  }
+  echo json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES); 
+  exit;
 }
 
 if (PHP_SAPI === 'cli') {

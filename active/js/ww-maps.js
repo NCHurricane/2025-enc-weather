@@ -1,7 +1,83 @@
 /* eslint-disable no-undef */
+// ============================================================================
+// Watches & Warnings Maps Module (ww-maps.js)
+// ---------------------------------------------------------------------------
+// Purpose:
+//   Renders the canvas-based hazards / surge map panels, loads tiled imagery,
+//   basemap geometry, and decluttered place name labels with priority + zoom
+//   based filtering.
+//
+// Key Concepts:
+//   1. Tiles: Selected via TILE_STYLE and provided by TILE_PROVIDERS mapping.
+//   2. Basemap: Simple GeoJSON (states / counties) drawn once per frame.
+//   3. Place Names: Loaded from PLACENAMES_URL (array of objects with
+//      { text, lon, lat, minZoom, priority }.)
+//   4. Label Declutter: Simple O(N*M) collision check with early stop when
+//      maxLabels (cap) reached.
+//   5. Styling: Font sizes + colors driven by CSS custom properties so they
+//      adapt to responsive breakpoints without JS changes.
+//
+// Quick Tuning Cheat Sheet:
+//   Filtering / Visibility:
+//     - CSS variable --map-label-min-priority controls lowest priority shown.
+//       Adjust it in media queries (e.g. hide low priorities on small screens).
+//     - Per label: data JSON field `priority` (1..10). Higher number = more
+//       important (drawn first, larger font if CSS sizes increase).
+//     - Zoom gating: Each place can define `minZoom` (numeric). A label is
+//       drawn only when current `zoom >= minZoom` (after PLACENAMES_ZOOM_OFFSET).
+//     - PLACENAMES_ZOOM_OFFSET: Add/subtract to minZoom to reveal labels earlier
+//       or later without editing the data file.
+//
+//   Label Appearance (via CSS):
+//     --map-label-priority-1 .. --map-label-priority-10  (font sizes, px)
+//     --map-label-color-1    .. --map-label-color-10     (fill colors)
+//     Change these in `active.css` (and its breakpoints) to globally adjust.
+//     JS caches are invalidated automatically on width change; manual theme
+//     switches can force:  _labelFontCache = _labelColorCache = null.
+//
+//   Label Caps (performance / clutter):
+//     LABEL_DYNAMIC_CAP (boolean) enables per-zoom caps.
+//     LABEL_ZOOM_CAPS: Map of integer zoom -> hard cap (e.g. {6:10,7:15,...}).
+//     LABEL_MAX_PER_ZOOM: Absolute ceiling (safety upper bound).
+//     To always use one fixed cap, set LABEL_DYNAMIC_CAP = false and adjust
+//     LABEL_MAX_PER_ZOOM.
+//
+//   Debugging:
+//     DEBUG_LABELS = true  -> logs counts (skipped by zoom / priority / drawn).
+//     DEBUG_TILES   = true  -> outlines tile fetch rectangles & timing.
+//
+//   Tile / Basemap Adjustments:
+//     TILE_STYLE selects provider key in TILE_PROVIDERS (imagery/topo/shaded/none).
+//     TILE_MIN_Z / TILE_MAX_Z bound selectable tile zoom range.
+//     Modify INSETS (PR / VI) to reposition inset boxes or add new ones.
+//
+//   Performance Tips:
+//     - Reduce LABEL_MAX_PER_ZOOM or tighten LABEL_ZOOM_CAPS for slower devices.
+//     - Lower LABEL_PADDING_PX to allow closer packing.
+//     - Consider spatial indexing if label volume grows significantly.
+//
+// Steps To Change Filtering Behavior Quickly:
+//   A) To hide low priorities <5 on phones: set in CSS @media(max-width: X){
+//        :root { --map-label-min-priority: 5; }
+//      }
+//   B) To reveal a subset only after zooming in: raise each place's `minZoom`.
+//   C) To emphasize certain priorities: increase their CSS font sizes or colors.
+//
+// Data Requirements For Each Placename Entry:
+//   {
+//     "text": "City Name",  // string
+//     "lon": -77.123,       // number (W negative)
+//     "lat": 35.678,        // number
+//     "minZoom": 7,         // number (optional, defaults to MIN_ZOOM_FOR_PLACENAMES)
+//     "priority": 6         // 1..10 (optional -> defaults to 1)
+//   }
+//
+// If a very different scale is needed (e.g. 1..5), adjust the loops that read
+// font sizes / colors (currently 1..10) and corresponding CSS variable names.
+// ============================================================================
 (() => {
   const DEFAULT_DOMAIN = { lonMin: -106, lonMax: -60, latMin: 18, latMax: 50 };
-
+  const DEBUG_LABELS = true;
   const BASEMAP_URL =
     "/2025_weather/js/data/basemaps/us_states_counties.geojson";
 
@@ -39,9 +115,11 @@
     none: null,
   };
   const TILE_STYLE = "imagery";
-  const TILE_MIN_Z = 5;
-  const TILE_MAX_Z = 6;
+  const TILE_MIN_Z = 6;
+  const TILE_MAX_Z = 10;
   const TILE_DPR_AWARE = false;
+  // Opacity for base map tiles only (0 = transparent, 1 = opaque)
+  const TILE_OPACITY = 0.85;
 
   const DEBUG_TILES = false;
   const TILE_CONCURRENCY = 6;
@@ -55,14 +133,14 @@
 
   const SHOW_PLACENAMES = true;
   const MIN_ZOOM_FOR_PLACENAMES = 6;
-  const PLACENAMES_ZOOM_OFFSET = -1;
+  const PLACENAMES_ZOOM_OFFSET = 0;
 
   // Collision / label config
   const LABEL_PADDING_PX = 4;
   const LABEL_LINE_HEIGHT = 1.15;
   const LABEL_MAX_PER_ZOOM = 120;
   const LABEL_DYNAMIC_CAP = true;
-  const LABEL_ZOOM_CAPS = { 6: 60, 7: 80, 8: 100, 9: 120 };
+  const LABEL_ZOOM_CAPS = { 6: 10, 7: 15, 8: 30, 9: 40, 10: 60 };
 
   // NEW: cached label font sizes (pulled from CSS custom properties)
   let _labelFontCache = null;
@@ -362,23 +440,54 @@
 
     let maxLabels = LABEL_MAX_PER_ZOOM;
     if (LABEL_DYNAMIC_CAP) {
-      if (LABEL_ZOOM_CAPS[zoom] != null) maxLabels = LABEL_ZOOM_CAPS[zoom];
-      else {
+      const zInt = Math.round(zoom); // normalize
+      const capFromMap = LABEL_ZOOM_CAPS[zInt];
+      if (DEBUG_LABELS) {
+        console.log("[cap-debug]", {
+          zoomRaw: zoom,
+          zInt,
+          keys: Object.keys(LABEL_ZOOM_CAPS),
+          capFromMap,
+        });
+      }
+      if (capFromMap != null) {
+        maxLabels = capFromMap;
+      } else {
+        // fallback (adjust as needed)
         maxLabels = Math.min(
           LABEL_MAX_PER_ZOOM,
-          40 + (zoom - MIN_ZOOM_FOR_PLACENAMES) * 25
+          40 + (zInt - MIN_ZOOM_FOR_PLACENAMES) * 25
         );
       }
     }
 
     const minP = getMinLabelPriority();
 
+    let skippedZoom = 0,
+      skippedPriority = 0,
+      skippedInvalid = 0;
     const candidates = [];
+
     for (const place of PLACENAMES) {
       const { text, lat, lon, minZoom, priority = 1 } = place;
+
+      // Basic numeric validation
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        skippedInvalid++;
+        continue;
+      }
+
       const effectiveMinZoom =
         (minZoom || MIN_ZOOM_FOR_PLACENAMES) + PLACENAMES_ZOOM_OFFSET;
-      if (zoom < effectiveMinZoom) continue;
+
+      if (zoom < effectiveMinZoom) {
+        skippedZoom++;
+        continue;
+      }
+      if (priority < minP) {
+        skippedPriority++;
+        continue;
+      }
       if (
         lon < domain.lonMin ||
         lon > domain.lonMax ||
@@ -389,6 +498,8 @@
 
       const p = project(lon, lat, domain, rect);
       if (
+        !Number.isFinite(p.x) ||
+        !Number.isFinite(p.y) ||
         p.x < rect.x ||
         p.x > rect.x + rect.w ||
         p.y < rect.y ||
@@ -396,24 +507,36 @@
       )
         continue;
 
-      const fontSize = getLabelFontSize(priority);
-
       candidates.push({
         x: p.x,
         y: p.y,
-        fontSize,
+        fontSize: getLabelFontSize(priority),
         priority,
         text: (text || "").toUpperCase(),
       });
     }
 
+    // Sort higher priority / larger first
     candidates.sort((a, b) => {
       if (b.priority !== a.priority) return b.priority - a.priority;
       if (b.fontSize !== a.fontSize) return b.fontSize - a.fontSize;
       return a.text.localeCompare(b.text);
     });
 
-    const filtered = candidates.filter((c) => c.priority >= minP);
+    if (DEBUG_LABELS) {
+      console.log(
+        `[labels] zoom=${zoom} cap=${maxLabels} minPriority=${minP} ` +
+          `candidates=${candidates.length} (post-skip)`
+      );
+      console.log("[labels-filter-details]", {
+        zoom,
+        minP,
+        skippedZoom,
+        skippedPriority,
+        skippedInvalid,
+        kept: candidates.length,
+      });
+    }
 
     const accepted = [];
     const collides = (box) => {
@@ -435,7 +558,7 @@
     ctx.shadowColor = "rgba(0,0,0,0.45)";
     ctx.lineWidth = 2;
 
-    for (const c of filtered) {
+    for (const c of candidates) {
       if (accepted.length >= maxLabels) break;
       ctx.font = `${c.fontSize}px Arial, sans-serif`;
       const metrics = ctx.measureText(c.text);
@@ -692,7 +815,15 @@
       overlayRaf = null;
       overlayDirty = false;
       ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
-      ctx.drawImage(tileCanvas, rect.x, rect.y);
+      // Draw tiles with separate opacity so overlays stay fully opaque
+      if (TILE_OPACITY >= 1) {
+        ctx.drawImage(tileCanvas, rect.x, rect.y);
+      } else if (TILE_OPACITY > 0) {
+        ctx.save();
+        ctx.globalAlpha = TILE_OPACITY;
+        ctx.drawImage(tileCanvas, rect.x, rect.y);
+        ctx.restore();
+      }
       drawBasemap(ctx, domain, rect);
       drawFeatures(ctx, all, domain, rect, keysOrder);
       drawPlacenames(ctx, domain, rect, zoomForLabels);
@@ -777,6 +908,7 @@
       hazard === "wind" ? ["HU.A", "TR.A", "HU.W", "TR.W"] : ["SS.A", "SS.W"];
     drawFeatures(ctx, all, auto, rectMain, keysOrder);
     const currentZoom = chooseTileZoom(auto, rectMain);
+    if (DEBUG_LABELS) console.log(`[tiles] chosenTileZoom=${currentZoom}`);
     drawPlacenames(ctx, auto, rectMain, currentZoom);
 
     // Start tiles (async incremental, will repaint overlays efficiently)

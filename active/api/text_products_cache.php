@@ -136,10 +136,10 @@ function formatNHCTextContent($rawDescription) {
 }
 
 function getAdvisoryNumber($stormId) {
+    $stormId = strtoupper(trim($stormId));
     preg_match('/^(AL|EP)(\d{2})(\d{4})$/', $stormId, $matches);
-    
     if (count($matches) !== 4) {
-        logMessage("Invalid storm ID format: {$stormId}", 'ERROR');
+        logMessage("Invalid storm ID format after uppercasing: {$stormId}", 'ERROR');
         return false;
     }
     
@@ -251,6 +251,7 @@ function getMonthlyProducts() {
 }
 
 function cacheStormProducts($stormId) {
+    $stormId = strtoupper($stormId);
     $advisoryNumber = getAdvisoryNumber($stormId);
     if ($advisoryNumber === false) {
         return false;
