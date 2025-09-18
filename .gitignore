@@ -12,3 +12,4 @@ js/data/tiles/imagery/
 js/data/placenames.json
 .vscode/
 .DS_Store
+js/data/generate_placename.py
