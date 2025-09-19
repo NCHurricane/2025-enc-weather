@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * NHC TCV Writer, Atlantic - tcv_writer.php
@@ -11,9 +12,14 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
+if (PHP_SAPI !== 'cli') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+}
+
 function argOrGet(string $key, ?string $default=null): ?string {
   if (PHP_SAPI==='cli') {
-    foreach ($GLOBALS['argv'] as $a) if (str_starts_with($a,"--{$key}=")) return substr($a, strlen($key)+3);
+    foreach ($GLOBALS['argv'] as $a) if (strpos($a, "--{$key}=") === 0) return substr($a, strlen($key)+3);
   }
   return $_GET[$key] ?? $default;
 }
@@ -37,7 +43,7 @@ function ok(array $d): void {
 
 if (PHP_SAPI === 'cli') {
     foreach ($argv as $arg) {
-        if (str_starts_with($arg, '--storm=')) {
+        if (strpos($arg, '--storm=') === 0) {
             $_GET['storm'] = substr($arg, 8);
             break;
         }
@@ -57,7 +63,12 @@ if ($stormId === 'ALL') {
 if (!$stormId || !preg_match('/^AL(\d{2})\d{4}$/i',$stormId,$m)) fail('Provide storm like ALnnYYYY or ALL');
 
 try {
-    processSingleStormTCV($stormId);
+    $result = processSingleStormTCV($stormId);
+    if (PHP_SAPI === 'cli') {
+        echo json_encode($result, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . "\n";
+    } else {
+        ok($result);
+    }
 } catch (Exception $e) {
     fail($e->getMessage(), 500);
 }
@@ -126,7 +137,7 @@ function processAllALStormsTCV(): void {
     }
     
     if (PHP_SAPI === 'cli') {
-        $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
+        $successCount = count(array_filter($results, function($r) { return $r['status'] === 'success'; }));
         echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
     } else {
         ok(['ok' => true, 'processed' => $results]);
@@ -217,7 +228,7 @@ function processSingleStormTCV(string $stormId): array {
     }
     function parseVTEC(string $line): ?array {
       $line=trim($line);
-      if (!str_starts_with($line,'/O.')) return null;
+      if (strpos($line, '/O.') !== 0) return null;
       if (!preg_match('#^/O\.([A-Z]{3})\.([A-Z]{4})\.(HU|TR|SS)\.(A|W)\.(\d{4})\.([0-9TZ:-]+)-([0-9TZ:-]+)/$#',$line,$m)) return null;
       return ['action'=>$m[1],'office'=>$m[2],'phen'=>$m[3],'sig'=>$m[4],'etn'=>$m[5],'start'=>$m[6],'end'=>$m[7]];
     }
@@ -249,10 +260,11 @@ function processSingleStormTCV(string $stormId): array {
 
     $lines=preg_split("/\r\n|\n|\r/",$tcvRaw);
     $productId=$advisoryNum=$issuedIso=$disclaimer=null;
+
     foreach($lines as $ix=>$ln){
       if($productId===null && preg_match('/^[A-Z]{5}\s+KNHC\s+\d{6}$/',trim($ln))) $productId=trim($ln);
       if($advisoryNum===null && preg_match('/ADVISORY NUMBER\s+(\d+)/i',$ln,$mm)) $advisoryNum=(int)$mm[1];
-      if($disclaimer===null && str_starts_with(strtoupper(trim($ln)),'CAUTION')){
+      if($disclaimer===null && strpos(strtoupper(trim($ln)), 'CAUTION') === 0){
         $para=[$ln]; for($j=$ix+1;$j<count($lines);$j++){ $t=rtrim($lines[$j],"\r"); if($t==='') break; $para[]=$t; }
         $disclaimer=trim(implode("\n",$para));
       }
@@ -286,11 +298,15 @@ function processSingleStormTCV(string $stormId): array {
     $features=[];
 
     function labelForCode(string $code): string {
-      return match($code){
-        'HU.W'=>'Hurricane Warning','HU.A'=>'Hurricane Watch',
-        'TR.W'=>'Tropical Storm Warning','TR.A'=>'Tropical Storm Watch',
-        'SS.W'=>'Storm Surge Warning','SS.A'=>'Storm Surge Watch', default=>$code
-      };
+      switch($code) {
+        case 'HU.W': return 'Hurricane Warning';
+        case 'HU.A': return 'Hurricane Watch';
+        case 'TR.W': return 'Tropical Storm Warning';
+        case 'TR.A': return 'Tropical Storm Watch';
+        case 'SS.W': return 'Storm Surge Warning';
+        case 'SS.A': return 'Storm Surge Watch';
+        default: return $code;
+      }
     }
 
     foreach($final as $zoneId=>$phenMap){
@@ -341,8 +357,13 @@ function processSingleStormTCV(string $stormId): array {
     ];
 
     $tmp=$tcvOutPath.'.tmp'; 
-    file_put_contents($tmp, json_encode($out, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)); 
-    rename($tmp,$tcvOutPath);
+    if (file_put_contents($tmp, json_encode($out, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)) === false) {
+        throw new Exception("Failed to write temporary file: {$tmp}");
+    }
+    if (!rename($tmp,$tcvOutPath)) {
+        @unlink($tmp);
+        throw new Exception("Failed to rename temporary file: {$tcvOutPath}");
+    }
     
     return ['ok'=>true,'wrote'=>$tcvOutPath,'events'=>count($events),'features'=>count($features),'embed'=>$embed];
 }

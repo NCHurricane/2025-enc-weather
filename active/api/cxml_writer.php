@@ -11,9 +11,23 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
+// Add headers for web requests
+if (PHP_SAPI !== 'cli') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+}
+
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
-function out($s){ fwrite(STDERR, "[".date('Y-m-d H:i:s')."] $s\n"); }
+function out($s){
+  $line = "[" . date('Y-m-d H:i:s') . "] $s";
+  if (PHP_SAPI === 'cli') {
+    fwrite(STDERR, $line . "\n");
+  } else {
+    error_log("[cxml_writer] " . $line);
+  }
+}
+
 function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 function asText($x){ return trim((string)$x); }
 function asNum($x){
@@ -56,7 +70,7 @@ function expand_short_id(string $id, string $stormsRoot): string {
     if (is_array($arr)) {
       foreach ($arr['data']['activeStorms'] as $s) {
         $sid = strtoupper((string)($s['id'] ?? ''));
-        if ($sid && str_starts_with($sid, substr($id,0,2)) && substr($sid,2,2) === substr($id,2,2)) {
+        if ($sid && strpos($sid, substr($id,0,2)) === 0 && substr($sid,2,2) === substr($id,2,2)) {
           return $sid;
         }
       }
@@ -69,8 +83,7 @@ $stormId = expand_short_id($stormParam, $stormsRoot);
 $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
 if ($stormParam === 'ALL') {
-    echo "Entering ALL mode - calling processAllALStormsCXML()\n";
-    flush();
+    out("Entering ALL mode - calling processAllALStormsCXML()");
     processAllALStormsCXML($stormsRoot);
     exit;
 }
@@ -132,129 +145,130 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     global $USER_AGENT;    
     $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
-$srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
-out("Fetch: $srcUrl");
+    $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+    out("Fetch: $srcUrl");
 
-$ch = curl_init($srcUrl);
-curl_setopt_array($ch, [
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_FOLLOWLOCATION => true,
-  CURLOPT_CONNECTTIMEOUT => 15,
-  CURLOPT_TIMEOUT => 30,
-  CURLOPT_HTTPHEADER => [
-    "User-Agent: $USER_AGENT",
-    "Accept: application/xml, text/xml;q=0.9,*/*;q=0.8"
-  ],
-]);
-$xmlRaw = curl_exec($ch);
-$http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$err  = curl_error($ch);
-curl_close($ch);
-if (!$xmlRaw || $http !== 200) {
-  $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
-  out("Primary failed, trying FTP: $ftpUrl");
+    $ch = curl_init($srcUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTPHEADER => [
+            "User-Agent: $USER_AGENT",
+            "Accept: application/xml, text/xml;q=0.9,*/*;q=0.8"
+        ],
+    ]);
+    $xmlRaw = curl_exec($ch);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    
+    if (!$xmlRaw || $http !== 200) {
+        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+        out("Primary failed, trying FTP: $ftpUrl");
 
-  $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
-  $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
+        $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+        $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
 
-  if (!$xmlRaw) {
-    bail("fetch failed from both HTTPS ($http $err) and FTP sources");
-  }
+        if (!$xmlRaw) {
+            throw new Exception("fetch failed from both HTTPS ($http $err) and FTP sources");
+        }
 
-  out("FTP fallback successful for $stormId");
-}
+        out("FTP fallback successful for $stormId");
+    }
 
-libxml_use_internal_errors(true);
-$xml = simplexml_load_string($xmlRaw);
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_string($xmlRaw);
     if (!$xml) throw new Exception('XML parse failed');
 
-$hdr  = $xml->header ?? null;
-$data = $xml->data->disturbance ?? null;
+    $hdr  = $xml->header ?? null;
+    $data = $xml->data->disturbance ?? null;
 
-$meta = [
-  'id'       => asText($data->localID ?? ''),
-  'name'     => asText($data->cycloneName ?? ''),
-  'advisory' => preg_replace('/^\D+/', '', asText($hdr->generatingApplication->applicationType ?? '')),
-  'created'  => asText($hdr->creationTime ?? ''),
-];
-
-$currentFix = null;
-$fixes = [];
-$radii = [ 'r34' => null, 'r50' => null, 'r64' => null, 'seas12' => null ];
-
-foreach ($data->fix as $fix) {
-  $h   = (string)$fix['hour'];
-  $vt  = asText($fix->validTime ?? '');
-  $lat = asNum($fix->latitude ?? null);
-  $lon = asNum($fix->longitude ?? null);
-  $cd  = $fix->cycloneData ?? null;
-
-  $one = [
-    'hour' => $h,
-    'validTime' => $vt,
-    'lat' => $lat,
-    'lon' => $lon,
-    'motion' => [
-      'dir' => asNum($cd->stormMotion->directionToward ?? null),
-      'speedKt' => asNum($cd->stormMotion->speed ?? null),
-    ],
-    'wind' => [
-      'maxKt' => asNum($cd->maximumWind->speed ?? null),
-      'gustKt'=> asNum($cd->maximumWind->gusts ?? null),
-    ],
-    'type' => asText($cd->development ?? ''),
-  ];
-
-  $wc = $cd->windContours->windSpeed ?? [];
-  foreach ($wc as $ws) {
-    $sp = trim((string)$ws);
-    $key = $sp === '34' ? 'r34' : ($sp === '50' ? 'r50' : ($sp === '64' ? 'r64' : null));
-    if ($key) {
-      $r = [
-        'NE' => asRadius($ws->radius[0] ?? null),
-        'SE' => asRadius($ws->radius[1] ?? null),
-        'SW' => asRadius($ws->radius[2] ?? null),
-        'NW' => asRadius($ws->radius[3] ?? null),
-        'validTime' => $vt,
-        'hour' => $h,
-      ];
-      $one[$key] = $r;
-      if ($h === '000') $radii[$key] = $r;
-    }
-  }
-
-  $sc = $cd->seaContours->waveHeight ?? null;
-  if ($sc && trim((string)$sc) === '12') {
-    $r = [
-      'NE' => asRadius($sc->radius[0] ?? null),
-      'SE' => asRadius($sc->radius[1] ?? null),
-      'SW' => asRadius($sc->radius[2] ?? null),
-      'NW' => asRadius($sc->radius[3] ?? null),
-      'validTime' => $vt,
-      'hour' => $h,
+    $meta = [
+        'id'       => asText($data->localID ?? ''),
+        'name'     => asText($data->cycloneName ?? ''),
+        'advisory' => preg_replace('/^\D+/', '', asText($hdr->generatingApplication->applicationType ?? '')),
+        'created'  => asText($hdr->creationTime ?? ''),
     ];
-    $one['seas12'] = $r;
-    if ($h === '000') $radii['seas12'] = $r;
-  }
 
-  if ($h === '000' && !$currentFix) $currentFix = $one;
-  $fixes[] = $one;
-}
+    $currentFix = null;
+    $fixes = [];
+    $radii = [ 'r34' => null, 'r50' => null, 'r64' => null, 'seas12' => null ];
+
+    foreach ($data->fix as $fix) {
+        $h   = (string)$fix['hour'];
+        $vt  = asText($fix->validTime ?? '');
+        $lat = asNum($fix->latitude ?? null);
+        $lon = asNum($fix->longitude ?? null);
+        $cd  = $fix->cycloneData ?? null;
+
+        $one = [
+            'hour' => $h,
+            'validTime' => $vt,
+            'lat' => $lat,
+            'lon' => $lon,
+            'motion' => [
+                'dir' => asNum($cd->stormMotion->directionToward ?? null),
+                'speedKt' => asNum($cd->stormMotion->speed ?? null),
+            ],
+            'wind' => [
+                'maxKt' => asNum($cd->maximumWind->speed ?? null),
+                'gustKt'=> asNum($cd->maximumWind->gusts ?? null),
+            ],
+            'type' => asText($cd->development ?? ''),
+        ];
+
+        $wc = $cd->windContours->windSpeed ?? [];
+        foreach ($wc as $ws) {
+            $sp = trim((string)$ws);
+            $key = $sp === '34' ? 'r34' : ($sp === '50' ? 'r50' : ($sp === '64' ? 'r64' : null));
+            if ($key) {
+                $r = [
+                    'NE' => asRadius($ws->radius[0] ?? null),
+                    'SE' => asRadius($ws->radius[1] ?? null),
+                    'SW' => asRadius($ws->radius[2] ?? null),
+                    'NW' => asRadius($ws->radius[3] ?? null),
+                    'validTime' => $vt,
+                    'hour' => $h,
+                ];
+                $one[$key] = $r;
+                if ($h === '000') $radii[$key] = $r;
+            }
+        }
+
+        $sc = $cd->seaContours->waveHeight ?? null;
+        if ($sc && trim((string)$sc) === '12') {
+            $r = [
+                'NE' => asRadius($sc->radius[0] ?? null),
+                'SE' => asRadius($sc->radius[1] ?? null),
+                'SW' => asRadius($sc->radius[2] ?? null),
+                'NW' => asRadius($sc->radius[3] ?? null),
+                'validTime' => $vt,
+                'hour' => $h,
+            ];
+            $one['seas12'] = $r;
+            if ($h === '000') $radii['seas12'] = $r;
+        }
+
+        if ($h === '000' && !$currentFix) $currentFix = $one;
+        $fixes[] = $one;
+    }
 
     $stormDir = $stormsRoot . '/' . strtoupper($stormId);
-if (!is_dir($stormDir)) {
-  @mkdir($stormDir, 0775, true);
-}
-$cacheFile = $stormDir . '/storm.json';
+    if (!is_dir($stormDir)) {
+        @mkdir($stormDir, 0775, true);
+    }
+    $cacheFile = $stormDir . '/storm.json';
 
-$out = [
-  'metadata' => $meta,
-  'current'  => $currentFix,
-  'radii'    => $radii,
-  'fixes'    => $fixes,
-];
+    $out = [
+        'metadata' => $meta,
+        'current'  => $currentFix,
+        'radii'    => $radii,
+        'fixes'    => $fixes,
+    ];
 
-$tmp = $cacheFile . '.tmp';
+    $tmp = $cacheFile . '.tmp';
     if (@file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
         throw new Exception("write tmp failed: $tmp");
     }
@@ -262,9 +276,7 @@ $tmp = $cacheFile . '.tmp';
         throw new Exception("rename failed: $cacheFile");
     }
 
-
-@chmod($cacheFile, 0644);
-
-out("Wrote $cacheFile");
-  }
-  ?>
+    @chmod($cacheFile, 0644);
+    out("Wrote $cacheFile");
+}
+?>

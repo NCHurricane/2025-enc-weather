@@ -1,58 +1,117 @@
+#!/usr/bin/env php
 <?php
 /**
  * NHC Advisory Writer, Atlantic - advisory_writer.php
  * Fetches NHC advisory XML (Atlantic only) and caches a compact advisory.json under:
- *   /active/storms/ALnnYYYY/advisory.json
+ * /active/storms/ALnnYYYY/advisory.json
  *
- * Query:
- *   ?storm=ALnnYYYY  or ?storm=ALL
+ * Query (Web Mode):
+ * ?storm=ALnnYYYY  or ?storm=ALL
  *
- * Notes:
- * - Atomic write (tmp -> rename)
- * - UTC timestamps in ISO-8601 for `generated` and `messageTimeUTC`
- * - `messageTimeLocal` is passed through verbatim (no conversions)
+ * Execution (CLI Mode):
+ * php advisory_writer.php --storm=ALnnYYYY
+ * php advisory_writer.php --storm=ALL
+ * php advisory_writer.php (defaults to --storm=ALL)
  */
-// File-based logging setup (must be defined before any usage)
-$ADV_LOG_DIR = __DIR__ . '/../../js/modules/logs/';
-$ADV_LOG_FILE = $ADV_LOG_DIR . 'advisory_writer.log';
 
-function adv_log($msg, $level = 'INFO') {
-    global $ADV_LOG_DIR, $ADV_LOG_FILE;
-    if (!is_dir($ADV_LOG_DIR)) {
-        @mkdir($ADV_LOG_DIR, 0775, true);
+// --- Basic Setup ---
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../js/modules/logs/advisory_writer_error.log');
+
+// --- Core Logic Start ---
+
+// Determine execution mode (Command Line or Web)
+$isCli = (PHP_SAPI === 'cli' || defined('STDIN'));
+
+// Initialize storm variable
+$storm = '';
+
+if ($isCli) {
+    // --- CLI Mode ---
+    echo "--- Running in CLI mode ---\n";
+    $storm = 'ALL'; // Default for CLI
+    if (isset($argv)) {
+        foreach ($argv as $arg) {
+            if (strpos($arg, '--storm=') === 0) {
+                $storm = strtoupper(trim(substr($arg, 8)));
+                break;
+            }
+        }
     }
-    $timestamp = date('Y-m-d H:i:s');
-    $entry = "[$timestamp] [$level] $msg\n";
-    @file_put_contents($ADV_LOG_FILE, $entry, FILE_APPEND | LOCK_EX);
-}
+    echo "Processing storm target: $storm\n";
+    // Manually set $_GET so the rest of the script can use it consistently
+    $_GET['storm'] = $storm;
 
-function adv_out($msg, $level = 'INFO') {
-    adv_log($msg, $level);
-    if (PHP_SAPI === 'cli' && defined('STDERR')) {
-        fwrite(STDERR, "[" . date('Y-m-d H:i:s') . "] $msg\n");
-    }
-}
-
-
-declare(strict_types=1);
-
-// Only output headers if not CLI
-if (PHP_SAPI !== 'cli') {
+} else {
+    // --- Web Mode ---
+    // Set headers FIRST before any potential output to avoid errors.
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
+
+    $storm = isset($_GET['storm']) ? strtoupper(trim($_GET['storm'])) : '';
 }
+
+// --- Functions ---
 
 $LOWERCASE_ALL = false;
 
-function bail(int $code, string $msg): void {
-  if (PHP_SAPI !== 'cli') {
+/**
+ * File-based logging function. Also echos to console in CLI mode.
+ * @param string $msg The message to log.
+ * @param string $level The log level (e.g., INFO, ERROR, DEBUG).
+ */
+function adv_log($msg, $level = 'INFO') {
+    global $isCli;
+    
+    $logDir = __DIR__ . '/../../js/modules/logs/';
+    $logFile = $logDir . 'advisory_writer.log';
+
+    if (!is_dir($logDir)) {
+        if (!@mkdir($logDir, 0755, true)) {
+            error_log("advisory_writer.php: CRITICAL - Failed to create log directory: {$logDir}");
+            return;
+        }
+    }
+
+    $timestamp = date('Y-m-d H:i:s');
+    $entry = "[$timestamp] [$level] $msg\n";
+
+    if ($isCli) {
+        echo $entry;
+    }
+
+    @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
+}
+
+/**
+ * Exits the script with a JSON error message.
+ * @param int $code HTTP response code.
+ * @param string $msg The error message.
+ */
+function bail($code, $msg) {
+  global $isCli;
+  adv_log($msg, 'ERROR');
+  if (!$isCli) {
     http_response_code($code);
   }
-  echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_SLASHES);
+  echo json_encode(['ok' => false, 'error' => $msg]);
   exit;
 }
 
-function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): string {
+/**
+ * Exits the script with a JSON success message.
+ * @param array $d The data payload.
+ */
+function ok($d) {
+  echo json_encode($d);
+  exit;
+}
+
+// --- Data Formatting and Helper Functions ---
+
+function formatToShortDateTime($dateTimeStr, $monthStyle = 'short') {
   $s = trim((string)$dateTimeStr);
   if ($s === '') return '';
 
@@ -70,7 +129,7 @@ function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): stri
     $displayHour = $hour === 0 ? 12 : ($hour > 12 ? $hour - 12 : $hour);
     $displayAmPm = ($hour >= 12 ? 'PM' : 'AM');
 
-    static $MONTHS_SHORT = ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    static $MONTHS_SHORT = array('', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
     $monthName = ($monthStyle === 'long' ? $MONTHS_SHORT[$month] : $MONTHS_SHORT[$month]);
 
     return sprintf('%s %d %d:%02d %s %s',
@@ -81,39 +140,41 @@ function formatToShortDateTime($dateTimeStr, string $monthStyle = 'short'): stri
   return $s;
 }
 
-function strval_safe($x): string { return trim((string)$x); }
-function intval_safe($x): ?int {
+function strval_safe($x) { return trim((string)$x); }
+
+function intval_safe($x) {
   $s = trim((string)$x);
   if ($s === '' || strtoupper($s) === 'N/A') return null;
   if (!preg_match('/^-?\d+$/', $s)) return null;
   return (int)$s;
 }
 
-function isoUtcFromNhcUtc($s): ?string {
+function isoUtcFromNhcUtc($s) {
   $s = trim((string)$s);
   if ($s === '') return null;
   if (preg_match('/^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([AP]M)\s+UTC$/i', $s, $m)) {
-    $hour = (int)$m[4] % 12;
-    if (strtoupper($m[7]) === 'PM') $hour += 12;
+    $hour = (int)$m[4];
+    if (strtoupper($m[7]) === 'PM' && $hour !== 12) $hour += 12;
+    if (strtoupper($m[7]) === 'AM' && $hour === 12) $hour = 0;
     return sprintf('%04d-%02d-%02dT%02d:%02d:%02dZ',
       (int)$m[1], (int)$m[2], (int)$m[3], $hour, (int)$m[5], (int)$m[6]);
   }
   if (preg_match('/Z$/', $s)) return $s;
   try {
     $dt = new DateTime($s, new DateTimeZone('UTC'));
-    return $dt->format('c');
-  } catch (Throwable $e) {
+    return $dt->format(DateTime::ATOM);
+  } catch (Exception $e) {
     return null;
   }
 }
 
-function lc_str(string $s): string {
+function lc_str($s) {
   if ($s === '') return $s;
   return function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s);
 }
 
-function array_lowercase_values_recursive(array $a): array {
-  $out = [];
+function array_lowercase_values_recursive($a) {
+  $out = array();
   foreach ($a as $k => $v) {
     if (is_array($v)) $out[$k] = array_lowercase_values_recursive($v);
     elseif (is_string($v)) $out[$k] = lc_str($v);
@@ -122,8 +183,8 @@ function array_lowercase_values_recursive(array $a): array {
   return $out;
 }
 
-function apply_selective_lowercase(array $adv): array {
-  foreach (['atcfID','messageType','systemType','systemName','systemSaffirSimpsonCategory','message'] as $k) {
+function apply_selective_lowercase($adv) {
+  foreach (array('messageType','systemType','systemName','systemSaffirSimpsonCategory','message') as $k) {
     if (isset($adv[$k]) && is_string($adv[$k])) $adv[$k] = lc_str($adv[$k]);
   }
 
@@ -137,66 +198,53 @@ function apply_selective_lowercase(array $adv): array {
   }
 
   if (isset($adv['geo']) && is_array($adv['geo'])) {
-    $adv['geo'] = array_map(fn($s) => is_string($s) ? lc_str($s) : $s, $adv['geo']);
+    $adv['geo'] = array_map(function($s) { return is_string($s) ? lc_str($s) : $s; }, $adv['geo']);
   }
 
   return $adv;
 }
 
-$storm = $_GET['storm'] ?? '';
-$storm = strtoupper(trim($storm));
-
-if (PHP_SAPI === 'cli') {
-    $storm = null;
-    foreach ($argv as $arg) {
-        if (str_starts_with($arg, '--storm=')) {
-            $storm = strtoupper(trim(substr($arg, 8)));
-            break;
-        }
-    }
-    if ($storm === null || $storm === '') {
-        $storm = 'ALL';
-    }
-    $_GET['storm'] = $storm;
+function lc_str_if_string($s) {
+    return is_string($s) ? lc_str($s) : $s;
 }
 
-if ($storm === 'ALL') {
-    processAllALStorms();
-    exit;
-} else {
-    if (!preg_match('/^AL\d{2}\d{4}$/', $storm)) {
-        bail(400, 'Invalid storm id. Expected ALnnYYYY.');
-    }
+function array_filter_non_empty($s) {
+    return $s !== '';
 }
 
-function processSingleStorm(string $stormId): array {
+// --- Core Processing Functions ---
+
+function processSingleStorm($stormId) {
+    adv_log("Processing single storm: {$stormId}", 'INFO');
+    
     $number = substr($stormId, 2, 2);
     $folder = sprintf('AT%02d', (int)$number);
     $fname  = 'atcf-' . strtolower($stormId) . '.xml';
     $srcUrl = "https://www.nhc.noaa.gov/storm_graphics/{$folder}/{$fname}";
 
-    $rootDir = dirname(__DIR__, 1);
-    $cacheDir = $rootDir . '/storms/' . $stormId;
+    $rootDir = dirname(__FILE__) . '/../..';
+    $cacheDir = $rootDir . '/active/storms/' . $stormId;
     $dest = $cacheDir . '/advisory.json';
 
-    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0775, true)) {
-        throw new Exception('Unable to create cache directory.');
+    adv_log("Source URL: {$srcUrl}", 'DEBUG');
+    adv_log("Cache directory: {$cacheDir}", 'DEBUG');
+
+    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true)) {
+        throw new Exception('Unable to create cache directory: ' . $cacheDir);
     }
 
-    $ctx = stream_context_create(['http' => ['timeout' => 8]]);
+    $ctx = stream_context_create(array('http' => array('timeout' => 8, 'user_agent' => 'NCHurricane/1.0')));
     $raw = @file_get_contents($srcUrl, false, $ctx);
+    
     if ($raw === false || strlen($raw) < 64) {
+        adv_log("Primary source failed for {$stormId}, trying FTP fallback.", 'WARN');
         $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
-        error_log("[advisory_writer] Primary failed, trying FTP: {$ftpUrl}");
-
-        $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
-        $raw = @file_get_contents($ftpUrl, false, $ftpCtx);
+        $raw = @file_get_contents($ftpUrl, false, $ctx);
 
         if ($raw === false || strlen($raw) < 64) {
             throw new Exception('Failed to fetch advisory XML from both HTTPS and FTP sources.');
         }
-
-        error_log("[advisory_writer] FTP fallback successful for {$stormId}");
+        adv_log("FTP fallback successful for {$stormId}", 'INFO');
     }
 
     libxml_use_internal_errors(true);
@@ -204,58 +252,51 @@ function processSingleStorm(string $stormId): array {
     if ($xml === false) {
         throw new Exception('Failed to parse advisory XML.');
     }
-
-    $advisory = [
+    
+    $advisory = array(
         'atcfID' => $stormId,
         'generated' => gmdate('c'),
-        'messageTimeUTC'   => isoUtcFromNhcUtc($xml->messageDateTimeUTC ?? ''),
-        'messageTimeLocal' => formatToShortDateTime($xml->messageDateTimeLocal ?? ($xml->messageDateTimeLocalStr ?? '')),
-        'messageTimeUTC_formatted' => formatToShortDateTime($xml->messageDateTimeUTC ?? ''),
-        'messageType'      => strval_safe($xml->messageType ?? ''),
-        'advisoryNumber'   => intval_safe($xml->advisoryNumber ?? ''),
-        'systemType'       => strval_safe($xml->systemType ?? ''),
-        'systemName'       => strval_safe($xml->systemName ?? ''),
-        'systemSaffirSimpsonCategory' => strval_safe($xml->systemSaffirSimpsonCategory ?? ''),
-        'loc' => [
-            'lat'     => is_numeric($xml->centerLocLatitude ?? null) ? (float)$xml->centerLocLatitude : null,
-            'lon'     => is_numeric($xml->centerLocLongitude ?? null) ? (float)$xml->centerLocLongitude : null,
-            'latText' => strval_safe($xml->centerLocLatitudeExpanded ?? ''),
-            'lonText' => strval_safe($xml->centerLocLongitudeExpanded ?? ''),
-        ],
-        'intensity' => [
-            'mph' => intval_safe($xml->systemIntensityMph ?? ''),
-            'kph' => intval_safe($xml->systemIntensityKph ?? ''),
-            'kts' => intval_safe($xml->systemIntensityKts ?? ''),
-            'mb'  => intval_safe($xml->systemMslpMb ?? ''),
-        ],
-        'motion' => [
-            'dirText' => strval_safe($xml->systemDirectionOfMotion ?? ''),
-            'mph'     => intval_safe($xml->systemSpeedMph ?? ''),
-            'kph'     => intval_safe($xml->systemSpeedKph ?? ''),
-            'kts'     => intval_safe($xml->systemSpeedKts ?? ''),
-        ],
-        'geo' => array_values(array_filter([
-            strval_safe($xml->systemGeoRefPt1 ?? ''),
-            strval_safe($xml->systemGeoRefPt2 ?? ''),
-        ], fn($s) => $s !== '')),
-        'message' => strval_safe($xml->message ?? ''),
-    ];
-
+        'messageTimeUTC'   => isoUtcFromNhcUtc(isset($xml->messageDateTimeUTC) ? $xml->messageDateTimeUTC : ''),
+        'messageTimeLocal' => formatToShortDateTime(isset($xml->messageDateTimeLocal) ? $xml->messageDateTimeLocal : (isset($xml->messageDateTimeLocalStr) ? $xml->messageDateTimeLocalStr : '')),
+        'messageType'      => strval_safe(isset($xml->messageType) ? $xml->messageType : ''),
+        'advisoryNumber'   => strval_safe(isset($xml->advisoryNumber) ? $xml->advisoryNumber : ''),
+        'systemType'       => strval_safe(isset($xml->systemType) ? $xml->systemType : ''),
+        'systemName'       => strval_safe(isset($xml->systemName) ? $xml->systemName : ''),
+        'systemSaffirSimpsonCategory' => intval_safe(isset($xml->systemSaffirSimpsonCategory) ? $xml->systemSaffirSimpsonCategory : ''),
+        'loc' => array(
+            'lat'     => is_numeric(isset($xml->centerLocLatitude) ? (string)$xml->centerLocLatitude : null) ? (float)$xml->centerLocLatitude : null,
+            'lon'     => is_numeric(isset($xml->centerLocLongitude) ? (string)$xml->centerLocLongitude : null) ? (float)$xml->centerLocLongitude : null,
+            'latText' => strval_safe(isset($xml->centerLocLatitudeExpanded) ? $xml->centerLocLatitudeExpanded : ''),
+            'lonText' => strval_safe(isset($xml->centerLocLongitudeExpanded) ? $xml->centerLocLongitudeExpanded : ''),
+        ),
+        'intensity' => array(
+            'mph' => intval_safe(isset($xml->systemIntensityMph) ? $xml->systemIntensityMph : ''),
+            'kph' => intval_safe(isset($xml->systemIntensityKph) ? $xml->systemIntensityKph : ''),
+            'kts' => intval_safe(isset($xml->systemIntensityKts) ? $xml->systemIntensityKts : ''),
+            'mb'  => intval_safe(isset($xml->systemMslpMb) ? $xml->systemMslpMb : ''),
+        ),
+        'motion' => array(
+            'dirText' => strval_safe(isset($xml->systemDirectionOfMotion) ? $xml->systemDirectionOfMotion : ''),
+            'mph'     => intval_safe(isset($xml->systemSpeedMph) ? $xml->systemSpeedMph : ''),
+            'kph'     => intval_safe(isset($xml->systemSpeedKph) ? $xml->systemSpeedKph : ''),
+            'kts'     => intval_safe(isset($xml->systemSpeedKts) ? $xml->systemSpeedKts : ''),
+        ),
+        'geo' => array_values(array_filter(array(
+            strval_safe(isset($xml->systemGeoRefPt1) ? $xml->systemGeoRefPt1 : ''),
+            strval_safe(isset($xml->systemGeoRefPt2) ? $xml->systemGeoRefPt2 : ''),
+        ), 'array_filter_non_empty')),
+        'message' => strval_safe(isset($xml->message) ? $xml->message : ''),
+    );
+    
     if ($advisory['intensity']['mph'] !== null) {
-        $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['mph'] * 1.609344);
-        $advisory['intensity']['kts'] ??= (int)round($advisory['intensity']['mph'] / 1.15078);
-    } elseif ($advisory['intensity']['kts'] !== null) {
-        $advisory['intensity']['mph'] ??= (int)round($advisory['intensity']['kts'] * 1.15078);
-        $advisory['intensity']['kph'] ??= (int)round($advisory['intensity']['kts'] * 1.852);
+        if (!isset($advisory['intensity']['kph'])) {
+            $advisory['intensity']['kph'] = (int)round($advisory['intensity']['mph'] * 1.609344);
+        }
+        if (!isset($advisory['intensity']['kts'])) {
+            $advisory['intensity']['kts'] = (int)round($advisory['intensity']['mph'] / 1.15078);
+        }
     }
-    if ($advisory['motion']['mph'] !== null) {
-        $advisory['motion']['kph'] ??= (int)round($advisory['motion']['mph'] * 1.609344);
-        $advisory['motion']['kts'] ??= (int)round($advisory['motion']['mph'] / 1.15078);
-    } elseif ($advisory['motion']['kts'] !== null) {
-        $advisory['motion']['mph'] ??= (int)round($advisory['motion']['kts'] * 1.15078);
-        $advisory['motion']['kph'] ??= (int)round($advisory['motion']['kts'] * 1.852);
-    }
-
+    
     global $LOWERCASE_ALL;
     if ($LOWERCASE_ALL) {
         $advisory = array_lowercase_values_recursive($advisory);
@@ -264,87 +305,99 @@ function processSingleStorm(string $stormId): array {
     }
 
     $tmp = $dest . '.tmp';
-    if (file_put_contents($tmp, json_encode($advisory, JSON_UNESCAPED_SLASHES)) === false) {
-        throw new Exception('Failed to write temp advisory.');
+    if (file_put_contents($tmp, json_encode($advisory)) === false) {
+        throw new Exception('Failed to write temp advisory file.');
     }
+    
     if (!rename($tmp, $dest)) {
         @unlink($tmp);
-        throw new Exception('Failed to finalize advisory.');
+        throw new Exception('Failed to finalize advisory file.');
     }
-
-    return ['storm' => $stormId, 'cached' => basename($dest)];
+    
+    adv_log("Successfully cached advisory for {$stormId}", 'INFO');
+    return array('storm' => $stormId, 'cached' => basename($dest));
 }
 
-function processAllALStorms(): void {
-    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+function processAllALStorms() {
+    global $isCli;
+    $currentStormsPath = dirname(__FILE__) . '/../../js/modules/cache/nhc_current_storms.json';
+    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
     
     if (!file_exists($currentStormsPath)) {
-        adv_out("ERROR: Current storms cache not found at {$currentStormsPath}", 'ERROR');
-        if (PHP_SAPI !== 'cli') {
-            bail(500, 'Current storms cache not available');
-        }
-        return;
+        bail(500, "Current storms cache not found at {$currentStormsPath}");
     }
     
     $rawStorms = file_get_contents($currentStormsPath);
     $stormsData = json_decode($rawStorms, true);
     
     if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
-        adv_out("ERROR: Invalid storms data format", 'ERROR');
-        if (PHP_SAPI !== 'cli') {
-            bail(500, 'Invalid storms data');
-        }
-        return;
+        bail(500, 'Invalid storms data format in nhc_current_storms.json');
     }
     
-    $alStorms = [];
-    foreach ($stormsData['data']['activeStorms'] as $storm) {
-        $stormId = strtoupper(trim($storm['id'] ?? ''));
-        if (preg_match('/^AL\d{2}\d{4}$/', $stormId)) {
-            $alStorms[] = $stormId;
-        }
+    $stormIds = array();
+    foreach($stormsData['data']['activeStorms'] as $storm) {
+        $stormIds[] = $storm['id'];
     }
+
+    $alStorms = array_filter($stormIds, 'is_al_storm');
     
     if (empty($alStorms)) {
-        adv_out("INFO: No active AL storms found", 'INFO');
-        if (PHP_SAPI !== 'cli') {
-            echo json_encode(['ok' => true, 'message' => 'No active AL storms', 'processed' => []], JSON_UNESCAPED_SLASHES);
+        adv_log("No active AL storms found to process.", 'INFO');
+        if (!$isCli) {
+            ok(array('ok' => true, 'message' => 'No active AL storms', 'processed' => array()));
         }
         return;
     }
     
-    $results = [];
+    adv_log("Found active storms: " . implode(', ', $alStorms), 'INFO');
+    $results = array();
     foreach ($alStorms as $stormId) {
-        adv_out("Processing {$stormId}...", 'INFO');
-        
         try {
             $result = processSingleStorm($stormId);
-            $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
-            
-            if (PHP_SAPI === 'cli') {
-                adv_out("  SUCCESS: {$stormId}", 'INFO');
-            }
+            $results[] = array('storm' => $stormId, 'status' => 'success', 'result' => $result);
         } catch (Exception $e) {
-            $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
-            
-            if (PHP_SAPI === 'cli') {
-                adv_out("  ERROR: {$stormId} - " . $e->getMessage(), 'ERROR');
-            }
+            adv_log("Failed processing {$stormId}: " . $e->getMessage(), 'ERROR');
+            $results[] = array('storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage());
         }
     }
     
-    if (PHP_SAPI === 'cli') {
-        $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
-        adv_out("Completed: {$successCount}/" . count($results) . " storms processed successfully", 'INFO');
-    } else {
-        echo json_encode(['ok' => true, 'processed' => $results], JSON_UNESCAPED_SLASHES);
+    $successCount = 0;
+    foreach($results as $r) {
+        if ($r['status'] === 'success') {
+            $successCount++;
+        }
+    }
+    adv_log("Completed: {$successCount}/" . count($results) . " storms processed.", 'INFO');
+    
+    if (!$isCli) {
+        ok(array('ok' => true, 'processed' => $results));
     }
 }
 
+function is_al_storm($id) {
+    return preg_match('/^AL\d{2}\d{4}$/', strtoupper(trim($id)));
+}
+
+// --- Main Execution Block ---
 try {
-    $result = processSingleStorm($storm);
-    echo json_encode(['ok' => true, 'storm' => $storm, 'cached' => $result['cached']], JSON_UNESCAPED_SLASHES);
+    adv_log("Script execution started for target: {$storm}", 'INFO');
+    
+    if ($storm === 'ALL') {
+        processAllALStorms();
+    } elseif ($storm !== '') {
+        if (!preg_match('/^AL\d{2}\d{4}$/', $storm)) {
+            bail(400, 'Invalid storm id. Expected ALnnYYYY.');
+        }
+        $result = processSingleStorm($storm);
+        ok(array('ok' => true, 'storm' => $storm, 'cached' => $result['cached']));
+    } else {
+        bail(400, 'No storm specified. Use ?storm=ALL or ?storm=ALnnYYYY');
+    }
+    adv_log("Script execution finished.", 'INFO');
+
 } catch (Exception $e) {
     bail(500, $e->getMessage());
 }
+
 ?>
+

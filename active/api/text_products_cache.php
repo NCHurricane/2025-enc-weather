@@ -1,22 +1,29 @@
+#!/usr/bin/env php
 <?php
 /**
  * NHC Text Products Cache Script - text_products_cache.php
- * 
- * This script polls the latest advisories from the NHC for current storms
+ * * This script polls the latest advisories from the NHC for current storms
  * in the Atlantic and Pacific basins. It reads active storms from the
  * nhc_current_storms.json file and caches all relevant text products.
- * 
- * Products cached:
+ * * Products cached:
  * - Tropical Cyclone Public Advisory (TCP) - English & Spanish
  * - Tropical Cyclone Forecast/Advisory (TCM)
  * - Tropical Cyclone Discussion (TCD) - English & Spanish
  * - Wind Speed Probabilities (PWS)
  * - Tropical Cyclone Update (TCU) - English & Spanish (optional)
  * - Monthly Tropical Weather Summary (TWS)
- * 
- * Files are saved as JSON in the active/storms/{AL|EP}nnYYYY directory
+ * * Files are saved as JSON in the active/storms/{AL|EP}nnYYYY directory
  * with WMO naming convention (TCPAT1.json, TASEP2.json, etc.)
  */
+
+declare(strict_types=1);
+error_reporting(E_ALL);
+
+// Add headers for web requests
+if (PHP_SAPI !== 'cli') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+}
 
 define('CACHE_DIR', __DIR__ . '/../../js/modules/cache/');
 define('STORMS_DIR', __DIR__ . '/../storms/');
@@ -25,7 +32,20 @@ define('USER_AGENT', 'Mozilla/5.0 (Weather App Cache Bot 1.0)');
 define('TIMEOUT', 30);
 
 if (!is_dir(LOG_DIR)) {
-    mkdir(LOG_DIR, 0755, true);
+    if (!mkdir(LOG_DIR, 0755, true)) {
+        error_log("Failed to create log directory: " . LOG_DIR);
+        exit(1);
+    }
+}
+
+// Add CLI argument processing here (Issue #7)
+if (PHP_SAPI === 'cli') {
+    foreach ($argv as $arg) {
+        if (strpos($arg, '--storm=') === 0) {
+            $_GET['storm'] = substr($arg, 8);
+            break;
+        }
+    }
 }
 
 function logMessage($message, $level = 'INFO') {
@@ -33,7 +53,7 @@ function logMessage($message, $level = 'INFO') {
     $logEntry = "[{$timestamp}] [{$level}] {$message}" . PHP_EOL;
     file_put_contents(LOG_DIR . 'text_products_cache.log', $logEntry, FILE_APPEND | LOCK_EX);
     
-    if (php_sapi_name() === 'cli') {
+    if (PHP_SAPI === 'cli') {
         echo $logEntry;
     }
 }
@@ -51,7 +71,8 @@ function fetchContent($url) {
     
     if ($content === false) {
         $error = error_get_last();
-        logMessage("Failed to fetch {$url}: " . ($error['message'] ?? 'Unknown error'), 'ERROR');
+        // CORRECTED: Replaced '??' with older, compatible syntax
+        logMessage("Failed to fetch {$url}: " . (isset($error['message']) ? $error['message'] : 'Unknown error'), 'ERROR');
         return false;
     }
     
@@ -357,6 +378,7 @@ function main() {
     logMessage("Starting NHC text products cache update", 'INFO');
     
     $startTime = microtime(true);
+    $stormsProcessed = 0; // Initialize variable
     
     $activeStorms = getActiveStorms();
     
@@ -365,7 +387,6 @@ function main() {
     } else {
         logMessage("Found " . count($activeStorms) . " active storms", 'INFO');
         
-        $stormsProcessed = 0;
         foreach ($activeStorms as $storm) {
             $stormId = isset($storm['id']) ? $storm['id'] : (isset($storm['stormId']) ? $storm['stormId'] : null);
             
@@ -388,13 +409,13 @@ function main() {
     $executionTime = round(microtime(true) - $startTime, 2);
     logMessage("NHC text products cache update completed in {$executionTime} seconds", 'INFO');
     
-    if (php_sapi_name() !== 'cli') {
+    if (PHP_SAPI !== 'cli') {
         header('Content-Type: application/json');
         echo json_encode([
             'status' => 'success',
             'timestamp' => date('c'),
             'execution_time' => $executionTime,
-            'storms_processed' => $stormsProcessed ?? 0,
+            'storms_processed' => $stormsProcessed,
             'monthly_products_cached' => $monthlyCount,
             'active_storms_count' => count($activeStorms)
         ], JSON_PRETTY_PRINT);
@@ -405,7 +426,7 @@ try {
     main();
 } catch (Exception $e) {
     logMessage("Fatal error: " . $e->getMessage(), 'ERROR');
-    if (php_sapi_name() !== 'cli') {
+    if (PHP_SAPI !== 'cli') {
         header('Content-Type: application/json', true, 500);
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }

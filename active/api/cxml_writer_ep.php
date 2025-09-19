@@ -15,6 +15,12 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
+// Add headers for web requests
+if (PHP_SAPI !== 'cli') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+}
+
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
 function out($s){
@@ -23,10 +29,10 @@ function out($s){
     fwrite(STDERR, $line . "\n");
   } else {
     error_log("[cxml_writer_ep] " . $line);
-    echo htmlspecialchars($line) . "<br>\n";
-    flush();
   }
-}function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
+}
+
+function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 
 function asText($x){ return trim((string)$x); }
 function asNum($x){
@@ -69,7 +75,7 @@ function expand_short_id(string $id, string $stormsRoot): string {
     if (is_array($arr)) {
       foreach ($arr['data']['activeStorms'] as $s) {
         $sid = strtoupper((string)($s['id'] ?? ''));
-        if ($sid && str_starts_with($sid, substr($id,0,2)) && substr($sid,2,2) === substr($id,2,2)) {
+        if ($sid && strpos($sid, substr($id,0,2)) === 0 && substr($sid,2,2) === substr($id,2,2)) {
           return $sid;
         }
       }
@@ -82,8 +88,7 @@ $stormId = expand_short_id($stormParam, $stormsRoot);
 $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
 if ($stormParam === 'ALL') {
-    echo "Entering ALL mode - calling processAllEPStormsCXML()\n";
-    flush();
+    out("Entering ALL mode - calling processAllEPStormsCXML()");
     processAllEPStormsCXML($stormsRoot);
     exit;
 }
@@ -161,19 +166,21 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $err  = curl_error($ch);
     curl_close($ch);
+    
     if (!$xmlRaw || $http !== 200) {
-    $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
-    out("Primary failed, trying FTP: $ftpUrl");
-    
-    $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
-    $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
-    
-    if (!$xmlRaw) {
-        throw new Exception("fetch failed from both HTTPS ($http $err) and FTP sources");
+        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+        out("Primary failed, trying FTP: $ftpUrl");
+        
+        $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
+        $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
+        
+        if (!$xmlRaw) {
+            throw new Exception("fetch failed from both HTTPS ($http $err) and FTP sources");
+        }
+        
+        out("FTP fallback successful for $stormId");
     }
     
-    out("FTP fallback successful for $stormId");
-}
     libxml_use_internal_errors(true);
     $xml = simplexml_load_string($xmlRaw);
     if (!$xml) throw new Exception('XML parse failed');
@@ -253,7 +260,9 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
 
     $stormDir = $stormsRoot . '/' . strtoupper($stormId);
     if (!is_dir($stormDir)) {
-        @mkdir($stormDir, 0775, true);
+        if (!mkdir($stormDir, 0775, true)) {
+            throw new Exception("Failed to create storm directory: {$stormDir}");
+        }
     }
     $cacheFile = $stormDir . '/storm.json';
 
@@ -265,10 +274,11 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     ];
 
     $tmp = $cacheFile . '.tmp';
-    if (@file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
+    if (file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
         throw new Exception("write tmp failed: $tmp");
     }
-    if (!@rename($tmp, $cacheFile)) {
+    if (!rename($tmp, $cacheFile)) {
+        @unlink($tmp);
         throw new Exception("rename failed: $cacheFile");
     }
 
