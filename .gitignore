@@ -11,3 +11,6 @@ js/data/*
 .DS_Store
 .github/copilot-instructions.md
 images/*
+.github/gemini-instructions.md
+.htaccess
+active/storms/AL052025/*
