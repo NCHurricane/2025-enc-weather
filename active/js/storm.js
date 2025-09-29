@@ -77,12 +77,13 @@ async function loadRadiiCache(longId) {
 
 function fmtTripletSlash(tri) {
   const mph = tri?.mph ?? null,
-    kts = tri?.kts ?? null,
-    kph = tri?.kph ?? null;
+    kts = tri?.kts ?? null;
+  // kph removed completely
+
   const out = [];
   if (mph != null) out.push(`${mph} mph`);
   if (kts != null) out.push(`${kts} kt`);
-  if (kph != null) out.push(`${kph} km/h`);
+  // skip kph
   return out.length ? out.join(" / ") : "—";
 }
 
@@ -102,95 +103,24 @@ function formatUtcShort(ts) {
   );
 }
 
-function setupSectionCollapsibles() {
-  const sections = Array.from(
-    document.querySelectorAll('section[class$="-container"]')
-  ).filter(
-    (sec) =>
-      !sec.classList.contains("storm-header-container") &&
-      !sec.classList.contains("active-storms-section")
-  );
 
-  sections.forEach((section) => {
-    const container = section;
-    const title = section.querySelector(":scope > .section-title");
-    const kids = Array.from(container.children);
-    const titleIndex = kids.indexOf(title);
-    const content = kids.find(
-      (el, idx) => idx > titleIndex && el.nodeType === 1
-    );
-    if (!content) return;
-    if (!title || !content) return;
-
-    if (!content.id) {
-      content.id = `${section.classList[0] || "section"}-content`;
-    }
-    title.setAttribute("role", "button");
-    title.setAttribute("tabindex", "0");
-    title.setAttribute("aria-controls", content.id);
-
-    const containerClass = Array.from(container.classList).find((c) => c.endsWith("-container")) || container.classList[0] || "section";
-    const storageKey = `active:collapsible:${containerClass}`;
-    const savedState = sessionStorage.getItem(storageKey);
-    const startOpen = savedState === 'open';
-
-    title.setAttribute("aria-expanded", startOpen ? "true" : "false");
-    content.hidden = !startOpen;
-
-    const toggle = () => {
-      const expanded = title.getAttribute("aria-expanded") === "true";
-      title.setAttribute("aria-expanded", String(!expanded));
-      content.hidden = expanded;
-
-      sessionStorage.setItem(storageKey, !expanded ? 'open' : 'closed');
-
-      if (!expanded) {
-        requestAnimationFrame(() => {
-          if (typeof content.__radiiRefresh === "function") {
-            content.__radiiRefresh();
-          } else {
-            window.dispatchEvent(new Event("resize"));
-          }
-        });
-      }
-    };
-
-    title.addEventListener("click", () => {
-      const willOpen = content.hidden === true;
-      content.hidden = !content.hidden;
-      title.setAttribute("aria-expanded", willOpen ? "true" : "false");
-      sessionStorage.setItem(storageKey, willOpen ? 'open' : 'closed');
-      if (willOpen) {
-        window.dispatchEvent(new Event("resize"));
-      }
-    });
-    title.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggle();
-      }
-    });
-  });
-}
-
+// Collapsible section logic removed. Only init() is called on DOMContentLoaded or immediately if already loaded.
 if (document.readyState === "loading") {
   document.addEventListener(
     "DOMContentLoaded",
     () => {
-      setupSectionCollapsibles();
       init();
     },
     { once: true }
   );
 } else {
-  setupSectionCollapsibles();
   init();
 }
 
 const toNA = (v) =>
   v == null ||
-  String(v).trim() === "" ||
-  String(v).trim().toUpperCase() === "N/A"
+    String(v).trim() === "" ||
+    String(v).trim().toUpperCase() === "N/A"
     ? "—"
     : v;
 
@@ -203,9 +133,8 @@ function createInfoLine(label, value, options = {}) {
   const rowClass = `ov-info-line ${className}`.trim();
   const gridClass = fullWidth ? "ov-full-width" : "";
 
-  return `<div id="ov-${
-    label.toLowerCase().replace(/[^a-z]/g, "") || "custom"
-  }" class="${rowClass} ${gridClass}">${labelSpan}${valueContent}</div>`;
+  return `<div id="ov-${label.toLowerCase().replace(/[^a-z]/g, "") || "custom"
+    }" class="${rowClass} ${gridClass}">${labelSpan}${valueContent}</div>`;
 }
 
 function createHeaderLine(content, className = "") {
@@ -270,7 +199,7 @@ function renderOverviewV2(advisory, longId) {
 
   const titleText = `${(sysType + " " + sysName).toUpperCase()}`;
   if (els.title) els.title.textContent = titleText;
-  if (els.stormId) els.stormId.textContent = atcfID ? `— ${atcfID}` : "";
+  els.stormId.textContent = atcfID ? ` — ${atcfID}` : "";
 
   const msgType = toNA(advisory?.messageType);
   const advNum = toNA(advisory?.advisoryNumber);
@@ -280,8 +209,8 @@ function renderOverviewV2(advisory, longId) {
     localStr !== "—" && utcStr !== "—"
       ? `${localStr} (${utcStr})`
       : localStr !== "—"
-      ? localStr
-      : utcStr;
+        ? localStr
+        : utcStr;
 
   const catRaw = advisory?.systemSaffirSimpsonCategory;
   const showCategory = String(
@@ -300,32 +229,31 @@ function renderOverviewV2(advisory, longId) {
     typeof advisory?.intensity?.mb === "number"
       ? `${advisory.intensity.mb} mb`
       : "—";
-  const dirTextRaw = advisory?.motion?.dirText || "";
-  const dirText = normalizeDirText(dirTextRaw);
+  const directionRaw = advisory?.motion?.direction || "";
+  const direction = normalizeDirText(directionRaw);
 
-  const moving = advisory?.motion
-    ? dirText
-      ? `${dirText} at ${fmtTripletSlash(advisory.motion)}`
-      : fmtTripletSlash(advisory.motion)
+  const speed = advisory?.motion?.speed
+    ? fmtTripletSlash(advisory.motion.speed)
     : "—";
 
   const nameUpper = sysName ? sysName.toUpperCase() : "";
   const geo1 = toNA(advisory?.geo?.[0]);
   const geo2 = toNA(advisory?.geo?.[1]);
 
-  const messageWithAdv = `${msgType} ${inlineKV(
+  const messageWithAdv = `<span class="message-type-text">${msgType}</span> ${inlineKV(
     "#",
     advNum,
     "advisory-number"
   )}`.trim();
 
   const lines = [
-    createInfoLine("", messageWithAdv, "message-type"),
+    createInfoLine("", messageWithAdv, "message-type", { wrapValue: false }),
     createInfoLine("Issued:", issued, "issued"),
     createInfoLine("Location:", loc, "location"),
-    createInfoLine("Maximum Sustained Winds:", maxWind, "max-wind"),
-    createInfoLine("Minimum Central Pressure:", pressure, "min-pressure"),
-    createInfoLine("Movement:", moving, "movement"),
+    createInfoLine("Max Sustained Winds:", maxWind, "max-wind"),
+    createInfoLine("Min Central Pressure:", pressure, "min-pressure"),
+    createInfoLine("Movement:", direction, "direction"),
+    createInfoLine("Forward Speed:", speed, "speed"),
   ];
 
   const catText = String(advisory?.systemSaffirSimpsonCategory ?? "").trim();
@@ -333,19 +261,42 @@ function renderOverviewV2(advisory, longId) {
     lines.unshift(createInfoLine("", catText, "category"));
   }
 
+
   const centerSection = `
     <div class="ov-center-section">
-      <div class="ov-center-title">${
-        nameUpper || "this system"
-      }'s Center is:</div>
-      <div class="ov-geo-point">${geo1}</div>
-      <div class="ov-geo-point">${geo2}</div>
+      <div class="ov-center-content">
+        <span class="ov-center-title">${nameUpper || "this system"}'s Center is:</span><br>
+        <span class="ov-geo-point">${geo1}</span>
+        ${geo2 && geo2 !== '—' ? `<br>and<br><span class="ov-geo-point">${geo2}</span>` : ''}
+      </div>
     </div>
   `;
 
+  // Display the NHC advisory headlines from advisory.headlines (array)
+  let nhcHeadlinesBlock = '';
+  if (Array.isArray(advisory?.headlines) && advisory.headlines.length > 0) {
+    nhcHeadlinesBlock = `
+      <div class="ov-headlines-block" data-key="nhc-headlines-block">
+        <div class="ov-headlines-content">
+          ${advisory.headlines.map(l => `<div class="ov-headline-line">${l}</div>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Insert headlines block after the first info line (message-type)
+  let linesWithHeadlines = [];
+  if (lines.length > 0) {
+    linesWithHeadlines.push(lines[0]); // message-type line
+    if (nhcHeadlinesBlock) linesWithHeadlines.push(nhcHeadlinesBlock);
+    for (let i = 1; i < lines.length; ++i) {
+      linesWithHeadlines.push(lines[i]);
+    }
+  }
+
   const html = `
-    <div class="overview-v2 compact-layout">
-      ${lines.join("")}
+    <div class="overview-v2">
+      ${linesWithHeadlines.join("")}
       ${centerSection}
     </div>
   `;
@@ -362,13 +313,13 @@ function renderOverviewV2(advisory, longId) {
 async function init() {
   const raw = getStormParam();
   if (!raw) {
-    window.location.href = "/2025_weather/404.html";
+    window.location.href = "/404.html";
     return;
   }
 
   const longId = raw.toUpperCase();
   if (!isValidLongId(longId)) {
-    window.location.href = "/2025_weather/404.html";
+    window.location.href = "/404.html";
     return;
   }
 
@@ -378,7 +329,7 @@ async function init() {
   ]);
 
   if (!advisory) {
-    window.location.href = "/2025_weather/404.html";
+    window.location.href = "/404.html";
     return;
   }
 
@@ -406,7 +357,7 @@ async function init() {
         name: advisory?.systemName || "Active Storm",
         type: advisory?.systemType || ""
       };
-      
+
       initStormGraphics(stormData);
     }
   } catch (error) {

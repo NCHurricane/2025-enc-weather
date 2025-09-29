@@ -6,11 +6,6 @@
 /* CSS CUSTOM PROPERTIES                                          */
 /*-----------------------------------------------------------------*/
 :root {
-  /* Typography */
-  --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
-  --font-monospace: "Fira Code", "Courier New", monospace;
-
   /* Colors */
   --color-surface: #f8f9fa;
   --color-border: #dee2e6;
@@ -25,8 +20,10 @@ body {
   background-image: url("../images/isabel_bg.webp");
   background-size: cover;
   background-attachment: fixed;
-  background-position: center;
+  background-position: center top;
   background-repeat: no-repeat;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /*-----------------------------------------------------------------*/
@@ -151,7 +148,9 @@ body {
 .tropical-text-tab-labels {
   display: flex;
   flex-wrap: wrap;
-  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  background-color: var(
+    --color-background
+  ); /* Changed from var(--color-surface) */
   border-bottom: 2px solid var(--color-primary, #007acc);
   margin: 0;
   padding: 0;
@@ -178,7 +177,9 @@ body {
 .tropical-text-tab {
   flex: 1;
   min-width: 120px;
-  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  background-color: var(
+    --color-background
+  ); /* Changed from var(--color-surface) */
   color: var(--color-text, #333);
   cursor: pointer;
   font-family: var(--font-primary);
@@ -246,7 +247,8 @@ input[name="textTab"] {
 #graphics-surface:checked ~ .tropical-graphics-tab-content #surface-panel,
 #text-two:checked ~ .tropical-text-tab-content #two-text-panel,
 #text-two-spanish:checked ~ .tropical-text-tab-content #two-spanish-panel,
-#text-discussion:checked ~ .tropical-text-tab-content #discussion-panel {
+#text-discussion:checked ~ .tropical-text-tab-content #discussion-panel,
+#text-summary:checked ~ .tropical-text-tab-content #summary-panel {
   display: block;
 }
 
@@ -305,7 +307,8 @@ input[name="textTab"] {
   label[for="text-two-spanish"],
 #text-discussion:checked
   ~ .tropical-text-tab-labels
-  label[for="text-discussion"] {
+  label[for="text-discussion"],
+#text-summary:checked ~ .tropical-text-tab-labels label[for="text-summary"] {
   background-color: var(--color-primary, #007acc);
   color: var(--color-text-light, #ffffff);
   font-weight: bold;
@@ -381,7 +384,7 @@ input[name="textTab"] {
 .tropical-text-content {
   background-color: var(--color-text-light);
   color: var(--color-text, #333);
-  font-family: var(--font-monospace);
+  font-family: var(--font-mono);
   font-size: 0.85em;
   line-height: 1.4;
   margin: 0;
@@ -402,7 +405,8 @@ input[name="textTab"] {
 }
 
 .tropical-text-content pre {
-  font-family: var(--font-monospace);
+  font-family: var(--font-mono);
+  font-weight: 700;
   margin: 0;
   white-space: pre-wrap;
 }
@@ -430,7 +434,9 @@ input[name="textTab"] {
 .tropical-text-tab-labels {
   display: flex;
   flex-wrap: wrap;
-  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  background-color: var(
+    --color-background
+  ); /* Changed from var(--color-surface) */
   border-bottom: 2px solid var(--color-primary, #007acc);
   margin: 0;
   padding: 0;
@@ -441,7 +447,9 @@ input[name="textTab"] {
 .tropical-text-tab {
   flex: 1;
   min-width: 120px;
-  background-color: var(--color-background); /* Changed from var(--color-surface) */
+  background-color: var(
+    --color-background
+  ); /* Changed from var(--color-surface) */
   border: none;
   border-right: 1px solid var(--color-border);
   color: var(--color-text, #333);
@@ -482,7 +490,8 @@ input[name="textTab"] {
   label[for="text-two-spanish"],
 #text-discussion:checked
   ~ .tropical-text-tab-labels
-  label[for="text-discussion"] {
+  label[for="text-discussion"],
+#text-summary:checked ~ .tropical-text-tab-labels label[for="text-summary"] {
   background-color: var(--color-primary, #007acc);
   color: var(--color-text-light, #ffffff);
   font-weight: bold;
@@ -495,7 +504,10 @@ input[name="textTab"] {
   label[for="text-two-spanish"]::after,
 #text-discussion:checked
   ~ .tropical-text-tab-labels
-  label[for="text-discussion"]::after {
+  label[for="text-discussion"]::after,
+#text-summary:checked
+  ~ .tropical-text-tab-labels
+  label[for="text-summary"]::after {
   content: "";
   position: absolute;
   bottom: -2px;
@@ -507,7 +519,9 @@ input[name="textTab"] {
 
 /* Spanish tab special styling */
 label[for="text-two-spanish"] {
-  background-color: var(--color-background); /* Changed from var(--color-text-light) */
+  background-color: var(
+    --color-background
+  ); /* Changed from var(--color-text-light) */
   color: var(--color-text);
 }
 
@@ -565,8 +579,7 @@ label[for="text-two-spanish"]:hover {
 /* Action buttons */
 .text-actions {
   margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid var(--color-border);
+  /* padding-top: 15px; */
   text-align: center;
 }
 
@@ -627,97 +640,6 @@ label[for="text-two-spanish"]:hover {
   font-size: 2rem;
   margin-bottom: 10px;
   display: block;
-}
-
-/*-----------------------------------------------------------------*/
-/* ACTIVE STORMS SECTION                                          */
-/*-----------------------------------------------------------------*/
-.active-storms-section {
-  margin: 20px 0 10px;
-}
-
-/* No active systems message */
-.no-active-systems {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  background-color: #f2ff00;
-  color: #007700;
-  padding: 8px 0 8px 10px;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 0 5px;
-}
-
-.no-active-systems i {
-  margin-right: 0.3em;
-}
-
-/* Active systems header */
-.active-systems-header {
-  font-size: 0.9rem;
-  background-color: #940000;
-  color: #ffffff;
-  padding: 8px 0 8px 10px;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.active-systems-header i {
-  margin-right: 10px;
-  font-size: 0.9rem;
-}
-
-/* Active systems container */
-.active-systems-container {
-  background-color: var(--color-primary);
-  padding: var(--padding-section);
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Individual storm item */
-.active-system-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  padding: 8px 12px;
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.active-system-item i {
-  color: #940000;
-  font-size: 1.2rem;
-}
-
-.active-system-link {
-  color: #0077cc;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-}
-
-.active-system-link:hover {
-  text-decoration: underline;
-}
-
-.system-location {
-  font-size: 0.9rem;
-  color: #666;
-  margin-left: 5px;
 }
 
 /*-----------------------------------------------------------------*/
@@ -804,7 +726,6 @@ label[for="text-two-spanish"]:hover {
   width: 100%;
 }
 
-
 /* Hide radio inputs for sector selection */
 input[name="satellite-sector"] {
   display: none;
@@ -875,11 +796,21 @@ input[name="satellite-sector"] {
 }
 
 /* Active sector tab accent bar */
-#sector-taw:checked ~ .tropical-satellite-sector-labels label[for="sector-taw"]::after,
-#sector-na:checked ~ .tropical-satellite-sector-labels label[for="sector-na"]::after,
-#sector-eus:checked ~ .tropical-satellite-sector-labels label[for="sector-eus"]::after,
-#sector-car:checked ~ .tropical-satellite-sector-labels label[for="sector-car"]::after,
-#sector-ga:checked ~ .tropical-satellite-sector-labels label[for="sector-ga"]::after {
+#sector-taw:checked
+  ~ .tropical-satellite-sector-labels
+  label[for="sector-taw"]::after,
+#sector-na:checked
+  ~ .tropical-satellite-sector-labels
+  label[for="sector-na"]::after,
+#sector-eus:checked
+  ~ .tropical-satellite-sector-labels
+  label[for="sector-eus"]::after,
+#sector-car:checked
+  ~ .tropical-satellite-sector-labels
+  label[for="sector-car"]::after,
+#sector-ga:checked
+  ~ .tropical-satellite-sector-labels
+  label[for="sector-ga"]::after {
   content: "";
   position: absolute;
   bottom: -2px;
@@ -903,7 +834,7 @@ input[name="satellite-sector"] {
     font-size: 0.8rem;
     padding: 6px 10px;
   }
-  
+
   .tropical-satellite-sector-tab {
     font-size: 0.7em;
     padding: 6px 4px;
@@ -954,17 +885,17 @@ input[name="satellite-sector"] {
   .image-timestamp {
     font-size: 0.6rem;
   }
-  
+
   .tropical-satellite-sector-tab {
     font-size: 0.6em;
     padding: 4px 2px;
     min-width: 60px;
   }
-  
+
   .tropical-satellite-sector-labels {
     gap: 2px;
   }
-  
+
   /* Responsive satellite image widths for mobile */
   #tropical-satellite-image.sector-taw,
   #tropical-satellite-image.sector-na {

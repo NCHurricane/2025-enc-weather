@@ -11,7 +11,7 @@
      Config for radii visualization
      ============================== */
   const RADII_CONFIG = {
-    CANVAS_MAX_PX: 600,
+    CANVAS_MAX_PX: 500,
     MAX_FORECAST_HOUR: 36,
     WIND_COLORS: { 34: "#ffd93d", 50: "#ff7f0e", 64: "#d62728" },
     OPACITY_SINGLE: 0.4,
@@ -21,7 +21,9 @@
     EXTRA_FRAME: 20, // extra outer room around compass
     LABEL_OFFSET: 18, // gap from compass circle to cardinal label
     LABEL_SAFE_PAD: 25, // keep labels X px inside the canvas edge
-    VERTEX_LABEL_OFFSET: 10, // distance of vertex labels away from polygon
+    VERTEX_LABEL_OFFSET: 1, // distance of vertex labels away from polygon
+    MIN_RADII_EXTENT: 100, // minimum maxDist in nm (adjustable)
+    RADII_PADDING: 100, // padding in nm beyond largest r34
   };
 
   function devicePixelRatioSafe() {
@@ -83,12 +85,17 @@
   }
 
   class RadiiDrawer {
-    constructor(ctx, canvas) {
+    constructor(ctx, canvas, maxDist) {
       this.ctx = ctx;
       this.canvas = canvas;
       this.radiiData = null;
       this.activeWind = "34";
+      this.maxDist = maxDist;
       this.refreshGeometry();
+    }
+
+    setMaxDist(maxDist) {
+      this.maxDist = maxDist;
     }
 
     refreshGeometry() {
@@ -175,79 +182,92 @@
       ctx.stroke();
     }
 
-drawCompass() {
-  const ctx = this.ctx;
-  const canvasHalf = Math.min(this.canvas.width, this.canvas.height) / 2;
-  const idealLabelR =
-    this.maxRadius + RADII_CONFIG.LABEL_OFFSET + RADII_CONFIG.EXTRA_FRAME;
-  const labelR = Math.min(
-    idealLabelR,
-    canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
-  );
+    drawCompass() {
+      const ctx = this.ctx;
+      const canvasHalf = Math.min(this.canvas.width, this.canvas.height) / 2;
+      const idealLabelR =
+        this.maxRadius + RADII_CONFIG.LABEL_OFFSET + RADII_CONFIG.EXTRA_FRAME;
+      const labelR = Math.min(
+        idealLabelR,
+        canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
+      );
 
-  ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
-  ctx.lineWidth = 1 * devicePixelRatioSafe();
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+      ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
-  [
-    { label: "N", x: 0, y: -1 },
-    { label: "E", x: 1, y: 0 },
-    { label: "S", x: 0, y: 1 },
-    { label: "W", x: -1, y: 0 },
-  ].forEach((d) =>
-    ctx.fillText(
-      d.label,
-      this.centerX + d.x * labelR,
-      this.centerY + d.y * labelR
-    )
-  );
+      [
+        { label: "N", x: 0, y: -1 },
+        { label: "E", x: 1, y: 0 },
+        { label: "S", x: 0, y: 1 },
+        { label: "W", x: -1, y: 0 },
+      ].forEach((d) =>
+        ctx.fillText(
+          d.label,
+          this.centerX + d.x * labelR,
+          this.centerY + d.y * labelR
+        )
+      );
 
-  ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
-  ctx.lineWidth = 1 * devicePixelRatioSafe();
-  ctx.fillStyle = "rgba(255,255,255,0.55)";
-  
-  const ringDistances = [100, 200, 300, 400, 500];
-  const maxDist = 500;
+      ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
 
-  ringDistances.forEach((dist) => {
-    const r = (dist / maxDist) * this.maxRadius;
-    ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
-    ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
-  });
-}
+      // Generate ringDistances at 100nm increments up to maxDist, but only label unique increments
+      const ringDistances = [];
+      for (let d = 100; d < this.maxDist; d += 100) ringDistances.push(d);
+      // Only add maxDist if it's not a multiple of 100 and not already present
+      if (this.maxDist % 100 !== 0 && (ringDistances.length === 0 || ringDistances[ringDistances.length - 1] !== this.maxDist)) {
+        ringDistances.push(this.maxDist);
+      }
 
-drawRangeCircles() {
-  const ctx = this.ctx;
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-  ctx.lineWidth = 1 * devicePixelRatioSafe();
-  ctx.setLineDash([2, 4]);
-  
-  const ringDistances = [100, 200, 300, 400, 500];
-  const maxDist = 500;
-  
-  ringDistances.forEach(dist => {
-    const r = (dist / maxDist) * this.maxRadius;
-    ctx.beginPath();
-    ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
-    ctx.stroke();
-  });
-  
-  ctx.restore();
-}
+      ringDistances.forEach((dist) => {
+        // Only label if not the outermost ring when it would overlap
+        if (dist === this.maxDist && this.maxDist % 100 !== 0) return; // skip label for odd outermost
+        const r = (dist / this.maxDist) * this.maxRadius;
+        ctx.fillText(`${dist}`, this.centerX + r + 5, this.centerY - 10);
+        ctx.fillText(`nm`, this.centerX + r + 5, this.centerY + 2);
+      });
+    }
+
+    drawRangeCircles() {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+      ctx.lineWidth = 1 * devicePixelRatioSafe();
+      ctx.setLineDash([2, 4]);
+
+      // Generate ringDistances at 50nm increments up to maxDist, but only draw unique increments
+      const ringDistances = [];
+      for (let d = 50; d < this.maxDist; d += 50) ringDistances.push(d);
+      if (this.maxDist % 50 !== 0 && (ringDistances.length === 0 || ringDistances[ringDistances.length - 1] !== this.maxDist)) {
+        ringDistances.push(this.maxDist);
+      }
+
+      ringDistances.forEach(dist => {
+        const r = (dist / this.maxDist) * this.maxRadius;
+        ctx.beginPath();
+        ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
     drawRadii(radiiKey, color, opacity) {
       const ctx = this.ctx;
       const q = this.radiiData[radiiKey];
       if (!q) return;
 
-      const ne = Math.max(0, Number(q.NE) || 0);
-      const se = Math.max(0, Number(q.SE) || 0);
-      const sw = Math.max(0, Number(q.SW) || 0);
-      const nw = Math.max(0, Number(q.NW) || 0);
+      // Exaggeration factor for polygons
+      const EXAGGERATION = 1.5;
 
-      const maxDist = 500;
+      const ne = Math.max(0, Number(q.NE) || 0) * EXAGGERATION;
+      const se = Math.max(0, Number(q.SE) || 0) * EXAGGERATION;
+      const sw = Math.max(0, Number(q.SW) || 0) * EXAGGERATION;
+      const nw = Math.max(0, Number(q.NW) || 0) * EXAGGERATION;
+
       const points = [
         { angle: Math.PI * 0.25, dist: ne },
         { angle: Math.PI * 0.75, dist: se },
@@ -256,7 +276,7 @@ drawRangeCircles() {
       ];
 
       const P = points.map((p) => {
-        const r = (p.dist / maxDist) * this.maxRadius;
+        const r = (p.dist / this.maxDist) * this.maxRadius;
         return {
           x: this.centerX + r * Math.cos(p.angle - Math.PI / 2),
           y: this.centerY + r * Math.sin(p.angle - Math.PI / 2),
@@ -311,11 +331,11 @@ drawRangeCircles() {
         P.forEach((pt) => {
           if (!pt.dist) return;
           const r =
-            (pt.dist / maxDist) * this.maxRadius +
+            (pt.dist / this.maxDist) * this.maxRadius +
             RADII_CONFIG.VERTEX_LABEL_OFFSET;
           const lx = this.centerX + r * Math.cos(pt.ang - Math.PI / 2);
           const ly = this.centerY + r * Math.sin(pt.ang - Math.PI / 2);
-          ctx.fillText(`${pt.dist} nm`, lx, ly + 0.5);
+          ctx.fillText(`${Math.round(pt.dist / EXAGGERATION)} nm`, lx, ly + 0.5);
         });
       }
     }
@@ -346,6 +366,29 @@ drawRangeCircles() {
     if (!section) return;
     section.innerHTML = "";
 
+    // Find largest r34 value in all fixes (all hours/quadrants)
+    let largestR34 = 0;
+    if (Array.isArray(fixes)) {
+      for (const f of fixes) {
+        const r = f?.r34;
+        if (r) {
+          for (const k of ["NE", "SE", "SW", "NW"]) {
+            const v = Number(r[k]) || 0;
+            if (v > largestR34) largestR34 = v;
+          }
+        }
+      }
+    }
+    // Also check current radii (for hour 0)
+    if (cacheRadii && cacheRadii.r34) {
+      for (const k of ["NE", "SE", "SW", "NW"]) {
+        const v = Number(cacheRadii.r34[k]) || 0;
+        if (v > largestR34) largestR34 = v;
+      }
+    }
+    // Compute maxDist with padding and minimum (no exaggeration)
+    let maxDist = Math.max(largestR34 + RADII_CONFIG.RADII_PADDING, RADII_CONFIG.MIN_RADII_EXTENT);
+
     const hours = collectForecastHours(fixes);
     const hourControls = document.createElement("div");
     hourControls.className = "radii-hour-controls";
@@ -354,9 +397,8 @@ drawRangeCircles() {
       .map((h, i) => {
         const label = h === 0 ? "Now" : `${h}h`;
         const cls = i === 0 ? "radii-hour-btn active" : "radii-hour-btn";
-        return `<button class="${cls}" data-hour="${h}" role="tab" aria-selected="${
-          i === 0
-        }">${label}</button>`;
+        return `<button class="${cls}" data-hour="${h}" role="tab" aria-selected="${i === 0
+          }">${label}</button>`;
       })
       .join("");
 
@@ -437,7 +479,11 @@ drawRangeCircles() {
       return true;
     }
 
-    const drawer = new RadiiDrawer(ctx, canvas);
+    let drawer = new RadiiDrawer(ctx, canvas, maxDist);
+
+    function updateDrawerMaxDist(newMaxDist) {
+      if (drawer) drawer.setMaxDist(newMaxDist);
+    }
 
     if (!resizeCanvas()) {
     } else {
@@ -461,14 +507,14 @@ drawRangeCircles() {
           <thead><tr><th>Wind</th><th>NE</th><th>SE</th><th>SW</th><th>NW</th></tr></thead>
           <tbody>
             ${rows
-              .map(
-                ([label, q]) => `
+          .map(
+            ([label, q]) => `
               <tr><td>${label}</td><td>${safe(q.NE)}</td><td>${safe(
-                  q.SE
-                )}</td><td>${safe(q.SW)}</td><td>${safe(q.NW)}</td></tr>
+              q.SE
+            )}</td><td>${safe(q.SW)}</td><td>${safe(q.NW)}</td></tr>
             `
-              )
-              .join("")}
+          )
+          .join("")}
           </tbody>
         </table>`;
     }
@@ -478,6 +524,18 @@ drawRangeCircles() {
 
     function updateForSelection() {
       const rad = radiiAtHour(cacheRadii, fixes, selectedHour);
+
+      // Recompute maxDist in case hour selection changes the largest r34
+      let largestR34Sel = 0;
+      if (rad && rad.r34) {
+        for (const k of ["NE", "SE", "SW", "NW"]) {
+          const v = Number(rad.r34[k]) || 0;
+          if (v > largestR34Sel) largestR34Sel = v;
+        }
+      }
+      // Use the greater of the global max and this hour's max (no exaggeration)
+      let newMaxDist = Math.max(largestR34Sel + RADII_CONFIG.RADII_PADDING, maxDist);
+      updateDrawerMaxDist(newMaxDist);
 
       const has = {
         r34:

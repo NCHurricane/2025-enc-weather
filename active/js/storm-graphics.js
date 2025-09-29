@@ -11,7 +11,7 @@
 //  - Storm Surge Peak Inundation
 //  - Rainfall Forecasts (WPC and International)
 //  - Excessive Rainfall Outlook (WPC)
-// ==============================
+// =============================
 
 class StormGraphics {
   constructor() {
@@ -46,6 +46,14 @@ class StormGraphics {
         conditional: true,
         hasTabs: true,
         defaultGraphic: 0
+      },
+      // Wind Analysis (MTCSWA)
+      {
+        id: 'wind-analysis',
+        containerId: 'wind-analysis-section',
+        graphics: [],
+        hasTabs: true,
+        defaultGraphic: 0
       }
     ];
   }
@@ -63,7 +71,8 @@ class StormGraphics {
   }
 
   buildGraphicsUrls() {
-    const baseUrl = 'https://www.nhc.noaa.gov/storm_graphics';
+    const remoteBaseUrl = 'https://www.nhc.noaa.gov/storm_graphics';
+    const localBaseUrl = `./storms/${this.stormId}`;
     const basinFolder = this.basin === 'AL' || this.basin === 'AT' ? 'AT' : 'EP';
     const stormNum = this.stormId.substring(2, 4);
     const graphicsFolder = `${basinFolder}${stormNum}`;
@@ -72,94 +81,151 @@ class StormGraphics {
     this.sections[0].graphics = [
       {
         name: '3-Day',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_3day_cone_no_line_and_wind.png`,
-        id: 'graphic-3day-track'
+        localUrl: `${localBaseUrl}/3day_cone_no_line_and_wind.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_3day_cone_no_line_and_wind.png`,
+        id: 'graphic-3day-track',
+        className: 'storm-graphic-img'
       },
       {
         name: '5-Day',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_5day_cone_no_line_and_wind.png`,
-        id: 'graphic-5day-track'
+        localUrl: `${localBaseUrl}/5day_cone_no_line_and_wind.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_5day_cone_no_line_and_wind.png`,
+        id: 'graphic-5day-track',
+        className: 'storm-graphic-img'
       },
       {
         name: 'Key Msg',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_key_messages.png`,
-        id: 'graphic-key-messages'
+        localUrl: `${localBaseUrl}/key_messages.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_key_messages.png`,
+        id: 'graphic-key-messages',
+        className: 'storm-graphic-img'
       },
       {
         name: 'Key Msg (Español)',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_spanish_key_messages.png`,
-        id: 'graphic-key-messages-spanish'
+        localUrl: `${localBaseUrl}/spanish_key_messages.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_spanish_key_messages.png`,
+        id: 'graphic-key-messages-spanish',
+        className: 'storm-graphic-img'
       }
     ];
 
     this.sections[1].graphics = [
       {
-        name: 'Field',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_current_wind.png`,
-        id: 'graphic-wind-field'
+        name: 'Wind Field',
+        localUrl: `${localBaseUrl}/current_wind.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_current_wind.png`,
+        id: 'graphic-wind-field',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'History',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_wind_history.png`,
-        id: 'graphic-wind-history'
+        name: 'Wind History',
+        localUrl: `${localBaseUrl}/wind_history.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_history.png`,
+        id: 'graphic-wind-history',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Earliest Arr',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_3day_earliest_reasonable_toa_34.png`,
-        id: 'graphic-earliest-arrival'
+        name: 'Earliest Arrival',
+        localUrl: `${localBaseUrl}/3day_earliest_reasonable_toa_34.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_3day_earliest_reasonable_toa_34.png`,
+        id: 'graphic-earliest-arrival',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Likely Arrival',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_3day_most_likely_toa_34.png`,
-        id: 'graphic-likely-arrival'
+        name: 'Earliest Likely Arrival',
+        localUrl: `${localBaseUrl}/3day_most_likely_toa_34.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_3day_most_likely_toa_34.png`,
+        id: 'graphic-likely-arrival',
+        className: 'storm-graphic-img'
       }
     ];
 
     this.sections[2].graphics = [
       {
-        name: 'TS',
-        baseUrl: `${baseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_34_F`,
-        suffix: `.png`,
-        id: 'graphic-wind-prob-ts'
+        name: '34 kt',
+        localBaseUrl: `${localBaseUrl}/wind_probs_34_F`,
+        remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_34_F`,
+        suffix: `_sm2.png`,
+        id: 'graphic-wind-prob-ts',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Gale',
-        baseUrl: `${baseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_50_F`,
-        suffix: `.png`,
-        id: 'graphic-wind-prob-gale'
+        name: '50 kt',
+        localBaseUrl: `${localBaseUrl}/wind_probs_50_F`,
+        remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_50_F`,
+        suffix: `_sm2.png`,
+        id: 'graphic-wind-prob-gale',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Hurricane',
-        baseUrl: `${baseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_64_F`,
-        suffix: `.png`,
-        id: 'graphic-wind-prob-hurricane'
+        name: '64 kt',
+        localBaseUrl: `${localBaseUrl}/wind_probs_64_F`,
+        remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_64_F`,
+        suffix: `_sm2.png`,
+        id: 'graphic-wind-prob-hurricane',
+        className: 'storm-graphic-img'
       }
     ];
 
     const fullYear = this.stormId.substring(4, 8);
     const year = fullYear.substring(2, 4);
-    
+    const rainFileBase = `${this.basin}${stormNum}${year}`;
+
     this.sections[3].graphics = [
       {
         name: 'Peak Surge',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId}_peak_surge.png`,
-        id: 'graphic-peak-surge'
+        localUrl: `${localBaseUrl}/peak_surge.png`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_peak_surge.png`,
+        id: 'graphic-peak-surge',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Rainfall',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId.substring(0, 4)}${year}WPCQPF.gif`,
-        id: 'graphic-rainfall'
+        name: 'Rainfall Forecast',
+        localUrl: `${localBaseUrl}/WPCQPF.gif`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${rainFileBase}WPCQPF.gif`,
+        id: 'graphic-rainfall',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Rainfall Int\'l',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId.substring(0, 4)}${year}INTQPF.gif`,
-        id: 'graphic-rainfall-intl'
+        name: 'Rainfall Forecast Int\'l',
+        localUrl: `${localBaseUrl}/INTQPF.gif`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${rainFileBase}INTQPF.gif`,
+        id: 'graphic-rainfall-intl',
+        className: 'storm-graphic-img'
       },
       {
-        name: 'Excess Rain',
-        url: `${baseUrl}/${graphicsFolder}/${this.stormId.substring(0, 4)}${year}WPCERO.gif`,
+        name: 'Excessive Rain',
+        localUrl: `${localBaseUrl}/WPCERO.gif`,
+        remoteUrl: `${remoteBaseUrl}/${graphicsFolder}/${rainFileBase}WPCERO.gif`,
         optional: true,
-        id: 'graphic-excess-rain'
+        id: 'graphic-excess-rain',
+        className: 'storm-graphic-img'
+      }
+    ];
+
+    // Wind Analysis (MTCSWA)
+    // OSPO link: https://www.ospo.noaa.gov/products/ocean/tropical/mtcswa/index.html?storm=AL{nn}YYYY
+    // Images: wind_analysis.png, wind_analysis_zoom.png
+    const mtcswaStormId = this.stormId; // e.g. AL072025
+    const mtcswaStormNum = mtcswaStormId.substring(2, 4); // nn
+    const mtcswaYear = mtcswaStormId.substring(4, 8); // YYYY
+    const mtcswaOspoUrl = `https://www.ospo.noaa.gov/products/ocean/tropical/mtcswa/index.html?storm=${mtcswaStormId}`;
+    this.sections[4].graphics = [
+      {
+        name: 'Wind Analysis',
+        localUrl: `${localBaseUrl}/wind_analysis.png`,
+        remoteUrl: '', // No remote fallback, only local
+        id: 'graphic-wind-analysis',
+        className: 'storm-graphic-img',
+        ospoUrl: mtcswaOspoUrl
+      },
+      {
+        name: 'Zoomed Analysis',
+        localUrl: `${localBaseUrl}/wind_analysis_zoom.png`,
+        remoteUrl: '',
+        id: 'graphic-wind-analysis-zoom',
+        className: 'storm-graphic-img',
+        ospoUrl: mtcswaOspoUrl
       }
     ];
   }
@@ -170,7 +236,7 @@ class StormGraphics {
       this.isDesktop = currentIsDesktop;
       this.buildGraphicsUrls();
     }
-    
+
     this.sections.forEach(section => {
       const container = document.getElementById(section.containerId);
       if (!container) {
@@ -221,10 +287,13 @@ class StormGraphics {
     html += '<div class="graphics-content-container">';
     html += '<div class="graphics-content-panel active" id="wind-probability-display">';
     html += '<div class="single-graphic" id="wind-probability-graphic">';
-    
-    const defaultUrl = section.graphics[0].baseUrl + section.timeframes[0] + section.graphics[0].suffix;
-    html += this.renderGraphicItem(section.graphics[0].name, defaultUrl);
-    
+
+    const defaultGraphic = section.graphics[0];
+    const defaultTime = section.timeframes[0];
+    const defaultLocalUrl = defaultGraphic.localBaseUrl + defaultTime + defaultGraphic.suffix;
+    const defaultId = `${defaultGraphic.id}-${defaultTime}`;
+    html += this.renderGraphicItem(defaultGraphic.name, defaultLocalUrl, false, defaultId, '', defaultGraphic.remoteBaseUrl + defaultTime + defaultGraphic.suffix, defaultGraphic.className);
+
     html += '</div></div>';
     html += '</div></div>';
 
@@ -251,7 +320,7 @@ class StormGraphics {
       html += `
         <div class="graphics-content-panel ${isActive ? 'active' : ''}" id="${section.id}-${index}">
           <div class="single-graphic">
-            ${this.renderGraphicItem(graphic.name, graphic.url, graphic.optional, graphic.id)}
+            ${this.renderGraphicItem(graphic.name, graphic.localUrl, graphic.optional, graphic.id, section.id, graphic.remoteUrl, graphic.className, graphic.ospoUrl)}
           </div>
         </div>
       `;
@@ -261,17 +330,52 @@ class StormGraphics {
     return html;
   }
 
-  renderGraphicItem(name, url, optional = false, id = '') {
+  renderGraphicItem(name, localUrl, optional = false, id = '', sectionId = '', remoteUrl = '', className = '', ospoUrl = '') {
+    const placeholderUrl = '../images/404-image.webp';
+    const errorHtml = sectionId === 'surge-rain'
+      ? `<img src='${placeholderUrl}' alt='Graphic Missing or Not Issued' width='500' height='411' />`
+      : `<div class='graphic-error'>Graphic Missing or Not Issued</div>`;
+
+    // Fallback logic: for wind-analysis, only local image, fallback to 404
+    let fallback;
+    if (sectionId === 'wind-analysis') {
+      fallback = `this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';`;
+    } else if (remoteUrl) {
+      fallback = `this.onerror=function(){this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';}; this.src='${remoteUrl}';`;
+    } else {
+      fallback = `this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';`;
+    }
+
+    let actionsHtml = '';
+    if (sectionId === 'wind-analysis' && ospoUrl) {
+      actionsHtml = `
+        <div class="text-actions" id="actions-${id}">
+          <a href="${ospoUrl}" class="nhc-link-btn" id="link-${id}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-external-link-alt"></i> View Full MTCSWA Analysis at OSPO
+          </a>
+        </div>`;
+    } else if (remoteUrl && id) {
+      actionsHtml = `
+        <div class="text-actions" id="actions-${id}">
+          <a href="${remoteUrl}" class="nhc-link-btn" id="link-${id}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-external-link-alt"></i> View Full Graphic on NHC Website
+          </a>
+        </div>`;
+    }
+
     return `
       <div class="graphic-item" data-optional="${optional}">
         <div class="graphic-container" ${id ? `id="${id}"` : ''}>
           <img
-            src="${url}"
+            src="${localUrl}"
             alt="${name}"
+            class="${className || ''}"
+            width="500"
+            height="411"
             loading="lazy"
-            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'graphic-error\\'>Graphic Missing or Not Issued</div>';"
+            onerror="${fallback.replace(/"/g, '&quot;')}"
           />
-        </div>
+        </div>${actionsHtml}
       </div>
     `;
   }
@@ -312,14 +416,14 @@ class StormGraphics {
   attachWindProbabilityListeners() {
     const timeButtons = document.querySelectorAll('.graphics-tab.time-tab');
     const categoryButtons = document.querySelectorAll('.graphics-tab.category-tab');
-    
+
     // Handle time tab clicks
     timeButtons.forEach(button => {
       button.addEventListener('click', () => {
         // Update active time tab
         timeButtons.forEach(b => b.classList.remove('active'));
         button.classList.add('active');
-        
+
         // Update graphic display
         this.updateWindProbabilityGraphic();
       });
@@ -331,7 +435,7 @@ class StormGraphics {
         // Update active category tab
         categoryButtons.forEach(b => b.classList.remove('active'));
         button.classList.add('active');
-        
+
         // Update graphic display
 
         // ...existing code...
@@ -344,26 +448,30 @@ class StormGraphics {
     const activeTimeTab = document.querySelector('.graphics-tab.time-tab.active');
     const activeCategoryTab = document.querySelector('.graphics-tab.category-tab.active');
     const graphicContainer = document.getElementById('wind-probability-graphic');
-    
+
     if (!activeTimeTab || !activeCategoryTab || !graphicContainer) return;
 
-        // ...existing code...
-    
+    // ...existing code...
+
     const selectedTime = activeTimeTab.dataset.time;
     const selectedCategoryIndex = parseInt(activeCategoryTab.dataset.category);
     const windProbabilitySection = this.sections.find(s => s.id === 'wind-probability');
-    
+
     if (!windProbabilitySection) return;
-    
+
     const selectedCategory = windProbabilitySection.graphics[selectedCategoryIndex];
-    const graphicUrl = selectedCategory.baseUrl + selectedTime + selectedCategory.suffix;
-    
+    const localUrl = selectedCategory.localBaseUrl + selectedTime + selectedCategory.suffix;
+    const remoteUrl = selectedCategory.remoteBaseUrl + selectedTime + selectedCategory.suffix;
+
     // Update the graphic display with ID
     graphicContainer.innerHTML = this.renderGraphicItem(
-      selectedCategory.name, 
-      graphicUrl, 
-      false, 
-      `${selectedCategory.id}-${selectedTime}`
+      selectedCategory.name,
+      localUrl,
+      false,
+      `${selectedCategory.id}-${selectedTime}`,
+      '',
+      remoteUrl,
+      selectedCategory.className
     );
   }
 

@@ -48,7 +48,7 @@ async function fetchCountyWeather(countyName) {
   const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
   try {
     const configResponse = await fetch(
-      `counties/${countyName}/data/config.json?cb=${bust}`,
+      `counties/${countyName}/data/config.json?v=${bust}`,
       { cache: "no-store" }
     );
     if (!configResponse.ok) return null;
@@ -61,21 +61,21 @@ async function fetchCountyWeather(countyName) {
       for (const zone of zones) {
         try {
           const resp = await fetch(
-            `counties/${countyName}/data/${zone}/current.json?cb=${bust}`,
+            `counties/${countyName}/data/${zone}/current.json?v=${bust}`,
             { cache: "no-store" }
           );
           if (resp.ok) zoneData[zone] = await resp.json();
-        } catch {}
+        } catch { }
       }
       weatherData = zoneData;
     } else {
       try {
         const resp = await fetch(
-          `counties/${countyName}/data/current.json?cb=${bust}`,
+          `counties/${countyName}/data/current.json?v=${bust}`,
           { cache: "no-store" }
         );
         if (resp.ok) weatherData = await resp.json();
-      } catch {}
+      } catch { }
     }
     if (!weatherData) return null;
     const bestStation = selectBestStationFromCounty(weatherData, isMultiZone);
@@ -151,7 +151,7 @@ export async function fetchAlerts(lat, lon) {
   // Get county config to determine zones
   try {
     const configResponse = await fetch(
-      `counties/${countyName}/data/config.json?cb=${bust}`,
+      `counties/${countyName}/data/config.json?v=${bust}`,
       { cache: "no-store" }
     );
     if (!configResponse.ok) return [];
@@ -171,7 +171,7 @@ export async function fetchAlerts(lat, lon) {
 
         try {
           const alertsResponse = await fetch(
-            `counties/${countyName}/data/${zoneName}/alerts.json?cb=${bust}`,
+            `counties/${countyName}/data/${zoneName}/alerts.json?v=${bust}`,
             { cache: "no-store" }
           );
           if (alertsResponse.ok) {
@@ -199,7 +199,7 @@ export async function fetchAlerts(lat, lon) {
       // Single-zone: fetch directly and add zone info
       try {
         const alertsResponse = await fetch(
-          `counties/${countyName}/data/alerts.json?cb=${bust}`,
+          `counties/${countyName}/data/alerts.json?v=${bust}`,
           { cache: "no-store" }
         );
         if (alertsResponse.ok) {
@@ -226,9 +226,8 @@ export async function fetchAlerts(lat, lon) {
 
     for (const alert of allAlerts) {
       // Include forecastZone in the deduplication key to preserve zone-specific alerts
-      const id = `${alert.id || alert.identifier || alert.event}-${
-        alert.forecastZone
-      }`;
+      const id = `${alert.id || alert.identifier || alert.event}-${alert.forecastZone
+        }`;
 
       if (!seenIds.has(id)) {
         seenIds.add(id);
@@ -272,8 +271,7 @@ export async function updateMapData() {
   await Promise.all(promises);
 
   console.log(
-    `[mapAggregator] Updated data for ${
-      Object.keys(weatherData).length
+    `[mapAggregator] Updated data for ${Object.keys(weatherData).length
     } counties`
   );
 

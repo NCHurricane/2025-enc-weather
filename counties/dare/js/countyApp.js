@@ -322,7 +322,7 @@ function ensureWeatherIcon() {
 // Load station URLs from config (zone-aware)
 async function loadStationUrls() {
   try {
-    const configResponse = await fetch("./data/config.json");
+    const configResponse = await fetch('./data/config.json?v=' + Date.now(), { cache: 'no-store' });
     if (!configResponse.ok) {
       throw new Error(`Failed to load config: ${configResponse.status}`);
     }
@@ -604,8 +604,8 @@ async function renderForecast() {
         const tempDisplay =
           temp != null
             ? `<span class="value" style="color: ${tempColor};">${Math.round(
-                temp
-              )}°</span>`
+              temp
+            )}°</span>`
             : `<span class="value">N/A</span>`;
 
         // Handle missing data gracefully
@@ -681,11 +681,10 @@ async function renderDetailedForecast() {
             </div>
             <div class="detailed-col-icon">
               <div class="detailed-icon">
-                ${
-                  iconSrc
-                    ? `<img src="${iconSrc}" alt="${iconAlt}">`
-                    : '<span class="value">No Icon</span>'
-                }
+                ${iconSrc
+            ? `<img src="${iconSrc}" alt="${iconAlt}">`
+            : '<span class="value">No Icon</span>'
+          }
               </div>
             </div>
             <div class="detailed-col-forecast">
@@ -740,7 +739,7 @@ async function renderAlerts() {
       return priorityA - priorityB;
     });
 
-   const alertsHTML = sortedAlerts
+    const alertsHTML = sortedAlerts
       .map((alert, index) => {
         const eventName = alert.event || alert.type || alert.headline || "Alert";
         const description = alert.description || alert.summary || "";

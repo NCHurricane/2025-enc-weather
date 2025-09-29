@@ -9,7 +9,7 @@ body {
   background-image: url("../images/hatteras_bg.webp");
   background-size: cover;
   background-attachment: fixed;
-  background-position: left;
+  background-position: center top;
   background-repeat: no-repeat;
   max-width: 100vw;
   overflow-x: hidden;
@@ -18,16 +18,6 @@ body {
 html {
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-.instructions {
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--color-text-light);
-  margin-top: 10px;
-  margin-bottom: 5px;
-  font-weight: bold;
-  text-transform: uppercase;
 }
 
 /* ======================== */
@@ -273,98 +263,6 @@ html {
   padding: 0 5px;
 }
 
-/* Active storms section */
-.active-storms-section {
-  margin-bottom: 20px;
-}
-
-.active-systems-header {
-  font-size: 0.9rem;
-  background-color: #940000;
-  color: #ffffff;
-  padding: 8px 0 8px 10px;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-}
-
-.active-systems-container {
-  background-color: var(--color-primary);
-  padding: 0 3px 10px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.active-system-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex: 1;
-  font-weight: 800;
-  padding: 8px 12px;
-  background-color: #ffff00;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.active-system-item i {
-  color: #940000;
-  font-size: 1.2rem;
-}
-
-.active-system-link {
-  color: #0077cc;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-}
-
-.active-system-link:hover {
-  text-decoration: underline;
-}
-
-.no-active-systems {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  background-color: #f2ff00;
-  color: #007700;
-  padding: 8px 0 8px 10px;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin: 0 5px 10px;
-}
-
-.no-active-systems i {
-  margin-right: 10px;
-  font-size: 1rem;
-  color: #007700;
-}
-
-.tropical-image-container {
-  position: relative;
-  text-align: center;
-}
-
-.tropical-outlook-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 5px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-}
-
 /* ======================== */
 /* RADAR/SATELLITE SECTION */
 /* ======================== */
@@ -379,7 +277,6 @@ html {
     var(--color-gradient-end) 100%
   );
   border-radius: var(--border-radius);
-  padding: var(--padding-section);
   margin: 15px 0 0 0;
 }
 
@@ -522,7 +419,7 @@ input[name="radsatTab"] {
   }
 
   .weather-image {
-    width: 80%;
+    width: 90%;
   }
 }
 
@@ -601,16 +498,6 @@ input[name="radsatTab"] {
   .storm-header-title h2,
   .radsat-title h2 {
     font-size: 0.8rem;
-  }
-
-  .no-active-systems,
-  .tropical-alert-banner {
-    font-size: 0.7rem;
-    padding: 8px 10px;
-  }
-
-  .active-systems-container {
-    flex-direction: column;
   }
 
   .radsat-image-container,

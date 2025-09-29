@@ -34,7 +34,7 @@ function degToCompass(deg) {
     "NNW",
   ];
   return dirs[Math.round((deg % 360) / 22.5) % 16];
-  }
+}
 const round = (v, n = 0) => (v == null ? null : +Number(v).toFixed(n));
 const cToF = (c) => (c == null ? null : (Number(c) * 9) / 5 + 32);
 const paToMb = (pa) => (pa == null ? null : round(Number(pa) / 100, 1));
@@ -83,9 +83,9 @@ function computeWindChillF(T, Vmph) {
   if (!(t <= 50 && v >= 3)) return null;
   return Math.round(
     35.74 +
-      0.6215 * t -
-      35.75 * Math.pow(v, 0.16) +
-      0.4275 * t * Math.pow(v, 0.16)
+    0.6215 * t -
+    35.75 * Math.pow(v, 0.16) +
+    0.4275 * t * Math.pow(v, 0.16)
   );
 }
 
@@ -106,7 +106,7 @@ function shortenStationName(name, id) {
  */
 export async function init() {
   try {
-    const res = await fetch("./data/config.json");
+    const res = await fetch("./data/config.json?v=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error(`Failed to load config.json: ${res.status}`);
 
     config = await res.json();
@@ -368,8 +368,7 @@ export async function getHourlyData() {
 
     const data = await response.json();
     console.log(
-      `[countyData] Loaded ${
-        data.properties?.periods?.length || 0
+      `[countyData] Loaded ${data.properties?.periods?.length || 0
       } hourly periods`
     );
 

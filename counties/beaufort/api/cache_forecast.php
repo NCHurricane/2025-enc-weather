@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Forecast Script - cache_forecast.php
  * Fetches NWS API forecast data and caches it as JSON.
@@ -8,9 +11,6 @@
  * - Beaufort County, NC (zone: NCC013)
  *
  */
-
-declare(strict_types=1);
-error_reporting(E_ALL);
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

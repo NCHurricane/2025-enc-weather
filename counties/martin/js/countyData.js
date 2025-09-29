@@ -90,9 +90,9 @@ function computeWindChillF(T, Vmph) {
   if (!(t <= 50 && v >= 3)) return null;
   return Math.round(
     35.74 +
-      0.6215 * t -
-      35.75 * Math.pow(v, 0.16) +
-      0.4275 * t * Math.pow(v, 0.16)
+    0.6215 * t -
+    35.75 * Math.pow(v, 0.16) +
+    0.4275 * t * Math.pow(v, 0.16)
   );
 }
 
@@ -137,7 +137,7 @@ async function fetchLatestObs(stationId) {
   if (data.temperature?.value != null) {
     if (data.temperature.unitCode === "wmoUnit:degC") {
       // Convert Celsius to Fahrenheit
-      tempF = (data.temperature.value * 9/5) + 32;
+      tempF = (data.temperature.value * 9 / 5) + 32;
     } else {
       // Already in Fahrenheit or other units
       tempF = data.temperature.value;
@@ -149,7 +149,7 @@ async function fetchLatestObs(stationId) {
   if (data.dewpoint?.value != null) {
     if (data.dewpoint.unitCode === "wmoUnit:degC") {
       // Convert Celsius to Fahrenheit
-      dewF = (data.dewpoint.value * 9/5) + 32;
+      dewF = (data.dewpoint.value * 9 / 5) + 32;
     } else {
       // Already in Fahrenheit or other units
       dewF = data.dewpoint.value;
@@ -215,7 +215,7 @@ async function fetchLatestObs(stationId) {
   if (data.heatIndex?.value != null) {
     if (data.heatIndex.unitCode === "wmoUnit:degC") {
       // Convert Celsius to Fahrenheit
-      heatIndex = (data.heatIndex.value * 9/5) + 32;
+      heatIndex = (data.heatIndex.value * 9 / 5) + 32;
     } else {
       // Already in Fahrenheit or other units
       heatIndex = data.heatIndex.value;
@@ -227,7 +227,7 @@ async function fetchLatestObs(stationId) {
   if (data.windChill?.value != null) {
     if (data.windChill.unitCode === "wmoUnit:degC") {
       // Convert Celsius to Fahrenheit
-      windChill = (data.windChill.value * 9/5) + 32;
+      windChill = (data.windChill.value * 9 / 5) + 32;
     } else {
       // Already in Fahrenheit or other units
       windChill = data.windChill.value;
@@ -273,14 +273,17 @@ async function fetchLatestObs(stationId) {
 // Helper function to convert degrees to cardinal direction
 function degreesToCardinal(degrees) {
   if (degrees == null) return null;
-  const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", 
-                     "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   const index = Math.round(degrees / 22.5) % 16;
   return directions[index];
 }
 
 export async function init() {
-  const res = await fetch("./data/config.json");
+  const res = await fetch("./data/config.json?t=" + Date.now(), {
+    headers: { "User-Agent": "NCHurricane.com Weather App/1.0" },
+    cache: "no-store" // Ensure we get fresh config
+  });
   if (!res.ok) throw new Error("Failed to load config.json");
   return res.json();
 }
@@ -293,7 +296,7 @@ export async function getCurrentConditions() {
     // Load config to get station list
     const config = await init();
     const stations = config.stations || [];
-    
+
     if (stations.length === 0) {
       return {
         status: "error",
@@ -301,29 +304,28 @@ export async function getCurrentConditions() {
       };
     }
 
-    // Fetch the cached current conditions data
-    const response = await fetch("./data/current.json", {
-      headers: { "User-Agent": "NCHurricane.com Weather App/1.0" },
-      cache: "no-store" // Ensure we get fresh data
+    const response = await fetch('./data/current.json?v=' + Date.now(), {
+      headers: { 'User-Agent': 'NCHurricane.com Weather App/1.0' },
+      cache: 'no-store',
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to load current.json: HTTP ${response.status}`);
     }
-    
+
     const cacheData = await response.json();
-    
+
     if (!cacheData.stations) {
       throw new Error("Invalid cache data structure");
     }
 
     // Process each configured station
     const results = [];
-    
+
     for (const station of stations) {
       const stationId = station.id;
       const cachedStation = cacheData.stations[stationId];
-      
+
       if (!cachedStation || !cachedStation.observation || !cachedStation.data) {
         console.warn(`[current] No cached data for station ${stationId}`);
         continue;
@@ -332,10 +334,10 @@ export async function getCurrentConditions() {
       const obsTime = cachedStation.observation.timestamp;
       const ageMinutes = cachedStation.observation.age_minutes;
       const isFresh = ageMinutes <= FRESH_MINUTES;
-      
+
       // Data is already converted to proper units by PHP cache
       const data = cachedStation.data;
-      
+
       const result = {
         stationId: stationId,
         stationName: cachedStation.name || station.name || stationId,
@@ -357,7 +359,7 @@ export async function getCurrentConditions() {
           windChill: data.windChill,
         },
       };
-      
+
       results.push(result);
       console.log(`[current] Loaded ${stationId}: temp=${data.temperature}, age=${ageMinutes}min`);
     }
@@ -379,10 +381,10 @@ export async function getCurrentConditions() {
         .filter((r) => r.data.temperature != null)
         .sort((a, b) => a.ageMinutes - b.ageMinutes)[0] ||
       results[0];
-    
+
     // Find the config for the chosen station
     const chosenConfig = stations.find(st => st.id === chosen.stationId);
-    
+
     const d = chosen.data;
     const windStr =
       d.windSpeed == null || d.windSpeed < 1

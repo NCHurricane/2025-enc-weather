@@ -78,8 +78,9 @@
 (() => {
   const DEFAULT_DOMAIN = { lonMin: -106, lonMax: -60, latMin: 18, latMax: 50 };
   const DEBUG_LABELS = true;
-  const BASEMAP_URL =
-    "/2025_weather/js/data/basemaps/us_states_counties.geojson";
+  // Dynamic base path for subdirectory support
+  const BASE_PATH = window.location.pathname.split('/active')[0] || '';
+  const BASEMAP_URL = `${BASE_PATH}/js/data/basemaps/us_states_counties.geojson`;
 
   const INSETS = {
     PR: {
@@ -104,19 +105,19 @@
     },
   };
 
-  const LOCAL_IMAGERY_ROOT = "/2025_weather/js/data/tiles/imagery";
+  const LOCAL_IMAGERY_ROOT = `${BASE_PATH}/js/data/tiles/imagery`;
   const LOCAL_IMAGERY_EXTS = ["jpg"];
 
   const TILE_PROVIDERS = {
     imagery:
-      "/2025_weather/active/api/tiles.php?style=imagery&z={z}&y={y}&x={x}",
-    topo: "/2025_weather/active/api/tiles.php?style=topo&z={z}&y={y}&x={x}",
-    shaded: "/2025_weather/active/api/tiles.php?style=shaded&z={z}&y={y}&x={x}",
+      `${BASE_PATH}/active/api/tiles.php?style=imagery&z={z}&y={y}&x={x}`,
+    topo: `${BASE_PATH}/active/api/tiles.php?style=topo&z={z}&y={y}&x={x}`,
+    shaded: `${BASE_PATH}/active/api/tiles.php?style=shaded&z={z}&y={y}&x={x}`,
     none: null,
   };
   const TILE_STYLE = "imagery";
-  const TILE_MIN_Z = 6;
-  const TILE_MAX_Z = 10;
+  const TILE_MIN_Z = 3;
+  const TILE_MAX_Z = 8;
   const TILE_DPR_AWARE = false;
   // Opacity for base map tiles only (0 = transparent, 1 = opaque)
   const TILE_OPACITY = 0.85;
@@ -128,12 +129,11 @@
   const _drawVersionByCanvas = new Map();
 
   // Place names
-  // const PLACENAMES_URL = "/2025_weather/js/data/placenames.json";
-  const PLACENAMES_URL = "/2025_weather/js/data/coastal_placenames.json";
+  const PLACENAMES_URL = `${BASE_PATH}/js/data/coastal_placenames.json?v=` + Date.now();
 
   const SHOW_PLACENAMES = true;
   const MIN_ZOOM_FOR_PLACENAMES = 6;
-  const PLACENAMES_ZOOM_OFFSET = 0;
+  const PLACENAMES_ZOOM_OFFSET = -1;
 
   // Collision / label config
   const LABEL_PADDING_PX = 4;
@@ -253,7 +253,7 @@
       if (TILE_DPR_AWARE && window.devicePixelRatio > 1) {
         best = Math.min(TILE_MAX_Z, best + 1);
       }
-    } catch {}
+    } catch { }
     return Math.max(TILE_MIN_Z, Math.min(TILE_MAX_Z, best));
   }
 
@@ -267,7 +267,10 @@
 
     return new Promise((resolve) => {
       const img = new Image();
-      const isLocal = candidates.some((u) => u.startsWith("/2025_weather/"));
+      // Accept both absolute and BASE_PATH-prefixed URLs as local
+      const isLocal = candidates.some((u) =>
+        u.startsWith(BASE_PATH + "/js/") || u.startsWith(BASE_PATH + "/active/")
+      );
       if (!isLocal) img.crossOrigin = "anonymous";
       img.decoding = "async";
 
@@ -384,7 +387,7 @@
       const res = await fetch(BASEMAP_URL, { cache: "force-cache" });
       if (!res.ok) return;
       BASEMAP = await res.json();
-    } catch {}
+    } catch { }
   }
 
   // -------- Place Names --------
@@ -394,7 +397,7 @@
       const res = await fetch(PLACENAMES_URL, { cache: "force-cache" });
       if (!res.ok) return;
       PLACENAMES = await res.json();
-    } catch {}
+    } catch { }
   }
 
   function drawBasemap(ctx, domain, rect) {
@@ -526,7 +529,7 @@
     if (DEBUG_LABELS) {
       console.log(
         `[labels] zoom=${zoom} cap=${maxLabels} minPriority=${minP} ` +
-          `candidates=${candidates.length} (post-skip)`
+        `candidates=${candidates.length} (post-skip)`
       );
       console.log("[labels-filter-details]", {
         zoom,
@@ -582,13 +585,13 @@
 
   async function fetchZoneFeature(zoneId, zoneType) {
     const cacheParam = LOCAL_ZONE_CACHE_BUST ? `?v=${Date.now()}` : "";
-    const localUrl = `/2025_weather/js/data/zones/cache/${zoneId}.json${cacheParam}`;
+    const localUrl = `${BASE_PATH}/js/data/zones/cache/${zoneId}.json${cacheParam}`;
     try {
       const r = await fetch(localUrl, {
         cache: LOCAL_ZONE_CACHE_BUST ? "no-cache" : "force-cache",
       });
       if (r.ok) return r.json();
-    } catch {}
+    } catch { }
     const nwsUrl = `https://api.weather.gov/zones/${zoneType}/${zoneId}`;
     try {
       const r = await fetch(nwsUrl, {
@@ -892,8 +895,8 @@
     const fitFeatures =
       pr.length || vi.length
         ? all.filter(
-            (f) => f.properties.state !== "PR" && f.properties.state !== "VI"
-          )
+          (f) => f.properties.state !== "PR" && f.properties.state !== "VI"
+        )
         : all;
 
     const auto = bboxOfFeatures(fitFeatures) || DEFAULT_DOMAIN;
@@ -1000,6 +1003,7 @@
     if (!displaySection || !displaySection.length) {
       const p = document.createElement("p");
       p.textContent = emptyMsg;
+      p.id = `${containerId}-empty`;
       el.appendChild(p);
       return;
     }
@@ -1048,7 +1052,8 @@
     loadPlacenames();
 
     try {
-      const url = `/2025_weather/active/storms/${stormId}/tcv.json?v=${Date.now()}`;
+      const url = `${BASE_PATH}/active/storms/${stormId}/tcv.json?v=${Date.now()}`;
+
       const data = await loadJSON(url);
 
       if (
@@ -1059,15 +1064,31 @@
         data.features = await buildFeaturesFromEvents(data.events || []);
       }
 
+      // Hide containers if no feature data is present, show them otherwise.
+      const windFeatures = data.features?.features?.filter(f => f.properties.hazard === 'wind') ?? [];
+      const surgeFeatures = data.features?.features?.filter(f => f.properties.hazard === 'surge') ?? [];
+      const hasWind = windFeatures.length > 0;
+      const hasSurge = surgeFeatures.length > 0;
+
+      const hazardsContainer = document.querySelector('.hazards-container');
+      const surgeContainer = document.querySelector('.surge-container');
+
+      if (hazardsContainer) {
+        hazardsContainer.style.display = hasWind ? '' : 'none';
+      }
+      if (surgeContainer) {
+        surgeContainer.style.display = hasSurge ? '' : 'none';
+      }
+
       renderTextList(
         "ww-wind-text",
         data.display?.wind,
-        "No active watches/warnings."
+        "No active US watches/warnings."
       );
       renderTextList(
         "ww-surge-text",
         data.display?.surge,
-        "No active watches/warnings."
+        "No active US watches/warnings."
       );
 
       let raf = null;
@@ -1081,8 +1102,13 @@
       window.addEventListener("resize", onResize, { passive: true });
       onResize();
     } catch {
-      renderTextList("ww-wind-text", null, "No active watches/warnings.");
-      renderTextList("ww-surge-text", null, "No active watches/warnings.");
+      renderTextList("ww-wind-text", null, "No active US watches/warnings.");
+      renderTextList("ww-surge-text", null, "No active US watches/warnings.");
+      // Also hide containers on error
+      const hazardsContainer = document.querySelector('.hazards-container');
+      const surgeContainer = document.querySelector('.surge-container');
+      if (hazardsContainer) hazardsContainer.style.display = 'none';
+      if (surgeContainer) surgeContainer.style.display = 'none';
     }
   }
 

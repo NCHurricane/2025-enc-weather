@@ -5,10 +5,9 @@
 /* Zone Selector Styles */
 .zone-selector {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px 0;
-  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 5px;
+  margin: 0.5em 0;
 }
 
 .zone-btn {
@@ -16,13 +15,12 @@
   color: var(--color-text-light);
   border: 2px solid var(--color-primary);
   border-radius: var(--border-radius);
-  padding: 12px 24px;
+  padding: 12px;
   font-size: 0.9rem;
   font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 44px;
 }
 
 .zone-btn:hover {
@@ -40,12 +38,12 @@
 /* Mobile Zone Selector */
 @media (max-width: 768px) {
   .zone-selector {
-    gap: 8px;
-    margin: 15px 0;
+    gap: 2px;
+    margin: 0.3em 0;
   }
 
   .zone-btn {
-    padding: 10px 16px;
+    padding: 10px;
     font-size: 0.8rem;
     min-width: 100px;
   }

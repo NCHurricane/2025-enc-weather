@@ -121,9 +121,9 @@ export class NCCountyMap {
     // Single-zone (no stationConfig.zone) uses the root current.json.
     const urls = stationConfig.zone
       ? [
-          `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json?cb=${bust}`,
-        ]
-      : [`counties/${stationConfig.county}/data/current.json?cb=${bust}`];
+        `counties/${stationConfig.county}/data/${stationConfig.zone}/current.json?v=${bust}`,
+      ]
+      : [`counties/${stationConfig.county}/data/current.json?v=${bust}`];
 
     for (const url of urls) {
       try {
@@ -161,8 +161,8 @@ export class NCCountyMap {
 
     const clickHandler = stationConfig.url
       ? () => {
-          window.location.href = stationConfig.url;
-        }
+        window.location.href = stationConfig.url;
+      }
       : null;
 
     g.append("text")
@@ -188,7 +188,7 @@ export class NCCountyMap {
 
   async loadCountyData() {
     try {
-      const response = await fetch("js/data/NC-county-topo.json");
+      const response = await fetch("js/data/NC-county-topo.json?v=" + Date.now(), { cache: "no-store" });
       if (!response.ok)
         throw new Error(`Failed to load topo data: ${response.status}`);
 
@@ -330,8 +330,8 @@ export class NCCountyMap {
     ];
     const counties =
       window.siteConfig &&
-      Array.isArray(window.siteConfig.counties) &&
-      window.siteConfig.counties.length > 0
+        Array.isArray(window.siteConfig.counties) &&
+        window.siteConfig.counties.length > 0
         ? window.siteConfig.counties
         : defaultCounties;
 

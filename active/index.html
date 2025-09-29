@@ -40,14 +40,14 @@
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link rel="dns-prefetch" href="//kit.fontawesome.com" />
 
-        <link rel="stylesheet" href="../css/styles.css?v=2025.09.13" />
-        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.13" />
-        <link rel="stylesheet" href="./css/active.css?v=2025.09.13b" />
-        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.13d" />
+        <link rel="stylesheet" href="../css/styles.css?v=2025.09.19" />
+        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.19" />
+        <link rel="stylesheet" href="./css/active.css?v=2025.09.19" />
+        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.19" />
 
         <link
-            href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-            rel="stylesheet" />
+            href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Saira:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet">
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
         <script type="application/ld+json">
@@ -86,127 +86,209 @@
     </head>
 
     <body>
+
+        <svg style="display: none">
+            <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+                <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17"
+                    result="turbulence" />
+                <!-- Liked Seeds: 5, 14, 17 -->
+
+                <feComponentTransfer in="turbulence" result="mapped">
+                    <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+                    <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+                    <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+                </feComponentTransfer>
+
+                <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+
+                <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100"
+                    lighting-color="white" result="specLight">
+                    <fePointLight x="-200" y="-200" z="300" />
+                </feSpecularLighting>
+
+                <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+
+                <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R"
+                    yChannelSelector="G" />
+            </filter>
+        </svg>
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
         <main class="container">
-            <h1 class="main-title"><span id="storm-title">Loading name...</span>&nbsp;&nbsp;<span id="storm-id">...and
+            <h1 class="main-title-active"><span id="storm-title">Loading name...</span><span id="storm-id">...and
                     designation</span></h1>
 
-            <section id="active-storms-section" class="active-storms-section" aria-label="Active storms banner">
-                <div class="tropical-banner"></div>
-            </section>
 
-
-            <!-- Active header -->
-            <section class="storm-header-container" aria-labelledby="storm-header-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-hurricane fa-xl fontawesome-icon"></i>STORM OVERVIEW
-                </div>
-                <div class="storm-header-section" id="storm-header-section">
-                    <div class="storm-header">
-                        <div id="overview-v2"></div>
+            <div class="ww-layout-container">
+                <!-- Active header -->
+                <section class="storm-header-container" aria-labelledby="storm-header-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-hurricane fontawesome-icon"></i>LATEST INFORMATION
                     </div>
-                </div>
-            </section>
+                    <div class="storm-header-section glass" id="storm-header-section">
+                        <div class="storm-header">
+                            <div id="overview-v2"></div>
+                        </div>
+                    </div>
+                </section>
 
+                <!-- Satellite Images -->
+                <section class="active-satellite-container" aria-labelledby="active-satellite-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-satellite fontawesome-icon"></i>FLOATER SATELLITE
+                    </div>
+                    <div class="active-satellite-section glass" id="active-satellite-header-section">
+                        <div class="active-satellite-interface">
+                            <!-- START: Dynamic Satellite Floater -->
+                            <div class="active-satellite-controls">
+                                <div id="active-satellite-product-tabs" class="active-satellite-tabs">
+                                    <!-- Tabs are dynamically generated in satellite.js -->
+                                </div>
+                            </div>
+                            <div class="active-satellite-content">
+                                <div id="active-satellite-timestamp" class="active-satellite-timestamp"></div>
+                                <div id="active-satellite-image-container" class="active-satellite-image-container">
+                                    <div class="active-satellite-controls-play-pause">
+                                        <button id="active-satellite-play-pause"
+                                            class="active-satellite-play-pause-button"
+                                            aria-label="Play satellite animation">
+                                            <i class="fa-solid fa-play fa-2xl" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <img id="active-satellite-image" class="active-satellite-image"
+                                        alt="GOES-19 Storm Floater Satellite" />
+                                </div>
+                                <div id="active-satellite-loading" class="active-satellite-loading">
+                                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                                    <span>Loading satellite imagery...</span>
+                                </div>
+                                <div id="active-satellite-error" class="active-satellite-error" style="display: none">
+                                    <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
+                                    <span>Unable to load satellite imagery</span>
+                                    <small>This could be due to a connection issue or NOAA server maintenance.</small>
+                                </div>
+                            </div>
+                            <!-- END: Dynamic Satellite Floater -->
+                        </div>
+                    </div>
+                </section>
+            </div>
 
             <!-- Watches & Warnings -->
-            <section class="hazards-container" aria-labelledby="hazards-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>WATCHES &frasl; WARNINGS
-                </div>
-                <section class="storm-hazards-section">
-                    <div class="ww-grid">
-                        <div class="ww-mapcol">
-                            <canvas id="ww-wind-canvas" aria-label="Wind watches and warnings map"></canvas>
-                        </div>
-                        <div class="ww-textcol" id="ww-wind-text" aria-live="polite"></div>
+            <div class="ww-layout-container">
+                <section class="hazards-container" aria-labelledby="hazards-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-triangle-exclamation fontawesome-icon"></i>WATCHES &frasl; WARNINGS
                     </div>
+                    <section class="storm-hazards-section glass">
+                        <div class="ww-grid">
+                            <div class="ww-mapcol">
+                                <canvas id="ww-wind-canvas" aria-label="Wind watches and warnings map"></canvas>
+                            </div>
+                            <div class="ww-textcol" id="ww-wind-text" aria-live="polite"></div>
+                        </div>
+                    </section>
                 </section>
-            </section>
 
-            <!-- Storm Surge Watches & Warnings (separate container) -->
-            <section class="surge-container" aria-labelledby="surge-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-water fa-xl fontawesome-icon"></i>STORM SURGE ALERTS
-                </div>
-                <section class="storm-surge-section">
-                    <div class="ww-grid">
-                        <div class="ww-mapcol">
-                            <canvas id="ww-surge-canvas" aria-label="Storm surge watches and warnings map"></canvas>
-                        </div>
-                        <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
+                <!-- Storm Surge Watches & Warnings (separate container) -->
+                <section class="surge-container" aria-labelledby="surge-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-water fontawesome-icon"></i>STORM SURGE ALERTS
                     </div>
+                    <section class="storm-surge-section glass">
+                        <div class="ww-grid">
+                            <div class="ww-mapcol">
+                                <canvas id="ww-surge-canvas" aria-label="Storm surge watches and warnings map"></canvas>
+                            </div>
+                            <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
+                        </div>
+                    </section>
                 </section>
-            </section>
+            </div>
 
             <!-- Text Products -->
-            <section class="text-products-container" aria-labelledby="text-products-title">
-                <div class="section-title">
-                    <i class=" fa-solid fa-newspaper fa-xl fontawesome-icon"></i>TEXT ADVISORY PRODUCTS
-                </div>
-                <div class="storm-text-section" id="storm-text-section">
-                    <!-- Text products interface will be dynamically generated here -->
-                </div>
-            </section>
+            <div class="ww-layout-container">
+                <section class="text-products-container" aria-labelledby="text-products-title">
+                    <div class="section-title-active">
+                        <i class=" fa-solid fa-newspaper fontawesome-icon"></i>TEXT ADVISORIES
+                    </div>
+                    <div class="storm-text-section glass" id="storm-text-section">
+                        <!-- Text products interface will be dynamically generated here -->
+                    </div>
+                </section>
 
-            <!-- Track and Messages Graphics -->
-            <section class="graphics-container" aria-labelledby="graphics-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-route fa-xl fontawesome-icon"></i>TRACK &frasl; MESSAGES
-                </div>
-                <div class="track-messages-section" id="track-messages-section">
-                    <!-- Track and messages graphics will be dynamically generated here -->
-                </div>
-            </section>
+                <!-- Track and Messages Graphics -->
+                <section class="graphics-container" aria-labelledby="graphics-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-route fontawesome-icon"></i>TRACK & KEY MESSAGES
+                    </div>
+                    <div class="track-messages-section glass" id="track-messages-section">
+                        <!-- Track and messages graphics will be dynamically generated here -->
+                    </div>
+                </section>
+            </div>
 
             <!-- Radii -->
-            <section class="radii-container" aria-labelledby="overview-title">
-                <div class="section-title">
-                    <i class=" fa-solid fa-wind fa-xl fontawesome-icon"></i>WIND RADII
-                </div>
-                <div class="radii-section" id="radii-section">
-                    <table id="radii-table" class="radii-table" style="width:100%;">
-                        <thead>
-                            <tr>
-                                <th scope="col">Quadrant</th>
-                                <th scope="col">34 kt</th>
-                                <th scope="col">50 kt</th>
-                                <th scope="col">64 kt</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
+            <div class="ww-layout-container">
+                <section class="radii-container" aria-labelledby="overview-title">
+                    <div class="section-title-active">
+                        <i class=" fa-solid fa-wind fontawesome-icon"></i>WIND RADII
+                    </div>
+                    <div class="radii-section glass" id="radii-section">
+                        <table id="radii-table" class="radii-table" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Quadrant</th>
+                                    <th scope="col">34 kt</th>
+                                    <th scope="col">50 kt</th>
+                                    <th scope="col">64 kt</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
 
-            <!-- Wind Graphics -->
-            <section class="wind-graphics-container" aria-labelledby="wind-graphics-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-wind fa-xl fontawesome-icon"></i>WIND GRAPHICS
-                </div>
-                <div class="wind-graphics-section" id="wind-graphics-section">
-                    <!-- Wind graphics will be dynamically generated here -->
-                </div>
-            </section>
+                <!-- Wind Field Analysis -->
+                <section class="wind-analysis-container" id="wind-analysis-container"
+                    aria-labelledby="wind-analysis-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-route fontawesome-icon"></i>WIND ANALYSIS
+                    </div>
+                    <div class="wind-analysis-section glass" id="wind-analysis-section">
+                        <!-- Wind analysis graphics will be dynamically generated here -->
+                    </div>
+                </section>
+            </div>
 
-            <!-- Wind Probability Graphics -->
-            <section class="wind-probability-container" aria-labelledby="wind-probability-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-chart-line fa-xl fontawesome-icon"></i>WIND PROBABILITY GRAPHICS
-                </div>
-                <div class="wind-probability-section" id="wind-probability-section">
-                    <!-- Wind probability graphics will be dynamically generated here -->
-                </div>
-            </section>
+            <!-- Wind Graphics & Wind Probability Graphics -->
+            <div class="ww-layout-container">
+                <section class="wind-graphics-container" aria-labelledby="wind-graphics-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-wind fontawesome-icon"></i>WIND GRAPHICS
+                    </div>
+                    <div class="wind-graphics-section glass" id="wind-graphics-section">
+                        <!-- Wind graphics will be dynamically generated here -->
+                    </div>
+                </section>
+
+                <section class="wind-probability-container" aria-labelledby="wind-probability-title">
+                    <div class="section-title-active">
+                        <i class="fa-solid fa-chart-line fontawesome-icon"></i>WIND PROBABILITY
+                    </div>
+                    <div class="wind-probability-section glass" id="wind-probability-section">
+                        <!-- Wind probability graphics will be dynamically generated here -->
+                    </div>
+                </section>
+            </div>
 
             <!-- Surge and Rain Graphics -->
             <section class="surge-rain-container" aria-labelledby="surge-rain-title">
-                <div class="section-title">
-                    <i class="fa-solid fa-cloud-rain fa-xl fontawesome-icon"></i>STORM SURGE &frasl; RAIN GRAPHICS
+                <div class="section-title-active">
+                    <i class="fa-solid fa-cloud-rain fontawesome-icon"></i>STORM SURGE &frasl; RAINFALL
                 </div>
-                <div class="surge-rain-section" id="surge-rain-section">
+                <div class="surge-rain-section glass" id="surge-rain-section">
                     <!-- Surge and rain graphics will be dynamically generated here -->
                 </div>
             </section>
@@ -257,16 +339,36 @@
         </footer>
 
         <!-- Keep your existing JS; these IDs match your previous wiring -->
-        <script type="module" src="/2025_weather/js/modules/warningColors.js?v=2025.09.2a"></script>
-        <script type="module" src="/2025_weather/active/js/radii-visualization.js?v=2025.09.13"></script>
-        <script type="module" src="/2025_weather/active/js/storm-graphics.js?v=2025.09.13d"></script>
-        <script type="module" src="/2025_weather/active/js/storm.js?v=2025.09.15"></script>
-        <script type="module" src="/2025_weather/active/js/storm_text.js?v=2025.09.13b"></script>
-        <script type="module" src="/2025_weather/active/js/ww-maps.js?v=2025.09.17c"></script>
+        <!-- Keep your existing JS; these IDs match your previous wiring -->
+        <script type="module" src="../js/modules/warningColors.js?v=2025.09.2a"></script>
+        <script type="module" src="./js/radii-visualization.js?v=2025.09.13"></script>
+        <script type="module" src="./js/storm-graphics.js?v=2025.09.13d"></script>
+        <script type="module" src="./js/storm.js?v=2025.09.15"></script>
+        <script type="module" src="./js/satellite.js?v=2025.09.27"></script>
+        <script type="module" src="./js/storm_text.js?v=2025.09.13b"></script>
+
+        <!-- MODIFIED: Load ww-maps.js as a regular script -->
+        <script src="./js/ww-maps.js?v=2025.09.17c" defer></script>
+
         <script type="module">
-            import { initTropicalBanner } from '/2025_weather/js/modules/tropical-banner.js?v=2025.09.13';
+            import { initTropicalBanner } from '../js/modules/tropical-banner.js?v=2025.09.13';
             initTropicalBanner();
         </script>
+
+        <script type="module">
+            import { initSatellite } from './js/satellite.js?v=2025.09.27';
+            initSatellite({
+                tabsContainerId: 'active-satellite-product-tabs',
+                playButtonId: 'active-satellite-play-pause',
+                imageId: 'active-satellite-image',
+                containerId: 'active-satellite-image-container',
+                loadingId: 'active-satellite-loading',
+                errorId: 'active-satellite-error',
+                timestampId: 'active-satellite-timestamp',
+            });
+        </script>
+
+        <!-- MODIFIED: Removed the block that imported and called initMaps -->
         <script type="module">
             import { NavigationModule } from '../js/modules/navigation.js';
 
@@ -275,5 +377,3 @@
             });
         </script>
     </body>
-
-</html>

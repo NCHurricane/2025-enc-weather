@@ -25,9 +25,9 @@ if (PHP_SAPI !== 'cli') {
     header('Cache-Control: no-store, no-cache, must-revalidate');
 }
 
-define('CACHE_DIR', __DIR__ . '/../../js/modules/cache/');
+define('CACHE_DIR', __DIR__ . '/../cache/');
 define('STORMS_DIR', __DIR__ . '/../storms/');
-define('LOG_DIR', __DIR__ . '/../../js/modules/logs/');
+define('LOG_DIR', __DIR__ . '/../../active/logs/');
 define('USER_AGENT', 'Mozilla/5.0 (Weather App Cache Bot 1.0)');
 define('TIMEOUT', 30);
 
@@ -156,6 +156,54 @@ function formatNHCTextContent($rawDescription) {
     return $text;
 }
 
+function xmlToOutlookJson($xmlContent, $sourceUrl) {
+    try {
+        $xml = new SimpleXMLElement($xmlContent);
+        $ns = $xml->getNamespaces(true);
+
+        // Find the first <item>
+        $item = $xml->channel->item[0] ?? null;
+        if (!$item) {
+            logMessage("No <item> found in XML from {$sourceUrl}", 'WARN');
+            return false;
+        }
+
+        // Extract core data
+        $title = (string)($item->title ?? '');
+        $link = (string)($item->link ?? '');
+        $guid = (string)($item->guid ?? '');
+        $pubDate = (string)($item->pubDate ?? '');
+        $description = (string)($item->description ?? '');
+
+        // The raw text content is inside the description.
+        // Decode HTML entities and then replace <br> tags with newlines for consistent pre-formatted text.
+        $rawContent = html_entity_decode($description);
+        $rawContent = preg_replace('/<br\s?\/?>/i', "\n", $rawContent);
+        $rawContent = strip_tags($rawContent); // Strip any remaining HTML tags
+        
+        // Clean up raw content: remove the title and extra whitespace
+        $rawContent = trim(str_replace($title, '', $rawContent));
+
+        $data = [
+            'title' => $title,
+            'link' => $link,
+            'guid' => $guid,
+            'pubDate' => $pubDate,
+            'discussion' => '', // Force frontend to use rawContent by keeping this empty
+            'rawContent' => $rawContent,
+            'metadata' => [
+                'source_url' => $sourceUrl,
+                'cached_at_iso' => date('c')
+            ]
+        ];
+
+        return json_encode($data, JSON_PRETTY_PRINT);
+    } catch (Exception $e) {
+        logMessage("Error parsing XML from {$sourceUrl}: " . $e->getMessage(), 'ERROR');
+        return false;
+    }
+}
+
 function getAdvisoryNumber($stormId) {
     $stormId = strtoupper(trim($stormId));
     preg_match('/^(AL|EP)(\d{2})(\d{4})$/', $stormId, $matches);
@@ -173,7 +221,7 @@ function getAdvisoryNumber($stormId) {
 }
 
 function getActiveStorms() {
-    $cacheFile = CACHE_DIR . 'nhc_current_storms.json';
+    $cacheFile = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
     
     if (!file_exists($cacheFile)) {
         logMessage("Current storms cache file not found: {$cacheFile}", 'ERROR');
@@ -211,226 +259,218 @@ function getActiveStorms() {
 
 function getTextProductTypes() {
     return [
+        // General products (static URLs)
+        'TWOAT' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWOAT.xml',
+            'filename' => 'twoat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+        'TWOSAT' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWOSAT.xml',
+            'filename' => 'twosat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+        'TWDAT' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWDAT.xml',
+            'filename' => 'twdat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+        'TWSAT' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWSAT.xml',
+            'filename' => 'twsat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+
+        // Storm-specific products (dynamic URLs)
         'TCP' => [
             'name' => 'Tropical Cyclone Public Advisory',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCP{BASIN}{NUM}.xml',
-            'required' => true
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCP%s%d.xml',
+            'filename' => 'TCP',
+            'required' => true,
+            'type' => 'storm'
         ],
         'TCM' => [
             'name' => 'Tropical Cyclone Forecast/Advisory',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCM{BASIN}{NUM}.xml',
-            'required' => true
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCM%s%d.xml',
+            'filename' => 'TCM',
+            'required' => true,
+            'type' => 'storm'
         ],
         'TCD' => [
             'name' => 'Tropical Cyclone Discussion',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCD{BASIN}{NUM}.xml',
-            'required' => true
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCD%s%d.xml',
+            'filename' => 'TCD',
+            'required' => true,
+            'type' => 'storm'
         ],
         'PWS' => [
             'name' => 'Wind Speed Probabilities',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/PWS{BASIN}{NUM}.xml',
-            'required' => true
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/PWS%s%d.xml',
+            'filename' => 'PWS',
+            'required' => true,
+            'type' => 'storm'
         ],
         'TCU' => [
             'name' => 'Tropical Cyclone Update',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCU{BASIN}{NUM}.xml',
-            'required' => false
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCU%s%d.xml',
+            'filename' => 'TCU',
+            'required' => false,
+            'type' => 'storm'
         ],
         
         'TAS' => [
             'name' => 'Tropical Cyclone Public Advisory (Spanish)',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TAS{BASIN}{NUM}.xml',
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TAS%s%d.xml',
+            'filename' => 'TAS',
             'required' => false,
-            'atlantic_only' => true
+            'atlantic_only' => true,
+            'type' => 'storm'
         ],
         'TDS' => [
             'name' => 'Tropical Cyclone Discussion (Spanish)',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TDS{BASIN}{NUM}.xml',
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TDS%s%d.xml',
+            'filename' => 'TDS',
             'required' => false,
-            'atlantic_only' => true
+            'atlantic_only' => true,
+            'type' => 'storm'
         ],
         'TUS' => [
             'name' => 'Tropical Cyclone Update (Spanish)',
-            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TUS{BASIN}{NUM}.xml',
+            'url_pattern' => 'https://www.nhc.noaa.gov/xml/TUS%s%d.xml',
+            'filename' => 'TUS',
             'required' => false,
-            'atlantic_only' => true
-        ]
-    ];
-}
-
-function getMonthlyProducts() {
-    return [
-        'TWSAT' => [
-            'name' => 'Atlantic Monthly Tropical Weather Summary',
-            'url' => 'https://www.nhc.noaa.gov/xml/TWSAT.xml'
+            'atlantic_only' => true,
+            'type' => 'storm'
         ],
-        'TWSEP' => [
-            'name' => 'Eastern Pacific Monthly Tropical Weather Summary',
-            'url' => 'https://www.nhc.noaa.gov/xml/TWSEP.xml'
-        ]
     ];
 }
 
-function cacheStormProducts($stormId) {
-    $stormId = strtoupper($stormId);
-    $advisoryNumber = getAdvisoryNumber($stormId);
-    if ($advisoryNumber === false) {
-        return false;
-    }
-    
-    $basin = substr($stormId, 0, 2);
-    $basinCode = ($basin === 'AL') ? 'AT' : 'EP';
-    
-    $stormDir = STORMS_DIR . $stormId . '/';
-    
-    if (!is_dir($stormDir)) {
-        if (!mkdir($stormDir, 0755, true)) {
-            logMessage("Failed to create storm directory: {$stormDir}", 'ERROR');
-            return false;
-        }
-    }
-    
+function cacheTextProducts() {
     $products = getTextProductTypes();
-    $successCount = 0;
-    $totalAttempts = 0;
-    
+    $activeStorms = getActiveStorms();
+    $generalProductsCached = 0;
+    $stormProductsCached = 0;
+
+    // --- Process General Products ---
+    logMessage("Processing general products...", 'INFO');
     foreach ($products as $productCode => $product) {
-        if (isset($product['atlantic_only']) && $product['atlantic_only'] && $basin !== 'AL') {
+        if ($product['type'] !== 'general') {
             continue;
         }
-        
-        $url = str_replace(['{BASIN}', '{NUM}'], [$basinCode, $advisoryNumber], $product['url_pattern']);
-        $filename = $productCode . $basinCode . $advisoryNumber . '.json';
-        $filepath = $stormDir . $filename;
-        
-        $totalAttempts++;
-        
-        logMessage("Fetching {$product['name']} for {$stormId} from {$url}", 'INFO');
-        
-        $content = fetchContent($url);
-        
+
+        $content = fetchContent($product['url']);
         if ($content === false) {
-            if ($product['required']) {
-                logMessage("Failed to fetch required product {$productCode} for {$stormId}", 'ERROR');
-            } else {
-                logMessage("Optional product {$productCode} not available for {$stormId}", 'INFO');
-            }
+            logMessage("No content fetched for general product {$productCode}, skipping", 'WARN');
             continue;
         }
-        
-        $jsonContent = xmlToJson($content);
-        
+
+        $parser = $product['parser'];
+        $jsonContent = $parser($content, $product['url']);
+
         if ($jsonContent === false) {
-            logMessage("Failed to convert {$productCode} to JSON for {$stormId}", 'ERROR');
+            logMessage("Failed to parse general product {$productCode}", 'ERROR');
             continue;
         }
-        
-        if (file_put_contents($filepath, $jsonContent, LOCK_EX) === false) {
-            logMessage("Failed to write {$filename} for {$stormId}", 'ERROR');
-            continue;
+
+        $filePath = CACHE_DIR . strtolower($product['filename']);
+        if (file_put_contents($filePath, $jsonContent) === false) {
+            logMessage("Failed to write cache file for {$productCode} at {$filePath}", 'ERROR');
+        } else {
+            logMessage("Successfully cached {$productCode} to {$filePath}", 'INFO');
+            $generalProductsCached++;
         }
-        
-        logMessage("Successfully cached {$filename} for {$stormId}", 'INFO');
-        $successCount++;
+    }
+    logMessage("Finished processing general products. Cached: {$generalProductsCached}", 'INFO');
+
+    // --- Process Storm-Specific Products ---
+    if (empty($activeStorms)) {
+        logMessage("No active storms found, skipping storm-specific products.", 'INFO');
+    } else {
+        logMessage("Processing storm-specific products for " . count($activeStorms) . " active storms...", 'INFO');
+        foreach ($activeStorms as $storm) {
+            $stormId = strtoupper($storm['id']);
+            $advisoryNumber = getAdvisoryNumber($stormId);
+            if ($advisoryNumber === false) {
+                continue;
+            }
+
+            $basin = substr($stormId, 0, 2);
+            $basinCode = ($basin === 'AL') ? 'AT' : 'EP';
+            $stormDir = STORMS_DIR . $stormId . '/';
+
+            if (!is_dir($stormDir) && !mkdir($stormDir, 0755, true)) {
+                logMessage("Failed to create directory: {$stormDir}", 'ERROR');
+                continue;
+            }
+
+            foreach ($products as $productCode => $product) {
+                if ($product['type'] !== 'storm') {
+                    continue;
+                }
+
+                // Skip Spanish products for non-Atlantic storms
+                if (isset($product['atlantic_only']) && $product['atlantic_only'] && $basin !== 'AL') {
+                    continue;
+                }
+
+                $fileName = $product['filename'] . $basinCode . $advisoryNumber . '.json';
+                $url = sprintf($product['url_pattern'], $basinCode, $advisoryNumber);
+                $content = fetchContent($url);
+
+                if ($content === false) {
+                    if ($product['required']) {
+                        logMessage("Failed to fetch required product {$productCode} for {$stormId}", 'ERROR');
+                    } else {
+                        logMessage("Failed to fetch optional product {$productCode} for {$stormId}", 'WARNING');
+                    }
+                    continue;
+                }
+
+                $jsonContent = xmlToJson($content);
+                if ($jsonContent === false) {
+                    logMessage("Failed to parse {$productCode} for {$stormId}", 'ERROR');
+                    continue;
+                }
+
+                if (file_put_contents($stormDir . $fileName, $jsonContent) === false) {
+                    logMessage("Failed to write cache file for {$productCode} for {$stormId}", 'ERROR');
+                } else {
+                    logMessage("Successfully cached {$productCode} for {$stormId} as {$fileName}", 'INFO');
+                    $stormProductsCached++;
+                }
+            }
+        }
+        logMessage("Finished processing storm-specific products. Cached: {$stormProductsCached}", 'INFO');
     }
     
-    logMessage("Cached {$successCount}/{$totalAttempts} products for {$stormId}", 'INFO');
-    return $successCount > 0;
+    return ['general' => $generalProductsCached, 'storm' => $stormProductsCached];
 }
 
-function cacheMonthlyProducts() {
-    $products = getMonthlyProducts();
-    $successCount = 0;
-    
-    foreach ($products as $productCode => $product) {
-        $filename = $productCode . '.json';
-        $filepath = CACHE_DIR . $filename;
-        
-        logMessage("Fetching {$product['name']} from {$product['url']}", 'INFO');
-        
-        $content = fetchContent($product['url']);
-        
-        if ($content === false) {
-            logMessage("Failed to fetch {$productCode}", 'ERROR');
-            continue;
-        }
-        
-        $jsonContent = xmlToJson($content);
-        
-        if ($jsonContent === false) {
-            logMessage("Failed to convert {$productCode} to JSON", 'ERROR');
-            continue;
-        }
-        
-        if (file_put_contents($filepath, $jsonContent, LOCK_EX) === false) {
-            logMessage("Failed to write {$filename}", 'ERROR');
-            continue;
-        }
-        
-        logMessage("Successfully cached {$filename}", 'INFO');
-        $successCount++;
-    }
-    
-    return $successCount;
-}
 
 function main() {
     logMessage("Starting NHC text products cache update", 'INFO');
     
     $startTime = microtime(true);
-    $stormsProcessed = 0; // Initialize variable
     
-    $activeStorms = getActiveStorms();
-    
-    if (empty($activeStorms)) {
-        logMessage("No active storms found", 'INFO');
-    } else {
-        logMessage("Found " . count($activeStorms) . " active storms", 'INFO');
-        
-        foreach ($activeStorms as $storm) {
-            $stormId = isset($storm['id']) ? $storm['id'] : (isset($storm['stormId']) ? $storm['stormId'] : null);
-            
-            if (!$stormId) {
-                logMessage("Storm missing ID field: " . json_encode($storm), 'ERROR');
-                continue;
-            }
-            
-            if (cacheStormProducts($stormId)) {
-                $stormsProcessed++;
-            }
-        }
-        
-        logMessage("Successfully processed products for {$stormsProcessed}/" . count($activeStorms) . " storms", 'INFO');
-    }
-    
-    $monthlyCount = cacheMonthlyProducts();
-    logMessage("Cached {$monthlyCount}/2 monthly products", 'INFO');
+    $counts = cacheTextProducts();
     
     $executionTime = round(microtime(true) - $startTime, 2);
     logMessage("NHC text products cache update completed in {$executionTime} seconds", 'INFO');
     
     if (PHP_SAPI !== 'cli') {
-        header('Content-Type: application/json');
-        echo json_encode([
+        $response = [
             'status' => 'success',
-            'timestamp' => date('c'),
-            'execution_time' => $executionTime,
-            'storms_processed' => $stormsProcessed,
-            'monthly_products_cached' => $monthlyCount,
-            'active_storms_count' => count($activeStorms)
-        ], JSON_PRETTY_PRINT);
+            'message' => "Cache update completed in {$executionTime} seconds.",
+            'general_products_cached' => $counts['general'],
+            'storm_products_cached' => $counts['storm']
+        ];
+        echo json_encode($response);
     }
 }
 
-try {
-    main();
-} catch (Exception $e) {
-    logMessage("Fatal error: " . $e->getMessage(), 'ERROR');
-    if (PHP_SAPI !== 'cli') {
-        header('Content-Type: application/json', true, 500);
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
-    exit(1);
-}
-
+main();
 ?>

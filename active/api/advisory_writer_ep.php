@@ -18,7 +18,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../js/modules/logs/advisory_writer_ep_error.log');
+ini_set('error_log', __DIR__ . '/../../active/logs/advisory_writer_ep_error.log');
 
 // --- Core Logic Start ---
 
@@ -65,7 +65,7 @@ $LOWERCASE_ALL = false;
 function adv_log($msg, $level = 'INFO') {
     global $isCli;
     
-    $logDir = __DIR__ . '/../../js/modules/logs/';
+    $logDir = __DIR__ . '/../../active/logs/';
     $logFile = $logDir . 'advisory_writer_ep.log';
 
     if (!is_dir($logDir)) {
@@ -215,6 +215,7 @@ function array_filter_non_empty($s) {
 // --- Core Processing Functions ---
 
 function processSingleStorm($stormId) {
+    $stormId = strtoupper($stormId);
     adv_log("Processing single storm: {$stormId}", 'INFO');
     
     $number = substr($stormId, 2, 2);
@@ -238,8 +239,9 @@ function processSingleStorm($stormId) {
     
     if ($raw === false || strlen($raw) < 64) {
         adv_log("Primary source failed for {$stormId}, trying FTP fallback.", 'WARN');
-        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
+        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/" . strtolower(substr($stormId, 0, 2)) . substr($stormId, 2) . "_info.xml";
         $raw = @file_get_contents($ftpUrl, false, $ctx);
+        
 
         if ($raw === false || strlen($raw) < 64) {
             throw new Exception('Failed to fetch advisory XML from both HTTPS and FTP sources.');
@@ -262,7 +264,7 @@ function processSingleStorm($stormId) {
         'advisoryNumber'   => strval_safe(isset($xml->advisoryNumber) ? $xml->advisoryNumber : ''),
         'systemType'       => strval_safe(isset($xml->systemType) ? $xml->systemType : ''),
         'systemName'       => strval_safe(isset($xml->systemName) ? $xml->systemName : ''),
-        'systemSaffirSimpsonCategory' => intval_safe(isset($xml->systemSaffirSimpsonCategory) ? $xml->systemSaffirSimpsonCategory : ''),
+        'systemSaffirSimpsonCategory' => strval_safe(isset($xml->systemSaffirSimpsonCategory) ? $xml->systemSaffirSimpsonCategory : ''),
         'loc' => array(
             'lat'     => is_numeric(isset($xml->centerLocLatitude) ? (string)$xml->centerLocLatitude : null) ? (float)$xml->centerLocLatitude : null,
             'lon'     => is_numeric(isset($xml->centerLocLongitude) ? (string)$xml->centerLocLongitude : null) ? (float)$xml->centerLocLongitude : null,
@@ -336,7 +338,7 @@ function processAllEPStorms() {
     
     $stormIds = array();
     foreach($stormsData['data']['activeStorms'] as $storm) {
-        $stormIds[] = $storm['id'];
+        $stormIds[] = strtoupper($storm['id']);
     }
 
     $alStorms = array_filter($stormIds, 'is_ep_storm');

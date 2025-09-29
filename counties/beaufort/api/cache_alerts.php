@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API/ATOM Alert Script - cache_alerts.php
  * Fetches NWS API alerts and caches them as JSON.
@@ -8,9 +12,6 @@
  * - Beaufort County, NC (zone: NCC013)
  * 
  */
-
-declare(strict_types=1);
-error_reporting(E_ALL);
 
 $scriptDir = dirname(__FILE__);
 $dataDir = $scriptDir . '/../data';

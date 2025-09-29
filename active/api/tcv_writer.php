@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 /**
- * NHC TCV Writer, Atlantic - tcv_writer.php
- * Outputs: active/storms/ALnnYYYY/tcv.json
- * Caches zone geometries: /js/data/zones/cache/{ZONE}.json
- *
-* Query:
- *   ?storm=ALnnYYYY  or ?storm=ALL
+ * NHC TCV Writer (Atlantic)
+ * Fixes:
+ *  1) Correct MIATCVAT source URLs (no .YYYY; use FTP raw text or .shtml as fallback).
+ *  2) Prevent unhandled exceptions from zone geometry fetches (cache_zone_geo wrapped).
+ *  3) Keep --storm=ALL loop resilient (per-storm try/catch so one failure doesn't abort).
+ *  4) Ensure HTTP headers are passed as a string for PHP 8.4 stream context.
  */
 
 declare(strict_types=1);
@@ -14,357 +14,261 @@ error_reporting(E_ALL);
 
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-store, no-cache, must-revalidate');
 }
 
-function argOrGet(string $key, ?string $default=null): ?string {
-  if (PHP_SAPI==='cli') {
-    foreach ($GLOBALS['argv'] as $a) if (strpos($a, "--{$key}=") === 0) return substr($a, strlen($key)+3);
-  }
-  return $_GET[$key] ?? $default;
+function web_json($data, int $status = 200): void {
+    if (PHP_SAPI === 'cli') return;
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 }
 
-function fail(string $m, int $code=400): void {
-  if (PHP_SAPI !== 'cli') {
-    http_response_code($code);
-    header('Content-Type: application/json');
-  }
-  echo json_encode(['ok'=>false,'error'=>$m], JSON_PRETTY_PRINT); 
-  exit;
+// Resolve project root reliably from /active/api/tcv_writer.php
+$ROOT = realpath(dirname(__DIR__, 2)); // from /active/api -> /2025_weather
+if ($ROOT === false) {
+    if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: Unable to resolve project ROOT from ' . __DIR__ . "
+"); }
+    else { web_json(['error' => 'Unable to resolve project ROOT'], 500); }
+    exit(1);
+}
+$PUBLIC    = $ROOT;
+$ACTIVE    = $ROOT . '/active';
+$JS_DATA   = $ROOT . '/js/data';
+$JS_MODULE = $ROOT . '/js/modules';
+$CACHE_DIR = $JS_DATA . '/zones/cache';
+@mkdir($ACTIVE, 0775, true);
+@mkdir($CACHE_DIR, 0775, true);
+
+// Where to find current storms list. Support multiple historical locations.
+$stormListCandidates = [
+    $JS_MODULE . '/cache/nhc_current_storms.json',  // sole local source
+];
+
+$currentStormsPath = null;
+foreach ($stormListCandidates as $p) {
+    if (is_readable($p)) { $currentStormsPath = $p; break; }
+}
+$currentStormsJson = '';
+if ($currentStormsPath !== null) {
+    $currentStormsJson = file_get_contents($currentStormsPath);
+} else {
+    // Local file not found; fall back to NHC public source
+    $remote = 'https://www.nhc.noaa.gov/CurrentStorms.json';
+    // Minimal fetch here (http_get is declared later); use file_get_contents with a simple UA
+    $ctx = stream_context_create([
+        'http' => [
+            'method'  => 'GET',
+            'timeout' => 10,
+            'header'  => "User-Agent: NCHurricane.com TCV fetcher
+Accept: application/json
+",
+        ],
+        'ssl' => [ 'verify_peer' => true, 'verify_peer_name' => true ],
+    ]);
+    $currentStormsJson = @file_get_contents($remote, false, $ctx) ?: '';
+    if ($currentStormsJson !== '') { $currentStormsPath = 'REMOTE:' . $remote; }
+}
+if ($currentStormsJson === '') {
+    $msg = 'Missing storms list. Tried local ' . implode(' | ', $stormListCandidates) . ' and remote https://www.nhc.noaa.gov/CurrentStorms.json';
+    if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: ' . $msg . "\n"); } else { web_json(['error' => $msg], 500); }
+    exit(1);
+}
+$stormsData = json_decode($currentStormsJson, true);
+if (!is_array($stormsData)) {
+    $msg = 'Invalid JSON from ' . $currentStormsPath;
+    if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: ' . $msg . "\n"); } else { web_json(['error' => $msg], 500); }
+    exit(1);
 }
 
-function ok(array $d): void {
-  if (PHP_SAPI !== 'cli') {
-    header('Content-Type: application/json');
-  }
-  echo json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES); 
-  exit;
+// This vlog call was here, but the stray '}' and duplicated code after it are now removed.
+vlog($log ?? false, "Using storms list: $currentStormsPath\n");
+
+$argvStr = PHP_SAPI === 'cli' ? implode(' ', array_slice($argv, 1)) : '';
+$qs      = $_SERVER['QUERY_STRING'] ?? '';
+$stormArg = null; $force = false; $log = false;
+$input = trim($argvStr . ' ' . $qs);
+$parts = preg_split('/[&\s]+/', $input, -1, PREG_SPLIT_NO_EMPTY);
+foreach ($parts as $p) {
+    if (stripos($p, 'storm=') === 0) {
+        $stormArg = strtoupper(trim(substr($p, strlen('storm='))));
+    } elseif (strcasecmp($p, '--storm=ALL') === 0 || strcasecmp($p, 'storm=ALL') === 0) {
+        $stormArg = 'ALL';
+    } elseif (strcasecmp($p, '--force') === 0) {
+        $force = true;
+    } elseif (strcasecmp($p, '--log') === 0 || strcasecmp($p, 'log=1') === 0) {
+        $log = true;
+    }
+}
+if (!$stormArg) { $stormArg = 'ALL'; }
+function vlog(bool $on, string $msg): void { if ($on) echo $msg; }
+
+// (storms list resolution moved above with candidates and log trace)
+
+// --- Robust GET with header string (PHP 8.4) and ignore_errors to capture bodies on non-200
+function http_get(string $url, int $tries = 3, int $timeout = 12): string {
+    $last = '';
+    $ua = "NCHurricane.com TCV fetcher";
+    $hdr = "User-Agent: $ua\r\nAccept: */*\r\n";
+    for ($i = 0; $i < $tries; $i++) {
+        $ctx = stream_context_create([
+            'http' => [
+                'method'        => 'GET',
+                'timeout'       => $timeout,
+                'header'        => $hdr,   // string per PHP 8.x docs
+                'ignore_errors' => true,   // still return body on 4xx/5xx
+            ],
+            'ssl' => [
+                'verify_peer'      => true,
+                'verify_peer_name' => true,
+            ],
+        ]);
+        $res = @file_get_contents($url, false, $ctx);
+        if ($res !== false && $res !== '') return $res;
+        $last = error_get_last()['message'] ?? 'unknown';
+        usleep(250_000);
+    }
+    throw new RuntimeException("Failed GET $url: $last");
 }
 
-if (PHP_SAPI === 'cli') {
-    foreach ($argv as $arg) {
-        if (strpos($arg, '--storm=') === 0) {
-            $_GET['storm'] = substr($arg, 8);
-            break;
+function parse_tcv_text(string $txt): array {
+    $lines = preg_split("/\r?\n/", $txt);
+    $adv = null; $issued = null; $zones = [];
+    foreach ($lines as $ln) {
+        if ($adv === null && preg_match('/Advisory\s+(Number\s+)?(\d+)/i', $ln, $m)) { $adv = (int)$m[2]; }
+        if ($issued === null && preg_match('/\b(\d{1,2}:\d{2}\s*[AP]M\s*(?:EDT|EST|CDT|CST|UTC))\b/i', $ln, $m)) { $issued = trim($m[1]); }
+        // Strict zone token capture only (e.g., NCZ045). Avoid broad ranges here to prevent false positives.
+        if (preg_match_all('/\b([A-Z]{3}\d{3})\b/', $ln, $mm)) {
+            foreach ($mm[1] as $z) { $zones[] = strtoupper($z); }
         }
     }
-    if (!isset($_GET['storm'])) {
-        $_GET['storm'] = 'ALL';
+    $zones = array_values(array_unique($zones));
+    return ['advisory'=>$adv, 'issued'=>$issued, 'zones'=>$zones, 'raw'=>$txt];
+}
+
+function cache_zone_geo(string $zoneId) {
+    global $CACHE_DIR;
+    $zoneId = strtoupper(trim($zoneId));
+    if (!preg_match('/^[A-Z]{3}\d{3}$/', $zoneId)) return;
+    $out = $CACHE_DIR . '/' . $zoneId . '.json';
+    if (is_file($out)) return;
+    $json = http_get("https://api.weather.gov/zones/forecast/$zoneId", 2, 8);
+    $data = json_decode($json, true);
+    if (!is_array($data) || empty($data['geometry'])) return;
+    @file_put_contents($out, json_encode($data['geometry'], JSON_UNESCAPED_SLASHES));
+}
+
+function write_storm_tcv(string $stormId, array $payload): void {
+    global $ACTIVE;
+    $stormPath = $ACTIVE . '/storms/' . $stormId;
+    @mkdir($stormPath, 0775, true);
+    $outFile = $stormPath . '/tcv.json';
+    @file_put_contents($outFile, json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+}
+
+function process_storm(string $stormId, array $stormsData, bool $force, bool $log): bool {
+    vlog($log, "Processing TCV for $stormId...\n");
+
+    // Locate storm record
+    $stormRec = null;
+    foreach (($stormsData['data']['activeStorms'] ?? []) as $s) {
+        if (strtoupper($s['id'] ?? '') === $stormId) { $stormRec = $s; break; }
     }
+    if (!$stormRec) {
+        vlog($log, "  WARN: Storm not in active list: $stormId\n");
+        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[],'note'=>'not active']);
+        vlog($log, "  SUCCESS: $stormId (empty)\n");
+        return true;
+    }
+
+    // Build MIATCVAT candidates (no year suffix). Prefer raw FTP text; fall back to .shtml pages.
+    $candidates = [];
+    for ($n = 1; $n <= 5; $n++) {
+        $candidates[] = sprintf('https://www.nhc.noaa.gov/ftp/pub/forecasts/public/MIATCVAT%d', $n);
+    }
+    for ($n = 1; $n <= 5; $n++) {
+        $candidates[] = sprintf('https://www.nhc.noaa.gov/text/MIATCVAT%d.shtml', $n);
+    }
+
+    $chosen = null; $chosenRaw = null;
+    foreach ($candidates as $url) {
+        try {
+            $txt = http_get($url, 2, 10);
+        } catch (Throwable $e) {
+            continue; // try next candidate
+        }
+        if (!is_string($txt) || trim($txt) === '') continue;
+
+        // Require either the ATCF id (e.g., AL082025) OR the storm name + year
+        $ok = (stripos($txt, $stormId) !== false);
+        if (!$ok) {
+            $name = strtoupper(trim($stormRec['name'] ?? ''));
+            $yr   = substr($stormId, 4, 4);
+            $ok = $name && stripos(strtoupper($txt), $name) !== false && stripos($txt, $yr) !== false;
+        }
+        if (!$ok) continue;
+
+        $chosen = $url; $chosenRaw = $txt; break;
+    }
+
+    if ($chosenRaw === null) {
+        vlog($log, "  INFO: No TCV text matched for $stormId; writing empty file.\n");
+        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[]]);
+        vlog($log, "  SUCCESS: $stormId (empty)\n");
+        return true;
+    }
+
+    $parsed = parse_tcv_text($chosenRaw);
+
+    // Cache geometries defensively; never abort the storm on cache errors.
+    foreach ($parsed['zones'] as $z) {
+        try { cache_zone_geo($z); }
+        catch (Throwable $e) { vlog($log, "  WARN: zone cache failed for $z: " . $e->getMessage() . "\n"); }
+    }
+
+    $payload = [
+        'stormId' => $stormId,
+        'source'  => $chosen,
+        'tcv'     => [ 'advisory'=>$parsed['advisory'], 'issued'=>$parsed['issued'], 'zones'=>$parsed['zones'] ],
+    ];
+    write_storm_tcv($stormId, $payload);
+    vlog($log, "  SUCCESS: $stormId\n");
+    return true;
 }
-
-$stormId = argOrGet('storm');
-
-if ($stormId === 'ALL') {
-    processAllALStormsTCV();
-    exit;
-}
-
-if (!$stormId || !preg_match('/^AL(\d{2})\d{4}$/i',$stormId,$m)) fail('Provide storm like ALnnYYYY or ALL');
 
 try {
-    $result = processSingleStormTCV($stormId);
-    if (PHP_SAPI === 'cli') {
-        echo json_encode($result, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . "\n";
-    } else {
-        ok($result);
-    }
-} catch (Exception $e) {
-    fail($e->getMessage(), 500);
-}
+    if ($stormArg === 'ALL') {
+        $alStorms = [];
+        foreach (($stormsData['data']['activeStorms'] ?? []) as $storm) {
+            $sid = strtoupper(trim($storm['id'] ?? ''));
+            if (preg_match('/^AL\d{2}\d{4}$/', $sid)) { $alStorms[] = $sid; }
+        }
+        if (!$alStorms) { vlog($log, "INFO: No active AL storms found\n"); if (PHP_SAPI !== 'cli') web_json(['info'=>'No active AL storms found']); exit(0); }
 
-function processAllALStormsTCV(): void {
-    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
-    
-    if (!file_exists($currentStormsPath)) {
-        if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, "ERROR: Current storms cache not found at {$currentStormsPath}\n");
-        } else {
-            fail('Current storms cache not available');
+        vlog($log, "Executing TCV Writer (AT)...\n");
+        foreach ($alStorms as $sid) {
+            try {
+                $ok = process_storm($sid, $stormsData, $force, $log);
+                if (!$ok) vlog($log, "  ERROR: processing failed for $sid\n");
+            } catch (Throwable $e) {
+                // Do NOT abort the batch; write empty tcv.json for this storm and continue
+                vlog($log, "  ERROR: unhandled for $sid: " . $e->getMessage() . "\n");
+                write_storm_tcv($sid, ['stormId'=>$sid,'tcv'=>null,'zones'=>[],'error'=>$e->getMessage()]);
+            }
         }
-        exit(1);
-    }
-    
-    $rawStorms = file_get_contents($currentStormsPath);
-    $stormsData = json_decode($rawStorms, true);
-    
-    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
-        if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, "ERROR: Invalid storms data format\n");
-        } else {
-            fail('Invalid storms data');
-        }
-        exit(1);
-    }
-    
-    $alStorms = [];
-    foreach ($stormsData['data']['activeStorms'] as $storm) {
-        $stormId = strtoupper(trim($storm['id'] ?? ''));
-        if (preg_match('/^AL\d{2}\d{4}$/', $stormId)) {
-            $alStorms[] = $stormId;
-        }
-    }
-    
-    if (empty($alStorms)) {
-        if (PHP_SAPI === 'cli') {
-            echo "INFO: No active AL storms found\n";
-        } else {
-            ok(['ok' => true, 'message' => 'No active AL storms', 'processed' => []]);
-        }
+        if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>$alStorms]);
         exit(0);
     }
-    
-    $results = [];
-    foreach ($alStorms as $stormId) {
-        if (PHP_SAPI === 'cli') {
-            echo "Processing TCV for {$stormId}...\n";
-        }
-        
-        try {
-            $result = processSingleStormTCV($stormId);
-            $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
-            
-            if (PHP_SAPI === 'cli') {
-                echo "  SUCCESS: {$stormId}\n";
-            }
-        } catch (Exception $e) {
-            $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
-            
-            if (PHP_SAPI === 'cli') {
-                echo "  ERROR: {$stormId} - " . $e->getMessage() . "\n";
-            }
-        }
+
+    // Single storm path
+    if (!preg_match('/^AL\d{2}\d{4}$/', $stormArg)) {
+        $msg = "ERROR: Invalid storm id: $stormArg\n"; vlog($log, $msg); if (PHP_SAPI !== 'cli') web_json(['error'=>$msg], 400); exit(1);
     }
-    
-    if (PHP_SAPI === 'cli') {
-        $successCount = count(array_filter($results, function($r) { return $r['status'] === 'success'; }));
-        echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
-    } else {
-        ok(['ok' => true, 'processed' => $results]);
-    }
+    $ok = process_storm($stormArg, $stormsData, $force, $log);
+    if (!$ok) { $msg = "ERROR: processing failed for $stormArg\n"; vlog($log, $msg); if (PHP_SAPI !== 'cli') web_json(['error'=>$msg], 500); exit(1); }
+    if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>[$stormArg]]);
+    exit(0);
+} catch (Throwable $e) {
+    $msg = 'FATAL: ' . $e->getMessage();
+    if (PHP_SAPI === 'cli') { fwrite(STDERR, $msg . "\n"); } else { web_json(['error'=>$msg], 500); }
+    exit(1);
 }
-
-function processSingleStormTCV(string $stormId): array {
-    if (!preg_match('/^AL(\d{2})\d{4}$/i',$stormId,$m)) {
-        throw new Exception('Invalid storm format. Expected ALnnYYYY');
-    }
-    
-    $stormNum=(int)$m[1];
-    $tcvIdx=($stormNum%5===0)?5:($stormNum%5);
-    $embed = (int)(argOrGet('embed','0') ?? '0') === 1;
-
-    $activeRoot = dirname(__DIR__);
-    $siteRoot   = dirname($activeRoot);
-    $stormDir   = $activeRoot."/storms/{$stormId}";
-    $tcvOutPath = "{$stormDir}/tcv.json";
-    $zonesDir   = "{$siteRoot}/js/data/zones";
-    $zonesCache = "{$zonesDir}/cache";
-    $zonesCatalogPath="{$siteRoot}/js/data/nws_filtered_zones.json";
-
-    @is_dir($stormDir) || @mkdir($stormDir,0775,true);
-    @is_dir($zonesCache) || @mkdir($zonesCache,0775,true);
-
-    if (!is_file($zonesCatalogPath)) {
-        throw new Exception("Missing zones catalog: {$zonesCatalogPath}");
-    }
-    $zonesCatalog=json_decode((string)file_get_contents($zonesCatalogPath),true);
-    if (!is_array($zonesCatalog)) {
-        throw new Exception('zones catalog invalid JSON');
-    }
-
-    $zoneMetaById=[];
-    foreach($zonesCatalog as $z){
-      if(!isset($z['id'])) continue;
-      $zoneMetaById[$z['id']] = [
-        'id'=>$z['id'],
-        'name'=>$z['name'] ?? ($z['properties']['name'] ?? $z['id']),
-        'state'=>$z['state']?? ($z['properties']['state']?? null),
-      ];
-    }
-
-    $devFile=argOrGet('file');
-    if ($devFile) {
-      if (!is_file($devFile)) {
-          throw new Exception("Dev file not found: {$devFile}");
-      }
-      $tcvRaw=(string)file_get_contents($devFile); $sourceUrl=$devFile;
-    } else {
-      $tcvUrl="https://www.nhc.noaa.gov/ftp/pub/forecasts/public/MIATCVAT{$tcvIdx}";
-      $sourceUrl=$tcvUrl;
-      $ch=curl_init($tcvUrl);
-      curl_setopt_array($ch,[
-        CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true,
-        CURLOPT_CONNECTTIMEOUT=>8, CURLOPT_TIMEOUT=>15,
-        CURLOPT_USERAGENT=>"NCHurricane/TCVWriter"
-      ]);
-      $tcvRaw=curl_exec($ch); $http=curl_getinfo($ch,CURLINFO_RESPONSE_CODE); curl_close($ch);
-      if ($tcvRaw===false || $http!==200) {
-        $empty=['meta'=>[
-          'stormId'=>$stormId,'advisory'=>null,'issued'=>null,
-          'productId'=>null,'productCode'=>"MIATCVAT{$tcvIdx}",
-          'source'=>$sourceUrl,'disclaimer'=>null
-        ], 'events'=>[], 'features'=>['type'=>'FeatureCollection','features'=>[]], 'display'=>['wind'=>[],'surge'=>[]]];
-        file_put_contents($tcvOutPath, json_encode($empty, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-        return ['ok'=>true,'wrote'=>$tcvOutPath,'note'=>'TCV unavailable — wrote empty'];
-      }
-    }
-
-    function expandZonesFromUGC(string $ugcLine): array {
-      $line=trim($ugcLine);
-      $line=preg_replace('/-\d{6}-\s*$/','',$line);
-      $tokens=preg_split('/-+/', $line, -1, PREG_SPLIT_NO_EMPTY);
-      $zones=[]; $currentPrefix=null;
-      $emit=function(string $prefix,int $a,int $b)use(&$zones){ if($a>$b)[$a,$b]=[$b,$a]; for($i=$a;$i<=$b;$i++) $zones[]=sprintf('%s%03d',$prefix,$i); };
-      foreach($tokens as $tok){
-        $tok=trim($tok); if($tok==='') continue;
-        if (preg_match('/^\d{6}$/',$tok)) break;
-        if (preg_match('/^([A-Z]{2}[CZ])(\d{3})$/',$tok,$m)){ $currentPrefix=$m[1]; $zones[]=$m[1].$m[2]; continue; }
-        if (preg_match('/^([A-Z]{2}[CZ])(\d{3})>(\d{3})$/',$tok,$m)){ $currentPrefix=$m[1]; $emit($currentPrefix,(int)$m[2],(int)$m[3]); continue; }
-        if (preg_match('/^(\d{3})>(\d{3})$/',$tok,$m)){ if($currentPrefix) $emit($currentPrefix,(int)$m[1],(int)$m[2]); continue; }
-        if (preg_match('/^\d{3}$/',$tok)){ if($currentPrefix) $zones[]=$currentPrefix.$tok; continue; }
-        if (preg_match('/^[A-Z]{2}[CZ]\d{3}$/',$tok)){ $zones[]=$tok; $currentPrefix=substr($tok,0,3); continue; }
-      }
-      $seen=[]; $uniq=[]; foreach($zones as $z){ if(isset($seen[$z])) continue; $seen[$z]=true; $uniq[]=$z; } return $uniq;
-    }
-    function parseVTEC(string $line): ?array {
-      $line=trim($line);
-      if (strpos($line, '/O.') !== 0) return null;
-      if (!preg_match('#^/O\.([A-Z]{3})\.([A-Z]{4})\.(HU|TR|SS)\.(A|W)\.(\d{4})\.([0-9TZ:-]+)-([0-9TZ:-]+)/$#',$line,$m)) return null;
-      return ['action'=>$m[1],'office'=>$m[2],'phen'=>$m[3],'sig'=>$m[4],'etn'=>$m[5],'start'=>$m[6],'end'=>$m[7]];
-    }
-    function hazardBucket(string $phen): string { return ($phen==='SS')?'surge':'wind'; }
-    function sigMax(?string $a, ?string $b): ?string { $r=['A'=>1,'W'=>2]; $ra=$a?($r[$a]??0):0; $rb=$b?($r[$b]??0):0; return ($rb>$ra)?$b:$a; }
-    function zoneTypeFromId(string $zoneId): string {
-      if (preg_match('/^[A-Z]{2}Z\d{3}$/',$zoneId)) return 'forecast';
-      if (preg_match('/^[A-Z]{2}C\d{3}$/',$zoneId)) return 'county';
-      return 'forecast';
-    }
-    function ensureZoneGeometry(string $zoneId, string $zoneType, string $cacheDir): ?array {
-      $cacheFile="{$cacheDir}/{$zoneId}.json";
-      if (is_file($cacheFile)) { $j=json_decode((string)file_get_contents($cacheFile),true); return is_array($j)?$j:null; }
-      $url="https://api.weather.gov/zones/{$zoneType}/{$zoneId}";
-      $ch=curl_init($url);
-      curl_setopt_array($ch,[
-        CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_CONNECTTIMEOUT=>8, CURLOPT_TIMEOUT=>20,
-        CURLOPT_USERAGENT=>"NCHurricane/TCVWriter (https://nchurricane.com; contact: chuck@chuckcopeland.com)",
-        CURLOPT_HTTPHEADER=>['Accept: application/geo+json, application/json;q=0.9'], CURLOPT_IPRESOLVE=>CURL_IPRESOLVE_V4
-      ]);
-      $raw=curl_exec($ch); $http=curl_getinfo($ch,CURLINFO_RESPONSE_CODE); curl_close($ch);
-      if ($raw===false || $http!==200) return null;
-      $json=json_decode($raw,true); if(!is_array($json) || !isset($json['geometry'])) return null;
-      $feature=['type'=>'Feature','id'=>$zoneId,'geometry'=>$json['geometry'],
-        'properties'=>['zoneName'=>$json['properties']['name']??$zoneId,'state'=>$json['properties']['state']??null]];
-      @file_put_contents($cacheFile,json_encode($feature,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-      return $feature;
-    }
-
-    $lines=preg_split("/\r\n|\n|\r/",$tcvRaw);
-    $productId=$advisoryNum=$issuedIso=$disclaimer=null;
-
-    foreach($lines as $ix=>$ln){
-      if($productId===null && preg_match('/^[A-Z]{5}\s+KNHC\s+\d{6}$/',trim($ln))) $productId=trim($ln);
-      if($advisoryNum===null && preg_match('/ADVISORY NUMBER\s+(\d+)/i',$ln,$mm)) $advisoryNum=(int)$mm[1];
-      if($disclaimer===null && strpos(strtoupper(trim($ln)), 'CAUTION') === 0){
-        $para=[$ln]; for($j=$ix+1;$j<count($lines);$j++){ $t=rtrim($lines[$j],"\r"); if($t==='') break; $para[]=$t; }
-        $disclaimer=trim(implode("\n",$para));
-      }
-    }
-
-    $final=[];
-    for($i=0;$i<count($lines);$i++){
-      $ln=trim($lines[$i]);
-      if(preg_match('/^[A-Z]{2}[CZ]\d{3}.*-\d{6}-$/',$ln)){
-        $zones=expandZonesFromUGC($ln);
-        $i++;
-        while($i<count($lines)){
-          $v=trim($lines[$i]);
-          if($v==='' || $v==='$$') break;
-          if($v[0] !== '/') { $i++; continue; }
-          $vtec=parseVTEC($v);
-          if($vtec){
-            $act=$vtec['action']; $phen=$vtec['phen']; $sig=$vtec['sig'];
-            foreach($zones as $z){
-              if(in_array($act,['CAN','EXP'],true)){ unset($final[$z][$phen]); continue; }
-              $final[$z][$phen]=sigMax($final[$z][$phen]??null,$sig);
-            }
-          }
-          $i++;
-        }
-      }
-    }
-
-    $events=[]; $display=['wind'=>[],'surge'=>[]];
-    $groupBy=['wind'=>['HU.W'=>[], 'HU.A'=>[], 'TR.W'=>[], 'TR.A'=>[]], 'surge'=>['SS.W'=>[], 'SS.A'=>[]]];
-    $features=[];
-
-    function labelForCode(string $code): string {
-      switch($code) {
-        case 'HU.W': return 'Hurricane Warning';
-        case 'HU.A': return 'Hurricane Watch';
-        case 'TR.W': return 'Tropical Storm Warning';
-        case 'TR.A': return 'Tropical Storm Watch';
-        case 'SS.W': return 'Storm Surge Warning';
-        case 'SS.A': return 'Storm Surge Watch';
-        default: return $code;
-      }
-    }
-
-    foreach($final as $zoneId=>$phenMap){
-      foreach(['HU','TR','SS'] as $phen){
-        if(!isset($phenMap[$phen])) continue;
-        $sig=$phenMap[$phen]; $haz=($phen==='SS')?'surge':'wind'; $code="{$phen}.{$sig}";
-        $type=zoneTypeFromId($zoneId);
-        $feature=ensureZoneGeometry($zoneId,$type,$zonesCache);
-        $fallback=$zoneMetaById[$zoneId] ?? ['name'=>$zoneId,'state'=>null];
-        $zoneName=$feature['properties']['zoneName'] ?? ($fallback['name'] ?? $zoneId);
-        $state   =$feature['properties']['state']    ?? ($fallback['state'] ?? null);
-
-        $events[]=['zoneId'=>$zoneId,'zoneType'=>$type,'zoneName'=>$zoneName,'state'=>$state,'phen'=>$phen,'sig'=>$sig,'hazard'=>$haz];
-
-        $stKey=$state ?? 'UNK';
-        if(!isset($groupBy[$haz][$code][$stKey])) $groupBy[$haz][$code][$stKey]=[];
-        $groupBy[$haz][$code][$stKey][]=$zoneName;
-
-        if ($embed && $feature){
-          $feature['properties']['zoneName']=$zoneName;
-          $feature['properties']['state']=$state;
-          $feature['properties']['phen']=$phen;
-          $feature['properties']['sig']=$sig;
-          $feature['properties']['hazard']=$haz;
-          $features[]=$feature;
-        }
-        usleep(60000);
-      }
-    }
-
-    foreach(['wind','surge'] as $haz){
-      foreach($groupBy[$haz] as $code=>$byState){
-        if(empty($byState)) continue;
-        ksort($byState);
-        $states=[]; foreach($byState as $st=>$names){ sort($names,SORT_NATURAL|SORT_FLAG_CASE); $states[]=['state'=>$st,'count'=>count($names),'zones'=>array_values($names)]; }
-        $display[$haz][]= ['label'=>labelForCode($code),'key'=>$code,'states'=>$states];
-      }
-    }
-
-    $out=[
-      'meta'=>[
-        'stormId'=>$stormId,'advisory'=>$advisoryNum,'issued'=>$issuedIso,
-        'productId'=>$productId,'productCode'=>"MIATCVAT{$tcvIdx}",'source'=>$sourceUrl,'disclaimer'=>$disclaimer
-      ],
-      'events'=>$events,
-      'features'=>['type'=>'FeatureCollection','features'=>$features],
-      'display'=>$display
-    ];
-
-    $tmp=$tcvOutPath.'.tmp'; 
-    if (file_put_contents($tmp, json_encode($out, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)) === false) {
-        throw new Exception("Failed to write temporary file: {$tmp}");
-    }
-    if (!rename($tmp,$tcvOutPath)) {
-        @unlink($tmp);
-        throw new Exception("Failed to rename temporary file: {$tcvOutPath}");
-    }
-    
-    return ['ok'=>true,'wrote'=>$tcvOutPath,'events'=>count($events),'features'=>count($features),'embed'=>$embed];
-}
-?>

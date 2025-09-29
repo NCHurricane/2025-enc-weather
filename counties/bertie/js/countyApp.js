@@ -8,117 +8,117 @@
 // ========================
 
 const warningColors = {
-    "Tsunami Warning": "#FD6347",
-    "Tornado Warning": "#FF0000",
-    "Extreme Wind Warning": "#FF8C00",
-    "Severe Thunderstorm Warning": "#FFA500",
-    "Flash Flood Warning": "#8B0000",
-    "Flash Flood Statement": "#8B0000",
-    "Severe Weather Statement": "#00FFFF",
-    "Shelter In Place Warning": "#FA8072",
-    "Evacuation Immediate": "#7FFF00",
-    "Civil Danger Warning": "#FFB6C1",
-    "Nuclear Power Plant Warning": "#4B0082",
-    "Radiological Hazard Warning": "#4B0082",
-    "Hazardous Materials Warning": "#4B0082",
-    "Fire Warning": "#A0522D",
-    "Civil Emergency Message": "#FFB6C1",
-    "Law Enforcement Warning": "#C0C0C0",
-    "Storm Surge Warning": "#B524F7",
-    "Hurricane Force Wind Warning": "#CD5C5C",
-    "Hurricane Warning": "#DC143C",
-    "Typhoon Warning": "#DC143C",
-    "Special Marine Warning": "#FFA500",
-    "Blizzard Warning": "#FF4500",
-    "Snow Squall Warning": "#C71585",
-    "Ice Storm Warning": "#8B008B",
-    "Heavy Freezing Spray Warning": "#00BFFF",
-    "Winter Storm Warning": "#FF69B4",
-    "Lake Effect Snow Warning": "#008B8B",
-    "Dust Storm Warning": "#FFE4C4",
-    "Blowing Dust Warning": "#FFE4C4",
-    "High Wind Warning": "#DAA520",
-    "Tropical Storm Warning": "#B22222",
-    "Storm Warning": "#9400D3",
-    "Tsunami Advisory": "#D2691E",
-    "Tsunami Watch": "#FF00FF",
-    "Avalanche Warning": "#1E90FF",
-    "Earthquake Warning": "#8B4513",
-    "Volcano Warning": "#2F4F4F",
-    "Ashfall Warning": "#A9A9A9",
-    "Flood Warning": "#00FF00",
-    "Coastal Flood Warning": "#228B22",
-    "Lakeshore Flood Warning": "#228B22",
-    "Ashfall Advisory": "#696969",
-    "High Surf Warning": "#228B22",
-    "Extreme Heat Warning": "#C71585",
-    "Tornado Watch": "#FFFF00",
-    "Severe Thunderstorm Watch": "#DB7093",
-    "Flash Flood Watch": "#2E8B57",
-    "Gale Warning": "#DDA0DD",
-    "Flood Statement": "#00FF00",
-    "Extreme Cold Warning": "#0000FF",
-    "Freeze Warning": "#483D8B",
-    "Red Flag Warning": "#FF1493",
-    "Storm Surge Watch": "#DB7FF7",
-    "Hurricane Watch": "#FF00FF",
-    "Hurricane Force Wind Watch": "#9932CC",
-    "Typhoon Watch": "#FF00FF",
-    "Tropical Storm Watch": "#F08080",
-    "Storm Watch": "#FFE4B5",
-    "Tropical Cyclone Local Statement": "#FFE4B5",
-    "Winter Weather Advisory": "#7B68EE",
-    "Avalanche Advisory": "#CD853F",
-    "Cold Weather Advisory": "#AFEEEE",
-    "Heat Advisory": "#FF7F50",
-    "Flood Advisory": "#00FF7F",
-    "Coastal Flood Advisory": "#7CFC00",
-    "Lakeshore Flood Advisory": "#7CFC00",
-    "High Surf Advisory": "#BA55D3",
-    "Dense Fog Advisory": "#708090",
-    "Dense Smoke Advisory": "#F0E68C",
-    "Small Craft Advisory": "#D8BFD8",
-    "Brisk Wind Advisory": "#D8BFD8",
-    "Hazardous Seas Warning": "#D8BFD8",
-    "Dust Advisory": "#BDB76B",
-    "Blowing Dust Advisory": "#BDB76B",
-    "Lake Wind Advisory": "#D2B48C",
-    "Wind Advisory": "#D2B48C",
-    "Frost Advisory": "#6495ED",
-    "Freezing Fog Advisory": "#008080",
-    "Freezing Spray Advisory": "#00BFFF",
-    "Low Water Advisory": "#A52A2A",
-    "Local Area Emergency": "#C0C0C0",
-    "Winter Storm Watch": "#4682B4",
-    "Rip Current Statement": "#40E0D0",
-    "Beach Hazards Statement": "#40E0D0",
-    "Gale Watch": "#FFC0CB",
-    "Avalanche Watch": "#F4A460",
-    "Hazardous Seas Watch": "#483D8B",
-    "Heavy Freezing Spray Watch": "#BC8F8F",
-    "Flood Watch": "#2E8B57",
-    "Coastal Flood Watch": "#66CDAA",
-    "Lakeshore Flood Watch": "#66CDAA",
-    "High Wind Watch": "#B8860B",
-    "Extreme Heat Watch": "#800000",
-    "Extreme Cold Watch": "#5F9EA0",
-    "Freeze Watch": "#00FFFF",
-    "Fire Weather Watch": "#FFDEAD",
-    "Extreme Fire Danger": "#E9967A",
-    "911 Telephone Outage": "#C0C0C0",
-    "Coastal Flood Statement": "#6B8E23",
-    "Lakeshore Flood Statement": "#6B8E23",
-    "Special Weather Statement": "#FFE4B5",
-    "Marine Weather Statement": "#FFDAB9",
-    "Air Quality Alert": "#808080",
-    "Air Stagnation Advisory": "#808080",
-    "Hazardous Weather Outlook": "#EEE8AA",
-    "Hydrologic Outlook": "#90EE90",
-    "Short Term Forecast": "#98FB98",
-    "Administrative Message": "#C0C0C0",
-    "Test": "#F0FFFF",
-    "Child Abduction Emergency": "#FFFFFF",
-    "Blue Alert": "#FFFFFF"
+  "Tsunami Warning": "#FD6347",
+  "Tornado Warning": "#FF0000",
+  "Extreme Wind Warning": "#FF8C00",
+  "Severe Thunderstorm Warning": "#FFA500",
+  "Flash Flood Warning": "#8B0000",
+  "Flash Flood Statement": "#8B0000",
+  "Severe Weather Statement": "#00FFFF",
+  "Shelter In Place Warning": "#FA8072",
+  "Evacuation Immediate": "#7FFF00",
+  "Civil Danger Warning": "#FFB6C1",
+  "Nuclear Power Plant Warning": "#4B0082",
+  "Radiological Hazard Warning": "#4B0082",
+  "Hazardous Materials Warning": "#4B0082",
+  "Fire Warning": "#A0522D",
+  "Civil Emergency Message": "#FFB6C1",
+  "Law Enforcement Warning": "#C0C0C0",
+  "Storm Surge Warning": "#B524F7",
+  "Hurricane Force Wind Warning": "#CD5C5C",
+  "Hurricane Warning": "#DC143C",
+  "Typhoon Warning": "#DC143C",
+  "Special Marine Warning": "#FFA500",
+  "Blizzard Warning": "#FF4500",
+  "Snow Squall Warning": "#C71585",
+  "Ice Storm Warning": "#8B008B",
+  "Heavy Freezing Spray Warning": "#00BFFF",
+  "Winter Storm Warning": "#FF69B4",
+  "Lake Effect Snow Warning": "#008B8B",
+  "Dust Storm Warning": "#FFE4C4",
+  "Blowing Dust Warning": "#FFE4C4",
+  "High Wind Warning": "#DAA520",
+  "Tropical Storm Warning": "#B22222",
+  "Storm Warning": "#9400D3",
+  "Tsunami Advisory": "#D2691E",
+  "Tsunami Watch": "#FF00FF",
+  "Avalanche Warning": "#1E90FF",
+  "Earthquake Warning": "#8B4513",
+  "Volcano Warning": "#2F4F4F",
+  "Ashfall Warning": "#A9A9A9",
+  "Flood Warning": "#00FF00",
+  "Coastal Flood Warning": "#228B22",
+  "Lakeshore Flood Warning": "#228B22",
+  "Ashfall Advisory": "#696969",
+  "High Surf Warning": "#228B22",
+  "Extreme Heat Warning": "#C71585",
+  "Tornado Watch": "#FFFF00",
+  "Severe Thunderstorm Watch": "#DB7093",
+  "Flash Flood Watch": "#2E8B57",
+  "Gale Warning": "#DDA0DD",
+  "Flood Statement": "#00FF00",
+  "Extreme Cold Warning": "#0000FF",
+  "Freeze Warning": "#483D8B",
+  "Red Flag Warning": "#FF1493",
+  "Storm Surge Watch": "#DB7FF7",
+  "Hurricane Watch": "#FF00FF",
+  "Hurricane Force Wind Watch": "#9932CC",
+  "Typhoon Watch": "#FF00FF",
+  "Tropical Storm Watch": "#F08080",
+  "Storm Watch": "#FFE4B5",
+  "Tropical Cyclone Local Statement": "#FFE4B5",
+  "Winter Weather Advisory": "#7B68EE",
+  "Avalanche Advisory": "#CD853F",
+  "Cold Weather Advisory": "#AFEEEE",
+  "Heat Advisory": "#FF7F50",
+  "Flood Advisory": "#00FF7F",
+  "Coastal Flood Advisory": "#7CFC00",
+  "Lakeshore Flood Advisory": "#7CFC00",
+  "High Surf Advisory": "#BA55D3",
+  "Dense Fog Advisory": "#708090",
+  "Dense Smoke Advisory": "#F0E68C",
+  "Small Craft Advisory": "#D8BFD8",
+  "Brisk Wind Advisory": "#D8BFD8",
+  "Hazardous Seas Warning": "#D8BFD8",
+  "Dust Advisory": "#BDB76B",
+  "Blowing Dust Advisory": "#BDB76B",
+  "Lake Wind Advisory": "#D2B48C",
+  "Wind Advisory": "#D2B48C",
+  "Frost Advisory": "#6495ED",
+  "Freezing Fog Advisory": "#008080",
+  "Freezing Spray Advisory": "#00BFFF",
+  "Low Water Advisory": "#A52A2A",
+  "Local Area Emergency": "#C0C0C0",
+  "Winter Storm Watch": "#4682B4",
+  "Rip Current Statement": "#40E0D0",
+  "Beach Hazards Statement": "#40E0D0",
+  "Gale Watch": "#FFC0CB",
+  "Avalanche Watch": "#F4A460",
+  "Hazardous Seas Watch": "#483D8B",
+  "Heavy Freezing Spray Watch": "#BC8F8F",
+  "Flood Watch": "#2E8B57",
+  "Coastal Flood Watch": "#66CDAA",
+  "Lakeshore Flood Watch": "#66CDAA",
+  "High Wind Watch": "#B8860B",
+  "Extreme Heat Watch": "#800000",
+  "Extreme Cold Watch": "#5F9EA0",
+  "Freeze Watch": "#00FFFF",
+  "Fire Weather Watch": "#FFDEAD",
+  "Extreme Fire Danger": "#E9967A",
+  "911 Telephone Outage": "#C0C0C0",
+  "Coastal Flood Statement": "#6B8E23",
+  "Lakeshore Flood Statement": "#6B8E23",
+  "Special Weather Statement": "#FFE4B5",
+  "Marine Weather Statement": "#FFDAB9",
+  "Air Quality Alert": "#808080",
+  "Air Stagnation Advisory": "#808080",
+  "Hazardous Weather Outlook": "#EEE8AA",
+  "Hydrologic Outlook": "#90EE90",
+  "Short Term Forecast": "#98FB98",
+  "Administrative Message": "#C0C0C0",
+  "Test": "#F0FFFF",
+  "Child Abduction Emergency": "#FFFFFF",
+  "Blue Alert": "#FFFFFF"
 };
 
 // Export priority mapping
@@ -325,21 +325,21 @@ function ensureWeatherIcon() {
 // Load station URLs from config
 async function loadStationUrls() {
   try {
-    const configResponse = await fetch('./data/config.json');
+    const configResponse = await fetch('./data/config.json?v=' + Date.now(), { cache: 'no-store' });
     if (!configResponse.ok) {
       throw new Error(`Failed to load config: ${configResponse.status}`);
     }
-    
+
     const config = await configResponse.json();
     const stations = config.stations || [];
-    
+
     // Create lookup object for station URLs
     stations.forEach(station => {
       if (station.id && station.url) {
         stationUrls[station.id] = station.url;
       }
     });
-    
+
     console.log('Loaded station URLs for', Object.keys(stationUrls).length, 'stations');
   } catch (error) {
     console.warn('Failed to load station URLs:', error);
@@ -441,7 +441,7 @@ async function renderCurrent() {
           const tv =
             s.temperature == null ? "N/A" : `${Math.round(s.temperature)}°F`;
           const url = getStationUrl(s.id);
-          
+
           // Only make clickable if we have a valid URL
           if (url === "#") {
             return `<div class="station-chip">
@@ -468,15 +468,15 @@ async function renderCurrent() {
 }
 
 // Enhanced renderForecast function for countyApp.js
-async function renderForecast(){
-  try{
+async function renderForecast() {
+  try {
     const fc = await getForecast();
     const periods = Array.isArray(fc?.periods) ? fc.periods : [];
-    
-    if(!periods.length){ 
-      setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>'); 
+
+    if (!periods.length) {
+      setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>');
       setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
-      return; 
+      return;
     }
 
     // Enhanced forecast cards with color-coding and better styling
@@ -484,21 +484,21 @@ async function renderForecast(){
       const temp = p?.temperature;
       const tempUnit = p?.temperatureUnit || 'F';
       const isDaytime = p?.isDaytime;
-      
+
       // Color-code temperature based on day/night
       const tempColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
-      
+
       // Format temperature with color-coded span
-      const tempDisplay = temp != null 
+      const tempDisplay = temp != null
         ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
         : `<span class="value">N/A</span>`;
-      
+
       // Handle missing data gracefully
       const dayName = p?.name || 'N/A';
       const shortForecast = p?.shortForecast || 'N/A';
       const iconSrc = p?.icon || '';
       const iconAlt = shortForecast;
-      
+
       return `
         <div class="forecast-item">
           <div class="forecast-cell forecast-day">${dayName}</div>
@@ -509,45 +509,45 @@ async function renderForecast(){
         </div>
       `;
     }).join('');
-    
+
     setHTML(SEL.forecast.container, cards);
-    
+
     // Also render the detailed forecast
     await renderDetailedForecast();
-    
-  } catch(e){
+
+  } catch (e) {
     console.warn('[countyApp] forecast load failed', e);
     setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>');
     setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
   }
 }
 
-async function renderDetailedForecast(){
-  try{
+async function renderDetailedForecast() {
+  try {
     const fc = await getForecast();
     const periods = Array.isArray(fc?.periods) ? fc.periods : [];
-    
-    if(!periods.length){ 
-      setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'); 
-      return; 
+
+    if (!periods.length) {
+      setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
+      return;
     }
 
     // Enhanced detailed forecast with rich layout
     const detailedItems = periods.map(p => {
       const isDaytime = p?.isDaytime;
-      
+
       // Color-code day name based on day/night
       const dayColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
-      
+
       // Handle missing data gracefully
       const dayName = p?.name || 'N/A';
       const detailedText = p?.detailedForecast || p?.shortForecast || 'No forecast details available.';
       const iconSrc = p?.icon || '';
       const iconAlt = p?.shortForecast || 'Weather icon';
-      
+
       // Format day name with color-coded span
       const dayDisplay = `<span class="value" style="color: ${dayColor};">${dayName}</span>`;
-      
+
       return `
         <div class="detailed-item">
           <div class="detailed-row">
@@ -566,10 +566,10 @@ async function renderDetailedForecast(){
         </div>
       `;
     }).join('');
-    
+
     setHTML(SEL.forecast.detailed, detailedItems);
-    
-  } catch(e){
+
+  } catch (e) {
     console.warn('[countyApp] detailed forecast load failed', e);
     setHTML(SEL.forecast.detailed, '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>');
   }
@@ -673,10 +673,10 @@ async function loadAll() {
   }
   await renderCurrent();
   await renderForecast();
-  
+
   try {
     await getHourlyData();
-    
+
     // Initialize meteogram if container exists (no parameters needed)
     if (document.getElementById('meteogram-chart-container')) {
       await initMeteogram();
@@ -684,7 +684,7 @@ async function loadAll() {
   } catch (e) {
     console.warn('[countyApp] hourly/meteogram load failed (non-fatal)', e);
   }
-  
+
   await renderAlerts();
   await renderAFD();
 }

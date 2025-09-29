@@ -12,6 +12,20 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
+// --- Logging Function ---
+function out($s){
+  $line = "[" . date('Y-m-d H:i:s') . "] $s";
+  $logDir = __DIR__ . '/../../active/logs/';
+  $logFile = $logDir . 'tcv_writer_ep.log';
+  if (!is_dir($logDir)) {
+    @mkdir($logDir, 0755, true);
+  }
+  @file_put_contents($logFile, $line . "\n", FILE_APPEND | LOCK_EX);
+  if (PHP_SAPI === 'cli') {
+    fwrite(STDERR, $line . "\n");
+  }
+}
+
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -78,7 +92,7 @@ function processAllEPStormsTCV(): void {
     
     if (!file_exists($currentStormsPath)) {
         if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, "ERROR: Current storms cache not found at {$currentStormsPath}\n");
+      out("ERROR: Current storms cache not found at {$currentStormsPath}");
         } else {
             fail('Current storms cache not available');
         }
@@ -90,7 +104,7 @@ function processAllEPStormsTCV(): void {
     
     if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
         if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, "ERROR: Invalid storms data format\n");
+      out("ERROR: Invalid storms data format");
         } else {
             fail('Invalid storms data');
         }
@@ -107,7 +121,7 @@ function processAllEPStormsTCV(): void {
     
     if (empty($epStorms)) {
         if (PHP_SAPI === 'cli') {
-            echo "INFO: No active EP storms found\n";
+            out("INFO: No active EP storms found");
         } else {
             ok(['ok' => true, 'message' => 'No active EP storms', 'processed' => []]);
         }
@@ -117,7 +131,7 @@ function processAllEPStormsTCV(): void {
     $results = [];
     foreach ($epStorms as $stormId) {
         if (PHP_SAPI === 'cli') {
-            echo "Processing TCV for {$stormId}...\n";
+            out("Processing TCV for {$stormId}...");
         }
         
         try {
@@ -125,20 +139,20 @@ function processAllEPStormsTCV(): void {
             $results[] = ['storm' => $stormId, 'status' => 'success', 'result' => $result];
             
             if (PHP_SAPI === 'cli') {
-                echo "  SUCCESS: {$stormId}\n";
+                out("SUCCESS: {$stormId}");
             }
         } catch (Exception $e) {
             $results[] = ['storm' => $stormId, 'status' => 'error', 'error' => $e->getMessage()];
             
             if (PHP_SAPI === 'cli') {
-                echo "  ERROR: {$stormId} - " . $e->getMessage() . "\n";
+                out("ERROR: {$stormId} - " . $e->getMessage());
             }
         }
     }
     
     if (PHP_SAPI === 'cli') {
         $successCount = count(array_filter($results, function($r) { return $r['status'] === 'success'; }));
-        echo "Completed: {$successCount}/" . count($results) . " storms processed successfully\n";
+  out("Completed: {$successCount}/" . count($results) . " storms processed successfully");
     } else {
         ok(['ok' => true, 'processed' => $results]);
     }

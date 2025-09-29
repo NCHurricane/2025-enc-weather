@@ -1,12 +1,13 @@
 /*=================================================================*/
 /*                        ACTIVE PAGE STYLES                      */
 /*                       Scope: /active/index.html                */
-/*                     Uses variables from styles.css             */
 /*=================================================================*/
 
-/* Base (mobile-first) */
+/*-----------------------------------------------------------------*/
+/* BASE & ROOT STYLES                                              */
+/*-----------------------------------------------------------------*/
 :root {
-  /* 1..10 scale */
+  /* Map Label Priorities (1-10 scale) */
   --map-label-priority-1: 9;
   --map-label-priority-2: 9.4;
   --map-label-priority-3: 9.9;
@@ -14,11 +15,11 @@
   --map-label-priority-5: 10.8;
   --map-label-priority-6: 11.2;
   --map-label-priority-7: 11.6;
-  --map-label-priority-8: 12.0;
+  --map-label-priority-8: 12;
   --map-label-priority-9: 12.5;
   --map-label-priority-10: 13;
 
-  /* Colors */
+  /* Map Label Colors */
   --map-label-color-1: #ffffff;
   --map-label-color-2: #ffffff;
   --map-label-color-3: #ffffff;
@@ -30,50 +31,53 @@
   --map-label-color-9: #ffe600;
   --map-label-color-10: #ffee00;
 
-  /* Base: show all priorities */
+  /* Base visibility for map labels */
   --map-label-min-priority: 5;
 }
 
-/* Medium (hide lowest 1–2) */
-@media (max-width: 900px) {
-  :root {
-    --map-label-min-priority: 10;
-  }
+.container {
+  width: 95%;
+  max-width: 2000px;
 }
 
-/* Small (hide 1–6, show only 7–10) */
-@media (max-width: 768px) {
-  :root {
-    --map-label-min-priority: 8;
-  }
+.glass {
+  position: relative;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(2px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
+    inset 0 4px 20px rgba(255, 255, 255, 0.3);
 }
 
-/* XL breakpoint: even tighter */
-@media (max-width: 900px) {
-  :root {
-    --map-label-priority-1: 8;
-    --map-label-priority-2: 8.3;
-    --map-label-priority-3: 8.6;
-    --map-label-priority-4: 8.9;
-    --map-label-priority-5: 9.2;
-    --map-label-priority-6: 9.5;
-    --map-label-priority-7: 9.8;
-    --map-label-priority-8: 10.1;
-    --map-label-priority-9: 10.5;
-    --map-label-priority-10: 11;
-  }
-    :root {
-    --map-label-min-priority: 3;
-  }
+.glass::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  backdrop-filter: blur(3px);
+  filter: url(#glass-distortion);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
+    inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
+  opacity: 0.6;
+  z-index: -1;
+  inset: 0;
+  /* filter: blur(1px) drop-shadow(10px 4px 6px black) brightness(115%); */
 }
-
 
 /*-----------------------------------------------------------------*/
 /* SHARED CONTAINER STYLES                                        */
 /*-----------------------------------------------------------------*/
-/* Main section containers */
 .storm-header-container,
+.active-satellite-container,
 .radii-container,
+.wind-analysis-container,
 .hazards-container,
 .surge-container,
 .graphics-container,
@@ -82,74 +86,87 @@
 .surge-rain-container,
 .text-products-container,
 .notfound-container {
-  background-color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--border-radius);
   color: var(--color-text-light);
   margin: var(--margin-section);
   padding: var(--padding-section);
-  box-shadow: var(--shadow-standard);
 }
 
-/* Section title styling */
-.storm-header-title,
-.radii-title,
-.hazards-title,
-.graphics-title,
-.text-products-title,
-.notfound-title {
+.section-title-active {
+  font-family: var(--font-active);
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-style: italic;
   cursor: pointer;
   font-weight: bold;
   text-transform: uppercase;
   display: block;
 }
 
-/* Plus/minus icons for collapsible sections */
-.section-title::after {
-  font-family: "Font Awesome 6 Free";
-  content: "\f067"; /* Plus icon */
-  font-weight: 900;
-  margin-left: 8px;
-  float: right;
-  transition: transform 0.3s ease;
-}
-
-/* When expanded (aria-expanded="true"), show minus icon */
-.section-title[aria-expanded="true"]::after {
-  content: "\f068"; /* Minus icon */
-  transform: rotate(180deg);
-}
-
-/* Storm overview doesn't collapse, so no icon */
 .storm-header-container .section-title::after {
   display: none;
 }
 
-/* Content sections within containers */
 .storm-header-section,
-.radii-compass-section,
+.active-satellite-section,
 .storm-hazards-section,
-.storm-graphics-section,
 .storm-surge-section,
+.storm-text-section,
+.radii-section,
+.wind-analysis-section,
 .track-messages-section,
 .wind-graphics-section,
 .wind-probability-section,
 .surge-rain-section {
-  color: var(--color-text);
-  background-color: #fff5ee;
-  padding: var(--padding-section);
   margin: 15px 0 0 0;
-  border-radius: var(--border-radius);
+  padding: 15px;
 }
 
-.storm-text-section {
-  margin: 15px 0;
+.storm-header-section,
+.active-satellite-section {
+  min-height: clamp(500px, 50vh, 600px);
+}
+
+.storm-hazards-section,
+.storm-surge-section {
+  min-height: clamp(900px, 65vh, 1000px);
+}
+
+.storm-text-section,
+.track-messages-section {
+  min-height: clamp(600px, 60vh, 800px);
+}
+
+.radii-section,
+.wind-analysis-section {
+  min-height: clamp(650px, 60vh, 800px);
+}
+
+.wind-graphics-section,
+.wind-probability-section {
+  min-height: clamp(620px, 50vh, 700px);
+}
+
+.nhc-link-btn {
+  font-size: clamp(0.6rem, 2.5vw, 0.8rem);
 }
 
 /*-----------------------------------------------------------------*/
-/* STORM HEADER SECTION                                           */
+/* HEADER & OVERVIEW                                              */
 /*-----------------------------------------------------------------*/
-/* Header layout */
+.main-title-active {
+  color: var(--text-accent, #fff200);
+  font-family: var(--font-active);
+  font-size: clamp(2rem, 3vw, 5rem);
+  line-height: 1.2;
+}
+
+.main-title-active #storm-id {
+  font-size: clamp(1.5rem, 2.5vw, 3rem);
+  margin-left: 0.25rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+}
+
 .storm-header {
   display: flex;
   flex-wrap: wrap;
@@ -163,47 +180,19 @@
   line-height: 1.1;
 }
 
-#storm-id.badge {
-  margin-left: 4px;
-}
+/* .overview-v2 {
+  text-align: center;
+} */
 
-#last-updated.last-updated {
-  font-size: 0.9rem;
-  opacity: 0.95;
-}
-
-/*-----------------------------------------------------------------*/
-/* STORM OVERVIEW V2 (COMPACT LAYOUT)                             */
-/*-----------------------------------------------------------------*/
-
-/* Main title styling */
-.main-title {
-  line-height: 1.2;
-}
-
-.main-title #storm-id {
-  font-size: 1.5rem;
-  margin-left: 0.25rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  opacity: 0.95;
-}
-
-/* Overview container */
 #overview-v2 {
+  font-family: var(--font-active);
   display: flex;
+  width: 100%;
   flex-direction: column;
+
   gap: 0.5rem;
 }
 
-/* Compact layout styles */
-.overview-v2.compact-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-/* Information lines */
 .ov-info-line {
   display: flex;
   flex-wrap: wrap;
@@ -212,7 +201,6 @@
 }
 
 .ov-info-line .ov-label {
-  font-family: "Montserrat", sans-serif;
   font-weight: 700;
   margin-right: 0.25rem;
   min-width: fit-content;
@@ -223,94 +211,506 @@
   flex: 1;
 }
 
-/* Center section styling */
-.ov-center-section {
-  margin-top: 1rem;
-  text-align: left;
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "MESSAGE TYPE"                               */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="message-type"] {
+  border-bottom: var(--color-accent, #fff200) 2px solid;
 }
 
-.ov-center-title {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 0.25rem;
-  letter-spacing: 0.02em;
-}
-
-.ov-geo-point {
-  margin: 0.1rem 0;
-  text-transform: uppercase;
-}
-
-/* N/A icons */
-#overview-v2 .ov-value i.fa-circle-question {
-  opacity: 0.7;
-  margin-right: 6px;
-}
-
-/* Specific field styling */
 .overview-v2 .ov-info-line[data-key="message-type"] .ov-value {
-  font-family: "Montserrat", sans-serif;
-  text-transform: capitalize;
-  color: var(--accent-500);
-  font-weight: 700;
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--font-accent, #fff200);
+  margin: 0 0 0.5rem 0;
+  text-shadow: var(--shadow-standard);
+  text-align: center;
 }
 
+.overview-v2 .message-type-text {
+  font-size: clamp(1.2rem, 2vw, 2rem);
+}
+
+.overview-v2 [data-key="advisory-number"] {
+  font-size: clamp(1.2rem, 2vw, 2rem);
+  padding: 0 0 0 0.2rem;
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "HEADLINES"                               */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-headlines-block[data-key="nhc-headlines-block"] {
+    border-bottom: var(--color-accent, #fff200) 2px solid;
+    padding: 0.5rem 0;
+    margin: 0 0 0.5rem 0;
+}
+
+.overview-v2 .ov-headlines-content {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-weight: 600;
+  font-style: italic;
+  text-shadow: var(--shadow-standard);
+  text-align: center;
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "CATEGORY"                                   */
+/*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key="category"] .ov-label {
   display: none;
 }
 
 .overview-v2 .ov-info-line[data-key="category"] .ov-value {
-  font-family: "Roboto", sans-serif;
+  font-family: var(--font-active);
   text-transform: uppercase;
-  font-size: 2rem;
+  font-size: clamp(2rem, 2.5vw, 4rem);
   font-weight: 900;
+  text-shadow: var(--shadow-standard);
   color: red;
 }
 
-.overview-v2 .ov-info-line[data-key="movement"] .ov-value {
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR DATE, "ISSUED"                               */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="issued"] .ov-label,
+.overview-v2 .ov-info-line[data-key="issued"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="issued"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="issued"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "LOCATION"                               */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="location"] .ov-label,
+.overview-v2 .ov-info-line[data-key="location"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="location"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="location"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "MAX WIND"                                   */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="max-wind"] .ov-label,
+.overview-v2 .ov-info-line[data-key="max-wind"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="max-wind"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="max-wind"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "MIN PRESSURE"                                   */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="min-pressure"] .ov-label,
+.overview-v2 .ov-info-line[data-key="min-pressure"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="min-pressure"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="min-pressure"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "DIRECTION"                                   */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="direction"] .ov-label,
+.overview-v2 .ov-info-line[data-key="direction"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="direction"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="direction"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "SPEED"                                   */
+/*-----------------------------------------------------------------*/
+.overview-v2 .ov-info-line[data-key="speed"] .ov-label,
+.overview-v2 .ov-info-line[data-key="speed"] .ov-value {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  padding: 0 0.5rem 0 0;
+  text-shadow: var(--shadow-standard);
+}
+
+.overview-v2 .ov-info-line[data-key="speed"] .ov-label {
+  font-style: normal;
+}
+
+.overview-v2 .ov-info-line[data-key="speed"] .ov-value {
+  color: var(--color-accent, #fff200);
+  text-shadow: var(--shadow-standard);
+}
+
+/*-----------------------------------------------------------------*/
+/* SPECIAL STYLES FOR "CENTER LOCATION"                            */
+/*-----------------------------------------------------------------*/
+.ov-center-section {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  margin: 0.5rem 0 0 0;
+  padding: 0.5rem 0 0 0;
+  text-shadow: var(--shadow-standard);
+  border-top: var(--color-accent, #fff200) 2px solid;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/*-----------------------------------------------------------------*/
+/* ACTIVE SATELLITE CONTROLS                                       */
+/*-----------------------------------------------------------------*/
+.active-satellite-interface {
+  overflow: hidden;
+}
+
+.active-satellite-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  border-bottom: 2px solid var(--color-primary);
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+.active-satellite-tab {
+  border: none;
+  border-bottom-width: medium;
+  border-bottom-style: none;
+  border-bottom-color: currentcolor;
+  color: var(--color-text-light);
+  cursor: pointer;
+  font-family: var(--font-active);
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
   font-weight: 800;
+  padding: 12px 8px;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  border-bottom: 2px solid var(--color-primary);
+}
+.active-satellite-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+}
+.active-satellite-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-bottom: 3px solid var(--color-accent);
+}
+.active-satellite-controls-play-pause {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+.active-satellite-play-pause-button {
+  background-color: var(--color-text);
+  color: var(--color-accent);
+  border: var(--color-accent) 2px solid;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 5px;
+}
+.active-satellite-play-pause-button:hover {
+  background: var(--color-text-light);
+  color: var(--color-primary);
+}
+.active-satellite-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.active-satellite-timestamp {
+  font-size: clamp(0.7rem, 2.5vw, 1rem);
+  color: var(--color-primary);
+  font-weight: 600;
+  width: 100%;
+}
+.active-satellite-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+.active-satellite-error {
+  color: #c00;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  text-align: center;
+}
+/* .active-satellite-image-container {
+  width: 100%;
+  max-width: 700px;
+  min-height: clamp(300px, 50vw, 500px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+} */
+
+.active-satellite-image-container {
+  width: 100%;
+  max-width: 700px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Mobile responsive */
-@media (max-width: 640px) {
-  .ov-info-line {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+/* .active-satellite-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+} */
 
-  .ov-info-line .ov-label {
-    margin-bottom: 0.1rem;
-  }
+.active-satellite-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
 
-  .ov-info-line .ov-label::after {
-    content: ":";
-    margin-left: 0.25rem;
-  }
+.active-satellite-timestamp,
+.image-timestamp {
+  position: relative;
+  text-align: center;
+  font-weight: bold;
+  background-color: rgba(238, 238, 238, 0.7);
+  color: rgb(0, 0, 0);
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+/*-----------------------------------------------------------------*/
+/* WATCHES & WARNINGS (WIND/SURGE)                                */
+/*-----------------------------------------------------------------*/
+.ww-grid .ww-mapcol canvas {
+  border-radius: 25px;
+}
+
+.ww-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.ww-grid .ww-mapcol,
+.ww-grid .ww-textcol {
+  min-width: 0;
+}
+
+.ww-grid .ww-mapcol canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#ww-wind-text-empty,
+#ww-surge-text-empty {
+  font-family: var(--font-active);
+  font-size: clamp(1rem, 2.5vw, 3rem);
+  font-weight: 800;
+  text-align: center;
+  opacity: 0.8;
 }
 
 /*-----------------------------------------------------------------*/
-/* WIND RADII VISUALIZATION                                        */
+/* TEXT PRODUCTS TABBED INTERFACE                                 */
 /*-----------------------------------------------------------------*/
-/* Hidden sections */
-#radii-section[hidden],
-#ww-wind-canvas[hidden],
-#ww-surge-canvas[hidden] {
-  display: none !important;
+.text-products-interface {
+  /* background-color: var(--color-background); */
+  overflow: hidden;
 }
 
-.radii-section {
-  background: linear-gradient(
-    180deg,
-    var(--color-gradient-start) 20%,
-    var(--color-gradient-end) 100%
-  );
-  margin: 15px 0 0 0;
+.text-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  border-bottom: 2px solid var(--color-primary);
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.text-tab,
+.text-tab .text-tab.spanish {
+  /* background-color: var(--color-background); */
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  font-family: var(--font-active);
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+  font-weight: 800;
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  border-bottom: 2px solid var(--color-primary);
+  flex: 1 1 auto;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  box-sizing: border-box;
+}
+
+.text-tab:hover {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+/* .text-tab:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  z-index: 1;
+} */
+
+.text-tab.active {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  font-weight: bold;
+  border-bottom: 3px solid var(--color-accent);
+}
+
+.text-tab.active::after {
+  content: none;
+}
+
+.tab-name {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tab-desc {
+  display: block;
+  font-size: 0.75em;
+  opacity: 0.8;
+  line-height: 1.2;
+}
+
+.text-content-container {
+  background-color: var(--color-text-light);
+  min-height: 400px;
+  position: relative;
+}
+
+.text-content-panel {
+  height: 100%;
+  display: none;
+}
+
+.text-content-panel.active {
+  display: block;
+}
+
+.text-content {
+  color: var(--color-text);
+  font-family: "Fira Code", "Courier New", monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
   padding: 15px;
-  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-/* Radii compass section background */
+.text-actions {
+  margin: 15px;
+  text-align: center;
+}
+
+/*-----------------------------------------------------------------*/
+/* Wind Radii                                                    */
+/*-----------------------------------------------------------------*/
 .radii-compass-section {
   color: var(--color-text);
   background-image: url("../../images/isabel.webp");
@@ -320,8 +720,6 @@
   padding: var(--padding-section);
   border-radius: var(--border-radius);
 }
-
-/* Compass visualization container */
 .radii-compass {
   position: relative;
   width: 100%;
@@ -333,7 +731,6 @@
   box-sizing: border-box;
 }
 
-/* Canvas element styling */
 .radii-canvas {
   width: 100%;
   height: 100%;
@@ -346,12 +743,10 @@
   object-fit: contain;
 }
 
-/* Control buttons */
 .radii-hour-controls,
 .radii-controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  background-color: var(--color-text-light);
   border-bottom: 2px solid var(--color-primary);
   padding: 0;
   gap: 0;
@@ -360,21 +755,23 @@
 .radii-btn,
 .radii-hour-btn {
   padding: 12px 8px;
-  background-color: var(--color-background);
   border: none;
-  color: var(--color-text);
+  color: var(--color-text-light);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9em;
-  font-weight: 400;
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+  font-weight: 800;
   text-align: center;
-  font-family: "Roboto", Arial, sans-serif;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  font-family: var(--font-active);
   position: relative;
 }
 
 .radii-btn:hover,
 .radii-hour-btn:hover {
-  background-color: var(--color-background);
+  color: var(--color-text);
+  background-color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -397,7 +794,6 @@
   background-color: var(--color-accent);
 }
 
-/* Wind speed specific colors */
 #radii-34 {
   background: #ffd93d;
 }
@@ -410,7 +806,6 @@
   background: #ff6b6b;
 }
 
-/* Legend for wind categories */
 .radii-legend {
   display: flex;
   justify-content: center;
@@ -441,7 +836,6 @@
   z-index: 10;
 }
 
-/* Fallback styles */
 .radii-table {
   display: none;
 }
@@ -453,398 +847,120 @@
   padding: 10px;
 }
 
-/* Animation for cyclone icon */
-@keyframes cyclone-spin {
-  from {
-    transform: rotate(0deg);
+/*=================================================================*/
+/*                      RESPONSIVE STYLES                          */
+/*=================================================================*/
+
+/*-----------------------------------------------------------------*/
+/* Desktop First (Large Screens)                                   */
+/*-----------------------------------------------------------------*/
+@media (min-width: 1200px) {
+  /* Layout for side-by-side containers */
+  .ww-layout-container {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: var(--margin-section);
+    margin-top: var(--margin-section);
+    margin-bottom: var(--margin-section);
   }
-  to {
-    transform: rotate(360deg);
+  .ww-layout-container > section {
+    margin: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .storm-header-section,
+  .active-satellite-section,
+  .storm-hazards-section,
+  .storm-surge-section,
+  .storm-text-section,
+  .track-messages-section,
+  .radii-section,
+  .wind-analysis-section,
+  .wind-graphics-section,
+  .wind-probability-section {
+    min-height: unset;
+    aspect-ratio: unset;
   }
 }
 
 /*-----------------------------------------------------------------*/
-/* PLACEHOLDER SECTIONS                                            */
+/* Tablet & Smaller (Portrait)                                     */
 /*-----------------------------------------------------------------*/
-/* Hidden sections */
-#storm-hazards-section[hidden],
-#storm-graphics-section[hidden],
-#storm-text-section[hidden] {
-  display: none !important;
-}
-
-/* Hazard alert containers */
-#coastal-alerts,
-#inland-alerts {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-/* Graphics placeholders */
-#cone-graphic,
-#hazards-graphic {
-  /* min-height: 300px; */
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  font-style: italic;
-  opacity: 0.9;
-}
-
-/* Text product cards */
-.advisory-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-
-.advisory-content {
-  white-space: pre-wrap;
-  line-height: 1.35;
-  opacity: 0.95;
-}
-
-/*-----------------------------------------------------------------*/
-/* GRID LAYOUTS FOR MAPS AND TEXT                                 */
-/*-----------------------------------------------------------------*/
-/* Side-by-side layout for map and text */
-.storm-hazards-section .ww-grid,
-.storm-surge-section .ww-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-}
-
-/* Prevent overflow in grid columns */
-.storm-hazards-section .ww-grid .ww-mapcol,
-.storm-hazards-section .ww-grid .ww-textcol,
-.storm-surge-section .ww-grid .ww-mapcol,
-.storm-surge-section .ww-grid .ww-textcol {
-  min-width: 0;
-}
-
-/* Canvas styling within grid */
-.storm-hazards-section .ww-grid .ww-mapcol canvas,
-.storm-surge-section .ww-grid .ww-mapcol canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* No map layout */
-.ww-grid.no-map {
-  grid-template-columns: 1fr;
-}
-
-.ww-grid.no-map .ww-textcol {
-  grid-column: 1 / -1;
-}
-
-.ww-mapcol.is-empty {
-  display: none;
-}
-
-/*-----------------------------------------------------------------*/
-/* TEXT PRODUCTS TABBED INTERFACE                                 */
-/*-----------------------------------------------------------------*/
-/* Interface container */
-.text-products-interface {
-  background-color: var(--color-background);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-}
-
-/* Tab navigation */
-.text-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  background-color: var(--color-text-light);
-  border-bottom: 2px solid var(--color-primary);
-  margin: 0;
-  padding: 0;
-  gap: 0;
-}
-
-/* Individual tabs */
-.text-tab,
-.text-tab .text-tab.spanish {
-  background-color: var(--color-background);
-  border: none;
-  color: var(--color-text);
-  cursor: pointer;
-  font-family: var(--font-primary);
-  font-size: 0.9em;
-  font-weight: 400;
-  padding: 12px 8px;
-  text-align: center;
-  transition: all 0.2s ease;
-  position: relative;
-  border-bottom: 2px solid var(--color-primary); /* Added */
-}
-
-.text-tab:hover {
-  background-color: var(--color-accent);
-  color: var(--color-text);
-  font-weight: bold;
-}
-
-.text-tab:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-.text-tab.active {
-  background-color: var(--color-primary);
-  color: var(--color-text-light);
-  font-weight: bold;
-  border-bottom: 3px solid var(--color-accent); /* Yellow accent border when active */
-}
-
-.text-tab.active::after {
-  content: none;
-}
-
-/* Tab content elements */
-.tab-name {
-  display: block;
-  margin-bottom: 2px;
-}
-
-.tab-desc {
-  display: block;
-  font-size: 0.75em;
-  opacity: 0.8;
-  line-height: 1.2;
-}
-
-/* Content container */
-.text-content-container {
-  background-color: var(--color-background);
-  min-height: 400px;
-  position: relative;
-}
-
-.text-content-panel {
-  height: 100%;
-  display: none; /* Hide all panels by default */
-}
-
-.text-content-panel.active {
-  display: block; /* Show only the active panel */
-}
-
-/* Text content area */
-.text-content {
-  background-color: var(--color-background);
-  border-radius: 4px;
-  color: var(--color-text);
-  font-family: "Fira Code", "Courier New", monospace;
-  font-size: 0.85em;
-  line-height: 1.4;
-  margin: 0;
-  max-height: 500px;
-  overflow-y: auto;
-  padding: 15px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* Scrollbar styling */
-.text-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.text-content::-webkit-scrollbar-track {
-  background: var(--color-surface);
-  border-radius: 4px;
-}
-
-.text-content::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
-}
-
-.text-content::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
-}
-
-/* Action buttons */
-.text-actions {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.nhc-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: var(--color-primary);
-  color: var(--color-text-light);
-  padding: 10px 20px;
-  border-radius: var(--border-radius);
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 0.9em;
-  transition: all 0.2s ease;
-  border: 1px solid var(--color-primary);
-}
-
-.nhc-link-btn:hover {
-  background-color: var(--color-primary-dark, #1a4b63);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.nhc-link-btn:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.nhc-link-btn i {
-  font-size: 0.9em;
-}
-
-/*-----------------------------------------------------------------*/
-/* RESPONSIVE DESIGN                                               */
-/*-----------------------------------------------------------------*/
-/* Mobile responsive - General layout */
 @media (max-width: 1024px) {
-  .storm-list {
-    grid-template-columns: 1fr;
-  }
-
   .overview-kv {
     grid-template-columns: 200px 1fr;
   }
 }
 
-/* Mobile responsive - Grid layouts */
 @media (max-width: 900px) {
-  .storm-hazards-section .ww-grid,
-  .storm-surge-section .ww-grid {
-    grid-template-columns: 1fr;
+  /* Adjust map label visibility */
+  :root {
+    --map-label-min-priority: 3;
+    --map-label-priority-1: 8;
+    --map-label-priority-2: 8.3;
+    --map-label-priority-3: 8.6;
+    --map-label-priority-4: 8.9;
+    --map-label-priority-5: 9.2;
+    --map-label-priority-6: 9.5;
+    --map-label-priority-7: 9.8;
+    --map-label-priority-8: 10.1;
+    --map-label-priority-9: 10.5;
+    --map-label-priority-10: 11;
   }
 }
 
-/* Mobile responsive - Text products and radii controls */
+/*-----------------------------------------------------------------*/
+/* Mobile (General)                                                */
+/*-----------------------------------------------------------------*/
 @media (max-width: 768px) {
+  /* Adjust map label visibility */
+  :root {
+    --map-label-min-priority: 8;
+  }
+
+  /* Radii Controls */
   .radii-hour-controls,
   .radii-controls {
-    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   }
-  .text-tab,
-  .radii-hour-btn,
-  .radii-btn {
-    width: auto;
-    min-width: 0;
-    max-width: 100%;
-  }
 
-  .text-tabs {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  }
-
-  .text-tab {
-    font-size: 0.7rem;
+  .radii-btn,
+  .radii-hour-btn {
+    font-size: 0.8em;
     padding: 10px 6px;
   }
 
-  .tab-desc {
-    display: none;
-  }
-
-  /* Radii controls responsive */
   .radii-compass {
     max-width: 350px;
   }
 
-  .radii-hour-controls,
-  .radii-controls {
-    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  }
-
-  .radii-btn,
-  .radii-hour-btn {
-    font-size: 0.8em;
-    padding: 10px 6px;
+  /* Text Tabs */
+  .tab-desc {
+    display: none;
   }
 }
 
-/* Only for text-tabs: 3 rows flex layout on mobile, last row fills with two tabs */
-@media (max-width: 768px) {
-  .text-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: stretch;
-    gap: 0;
-  }
-  .text-tab {
-    flex: 1 1 33.3333%;
-    max-width: 33.3333%;
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  /* Remove centering for 7/8 tabs from previous solution */
-  .text-tab:nth-child(7):nth-last-child(1),
-  .text-tab:nth-child(7):nth-last-child(2),
-  .text-tab:nth-child(8):nth-last-child(1) {
-    margin-left: 0;
-    margin-right: 0;
-    max-width: 50%;
-    flex-basis: 50%;
-  }
-  .text-tab:nth-child(8):nth-last-child(1) {
-    /* For 8th tab, also set max-width/flex-basis */
-    max-width: 50%;
-    flex-basis: 50%;
-  }
-}
-
-/* Extra small mobile screens */
-@media (max-width: 360px) {
-  .text-tabs {
-    grid-template-columns: 1fr;
-  }
-
-  .text-tab {
-    padding: 10px 8px;
-    font-size: 0.8em;
-  }
-
-  .radii-hour-controls,
-  .radii-controls {
-    grid-template-columns: 1fr;
-  }
-
-  .radii-btn,
-  .radii-hour-btn {
-    padding: 10px 8px;
-    font-size: 0.8rem;
-  }
-
-  .radii-legend {
-    font-size: 0.8rem;
-    gap: 10px;
-  }
-}
-
-/* Mobile responsive - Small screens */
+/*-----------------------------------------------------------------*/
+/* Mobile (Small)                                                  */
+/*-----------------------------------------------------------------*/
 @media (max-width: 640px) {
+  .main-title-active{
+    text-align: center;
+  }
+  #storm-id {
+    display: none;
+  }
+  .ov-info-line .ov-label {
+    margin-bottom: 0.1rem;
+  }
+
+  /* .ov-info-line .ov-label::after {
+    content: ":";
+    margin-left: 0.25rem;
+  } */
+
   .overview-kv {
     grid-template-columns: 1fr;
   }
@@ -859,8 +975,24 @@
   }
 }
 
-/* Mobile responsive - Extra small screens */
+@media (max-width: 600px) {
+  /* Empty W/W text */
+  #ww-wind-text-empty,
+  #ww-surge-text-empty {
+    font-size: 0.9rem;
+  }
+}
+
+/*-----------------------------------------------------------------*/
+/* Mobile (Extra Small)                                            */
+/*-----------------------------------------------------------------*/
 @media (max-width: 480px) {
+  /* Storm Overview */
+  .ov-info-line {
+    flex-direction: column;
+    align-items: center;
+  }
+  /* Text Products */
   .text-content {
     font-size: 0.8em;
     padding: 10px;
@@ -871,7 +1003,7 @@
     padding: 15px;
   }
 
-  /* Radii controls for small screens */
+  /* Radii Controls */
   .radii-compass {
     max-width: 300px;
     padding: 8px;
@@ -882,13 +1014,12 @@
     font-size: 0.75rem;
   }
 
+  .radii-legend,
   .legend-item {
     font-size: 0.75rem;
   }
 
   .legend-color {
-    width: 100%;
-    height: auto;
     padding: 2px;
   }
 }
@@ -896,23 +1027,31 @@
 @media (max-width: 400px) {
   .radii-compass {
     max-width: 280px;
-    padding: 5px; /* Further reduce padding */
+    padding: 5px;
   }
 
   .radii-compass-section {
-    padding: 10px; /* Reduce section padding */
+    padding: 10px;
   }
 }
 
-/* Extra small mobile screens */
 @media (max-width: 360px) {
-  .text-tabs {
-    grid-template-columns: 1fr;
-  }
-
+  /* Text Tabs */
   .text-tab {
     padding: 10px 8px;
     font-size: 0.8em;
+  }
+
+  /* Radii Controls */
+  .radii-hour-controls,
+  .radii-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .radii-btn,
+  .radii-hour-btn {
+    padding: 10px 8px;
+    font-size: 0.8rem;
   }
 
   .radii-compass {
@@ -924,92 +1063,8 @@
     padding: 8px;
   }
 
-  .radii-hour-controls,
-  .radii-controls {
-    grid-template-columns: 1fr;
-  }
-
-  .radii-btn,
-  .radii-hour-btn {
-    padding: 10px 8px;
-    font-size: 0.8rem;
-  }
-
   .radii-legend {
     font-size: 0.8rem;
     gap: 10px;
-  }
-}
-
-/* Mobile responsive - Small screens */
-@media (max-width: 640px) {
-  .overview-kv {
-    grid-template-columns: 1fr;
-  }
-
-  .overview-kv dt {
-    opacity: 0.8;
-  }
-
-  .overview-kv dd {
-    padding-bottom: 6px;
-    border-bottom: 1px dotted rgba(255, 255, 255, 0.12);
-  }
-}
-
-/* Mobile responsive - Extra small screens */
-@media (max-width: 480px) {
-  .text-content {
-    font-size: 0.8em;
-    padding: 10px;
-    max-height: 300px;
-  }
-
-  .text-content-panel {
-    padding: 15px;
-  }
-
-  /* Radii controls for small screens */
-  .radii-compass {
-    max-width: 300px;
-  }
-
-  .radii-btn {
-    padding: 10px 6px;
-    font-size: 0.75rem;
-  }
-
-  .legend-item {
-    font-size: 0.75rem;
-  }
-
-  .legend-color {
-    width: 100%;
-    height: auto;
-    padding: 2px;
-    height: auto;
-    padding: 2px;
-  }
-
-  .legend-item {
-    font-size: 0.75rem;
-  }
-
-  .legend-color {
-    width: 100%;
-    height: auto;
-    padding: 2px;
-    height: auto;
-    padding: 2px;
-  }
-
-  .legend-item {
-    font-size: 0.75rem;
-  }
-
-  .legend-color {
-    width: 100%;
-    height: auto;
-    padding: 2px;
   }
 }

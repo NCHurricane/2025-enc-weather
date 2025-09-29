@@ -18,7 +18,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../js/modules/logs/advisory_writer_error.log');
+ini_set('error_log', __DIR__ . '/../../active/logs/advisory_writer_error.log');
 
 // --- Core Logic Start ---
 
@@ -65,7 +65,7 @@ $LOWERCASE_ALL = false;
 function adv_log($msg, $level = 'INFO') {
     global $isCli;
     
-    $logDir = __DIR__ . '/../../js/modules/logs/';
+    $logDir = __DIR__ . '/../../active/logs/';
     $logFile = $logDir . 'advisory_writer.log';
 
     if (!is_dir($logDir)) {
@@ -191,10 +191,10 @@ function apply_selective_lowercase($adv) {
   if (
       isset($adv['motion']) &&
       is_array($adv['motion']) &&
-      isset($adv['motion']['dirText']) &&
-      is_string($adv['motion']['dirText'])
+      isset($adv['motion']['direction']) &&
+      is_string($adv['motion']['direction'])
   ) {
-      $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
+      $adv['motion']['direction'] = lc_str($adv['motion']['direction']);
   }
 
   if (isset($adv['geo']) && is_array($adv['geo'])) {
@@ -215,6 +215,7 @@ function array_filter_non_empty($s) {
 // --- Core Processing Functions ---
 
 function processSingleStorm($stormId) {
+    $stormId = strtoupper($stormId);
     adv_log("Processing single storm: {$stormId}", 'INFO');
     
     $number = substr($stormId, 2, 2);
@@ -238,7 +239,7 @@ function processSingleStorm($stormId) {
     
     if ($raw === false || strlen($raw) < 64) {
         adv_log("Primary source failed for {$stormId}, trying FTP fallback.", 'WARN');
-        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/{$stormId}_info.xml";
+        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/" . strtolower(substr($stormId, 0, 2)) . substr($stormId, 2) . "_info.xml";
         $raw = @file_get_contents($ftpUrl, false, $ctx);
 
         if ($raw === false || strlen($raw) < 64) {
@@ -253,6 +254,63 @@ function processSingleStorm($stormId) {
         throw new Exception('Failed to parse advisory XML.');
     }
     
+    $messageRaw = strval_safe(isset($xml->message) ? $xml->message : '');
+    $headlines = array();
+    if ($messageRaw !== '') {
+        // Split into lines, normalize line endings
+        $lines = preg_split('/\r?\n|(?<=\s)\n|(?<=\n)/', $messageRaw);
+        $foundDate = false;
+        $collect = false;
+        $headlineLines = array();
+        foreach ($lines as $i => $line) {
+            $trimmed = trim($line);
+            // Find the date/time line (e.g., '300 PM GMT Fri Sep 26 2025')
+            if (!$foundDate && preg_match('/\d{1,4}\s*(AM|PM)\s+[A-Z]{2,4}\s+.+\d{4}/i', $trimmed)) {
+                $foundDate = true;
+                $collect = true;
+                continue;
+            }
+            if ($collect) {
+                // Stop at first line containing 'ADVISORY' or 'SUMMARY' (case-insensitive)
+                if (stripos($trimmed, 'ADVISORY') !== false || stripos($trimmed, 'SUMMARY') !== false) {
+                    break;
+                }
+                // Only collect non-empty lines
+                if ($trimmed !== '') {
+                    $headlineLines[] = $trimmed;
+                }
+            }
+        }
+        // Now join lines into logical headlines: group consecutive lines, join, remove leading/trailing ...
+        $current = '';
+        foreach ($headlineLines as $line) {
+            // If line starts with ... it's a new headline
+            if (preg_match('/^\.\.\./', $line)) {
+                if ($current !== '') {
+                    // Clean up: remove leading/trailing ... and whitespace, collapse spaces
+                    $clean = preg_replace('/^\.*|\.*$/', '', $current);
+                    $clean = preg_replace('/\s+/', ' ', $clean);
+                    $clean = trim($clean);
+                    if ($clean !== '') $headlines[] = $clean . '...';
+                }
+                $current = $line;
+            } else {
+                // Continuation of previous headline
+                $current .= ' ' . $line;
+            }
+        }
+        // Add last headline
+        if ($current !== '') {
+            $clean = preg_replace('/^\.*|\.*$/', '', $current);
+            $clean = preg_replace('/\s+/', ' ', $clean);
+            $clean = trim($clean);
+            if ($clean !== '') $headlines[] = $clean . '...';
+        }
+        // Remove duplicate trailing ... if present
+        $headlines = array_map(function($h) {
+            return preg_replace('/\.\.\.$/', '...', $h);
+        }, $headlines);
+    }
     $advisory = array(
         'atcfID' => $stormId,
         'generated' => gmdate('c'),
@@ -262,7 +320,7 @@ function processSingleStorm($stormId) {
         'advisoryNumber'   => strval_safe(isset($xml->advisoryNumber) ? $xml->advisoryNumber : ''),
         'systemType'       => strval_safe(isset($xml->systemType) ? $xml->systemType : ''),
         'systemName'       => strval_safe(isset($xml->systemName) ? $xml->systemName : ''),
-        'systemSaffirSimpsonCategory' => intval_safe(isset($xml->systemSaffirSimpsonCategory) ? $xml->systemSaffirSimpsonCategory : ''),
+        'systemSaffirSimpsonCategory' => strval_safe(isset($xml->systemSaffirSimpsonCategory) ? $xml->systemSaffirSimpsonCategory : ''),
         'loc' => array(
             'lat'     => is_numeric(isset($xml->centerLocLatitude) ? (string)$xml->centerLocLatitude : null) ? (float)$xml->centerLocLatitude : null,
             'lon'     => is_numeric(isset($xml->centerLocLongitude) ? (string)$xml->centerLocLongitude : null) ? (float)$xml->centerLocLongitude : null,
@@ -276,16 +334,19 @@ function processSingleStorm($stormId) {
             'mb'  => intval_safe(isset($xml->systemMslpMb) ? $xml->systemMslpMb : ''),
         ),
         'motion' => array(
-            'dirText' => strval_safe(isset($xml->systemDirectionOfMotion) ? $xml->systemDirectionOfMotion : ''),
-            'mph'     => intval_safe(isset($xml->systemSpeedMph) ? $xml->systemSpeedMph : ''),
-            'kph'     => intval_safe(isset($xml->systemSpeedKph) ? $xml->systemSpeedKph : ''),
-            'kts'     => intval_safe(isset($xml->systemSpeedKts) ? $xml->systemSpeedKts : ''),
+            'direction' => strval_safe(isset($xml->systemDirectionOfMotion) ? $xml->systemDirectionOfMotion : ''),
+            'speed' => array(
+                'mph'     => intval_safe(isset($xml->systemSpeedMph) ? $xml->systemSpeedMph : ''),
+                'kph'     => intval_safe(isset($xml->systemSpeedKph) ? $xml->systemSpeedKph : ''),
+                'kts'     => intval_safe(isset($xml->systemSpeedKts) ? $xml->systemSpeedKts : ''),
+            )
         ),
         'geo' => array_values(array_filter(array(
             strval_safe(isset($xml->systemGeoRefPt1) ? $xml->systemGeoRefPt1 : ''),
             strval_safe(isset($xml->systemGeoRefPt2) ? $xml->systemGeoRefPt2 : ''),
         ), 'array_filter_non_empty')),
-        'message' => strval_safe(isset($xml->message) ? $xml->message : ''),
+        'message' => $messageRaw,
+        'headlines' => $headlines,
     );
     
     if ($advisory['intensity']['mph'] !== null) {

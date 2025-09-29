@@ -6,18 +6,17 @@
  * - Neutral fallbacks when a product is missing
  * - No season logic, no external imports
  */
-import { initSatellite } from "./satellite.js?v=9.14.25";
 
 (() => {
   "use strict";
 
   // -------- Paths (absolute for reliability) --------
-  const BASE = "/2025_weather/js/modules/cache";
+  const BASE = "/active/cache";
   const PATHS = {
-    two_en: `${BASE}/tropical_two_at.json`,
-    two_es: `${BASE}/tropical_two_sat.json`,
-    disc: `${BASE}/tropical_disc_at.json`,
-    summary: `${BASE}/tropical_summary_at.json`,
+    two_en: `${BASE}/twoat.json?v=${Date.now()}`,
+    two_es: `${BASE}/twosat.json?v=${Date.now()}`,
+    disc: `${BASE}/twdat.json?v=${Date.now()}`,
+    summary: `${BASE}/twsat.json?v=${Date.now()}`,
   };
 
   // -------- DOM targets (optional; render only if present) --------
@@ -50,11 +49,17 @@ import { initSatellite } from "./satellite.js?v=9.14.25";
       actions: $("#discussion-actions"),
       link: $("#discussion-link"),
     },
+    summary: {
+      content: $("#summary-content"),
+      ts: $("#summary-timestamp"),
+      time: $("#summary-time"),
+      actions: $("#summary-actions"),
+      link: $("#summary-link"),
+    },
     satellite: {
       actions: $("#satellite-actions"),
       link: $("#satellite-link"),
     },
-    // If you add a page-wide updated line, class="last-updated" will be used; otherwise no-op.
     lastUpdated: $(".last-updated"),
   };
 
@@ -150,7 +155,7 @@ import { initSatellite } from "./satellite.js?v=9.14.25";
   // Function to update satellite action button based on current sector
   function updateSatelliteActionButton(sector) {
     if (!targets.satellite.actions || !targets.satellite.link) return;
-    
+
     const sectorUrls = {
       'taw': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=taw',
       'na': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=na',
@@ -158,7 +163,7 @@ import { initSatellite } from "./satellite.js?v=9.14.25";
       'car': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=car',
       'ga': 'https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=ga'
     };
-    
+
     const url = sectorUrls[sector];
     if (url) {
       targets.satellite.link.href = url;
@@ -190,167 +195,114 @@ import { initSatellite } from "./satellite.js?v=9.14.25";
     node.style.display = "block";
   }
 
-  // -------- renderers --------
-  function renderTwoEN(data) {
-    const n = targets.two.content;
-    if (!n) return;
+  // -------- Generic Renderer --------
+  function renderTextProduct(data, ui, title, fallbackMessage) {
+    if (!ui.content) return;
 
-    let html = "<h3>Atlantic Tropical Weather Outlook</h3>";
+    let html = `<h3>${title}</h3>`;
     if (isNonEmptyStr(data?.discussion)) {
-      html += data.discussion; // expected safe HTML from your cache writer
+      html += data.discussion; // Assumes safe HTML from cache writer
     } else if (isNonEmptyStr(data?.rawContent)) {
       html += `<pre>${safe(data.rawContent)}</pre>`;
     } else {
-      html += "<p>Unable to load the tropical outlook at this time.</p>";
+      html += `<p>${fallbackMessage}</p>`;
     }
-    renderHtmlInto(n, html);
+    renderHtmlInto(ui.content, html);
 
-    // Update timestamps
+    // --- Timestamps ---
     const ts =
-      data?.issueTime ?? // "1215 UTC Thu Aug 28 2025"
-      data?.pubDate ?? // "Thu, 28 Aug 2025 10:41:28 +0000"
+      data?.issueTime ??
+      data?.pubDate ??
       data?.issued ??
       data?.issue_time ??
       data?.timestamp ??
       data?.generated ??
       data?.validTime ??
       null;
-    
-    if (targets.two.ts) {
-      setTimestamp(targets.two.ts, ts);
-    }
-    
-    if (targets.two.time) {
-      setTimestamp(targets.two.time, ts);
-    }
 
-    // Update action button if link is available
-    if (targets.two.actions && targets.two.link && data?.link) {
-      targets.two.link.href = data.link;
-      targets.two.actions.style.display = 'block';
-    } else if (targets.two.actions) {
-      targets.two.actions.style.display = 'none';
+    if (ui.ts) setTimestamp(ui.ts, ts);
+    if (ui.time) setTimestamp(ui.time, ts);
+
+    // --- Action Button ---
+    if (ui.actions && ui.link) {
+      if (data?.link) {
+        ui.link.href = data.link;
+        ui.actions.style.display = 'block';
+      } else {
+        ui.actions.style.display = 'none';
+      }
     }
+  }
+
+  // -------- renderers (now wrappers) --------
+  function renderTwoEN(data) {
+    renderTextProduct(
+      data,
+      targets.two,
+      "Atlantic Tropical Weather Outlook",
+      "Unable to load the tropical outlook at this time."
+    );
   }
 
   function renderTwoES(data) {
-    const n = targets.twoEs.content;
-    if (!n) return;
-
-    let html = "<h3>Perspectiva del Tiempo Tropical del Atlántico</h3>";
-    if (isNonEmptyStr(data?.discussion)) {
-      html += data.discussion;
-    } else if (isNonEmptyStr(data?.rawContent)) {
-      html += `<pre>${safe(data.rawContent)}</pre>`;
-    } else {
-      html +=
-        "<p>No se puede cargar la perspectiva tropical en este momento.</p>";
-    }
-    renderHtmlInto(n, html);
-
-    if (targets.twoEs.ts) {
-      const ts =
-        data?.issueTime ??
-        data?.pubDate ??
-        data?.issued ??
-        data?.issue_time ??
-        data?.timestamp ??
-        data?.generated ??
-        data?.validTime ??
-        null;
-      setTimestamp(targets.twoEs.ts, ts);
-      
-      if (targets.twoEs.time) {
-        setTimestamp(targets.twoEs.time, ts);
-      }
-    }
-
-    // Update action button if link is available
-    if (targets.twoEs.actions && targets.twoEs.link && data?.link) {
-      targets.twoEs.link.href = data.link;
-      targets.twoEs.actions.style.display = 'block';
-    } else if (targets.twoEs.actions) {
-      targets.twoEs.actions.style.display = 'none';
-    }
+    renderTextProduct(
+      data,
+      targets.twoEs,
+      "Perspectiva del Tiempo Tropical del Atlántico",
+      "No se puede cargar la perspectiva tropical en este momento."
+    );
   }
 
   function renderDiscussion(data) {
-    const n = targets.disc.content;
-    if (!n) return;
+    renderTextProduct(
+      data,
+      targets.disc,
+      "Tropical Weather Discussion",
+      "No tropical discussion available at this time."
+    );
+  }
 
-    let html = "<h3>Tropical Weather Discussion</h3>";
-    if (isNonEmptyStr(data?.discussion)) {
-      html += data.discussion;
-    } else if (isNonEmptyStr(data?.rawContent)) {
-      html += `<pre>${safe(data.rawContent)}</pre>`;
-    } else {
-      html += "<p>No tropical discussion available at this time.</p>";
-    }
-    renderHtmlInto(n, html);
-
-    if (targets.disc.ts) {
-      const ts =
-        data?.issueTime ??
-        data?.pubDate ??
-        data?.issued ??
-        data?.issue_time ??
-        data?.timestamp ??
-        data?.generated ??
-        data?.validTime ??
-        null;
-      setTimestamp(targets.disc.ts, ts);
-      
-      if (targets.disc.time) {
-        setTimestamp(targets.disc.time, ts);
-      }
-    }
-
-    // Update action button if link is available
-    if (targets.disc.actions && targets.disc.link && data?.link) {
-      targets.disc.link.href = data.link;
-      targets.disc.actions.style.display = 'block';
-    } else if (targets.disc.actions) {
-      targets.disc.actions.style.display = 'none';
-    }
+  function renderSummary(data) {
+    renderTextProduct(
+      data,
+      targets.summary,
+      "Monthly Tropical Weather Summary",
+      "No monthly summary available at this time."
+    );
   }
 
   // -------- init --------
   async function init() {
-    // Summary first → optional page "Updated:"
-    const summary = await getJSON(PATHS.summary);
+    // Dynamically import satellite module to ensure it's not stale
+    const { initSatellite } = await import(
+      `./satellite.js?t=${Date.now()}`
+    );
+    // Load all products in parallel, providing fallbacks
+    const [twoEn, twoEs, disc, summary] = await Promise.all([
+      getJSON(PATHS.two_en),
+      getJSON(PATHS.two_es),
+      getJSON(PATHS.disc),
+      getJSON(PATHS.summary),
+    ]);
+
+    // Use the most relevant timestamp for the page-wide "Updated:" display
     const upAny =
-      summary?.metadata?.cached_at_iso ??
-      summary?.cached_at_iso ??
-      summary?.metadata?.generated ??
+      summary?.pubDate ??
+      summary?.issueTime ??
+      disc?.pubDate ??
+      twoEn?.pubDate ??
       summary?.generated ??
-      summary?.metadata?.timestamp ??
       summary?.timestamp ??
       null;
     setPageLastUpdated(upAny);
 
-    // Load each text product (in parallel)
-    const [twoEn, twoEs, disc] = await Promise.all([
-      getJSON(PATHS.two_en),
-      getJSON(PATHS.two_es),
-      getJSON(PATHS.disc),
-    ]);
+    // Render all products, providing empty objects as fallbacks to prevent errors
+    renderTwoEN(twoEn || {});
+    renderTwoES(twoEs || {});
+    renderDiscussion(disc || {});
+    renderSummary(summary || {});
 
-    try {
-      renderTwoEN(twoEn || {});
-    } catch (e) {
-      console.warn("[tropical] TWO EN render:", e);
-    }
-    try {
-      renderTwoES(twoEs || {});
-    } catch (e) {
-      console.warn("[tropical] TWO ES render:", e);
-    }
-    try {
-      renderDiscussion(disc || {});
-    } catch (e) {
-      console.warn("[tropical] DISC render:", e);
-    }
-
+    // --- Satellite Initialization ---
     initSatellite({
       sector: "taw",
       selectorId: "tropical-satellite-product-select",

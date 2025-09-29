@@ -202,11 +202,13 @@
                <input type="radio" name="textTab" id="text-two" checked />
                <input type="radio" name="textTab" id="text-two-spanish" />
                <input type="radio" name="textTab" id="text-discussion" />
+               <input type="radio" name="textTab" id="text-summary" />
 
                <div class="tropical-text-tab-labels" role="tablist">
                   <label for="text-two" class="tropical-text-tab" role="tab" aria-selected="true">TWO</label>
                   <label for="text-two-spanish" class="tropical-text-tab" role="tab">TWO (Español)</label>
                   <label for="text-discussion" class="tropical-text-tab" role="tab">Discussion</label>
+                  <label for="text-summary" class="tropical-text-tab" role="tab">Monthly</label>
                </div>
 
                <!-- TWO Text Tab -->
@@ -249,6 +251,21 @@
                      <div class="tropical-text-content" id="discussion-content"></div>
                      <div class="text-actions" id="discussion-actions" style="display: none;">
                         <a href="#" class="nhc-link-btn" id="discussion-link" target="_blank" rel="noopener">
+                           <i class="fa-solid fa-external-link-alt"></i>
+                           View on NHC Website
+                        </a>
+                     </div>
+                  </div>
+
+                  <!-- Monthly Summary Tab -->
+                  <div class="tropical-text-panel" id="summary-panel" role="tabpanel">
+                     <div class="error" id="summary-error" style="display: none">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Unable to load Monthly Summary</span>
+                     </div>
+                     <div class="tropical-text-content" id="summary-content"></div>
+                     <div class="text-actions" id="summary-actions" style="display: none;">
+                        <a href="#" class="nhc-link-btn" id="summary-link" target="_blank" rel="noopener">
                            <i class="fa-solid fa-external-link-alt"></i>
                            View on NHC Website
                         </a>

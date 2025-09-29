@@ -19,12 +19,17 @@ if (PHP_SAPI !== 'cli') {
 
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
+// --- Logging Function ---
 function out($s){
   $line = "[" . date('Y-m-d H:i:s') . "] $s";
+  $logDir = __DIR__ . '/../../active/logs/';
+  $logFile = $logDir . 'cxml_writer.log';
+  if (!is_dir($logDir)) {
+    @mkdir($logDir, 0755, true);
+  }
+  @file_put_contents($logFile, $line . "\n", FILE_APPEND | LOCK_EX);
   if (PHP_SAPI === 'cli') {
     fwrite(STDERR, $line . "\n");
-  } else {
-    error_log("[cxml_writer] " . $line);
   }
 }
 

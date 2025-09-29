@@ -27,7 +27,7 @@ const STORM_CLASSIFICATIONS = {
 async function fetchActiveStorms() {
   try {
     const CACHE_URL = new URL(
-      "../../js/modules/cache/nhc_current_storms.json",
+      "../../js/modules/cache/nhc_current_storms.json?v=" + Date.now(),
       import.meta.url
     ).pathname;
     const response = await fetch(CACHE_URL);
@@ -135,17 +135,15 @@ function displayActiveStorms(storms) {
 
     // Create storm info link
     const stormLink = document.createElement("a");
-    stormLink.href = `active/${storm.binNumber.toLowerCase()}.html`;
+    stormLink.href = `active/?storm=${storm.id.toUpperCase()}`;
     stormLink.className = "active-system-link";
 
     const classification =
       STORM_CLASSIFICATIONS[storm.classification] || "Tropical Cyclone";
-    const intensityDisplay = storm.intensity ? ` (${storm.intensity} kt)` : "";
 
     stormLink.innerHTML = `
             <span class="storm-classification">${classification}</span>
             <span class="storm-name">${storm.name}</span>
-            <span class="storm-intensity">${intensityDisplay}</span>
         `;
 
     // Assemble storm item

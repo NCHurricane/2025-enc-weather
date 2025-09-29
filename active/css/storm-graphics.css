@@ -1,68 +1,29 @@
 /* Section title behavior is defined in active.css; keep defaults here */
 /* Remove local overrides that centered and added chevrons */
-
-/* Collapsed state animation */
+/* Collapsed state animation and default expanded state */
 .track-messages-section,
 .wind-graphics-section,
 .wind-probability-section,
 .surge-rain-section {
   transition: opacity 0.3s ease-in-out;
-}
-
-/* Default expanded state */
-.track-messages-section,
-.wind-graphics-section,
-.wind-probability-section,
-.surge-rain-section {
   opacity: 1;
-}
-
-@media (max-width: 768px) {
-  .graphics-tabs:not(.time-tabs) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-    gap: 0.25rem;
-  }
-  .graphics-tab:not(.time-tab) {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.7rem;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 0;
-    white-space: nowrap;
-  }
-  .graphics-tabs.category-tabs {
-    display: flex;
-    flex-wrap: nowrap;
-  }
-  .graphics-tab.category-tab {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: 100%;
-    font-size: 0.7rem;
-    padding: 0.4rem 0.7rem;
-    box-sizing: border-box;
-    margin-bottom: 0;
-    white-space: nowrap;
-  }
 }
 
 /* Time tabs - Grid layout to eliminate empty space */
 .graphics-tabs.time-tabs {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: 0.125rem;
 }
 
 .graphics-tab.time-tab {
-  font-size: 0.8rem;
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
   padding: 0.4rem 0.6rem;
   box-sizing: border-box;
   margin-bottom: 0;
   white-space: nowrap;
   text-align: center;
-  background-color: var(--color-background);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
   overflow: hidden;
@@ -70,7 +31,7 @@
 }
 
 .graphics-tab.time-tab:hover {
-  background: #e8e8e8;
+  background: var(--color-accent);
 }
 
 .graphics-tab.time-tab.active {
@@ -78,28 +39,6 @@
   color: white;
 }
 
-@media (max-width: 600px) {
-  .graphics-tab.time-tab {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.5rem;
-  }
-}
-
-/* Storm Graphics Styles - Updated for separate sections */
-.track-messages-section,
-.wind-graphics-section,
-.wind-probability-section,
-.surge-rain-section {
-  background: linear-gradient(
-    180deg,
-    var(--color-gradient-start) 20%,
-    var(--color-gradient-end) 100%
-  );
-  padding: 1rem;
-  margin: 15px 0;
-}
-
-/* Remove or update graphic-item h4 if it was only for grid layout */
 /* Keeping this as it might be used in tab content */
 .graphic-item h4 {
   margin: 0 0 0.75rem 0;
@@ -111,7 +50,7 @@
 .graphic-container {
   position: relative;
   /* background: #fff; */
-  min-height: 550px;
+  /* min-height: 550px; */
   border-radius: 4px;
   padding: 5px 0 0 0;
   overflow: hidden;
@@ -120,29 +59,8 @@
   align-items: flex-start;
 }
 
-.graphic-container img {
-  max-width: 100%;
-  width: 50%;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-/* Specific ID-based styling examples */
-#graphic-key-messages img,
-#graphic-key-messages-spanish img {
-  /* Key messages might need different handling */
-  max-width: 100%;
-}
-
-#graphic-peak-surge img {
-  /* Surge graphics might have different aspect ratios */
-  max-width: 100%;
-}
-
 /* Tabs for Wind Probability */
 .graphics-tabs {
-  /* background-color: var(--color-background); */
   width: 100%;
 }
 
@@ -215,67 +133,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .tab-buttons {
-    justify-content: center;
-  }
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-  }
-
-  /* Two-row layout for graphics-tabs except time-tabs and category-tabs */
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(
-      .radii-hour-controls
-    ):not(.radii-controls) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-  }
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(
-      .radii-hour-controls
-    ):not(.radii-controls)
-    .graphics-tab {
-    width: 50%;
-    box-sizing: border-box;
-  }
-
-  /* Two-row (stacked) layout for time-tabs: each tab is full width, stacked vertically */
-  .graphics-tabs.time-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-  }
-  .graphics-tab.time-tab {
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-/* Extra small mobile screens */
-@media (max-width: 360px) {
-  .graphics-tabs {
-    grid-template-columns: 1fr;
-  }
-  .graphics-tab {
-    padding: 10px 8px;
-    font-size: 0.8em;
-  }
-}
-
 /* --- Graphics Tabbed Interface Styles (moved from active.css) --- */
 
 /* Interface container */
@@ -287,23 +144,23 @@
 .graphics-tabs {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  /* background-color: var(--color-background); */
   border-bottom: 2px solid var(--color-primary);
   margin: 0;
   padding: 0;
-  gap: 0;
+  gap: 0;  
 }
 
 /* Individual tabs */
 .graphics-tab {
-  background-color: var(--color-background);
   border: none;
-  color: var(--color-text);
+  color: var(--color-text-light);
   cursor: pointer;
-  font-family: var(--font-primary);
-  font-size: 0.9em;
-  font-weight: 400;
+  font-family: var(--font-active);
+  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+  font-weight: 800;
   padding: 12px 8px;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
   text-align: center;
   transition: all 0.2s ease;
   position: relative;
@@ -316,11 +173,11 @@
   font-weight: bold;
 }
 
-.graphics-tab:focus {
+/* .graphics-tab:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
   z-index: 1;
-}
+} */
 
 .graphics-tab.active {
   background-color: var(--color-primary);
@@ -348,63 +205,23 @@
   display: block; /* Show only the active panel */
 }
 
-/* Responsive for graphics tabs */
-@media (max-width: 768px) {
-  /* Two-row layout for graphics-tabs except time-tabs and category-tabs */
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(
-      .radii-hour-controls
-    ):not(.radii-controls) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-    margin-bottom: 0.5rem;
-    border-bottom: 2px solid #e0e0e0;
-  }
-  .graphics-tab:not(.time-tab):not(.category-tab) {
-    width: 50%;
-    font-size: 0.7rem;
-    padding: 0.4rem 0.7rem;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 0;
-    white-space: nowrap;
-  }
-
-  /* Two-row (stacked) layout for time-tabs: each tab is full width, stacked vertically */
-  .graphics-tabs.time-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-  }
-  .graphics-tab.time-tab {
-    width: 100%;
-    box-sizing: border-box;
-  }
+/* Add section-specific class for wind probability hour tabs */
+.wind-probability-time-tab {
+  width: 100%;
+  box-sizing: border-box;
+  justify-self: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .tab-buttons {
-    justify-content: center;
-  }
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-    justify-content: center;
-  }
-
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-    transition: all 0.3s;
-  }
-
-  .action-button:hover {
-    background: linear-gradient(135deg, #0056b3, #003d82);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
+/* Responsive styles for storm graphic images */
+.storm-graphic-img {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto; /* Center the image */
 }
 
 /* Animations */
@@ -419,8 +236,58 @@
   }
 }
 
+/* Extra small mobile screens */
+@media (max-width: 360px) {
+  .graphics-tabs {
+    grid-template-columns: 1fr;
+  }
+  .graphics-tab {
+    padding: 10px 8px;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 600px) {
+  .graphics-tab.time-tab {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  .graphics-tabs:not(.time-tabs) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .graphics-tab:not(.time-tab) {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .graphics-tabs.category-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .graphics-tab.category-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
   .tab-buttons {
     justify-content: center;
   }
@@ -428,18 +295,24 @@
   .tab-button {
     font-size: 0.75rem;
     padding: 0.4rem 0.8rem;
+    justify-content: center;
+    transition: all 0.3s;
   }
-}
 
-/* Two-row layout for graphics-tabs except time-tabs and category-tabs */
-@media (max-width: 768px) {
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(
-      .radii-hour-controls
-    ):not(.radii-controls) {
+  /* Two-row layout for graphics-tabs except time-tabs and category-tabs */
+  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls) {
     display: flex;
     flex-wrap: wrap;
     gap: 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e0e0;
   }
+
+  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls) .graphics-tab {
+    width: 50%;
+    box-sizing: border-box;
+  }
+
   .graphics-tab:not(.time-tab):not(.category-tab) {
     width: 50%;
     font-size: 0.85rem;
@@ -451,110 +324,33 @@
     white-space: nowrap;
   }
 
+  /* Two-row (stacked) layout for time-tabs: each tab is full width, stacked vertically */
   /* Force time-tabs to 2 rows and 6 columns on mobile, center last row's content */
   .graphics-tabs.time-tabs {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     grid-auto-rows: 1fr;
     gap: 0;
-    /* Remove any border or padding overrides here */
+    place-items: stretch stretch;
   }
+
   .graphics-tab.time-tab {
     width: 100%;
     box-sizing: border-box;
     justify-self: center;
   }
-}
 
-/* Add section-specific class for wind probability hour tabs */
-.wind-probability-time-tab {
-  width: 100%;
-  box-sizing: border-box;
-  justify-self: stretch;
-  min-width: 0;
-  max-width: 100%;
-}
-
-/* Responsive: Force time-tabs to 2 rows and 6 columns on mobile, stretch last row */
-@media (max-width: 768px) {
-  .graphics-tabs.time-tabs {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-auto-rows: 1fr;
-    gap: 0;
-    place-items: stretch stretch;
+  .action-button:hover {
+    background: linear-gradient(135deg, #0056b3, #003d82);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
+
   .wind-probability-time-tab {
     width: 100%;
     box-sizing: border-box;
     justify-self: stretch;
     min-width: 0;
     max-width: 100%;
-  }
-  /* Remove centering that could cause gaps */
-  .graphics-tabs.time-tabs {
-    place-items: stretch stretch;
-  }
-}
-/* Responsive min-heights for .graphic-container at popular breakpoints */
-@media (max-width: 1440px) {
-  .graphic-container {
-    min-height: 500px;
-  }
-  .graphic-container img {
-    width: 50%;
-  }
-}
-
-@media (max-width: 1280px) {
-  .graphic-container {
-    min-height: 470px;
-    padding: 5px 0 0 0;
-  }
-}
-
-@media (max-width: 1024px) {
-  .graphic-container {
-    min-height: 500px;
-    padding: 5px 0 0 0;
-  }
-  .graphic-container img {
-    width: 65%;
-  }
-}
-
-@media (max-width: 900px) {
-  .graphic-container {
-    min-height: 480px;
-  }
-  .graphic-container img {
-    width: 75%;
-    padding: 5px 0 0 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .graphic-container {
-    min-height: 450px;
-  }
-  .graphic-container img {
-    width: 85%;
-    padding: 5px 0 0 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .graphic-container {
-    min-height: 420px;
-  }
-  .graphic-container img {
-    width: 100%;
-    padding: 3px 0 0 0;
-  }
-}
-
-@media (max-width: 400px) {
-  .graphic-container {
-    min-height: 260px;
   }
 }

@@ -14737,7 +14737,7 @@
     "lon": -73.8662,
     "lat": 40.8501,
     "minZoom": 7.0,
-    "priority": 10,
+    "priority": 1,
     "state": "New York",
     "stateCode": "NY"
   },
@@ -14746,7 +14746,7 @@
     "lon": -73.9496,
     "lat": 40.6501,
     "minZoom": 7.0,
-    "priority": 10,
+    "priority": 1,
     "state": "New York",
     "stateCode": "NY"
   },
@@ -14755,7 +14755,7 @@
     "lon": -73.9662,
     "lat": 40.7834,
     "minZoom": 7.0,
-    "priority": 10,
+    "priority": 1,
     "state": "New York",
     "stateCode": "NY"
   },
@@ -14773,7 +14773,7 @@
     "lon": -73.7976,
     "lat": 40.7498,
     "minZoom": 7.0,
-    "priority": 10,
+    "priority": 1,
     "state": "New York",
     "stateCode": "NY"
   },
@@ -20703,8 +20703,8 @@
     "text": "Windsor",
     "lon": -76.9399,
     "lat": 35.9928,
-    "minZoom": 7.0,
-    "priority": 2,
+    "minZoom": 5.0,
+    "priority": 8,
     "state": "North Carolina",
     "stateCode": "NC"
   },
@@ -21065,6 +21065,15 @@
     "lat": 36.1219,
     "minZoom": 7.0,
     "priority": 1,
+    "state": "North Carolina",
+    "stateCode": "NC"
+  },
+  {
+    "text": "Hatteras",
+    "lon": -75.6903,
+    "lat": 35.2195,
+    "minZoom": 7.0,
+    "priority": 10,
     "state": "North Carolina",
     "stateCode": "NC"
   },
