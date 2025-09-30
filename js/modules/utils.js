@@ -1,9 +1,11 @@
-/**
- * Enhanced utils.js - Weather Application Utilities
- * Includes new station selection functions for API fallback
- */
+// =============================
+// Weather Application Utilities - js/modules/utils.js
+// 
+// Common utility functions for weather data processing and formatting.
+// Includes unit conversions, date formatting, DOM manipulation helpers, and
+// weather station selection logic.
+// =============================
 
-// Existing utility functions (preserved)
 export function safeSetText(elementId, text) {
   const element = document.getElementById(elementId);
   if (element) {
@@ -25,7 +27,7 @@ export function degreesToCardinal(degrees) {
 }
 
 export function celsiusToFahrenheit(celsius) {
-  return Math.round(celsius * 9/5 + 32);
+  return Math.round(celsius * 9 / 5 + 32);
 }
 
 export function metersToMiles(meters) {
@@ -38,22 +40,17 @@ export function pascalsToMillibars(pascals) {
 
 export function formatTime(timestamp) {
   if (!timestamp) return 'Unknown';
-  
+
   const date = new Date(timestamp * 1000);
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: '2-digit', 
+    month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
   }).replace(',', '');
 }
-
-/**
- * NEW STATION SELECTION FUNCTIONS
- * Simplified versions for JavaScript fallback scenarios
- */
 
 /**
  * Calculate distance between two coordinates using Haversine formula
@@ -64,17 +61,17 @@ export function formatTime(timestamp) {
  * @returns {number} Distance in miles
  */
 export function calculateDistance(lat1, lon1, lat2, lon2) {
-  const earthRadius = 3959; // Earth radius in miles
-  
+  const earthRadius = 3959;
+
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
-  
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
-           Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * 
-           Math.sin(dLon/2) * Math.sin(dLon/2);
-  
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
   return earthRadius * c;
 }
 
@@ -96,49 +93,45 @@ function toRadians(degrees) {
  */
 export function scoreStation(station, targetLat, targetLon) {
   const props = station.properties;
-  const coords = station.geometry.coordinates; // [lon, lat]
+  const coords = station.geometry.coordinates;
   const stationLat = coords[1];
   const stationLon = coords[0];
-  
-  // Calculate distance score (closer = better)
+
   const distance = calculateDistance(targetLat, targetLon, stationLat, stationLon);
   const distanceScore = Math.max(0, (100 - distance) / 100); // 0-1 scale
-  
-  // Provider preference (simplified)
+
   const provider = (props.provider || 'unknown').toUpperCase();
-  let providerScore = 0.5; // default
-  
+  let providerScore = 0.5;
+
   if (provider === 'ASOS') providerScore = 1.0;
   else if (provider === 'AWOS') providerScore = 0.9;
   else if (provider === 'MESOWEST' || provider === 'MADIS') providerScore = 0.7;
   else if (provider === 'COOP' || provider === 'RAWS') providerScore = 0.6;
-  
-  // Station type preference (simplified)
+
   const name = (props.name || '').toUpperCase();
-  let typeScore = 0.7; // default
-  
-  if (name.includes('AIRPORT') || name.includes('FIELD') || 
-      name.includes('AFB') || name.includes('ARP')) {
+  let typeScore = 0.7;
+
+  if (name.includes('AIRPORT') || name.includes('FIELD') ||
+    name.includes('AFB') || name.includes('ARP')) {
     typeScore = 1.0;
   } else if (name.includes('COAST GUARD')) {
     typeScore = 0.9;
   } else if (name.includes('UNIVERSITY') || name.includes('COLLEGE')) {
     typeScore = 0.8;
   }
-  
-  // Simple composite score (distance weighted higher for JS fallback)
+
   const compositeScore = (
-    distanceScore * 0.6 +      // 60% distance weight (higher than PHP)
+    distanceScore * 0.6 +      // 60% distance weight
     providerScore * 0.25 +     // 25% provider weight
     typeScore * 0.15           // 15% type weight
   );
-  
+
   return {
     station,
     stationId: props.stationIdentifier,
     name: props.name,
     provider: props.provider || 'unknown',
-    distance: Math.round(distance * 10) / 10, // Round to 1 decimal
+    distance: Math.round(distance * 10) / 10,
     scores: {
       distance: Math.round(distanceScore * 1000) / 1000,
       provider: Math.round(providerScore * 1000) / 1000,
@@ -159,25 +152,23 @@ export function selectBestStationJS(stations, targetLat, targetLon) {
   if (!stations || stations.length === 0) {
     throw new Error('No stations available for selection');
   }
-  
+
   console.log(`Evaluating ${Math.min(3, stations.length)} stations for JS fallback`);
-  
-  // For JS fallback, limit to top 3 stations to avoid too many API calls
+
   const maxStationsToEvaluate = Math.min(3, stations.length);
   const scoredStations = [];
-  
+
   for (let i = 0; i < maxStationsToEvaluate; i++) {
     const scoredStation = scoreStation(stations[i], targetLat, targetLon);
     scoredStations.push(scoredStation);
   }
-  
-  // Sort by composite score (highest first)
+
   scoredStations.sort((a, b) => b.scores.composite - a.scores.composite);
-  
+
   const bestStation = scoredStations[0];
-  
+
   console.log(`Selected station ${bestStation.stationId} (${bestStation.name}) - Distance: ${bestStation.distance} mi, Score: ${bestStation.scores.composite}`);
-  
+
   return bestStation;
 }
 
@@ -191,39 +182,32 @@ export function selectBestStationJS(stations, targetLat, targetLon) {
  */
 export async function selectWorkingStation(stations, targetLat, targetLon, testStationFn) {
   const rankedStations = [];
-  
-  // Score all stations first
-  for (const station of stations.slice(0, 5)) { // Limit to top 5
+
+  for (const station of stations.slice(0, 5)) {
     const scored = scoreStation(station, targetLat, targetLon);
     rankedStations.push(scored);
   }
-  
-  // Sort by score
+
   rankedStations.sort((a, b) => b.scores.composite - a.scores.composite);
-  
-  // Try each station in order until one works
+
   for (const stationInfo of rankedStations) {
     try {
       console.log(`Testing station ${stationInfo.stationId}...`);
       const hasGoodData = await testStationFn(stationInfo.stationId);
-      
+
       if (hasGoodData) {
         console.log(`Station ${stationInfo.stationId} selected and working`);
         return stationInfo;
       }
-      
+
       console.log(`Station ${stationInfo.stationId} failed data quality test`);
     } catch (error) {
       console.log(`Station ${stationInfo.stationId} failed: ${error.message}`);
     }
   }
-  
+
   throw new Error('No working stations found');
 }
-
-/**
- * ADDITIONAL FORMATTING UTILITIES
- */
 
 /**
  * Format temperature with proper fallbacks
@@ -247,11 +231,11 @@ export function formatWind(speed, direction) {
   if (!speed || speed === 0) {
     return 'Calm';
   }
-  
+
   if (!direction || direction === 'N/A') {
     return `${Math.round(speed)} mph`;
   }
-  
+
   return `${Math.round(speed)} mph from ${direction}`;
 }
 
@@ -264,11 +248,11 @@ export function formatVisibility(visibility) {
   if (visibility === null || visibility === undefined || isNaN(visibility)) {
     return 'N/A';
   }
-  
+
   if (visibility >= 10) {
     return '10+ mi';
   }
-  
+
   return `${Math.round(visibility * 10) / 10} mi`;
 }
 
@@ -281,7 +265,7 @@ export function formatPressure(pressure) {
   if (pressure === null || pressure === undefined || isNaN(pressure)) {
     return 'N/A';
   }
-  
+
   return `${Math.round(pressure)} mb`;
 }
 
@@ -294,7 +278,7 @@ export function formatHumidity(humidity) {
   if (humidity === null || humidity === undefined || isNaN(humidity)) {
     return 'N/A';
   }
-  
+
   return `${Math.round(humidity)}%`;
 }
 
@@ -306,11 +290,11 @@ export function formatHumidity(humidity) {
  */
 export function isDataFresh(timestamp, maxAgeHours = 6) {
   if (!timestamp) return false;
-  
-  const dataTime = typeof timestamp === 'string' ? 
-    new Date(timestamp).getTime() : 
+
+  const dataTime = typeof timestamp === 'string' ?
+    new Date(timestamp).getTime() :
     timestamp * 1000;
-  
+
   const ageHours = (Date.now() - dataTime) / (1000 * 60 * 60);
   return ageHours <= maxAgeHours;
 }
@@ -322,20 +306,18 @@ export function isDataFresh(timestamp, maxAgeHours = 6) {
  */
 export function formatDate(date) {
   if (!date) return 'Unknown';
-  
-  // Ensure we have a Date object
+
   if (!(date instanceof Date)) {
     date = new Date(date);
   }
-  
-  // Check if date is valid
+
   if (isNaN(date.getTime())) {
     return 'Invalid Date';
   }
-  
+
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: '2-digit', 
+    month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',

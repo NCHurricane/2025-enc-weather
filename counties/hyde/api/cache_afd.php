@@ -1,9 +1,15 @@
 <?php
-// counties/dare/api/cache_afd.php
 declare(strict_types=1);
+error_reporting(E_ALL);
 
-// AFD is county-wide (not zone-specific) and fetches from forecast office
-// For Dare County: uses MHX (Newport/Morehead City) forecast office
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Newport/Morehead City (MHX)
+ *
+ * For Hyde County, NC Page
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
@@ -56,7 +62,6 @@ function http_get_text(string $url, int $timeout = 30, int $retries = 2) {
     curl_close($ch);
 
     if (!$err && $code >= 200 && $code < 300 && $body) {
-      return $body;
     }
 
     if ($attempt >= $retries) return null;
@@ -77,6 +82,7 @@ function atomic_write_json(string $path, array $data): bool {
 /**
  * Extract AFD text from HTML page
  */
+      <?php
 function extractAfdFromHtml(string $html): ?string {
   // Try to find the AFD content in <pre> tags
   if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $html, $matches)) {

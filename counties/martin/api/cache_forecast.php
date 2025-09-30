@@ -1,12 +1,16 @@
 <?php
-// counties/bertie/api/cache_forecast.php
-
 declare(strict_types=1);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-// Spec: use lat/lon -> gridpoint -> forecast & hourly; ensure icons size=large;
-// write forecast.json and hourly.json.
+/**
+ * NWS Forecast Script - cache_forecast.php
+ * Fetches NWS forecast and hourly data using lat/lon from config and caches as JSON.
+ * 
+ * Single-zone county:
+ * - Martin County, NC (zone: NCZ029)
+ * - Martin County, NC (zone: NCC117)
+ * 
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

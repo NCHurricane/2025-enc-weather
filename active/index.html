@@ -40,10 +40,10 @@
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link rel="dns-prefetch" href="//kit.fontawesome.com" />
 
-        <link rel="stylesheet" href="../css/styles.css?v=2025.09.19" />
-        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.19" />
-        <link rel="stylesheet" href="./css/active.css?v=2025.09.19" />
-        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.19" />
+        <link rel="stylesheet" href="../css/styles.css?v=2025.09.29" />
+        <link rel="stylesheet" href="../css/tropical.css?v=2025.09.29" />
+        <link rel="stylesheet" href="./css/active.css?v=2025.09.29" />
+        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.29" />
 
         <link
             href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Saira:ital,wght@0,100..900;1,100..900&display=swap"
@@ -340,23 +340,25 @@
 
         <!-- Keep your existing JS; these IDs match your previous wiring -->
         <!-- Keep your existing JS; these IDs match your previous wiring -->
-        <script type="module" src="../js/modules/warningColors.js?v=2025.09.2a"></script>
-        <script type="module" src="./js/radii-visualization.js?v=2025.09.13"></script>
-        <script type="module" src="./js/storm-graphics.js?v=2025.09.13d"></script>
-        <script type="module" src="./js/storm.js?v=2025.09.15"></script>
-        <script type="module" src="./js/satellite.js?v=2025.09.27"></script>
-        <script type="module" src="./js/storm_text.js?v=2025.09.13b"></script>
+        <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
+        <script type="module" src="./js/storm-graphics.js?v=2025.09.29"></script>
+        <script type="module" src="./js/storm.js?v=2025.09.29"></script>
+        <script type="module" src="./js/satellite.js?v=2025.09.29"></script>
+        <script type="module" src="./js/storm_text.js?v=2025.09.29"></script>
+        <script type="module">
+            import { RadiiVisualization } from './js/radii-visualization.js?v=2025.09.29';
+        </script>
 
         <!-- MODIFIED: Load ww-maps.js as a regular script -->
-        <script src="./js/ww-maps.js?v=2025.09.17c" defer></script>
+        <script type="module" src="./js/ww-maps.js?v=2025.09.29" defer></script>
 
         <script type="module">
-            import { initTropicalBanner } from '../js/modules/tropical-banner.js?v=2025.09.13';
+            import { initTropicalBanner } from './js/tropical-banner.js?v=2025.09.29';
             initTropicalBanner();
         </script>
 
         <script type="module">
-            import { initSatellite } from './js/satellite.js?v=2025.09.27';
+            import { initSatellite } from './js/satellite.js?v=2025.09.29';
             initSatellite({
                 tabsContainerId: 'active-satellite-product-tabs',
                 playButtonId: 'active-satellite-play-pause',

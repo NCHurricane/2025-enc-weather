@@ -12,7 +12,6 @@
 
 const FRESH_MINUTES = 120;
 
-// ---------- helpers ----------
 function minutesSince(iso) {
   if (!iso) return Infinity;
   return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -254,7 +253,7 @@ function degreesToCardinal(degrees) {
 export async function init() {
   const res = await fetch("./data/config.json?t=" + Date.now(), {
     headers: { "User-Agent": "NCHurricane.com Weather App/1.0" },
-    cache: "no-store" // Ensure we get fresh config
+    cache: "no-store"
   });
   if (!res.ok) throw new Error('Failed to load config.json');
   return res.json();

@@ -9,7 +9,7 @@ declare(strict_types=1);
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-$local_json = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+$local_json = __DIR__ . '/cache/nhc_current_storms.json';
 $remote_json = 'https://www.nhc.noaa.gov/CurrentStorms.json';
 $base_url = 'https://www.nhc.noaa.gov/storm_graphics';
 $storm_dir_base = __DIR__ . '/../storms/';

@@ -1,13 +1,14 @@
 <?php
-// counties/bertie/api/cache_current.php
-
 declare(strict_types=1);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-// Requirements ref: instructions.txt (Current Conditions Cache) 
-// - poll all stations in config array format
-// - normalize units, compute age_minutes, allow nulls; write data/current.json
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS current conditions for configured stations and caches them as JSON.
+ *
+ * Martin County, NC
+ *
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

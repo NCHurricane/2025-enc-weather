@@ -14,24 +14,19 @@
  * php advisory_writer.php (defaults to --storm=ALL)
  */
 
-// --- Basic Setup ---
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../active/logs/advisory_writer_ep_error.log');
 
-// --- Core Logic Start ---
 
-// Determine execution mode (Command Line or Web)
 $isCli = (PHP_SAPI === 'cli' || defined('STDIN'));
 
-// Initialize storm variable
 $storm = '';
 
 if ($isCli) {
-    // --- CLI Mode ---
     echo "--- Running in CLI mode ---\n";
-    $storm = 'ALL'; // Default for CLI
+    $storm = 'ALL';
     if (isset($argv)) {
         foreach ($argv as $arg) {
             if (strpos($arg, '--storm=') === 0) {
@@ -41,19 +36,15 @@ if ($isCli) {
         }
     }
     echo "Processing storm target: $storm\n";
-    // Manually set $_GET so the rest of the script can use it consistently
     $_GET['storm'] = $storm;
 
 } else {
-    // --- Web Mode ---
-    // Set headers FIRST before any potential output to avoid errors.
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
 
     $storm = isset($_GET['storm']) ? strtoupper(trim($_GET['storm'])) : '';
 }
 
-// --- Functions ---
 
 $LOWERCASE_ALL = false;
 
@@ -109,7 +100,6 @@ function ok($d) {
   exit;
 }
 
-// --- Data Formatting and Helper Functions ---
 
 function formatToShortDateTime($dateTimeStr, $monthStyle = 'short') {
   $s = trim((string)$dateTimeStr);
@@ -211,8 +201,6 @@ function lc_str_if_string($s) {
 function array_filter_non_empty($s) {
     return $s !== '';
 }
-
-// --- Core Processing Functions ---
 
 function processSingleStorm($stormId) {
     $stormId = strtoupper($stormId);
@@ -380,7 +368,6 @@ function is_ep_storm($id) {
     return preg_match('/^EP\d{2}\d{4}$/', strtoupper(trim($id)));
 }
 
-// --- Main Execution Block ---
 try {
     adv_log("Script execution started for target: {$storm}", 'INFO');
     

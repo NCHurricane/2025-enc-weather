@@ -5,6 +5,8 @@
 // Single-zone county:
 // - Beaufort County, NC (zone: NCZ020)
 // - Beaufort County, NC (zone: NCC013)
+// 
+// - Template with comments left in for clarity
 // ========================
 
 // Alert Colors and Priorities

@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
+error_reporting(E_ALL);
 
 /**
- * Warm (pre-download) USGS XYZ tiles for a lon/lat bbox and zoom range.
+ * Pre-download USGS XYZ tiles for a lon/lat bbox and zoom range.
  *
  * Usage (CLI):
  *   php warm_tiles.php --styles=topo,imagery --zmin=6 --zmax=8 --lonMin=-106 --lonMax=-60 --latMin=18 --latMax=50 [--sleepMs=40] [--purge=1]
@@ -11,20 +12,15 @@ declare(strict_types=1);
  * Saves to: /js/data/tiles/{style}/{z}/{x}/{y}.{ext}
  */
 
-
-
-// --- Error reporting and logging setup ---
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../active/logs/warm_tiles_error.log');
 
-// Ensure STDERR is defined for CLI, fallback to error_log otherwise
 if (!defined('STDERR')) {
   if (php_sapi_name() === 'cli') {
     define('STDERR', fopen('php://stderr', 'w'));
   } else {
-    // Not CLI: define STDERR as null (will fallback to error_log)
     define('STDERR', null);
   }
 }
@@ -42,10 +38,9 @@ if (php_sapi_name() !== 'cli') {
 $ZMIN   = 5;
 $ZMAX   = 8;
 $styles = ['topo','imagery','shaded'];
-$SLEEP  = 40; // ms between requests (polite)
+$SLEEP  = 40;
 $PURGE  = false;
 
-// Optionally allow CLI overrides for debugging
 function arg(string $k, $def = null) {
   foreach ($GLOBALS['argv'] as $a) {
     if (strpos($a, "--{$k}=") === 0) return substr($a, strlen($k) + 3);
@@ -59,7 +54,6 @@ $styles = array_values(array_filter(array_map('trim', explode(',', $stylesArg)))
 $SLEEP  = (int) arg('sleepMs', $SLEEP);
 $PURGE  = (bool) arg('purge', $PURGE);
 
-// site root: .../2025_weather
 $activeDir = __DIR__;
 $siteRoot  = dirname(dirname($activeDir));
 
@@ -69,7 +63,6 @@ $TEMPLATES = [
   'shaded'  => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}',
 ];
 
-// --- NEW: Load all tcv.json files for active storms ---
 $stormDirs = glob($siteRoot . '/active/storms/*', GLOB_ONLYDIR);
 $zoneIds = [];
 foreach ($stormDirs as $stormDir) {
@@ -91,7 +84,6 @@ if (!$zoneIds) {
   exit(0);
 }
 
-// --- Load GeoJSON and map zoneId to geometry ---
 $geojsonPath = $siteRoot . '/js/data/basemaps/us_states_counties.geojson';
 if (!is_file($geojsonPath)) {
   fwrite(STDERR, "GeoJSON not found: $geojsonPath\n");
@@ -103,11 +95,9 @@ if (!isset($geo['features']) || !is_array($geo['features'])) {
   exit(1);
 }
 
-// Map zoneId to feature geometry
 $zoneGeoms = [];
 foreach ($geo['features'] as $f) {
   if (!isset($f['properties']['zoneId']) && !isset($f['properties']['ZONE']) && !isset($f['properties']['GEOID'])) continue;
-  // Try to match by zoneId, ZONE, or GEOID
   $props = $f['properties'];
   $id = $props['zoneId'] ?? $props['ZONE'] ?? $props['GEOID'] ?? null;
   if ($id && in_array($id, $zoneIds, true)) {
@@ -116,7 +106,6 @@ foreach ($geo['features'] as $f) {
 }
 
 
-// --- Logging setup (moved up so it always runs) ---
 $logDir = $siteRoot . '/active/logs';
 if (!is_dir($logDir)) @mkdir($logDir, 0775, true);
 $logFile = $logDir . '/warm_tiles_log';
@@ -127,7 +116,6 @@ function logmsg($msg) {
   echo $msg . "\n";
 }
 
-// --- DIAGNOSTIC: Log at script start to confirm log file path and function execution ---
 logmsg('LOG TEST: Script started, log file path is: ' . $logFile);
 
 if (!$zoneGeoms) {
@@ -137,7 +125,6 @@ if (!$zoneGeoms) {
   exit(0);
 }
 
-// --- Compute bounding boxes for each zone ---
 function bbox($geom) {
   $minLat =  90; $maxLat = -90; $minLon =  180; $maxLon = -180;
   $coords = [];
@@ -156,23 +143,12 @@ function bbox($geom) {
   return [$minLon, $maxLon, $minLat, $maxLat];
 }
 
-// --- Deduplicate bounding boxes (merge overlapping?) ---
 $bboxes = [];
 foreach ($zoneGeoms as $id => $geom) {
   $bboxes[] = bbox($geom);
 }
 
-// Optionally, merge overlapping bboxes (not implemented here)
-
-// --- Main tile warming loop ---
-// ...existing code...
-
-// ...existing code...
-
 echo "DONE. total={$done}, saved={$saved}, skipped={$skipped}, errors={$errors}\n";
-
-
-// --- (Removed duplicate logmsg definition) ---
 
 $totalPlanned = 0;
 foreach ($bboxes as $bbox) {

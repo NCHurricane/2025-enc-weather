@@ -1,11 +1,21 @@
 <?php
-// cache_forecast.php - Fixed version with Bertie-compatible hourly format
+declare(strict_types=1);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-$scriptDir = dirname(__FILE__);
-$dataDir = $scriptDir . '/../data';
-$configPath = $scriptDir . '/../data/config.json';
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS API current conditions and caches them as JSON.
+ *
+ * Multi-zone county:
+ * - Hyde County, NC (county code: NCC095)
+ * - Mainland Hyde County, NC (zone: NCZ081)
+ * - Ocracoke Island (zone: NCZ204)
+ *
+ */
+
+$root = dirname(__DIR__);
+$dataDir = $root . '/data';
+$configPath = $dataDir . '/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 
 // Create data directory if it doesn't exist
@@ -31,7 +41,6 @@ function atomic_write_json($filepath, $data) {
         unlink($temp_file);
     }
     
-    return false;
 }
 
 /**
@@ -51,6 +60,7 @@ function getGridPoint($lat, $lon, $userAgent) {
     
     $result = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    <?php
     curl_close($ch);
     
     if ($httpCode === 200) {

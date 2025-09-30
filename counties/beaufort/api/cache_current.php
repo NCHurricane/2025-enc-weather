@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Current Conditions Script - cache_current.php
- * Fetches NWS API current conditions and caches them as JSON.
+ * Fetches NWS current conditions for configured stations and caches them as JSON.
  *
- * Single-zone county:
- * - Beaufort County, NC (zone: NCZ020)
- * - Beaufort County, NC (zone: NCC013)
+ * Beaufort County, NC
  *
  */
 

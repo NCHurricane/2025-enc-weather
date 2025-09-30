@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+error_reporting(E_ALL);
 
 /**
  * Simple USGS XYZ tile proxy + disk cache
@@ -9,11 +10,9 @@ declare(strict_types=1);
  * Default TTL: 30 days (set via ?ttl=SECONDS). Use &purge=1 to force re-fetch.
  */
 
-// Resolve site root: .../2025_weather
-$activeDir = dirname(__DIR__);           // /active
-$siteRoot  = dirname($activeDir);        // /2025_weather
+$activeDir = dirname(__DIR__);
+$siteRoot  = dirname($activeDir);
 
-// Debug log file
 $logFile = $siteRoot . '/logs/tiles_debug.log';
 function log_debug($msg) {
   global $logFile;
@@ -48,8 +47,8 @@ if ($z === null || $x === null || $y === null || $z < 0 || $z > 18 || $x < 0 || 
   log_debug("Invalid z/x/y: z=$z x=$x y=$y GET=" . print_r($_GET, true));
   respond_error(400, 'Invalid z/x/y');
 }
-$ttl   = isset($_GET['ttl']) ? max(0, (int)$_GET['ttl']) : 60*60*24*30; // default 30d
-$purge = isset($_GET['purge']); // any truthy value forces re-fetch
+$ttl   = isset($_GET['ttl']) ? max(0, (int)$_GET['ttl']) : 60*60*24*30;
+$purge = isset($_GET['purge']);
 log_debug("Request: style=$style z=$z x=$x y=$y ttl=$ttl purge=$purge");
 
 $cacheDir  = $siteRoot . "/js/data/tiles/{$style}/{$z}/{$x}";
@@ -79,13 +78,11 @@ $serve = function(string $path, int $ttl) {
   exit;
 };
 
-// Serve cached if fresh and not purging
 if ($cacheFile && !$purge && (time() - (int)@filemtime($cacheFile) < $ttl)) {
   log_debug("Serving fresh cached tile: $cacheFile");
   $serve($cacheFile, $ttl);
 }
 
-// Fetch from USGS
 log_debug("Fetching from USGS: style=$style z=$z x=$x y=$y");
 $url = str_replace(['{z}','{x}','{y}'], [$z, $x, $y], $styles[$style]);
 $ch = curl_init($url);
@@ -107,7 +104,6 @@ curl_close($ch);
 
 if ($body === false || $code !== 200 || !$ct) {
   log_debug("Upstream fetch failed: code=$code ct=$ct");
-  // Fallback to stale cache if we have it
   if ($cacheFile && is_file($cacheFile)) {
     log_debug("Serving stale cache: $cacheFile");
     $serve($cacheFile, $ttl);
@@ -116,7 +112,6 @@ if ($body === false || $code !== 200 || !$ct) {
   respond_error(502, 'Upstream tile fetch failed');
 }
 
-// Decide extension from content type
 $ext = 'jpg';
 if (stripos($ct, 'png') !== false) $ext = 'png';
 elseif (stripos($ct, 'webp') !== false) $ext = 'webp';

@@ -1,6 +1,14 @@
-// js/modules/satellite.js
-// Standalone satellite loader for Active Storm page floater images.
-// Uses GOES-19 floater imagery from NOAA STAR.
+// =============================
+// Satellite Module - active/js/satellite.js
+// Handles dynamic loading and display of storm floater satellite imagery for active storms.
+// Provides tabbed product selection, animation controls, and accessibility features for the satellite viewer UI.
+// Products handled:
+// - "Clean" Enhanced Infrared ABI Band 13
+// - GeoColor - ABI Bands 2, 3, 4
+// - "Red" Visible - ABI Band 2
+// - Upper Level Water Vapor - ABI Band 8
+// =============================
+
 
 function getStormParam() {
     const p = new URLSearchParams(location.search);

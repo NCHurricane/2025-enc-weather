@@ -1,4 +1,13 @@
-// counties/[county]/js/countyApp.js
+// =======================
+// Tyrrell County, NC Page Builder - countyApp.js
+// Builds the front-end UI for Tyrrell County, NC weather page.
+//
+// Single-zone county:
+// - Tyrrell County, NC (zone: NCZ046)
+// - Tyrrell County, NC (zone: NCC117)
+// ========================
+
+// Alert Colors and Priorities
 const warningColors = {
   "Tsunami Warning": "#FD6347",
   "Tornado Warning": "#FF0000",
@@ -238,7 +247,6 @@ import {
 } from "./countyData.js";
 import { initMeteogram } from './meteogram.js';
 
-// Station URLs lookup (config-driven)
 let stationUrls = {};
 
 const SEL = {
@@ -314,7 +322,6 @@ function ensureWeatherIcon() {
   return icon;
 }
 
-// Load station URLs from config
 async function loadStationUrls() {
   try {
     const configResponse = await fetch('./data/config.json?t=' + Date.now(), { cache: 'no-store' });
@@ -325,7 +332,6 @@ async function loadStationUrls() {
     const config = await configResponse.json();
     const stations = config.stations || [];
 
-    // Create lookup object for station URLs
     stations.forEach(station => {
       if (station.id && station.url) {
         stationUrls[station.id] = station.url;
@@ -335,11 +341,9 @@ async function loadStationUrls() {
     console.log('Loaded station URLs for', Object.keys(stationUrls).length, 'stations');
   } catch (error) {
     console.warn('Failed to load station URLs:', error);
-    // Continue without URLs - chips will use "#" fallback
   }
 }
 
-// Config-driven station URL lookup
 function getStationUrl(stationId) {
   return stationUrls[stationId] || "#";
 }
@@ -354,7 +358,6 @@ async function renderCurrent() {
     return;
   }
 
-  // Handle weather icon as overlay (preserves county background image)
   const iconOverlay = ensureWeatherIcon();
   if (iconOverlay && cur.icon) {
     iconOverlay.style.backgroundImage = `url(${cur.icon})`;
@@ -420,7 +423,6 @@ async function renderCurrent() {
       : 'Last Updated: <i class="fa-solid fa-circle-question"></i>'
   );
 
-  // Secondary station chips (location + temperature) - Config-driven URLs
   const chipsC = ensureChipsContainer();
   if (chipsC) {
     const secs = Array.isArray(cur.secondaries) ? cur.secondaries : [];
@@ -434,7 +436,6 @@ async function renderCurrent() {
             s.temperature == null ? "N/A" : `${Math.round(s.temperature)}°F`;
           const url = getStationUrl(s.id);
 
-          // Only make clickable if we have a valid URL
           if (url === "#") {
             return `<div class="station-chip">
               <span class="chip-name">${nm}</span>
@@ -459,7 +460,6 @@ async function renderCurrent() {
   }
 }
 
-// Enhanced renderForecast function for countyApp.js
 async function renderForecast() {
   try {
     const fc = await getForecast();
@@ -471,21 +471,17 @@ async function renderForecast() {
       return;
     }
 
-    // Enhanced forecast cards with color-coding and better styling
     const cards = periods.map(p => {
       const temp = p?.temperature;
       const tempUnit = p?.temperatureUnit || 'F';
       const isDaytime = p?.isDaytime;
 
-      // Color-code temperature based on day/night
       const tempColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
 
-      // Format temperature with color-coded span
       const tempDisplay = temp != null
         ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
         : `<span class="value">N/A</span>`;
 
-      // Handle missing data gracefully
       const dayName = p?.name || 'N/A';
       const shortForecast = p?.shortForecast || 'N/A';
       const iconSrc = p?.icon || '';
@@ -504,7 +500,6 @@ async function renderForecast() {
 
     setHTML(SEL.forecast.container, cards);
 
-    // Also render the detailed forecast
     await renderDetailedForecast();
 
   } catch (e) {
@@ -524,20 +519,15 @@ async function renderDetailedForecast() {
       return;
     }
 
-    // Enhanced detailed forecast with rich layout
     const detailedItems = periods.map(p => {
       const isDaytime = p?.isDaytime;
 
-      // Color-code day name based on day/night
-      const dayColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
-
-      // Handle missing data gracefully
+      const dayColor = isDaytime ? '#d50000' : '#1976d2';
       const dayName = p?.name || 'N/A';
       const detailedText = p?.detailedForecast || p?.shortForecast || 'No forecast details available.';
       const iconSrc = p?.icon || '';
       const iconAlt = p?.shortForecast || 'Weather icon';
 
-      // Format day name with color-coded span
       const dayDisplay = `<span class="value" style="color: ${dayColor};">${dayName}</span>`;
 
       return `
@@ -567,75 +557,6 @@ async function renderDetailedForecast() {
   }
 }
 
-// async function renderAlerts() {
-//   try {
-//     const a = await getAlerts();
-//     if (!a || a.status !== "ok") {
-//       setHTML(SEL.alerts.container, "");
-//       return;
-//     }
-//     let list = Array.isArray(a.list) ? a.list : [];
-
-//     if (list.length === 0) {
-//       setHTML(SEL.alerts.container, `
-//         <div class="alert" style="background-color: #dc3545;">
-//           <div class="alert-none">
-//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-//             <b>NO ACTIVE ALERTS</b>
-//           </div>
-//         </div>
-//       `);
-//       return;
-//     }
-
-//     // Sort alerts by priority (lower number = higher priority = shows first)
-//     const sortedAlerts = list.sort((a, b) => {
-//       const eventA = a.headline || a.event || a.type || "Unknown";
-//       const eventB = b.headline || b.event || b.type || "Unknown";
-//       const priorityA = warningPriorities[eventA] || 999;
-//       const priorityB = warningPriorities[eventB] || 999;
-//       return priorityA - priorityB;
-//     });
-
-//     const alertsHTML = sortedAlerts.map((alert, index) => {
-//       const eventName = alert.headline || alert.event || alert.type || "Alert";
-//       const description = alert.description || alert.summary || "";
-
-//       // Get individual color for this alert type
-//       const alertColor = warningColors[eventName] || "#dc3545";
-
-//       // Add severity indicator (border thickness based on priority)
-//       const priority = warningPriorities[eventName] || 999;
-//       const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
-
-//       return `
-//         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor};">
-//           <input type="checkbox" id="alert-${index}" class="alert-toggle">
-//           <label for="alert-${index}" class="alert-title">
-//             <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-//             ${eventName}
-//             <span class="priority-badge" style="font-size: 0.7em; opacity: 0.8;">[Priority: ${priority}]</span>
-//           </label>
-//           <div class="alert-details">
-//             <p>${description}</p>
-//           </div>
-//         </div>
-//       `;
-//     }).join("");
-
-//     setHTML(SEL.alerts.container, alertsHTML);
-
-//     // Log alert priority order for debugging
-//     console.log("Alerts sorted by priority:", sortedAlerts.map(a => ({
-//       event: a.event || a.headline,
-//       priority: warningPriorities[a.event || a.headline] || 999
-//     })));
-
-//   } catch (e) {
-//     console.warn("[countyApp] alerts load failed", e);
-//   }
-// }
-
 async function renderAlerts() {
   try {
     const a = await getAlerts();
@@ -660,7 +581,6 @@ async function renderAlerts() {
       return;
     }
 
-    // Sort alerts by priority (lower number = higher priority = shows first)
     const sortedAlerts = list.sort((a, b) => {
       const eventA = a.event || a.type || a.headline || "Unknown";
       const eventB = b.event || b.type || b.headline || "Unknown";
@@ -671,18 +591,14 @@ async function renderAlerts() {
 
     const alertsHTML = sortedAlerts
       .map((alert, index) => {
-        // Use canonical NWS name for everything: title, color, priority
         const eventName = alert.event || alert.type || alert.headline || "Alert";
         const description = alert.description || alert.summary || "";
 
-        // Color based on event name
         const alertColor = warningColors[eventName] || "#dc3545";
 
-        // Border weight reflects relative priority
         const priority = warningPriorities[eventName] || 999;
         const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
 
-        // Inline title shows expires when present
         const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
 
         return `
@@ -702,7 +618,6 @@ async function renderAlerts() {
 
     setHTML(SEL.alerts.container, alertsHTML);
 
-    // Debug: confirm sort keys and priorities line up with what users see
     console.log(
       "Alerts sorted by priority:",
       sortedAlerts.map((a) => ({
@@ -736,7 +651,7 @@ async function renderAFD() {
 async function loadAll() {
   try {
     await init();
-    await loadStationUrls(); // Load station URLs from config
+    await loadStationUrls();
   } catch (e) {
     console.warn('[countyApp] init failed (non-fatal)', e);
   }
@@ -746,7 +661,6 @@ async function loadAll() {
   try {
     await getHourlyData();
 
-    // Initialize meteogram if container exists (no parameters needed)
     if (document.getElementById('meteogram-chart-container')) {
       await initMeteogram();
     }

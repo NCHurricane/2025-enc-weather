@@ -1,10 +1,10 @@
+#!/usr/bin/env php
 <?php
-// NHC CXML Writer, Eastern Pacific - cxml_writer_ep.php
-// Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
-//   ../storms/{EPnnYYYY}/storm.json
+declare(strict_types=1);
+error_reporting(E_ALL);
 
 /**
- * /active/api/cxml_writer_ep.php
+ * NHC CXML Writer, Eastern Pacific - cxml_writer_ep.php
  * Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
  *   ../storms/{EPnnYYYY}/storm.json
  *
@@ -12,32 +12,28 @@
  *   ?storm=EPnnYYYY  or ?storm=ALL
  */
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-
-// Add headers for web requests
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
 }
 
-$USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
-// --- Logging Function ---
+$USER_AGENT = "NCHurricane CXMLWriterEP/1.0 (admin@nchurricane.com)";
+
 function out($s){
-  $line = "[" . date('Y-m-d H:i:s') . "] $s";
-  $logDir = __DIR__ . '/../../active/logs/';
-  $logFile = $logDir . 'cxml_writer_ep.log';
-  if (!is_dir($logDir)) {
-    @mkdir($logDir, 0755, true);
-  }
-  @file_put_contents($logFile, $line . "\n", FILE_APPEND | LOCK_EX);
-  if (PHP_SAPI === 'cli') {
-    fwrite(STDERR, $line . "\n");
-  }
+    $line = "[" . date('Y-m-d H:i:s') . "] $s";
+    $logDir = __DIR__ . '/../../active/logs/';
+    $logFile = $logDir . 'cxml_writer_ep.log';
+    if (!is_dir($logDir)) {
+        @mkdir($logDir, 0755, true);
+    }
+    @file_put_contents($logFile, $line . "\n", FILE_APPEND | LOCK_EX);
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, $line . "\n");
+    }
 }
-function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 
+function bail($msg, $code=1){ out("ERROR: $msg"); exit($code); }
 function asText($x){ return trim((string)$x); }
 function asNum($x){
   $s = trim((string)$x);
@@ -65,7 +61,7 @@ if (!$stormParam && PHP_SAPI === 'cli') {
   }
 }
 
-if ($stormParam === '') bail('missing --storm=EPnnYYYY or --all');
+if ($stormParam === '') bail('missing --storm=ALnnYYYY or --all');
 
 $cacheRoot = realpath(__DIR__ . '/..');
 if ($cacheRoot === false) $cacheRoot = __DIR__ . '/..';
@@ -73,7 +69,7 @@ $stormsRoot = $cacheRoot . '/storms';
 
 function expand_short_id(string $id, string $stormsRoot): string {
   if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id;
-  $list = realpath(__DIR__ . '/../../js/modules/cache/nhc_current_storms.json');
+  $list = realpath(__DIR__ . '/cache/nhc_current_storms.json');
   if ($list && ($raw = @file_get_contents($list))) {
     $arr = json_decode($raw, true);
     if (is_array($arr)) {
@@ -91,11 +87,14 @@ function expand_short_id(string $id, string $stormsRoot): string {
 $stormId = expand_short_id($stormParam, $stormsRoot);
 $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
 
+
 if ($stormParam === 'ALL') {
     out("Entering ALL mode - calling processAllEPStormsCXML()");
     processAllEPStormsCXML($stormsRoot);
     exit;
 }
+
+
 
 try {
     processSingleStormCXML($stormId, $stormsRoot);
@@ -104,21 +103,17 @@ try {
 }
 
 function processAllEPStormsCXML(string $stormsRoot): void {
-    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
-    
+    $currentStormsPath = dirname(__DIR__) . '/cache/nhc_current_storms.json';
     if (!file_exists($currentStormsPath)) {
         out("ERROR: Current storms cache not found at {$currentStormsPath}");
         exit(1);
     }
-    
     $rawStorms = file_get_contents($currentStormsPath);
     $stormsData = json_decode($rawStorms, true);
-    
     if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
         out("ERROR: Invalid storms data format");
         exit(1);
     }
-    
     $epStorms = [];
     foreach ($stormsData['data']['activeStorms'] as $storm) {
         $stormId = strtoupper(trim($storm['id'] ?? ''));
@@ -126,16 +121,13 @@ function processAllEPStormsCXML(string $stormsRoot): void {
             $epStorms[] = $stormId;
         }
     }
-    
     if (empty($epStorms)) {
         out("INFO: No active EP storms found");
         exit(0);
     }
-    
     $successCount = 0;
     foreach ($epStorms as $stormId) {
         out("Processing {$stormId}...");
-        
         try {
             processSingleStormCXML($stormId, $stormsRoot);
             $successCount++;
@@ -144,14 +136,13 @@ function processAllEPStormsCXML(string $stormsRoot): void {
             out("  ERROR: {$stormId} - " . $e->getMessage());
         }
     }
-    
     out("Completed: {$successCount}/" . count($epStorms) . " storms processed successfully");
 }
 
 function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     global $USER_AGENT;    
     $shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
-    
+
     $srcUrl = "https://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
     out("Fetch: $srcUrl");
 
@@ -172,19 +163,19 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     curl_close($ch);
     
     if (!$xmlRaw || $http !== 200) {
-        $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
-        out("Primary failed, trying FTP: $ftpUrl");
-        
+    $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/cxml/" . strtolower($stormId) . "_cxml.xml";
+    out("Primary failed, trying FTP: $ftpUrl");
+
         $ftpCtx = stream_context_create(['ftp' => ['timeout' => 10]]);
         $xmlRaw = @file_get_contents($ftpUrl, false, $ftpCtx);
-        
+
         if (!$xmlRaw) {
             throw new Exception("fetch failed from both HTTPS ($http $err) and FTP sources");
         }
-        
+
         out("FTP fallback successful for $stormId");
     }
-    
+
     libxml_use_internal_errors(true);
     $xml = simplexml_load_string($xmlRaw);
     if (!$xml) throw new Exception('XML parse failed');
@@ -264,9 +255,7 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
 
     $stormDir = $stormsRoot . '/' . strtoupper($stormId);
     if (!is_dir($stormDir)) {
-        if (!mkdir($stormDir, 0775, true)) {
-            throw new Exception("Failed to create storm directory: {$stormDir}");
-        }
+        @mkdir($stormDir, 0775, true);
     }
     $cacheFile = $stormDir . '/storm.json';
 
@@ -278,11 +267,10 @@ function processSingleStormCXML(string $stormId, string $stormsRoot): void {
     ];
 
     $tmp = $cacheFile . '.tmp';
-    if (file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
+    if (@file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES)) === false) {
         throw new Exception("write tmp failed: $tmp");
     }
-    if (!rename($tmp, $cacheFile)) {
-        @unlink($tmp);
+    if (!@rename($tmp, $cacheFile)) {
         throw new Exception("rename failed: $cacheFile");
     }
 

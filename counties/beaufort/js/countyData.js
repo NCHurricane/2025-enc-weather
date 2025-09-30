@@ -8,6 +8,8 @@
 // Units Conversion: km/h↔mph, m/s↔mph, Pa→mb, m→miles
 //
 // Derived: Heat Index(°F) + Wind Chill(°F)
+//
+// - Template with comments left in for clarity
 // ========================
 
 const FRESH_MINUTES = 120;

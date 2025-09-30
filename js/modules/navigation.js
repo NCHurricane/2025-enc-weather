@@ -1,11 +1,10 @@
-/**
- * Navigation Module
- * Centralized navigation management for NCHurricane.com
- * Handles dynamic generation of header navigation and events
- */
+// =============================
+// Navigation Module - js/modules/navigation.js
+// Centralized navigation management for NCHurricane.com
+// Handles dynamic generation of header navigation and events
+// =============================
 
 export const NavigationModule = {
-  // Navigation data structure
   navData: {
     logo: {
       src: "images/2025_banner.png",
@@ -39,13 +38,13 @@ export const NavigationModule = {
    */
   generateNavigation(basePath = '') {
     const { logo, menuItems } = this.navData;
-    
+
     const menuHTML = menuItems.map(item => {
       if (item.hasSubmenu) {
-        const submenuHTML = item.submenu.map(subItem => 
+        const submenuHTML = item.submenu.map(subItem =>
           `<li><a href="${basePath}${subItem.href}">${subItem.text}</a></li>`
         ).join('');
-        
+
         return `
           <li class="has-submenu">
             <a href="${item.href}" aria-haspopup="true" aria-expanded="false">${item.text}</a>
@@ -94,7 +93,7 @@ export const NavigationModule = {
     // Hamburger menu toggle
     const hamburger = document.getElementById('hamburger');
     const nav = document.querySelector('.nav');
-    
+
     if (hamburger && nav) {
       hamburger.addEventListener('click', () => {
         nav.classList.toggle('active');
@@ -111,7 +110,7 @@ export const NavigationModule = {
           e.preventDefault();
           const parent = link.parentElement;
           parent.classList.toggle('submenu-active');
-          
+
           // Close other submenus
           document.querySelectorAll('.nav-menu .has-submenu').forEach(item => {
             if (item !== parent) {
@@ -127,11 +126,11 @@ export const NavigationModule = {
       if (window.innerWidth <= 768) {
         const nav = document.querySelector('.nav');
         const hamburger = document.getElementById('hamburger');
-        
+
         if (nav && hamburger && !nav.contains(e.target) && !hamburger.contains(e.target)) {
           nav.classList.remove('active');
           hamburger.setAttribute('aria-expanded', 'false');
-          
+
           // Close all submenus
           document.querySelectorAll('.nav-menu .has-submenu').forEach(item => {
             item.classList.remove('submenu-active');
@@ -145,11 +144,11 @@ export const NavigationModule = {
       if (window.innerWidth > 768) {
         const nav = document.querySelector('.nav');
         const hamburger = document.getElementById('hamburger');
-        
+
         if (nav && hamburger) {
           nav.classList.remove('active');
           hamburger.setAttribute('aria-expanded', 'false');
-          
+
           // Close all submenus
           document.querySelectorAll('.nav-menu .has-submenu').forEach(item => {
             item.classList.remove('submenu-active');

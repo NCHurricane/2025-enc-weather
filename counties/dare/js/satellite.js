@@ -1,5 +1,9 @@
-// counties/bertie/js/satellite.js
-// Simple satellite implementation with CSS cropping for NC region
+// ========================
+// Dare County Satellite Module - satellite.js
+// Simple satellite implementation with two dropdowns
+//
+// It will be replaced with a more robust solution later.
+// ========================
 
 class SatelliteModule {
     constructor() {
@@ -9,14 +13,12 @@ class SatelliteModule {
         this.satelliteTimestamp = null;
         this.loadingDiv = null;
         this.errorDiv = null;
-        
-        // Eastern US sector URLs - NC is center-left, much better positioning
-        this.sector = 'eus'; // Eastern US sector
-        this.satellite = 'GOES19'; // Using GOES-19 for EUS
+
+        this.sector = 'eus';
+        this.satellite = 'GOES19';
     }
 
     init() {
-        // Get DOM elements
         this.productSelect = document.getElementById('satellite-product-select');
         this.typeSelect = document.getElementById('satellite-type-select');
         this.satelliteImage = document.getElementById('satellite-image');
@@ -29,7 +31,6 @@ class SatelliteModule {
             return false;
         }
 
-        // Add event listeners
         this.productSelect.addEventListener('change', () => {
             this.loadSatelliteImage();
         });
@@ -38,7 +39,6 @@ class SatelliteModule {
             this.loadSatelliteImage();
         });
 
-        // Initialize with default values
         this.loadSatelliteImage();
 
         console.log('Satellite module initialized');
@@ -48,22 +48,20 @@ class SatelliteModule {
     buildSatelliteUrl() {
         const product = this.productSelect.value;
         const type = this.typeSelect.value;
-        
+
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/${this.satellite}/ABI/SECTOR/${this.sector}/${product}/`;
-        
+
         if (type === 'static') {
-            // Static high-resolution image - using 2000x2000 as specified
             return `${baseUrl}2000x2000.jpg`;
         } else {
-            // Animated GIF - EUS typically uses 500x500 for animated
-            return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
+            return `${baseUrl}${this.satellite
+                }-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
         }
     }
 
     showLoading() {
         if (this.loadingDiv) this.loadingDiv.style.display = 'flex';
         if (this.errorDiv) this.errorDiv.style.display = 'none';
-        // Keep image container visible but loading overlay will cover it
     }
 
     hideLoading() {
@@ -87,7 +85,7 @@ class SatelliteModule {
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
-                    hour12: true
+                    hour12: true,
                 });
                 this.satelliteTimestamp.textContent = `${formattedTime} (latest)`;
             }
@@ -96,7 +94,7 @@ class SatelliteModule {
 
     loadSatelliteImage() {
         const url = this.buildSatelliteUrl();
-        
+
         if (!url) {
             this.showError();
             return;
@@ -104,34 +102,28 @@ class SatelliteModule {
 
         this.showLoading();
 
-        // Create a new image to test loading
         const img = new Image();
-        
+
         img.onload = () => {
-            // Image loaded successfully
             this.satelliteImage.src = url;
-            
-            // Update alt text
+
             const productText = this.productSelect.options[this.productSelect.selectedIndex].text;
             const typeText = this.typeSelect.options[this.typeSelect.selectedIndex].text;
             this.satelliteImage.alt = `GOES-19 ${productText} ${typeText} - Eastern US`;
-            
+
             this.hideLoading();
             this.updateTimestamp();
         };
 
         img.onerror = () => {
-            // Image failed to load
             console.error('Failed to load satellite image:', url);
             this.showError();
         };
 
-        // Start loading
         img.src = url;
     }
 }
 
-// Initialize when DOM is ready
 let satelliteModule = null;
 
 export function initSatellite() {
@@ -141,7 +133,6 @@ export function initSatellite() {
     return satelliteModule.init();
 }
 
-// Auto-initialize if satellite elements exist
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('satellite-product-select')) {
         initSatellite();

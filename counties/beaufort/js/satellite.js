@@ -13,11 +13,10 @@ class SatelliteModule {
         this.satelliteTimestamp = null;
         this.loadingDiv = null;
         this.errorDiv = null;
-        
+
         this.sector = 'eus';
         this.satellite = 'GOES19';
-        
-        // County coordinates (Beaufort as default)
+
         this.lat = 35.57056;
         this.lon = -77.04972;
     }
@@ -58,7 +57,8 @@ class SatelliteModule {
         if (type === 'static') {
             return `${baseUrl}2000x2000.jpg`;
         } else if (type === 'animated') {
-            return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
+            return `${baseUrl}${this.satellite
+                }-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
         } else {
             return null;
         }
@@ -90,7 +90,7 @@ class SatelliteModule {
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
-                    hour12: true
+                    hour12: true,
                 });
                 this.satelliteTimestamp.textContent = `${formattedTime} (latest)`;
             }
@@ -127,7 +127,8 @@ class SatelliteModule {
             const img = new Image();
             img.onload = () => {
                 this.satelliteImage.src = url;
-                const productText = this.productSelect.options[this.productSelect.selectedIndex].text;
+                const productText =
+                    this.productSelect.options[this.productSelect.selectedIndex].text;
                 this.satelliteImage.alt = `GOES-19 ${productText} Static - Eastern US`;
                 this.hideLoading();
                 this.updateTimestamp();

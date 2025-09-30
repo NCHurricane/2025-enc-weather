@@ -1,5 +1,15 @@
 <?php
-// counties/bertie/api/cache_afd.php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
+/**
+ * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
+ * Fetches NWS Area Forecast Discussion and caches it as JSON.
+ * 
+ * AFD Office - Newport/Morehead City (MHX)
+ *
+ * For Pitt County, NC Page
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

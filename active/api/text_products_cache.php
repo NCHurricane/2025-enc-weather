@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NHC Text Products Cache Script - text_products_cache.php
  * * This script polls the latest advisories from the NHC for current storms
@@ -12,14 +15,9 @@
  * - Wind Speed Probabilities (PWS)
  * - Tropical Cyclone Update (TCU) - English & Spanish (optional)
  * - Monthly Tropical Weather Summary (TWS)
- * * Files are saved as JSON in the active/storms/{AL|EP}nnYYYY directory
- * with WMO naming convention (TCPAT1.json, TASEP2.json, etc.)
+ * * Files are saved as JSON in the active/storms/{AL|EP}nnYYYY directory with WMO naming convention (TCPAT1.json, TASEP2.json, etc.)
  */
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-
-// Add headers for web requests
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -38,7 +36,6 @@ if (!is_dir(LOG_DIR)) {
     }
 }
 
-// Add CLI argument processing here (Issue #7)
 if (PHP_SAPI === 'cli') {
     foreach ($argv as $arg) {
         if (strpos($arg, '--storm=') === 0) {
@@ -71,7 +68,6 @@ function fetchContent($url) {
     
     if ($content === false) {
         $error = error_get_last();
-        // CORRECTED: Replaced '??' with older, compatible syntax
         logMessage("Failed to fetch {$url}: " . (isset($error['message']) ? $error['message'] : 'Unknown error'), 'ERROR');
         return false;
     }
@@ -161,27 +157,22 @@ function xmlToOutlookJson($xmlContent, $sourceUrl) {
         $xml = new SimpleXMLElement($xmlContent);
         $ns = $xml->getNamespaces(true);
 
-        // Find the first <item>
         $item = $xml->channel->item[0] ?? null;
         if (!$item) {
             logMessage("No <item> found in XML from {$sourceUrl}", 'WARN');
             return false;
         }
 
-        // Extract core data
         $title = (string)($item->title ?? '');
         $link = (string)($item->link ?? '');
         $guid = (string)($item->guid ?? '');
         $pubDate = (string)($item->pubDate ?? '');
         $description = (string)($item->description ?? '');
 
-        // The raw text content is inside the description.
-        // Decode HTML entities and then replace <br> tags with newlines for consistent pre-formatted text.
         $rawContent = html_entity_decode($description);
         $rawContent = preg_replace('/<br\s?\/?>/i', "\n", $rawContent);
-        $rawContent = strip_tags($rawContent); // Strip any remaining HTML tags
+        $rawContent = strip_tags($rawContent);
         
-        // Clean up raw content: remove the title and extra whitespace
         $rawContent = trim(str_replace($title, '', $rawContent));
 
         $data = [
@@ -189,7 +180,7 @@ function xmlToOutlookJson($xmlContent, $sourceUrl) {
             'link' => $link,
             'guid' => $guid,
             'pubDate' => $pubDate,
-            'discussion' => '', // Force frontend to use rawContent by keeping this empty
+            'discussion' => '',
             'rawContent' => $rawContent,
             'metadata' => [
                 'source_url' => $sourceUrl,
@@ -221,7 +212,7 @@ function getAdvisoryNumber($stormId) {
 }
 
 function getActiveStorms() {
-    $cacheFile = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    $cacheFile = __DIR__ . '/cache/nhc_current_storms.json';
     
     if (!file_exists($cacheFile)) {
         logMessage("Current storms cache file not found: {$cacheFile}", 'ERROR');
@@ -259,7 +250,7 @@ function getActiveStorms() {
 
 function getTextProductTypes() {
     return [
-        // General products (static URLs)
+        // General products
         'TWOAT' => [
             'url' => 'https://www.nhc.noaa.gov/xml/TWOAT.xml',
             'filename' => 'twoat.json',
@@ -285,7 +276,7 @@ function getTextProductTypes() {
             'type' => 'general'
         ],
 
-        // Storm-specific products (dynamic URLs)
+        // Storm-specific products
         'TCP' => [
             'name' => 'Tropical Cyclone Public Advisory',
             'url_pattern' => 'https://www.nhc.noaa.gov/xml/TCP%s%d.xml',
@@ -355,7 +346,6 @@ function cacheTextProducts() {
     $generalProductsCached = 0;
     $stormProductsCached = 0;
 
-    // --- Process General Products ---
     logMessage("Processing general products...", 'INFO');
     foreach ($products as $productCode => $product) {
         if ($product['type'] !== 'general') {
@@ -386,7 +376,6 @@ function cacheTextProducts() {
     }
     logMessage("Finished processing general products. Cached: {$generalProductsCached}", 'INFO');
 
-    // --- Process Storm-Specific Products ---
     if (empty($activeStorms)) {
         logMessage("No active storms found, skipping storm-specific products.", 'INFO');
     } else {
@@ -412,7 +401,6 @@ function cacheTextProducts() {
                     continue;
                 }
 
-                // Skip Spanish products for non-Atlantic storms
                 if (isset($product['atlantic_only']) && $product['atlantic_only'] && $basin !== 'AL') {
                     continue;
                 }

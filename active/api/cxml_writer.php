@@ -1,4 +1,8 @@
+#!/usr/bin/env php
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NHC CXML Writer, Atlantic - cxml_writer.php
  * Fetch NHC CXML for Atlantic storms, convert to compact JSON, and write cache:
@@ -8,10 +12,6 @@
  *   ?storm=ALnnYYYY  or ?storm=ALL
  */
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-
-// Add headers for web requests
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -19,7 +19,6 @@ if (PHP_SAPI !== 'cli') {
 
 $USER_AGENT = "NCHurricane CXMLWriter/1.0 (admin@nchurricane.com)";
 
-// --- Logging Function ---
 function out($s){
   $line = "[" . date('Y-m-d H:i:s') . "] $s";
   $logDir = __DIR__ . '/../../active/logs/';
@@ -69,7 +68,7 @@ $stormsRoot = $cacheRoot . '/storms';
 
 function expand_short_id(string $id, string $stormsRoot): string {
   if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id;
-  $list = realpath(__DIR__ . '/../../js/modules/cache/nhc_current_storms.json');
+  $list = realpath(__DIR__ . '/cache/nhc_current_storms.json');
   if ($list && ($raw = @file_get_contents($list))) {
     $arr = json_decode($raw, true);
     if (is_array($arr)) {
@@ -102,7 +101,8 @@ try {
 }
 
 function processAllALStormsCXML(string $stormsRoot): void {
-    $currentStormsPath = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+    $currentStormsPath = dirname(__DIR__) . '/cache/nhc_current_storms.json';
+
     
     if (!file_exists($currentStormsPath)) {
         out("ERROR: Current storms cache not found at {$currentStormsPath}");

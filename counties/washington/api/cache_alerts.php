@@ -1,11 +1,20 @@
 <?php
-// cache_alerts.php - Multi-zone version for Dare County
+declare(strict_types=1);
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-$scriptDir = dirname(__FILE__);
-$dataDir = $scriptDir . '/../data';
-$configPath = $scriptDir . '/../data/config.json';
+/**
+ * NWS API/ATOM Alert Script - cache_alerts.php
+ * Fetches NWS API alerts and caches them as JSON.
+ *
+ * Single-zone county:
+ * 
+ * - Washington County, NC (zone: NCZ045)
+ * - Washington County, NC (zone: NCC187)
+ */
+
+$root = dirname(__DIR__);
+$dataDir = $root . '/data';
+$configPath = $dataDir . '/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 
 // Create data directory if it doesn't exist
@@ -31,7 +40,6 @@ function atomic_write_json($filepath, $data) {
         unlink($temp_file);
     }
     
-    return false;
 }
 
 function formatNwsDescription($text) {
@@ -51,6 +59,7 @@ function formatNwsDescription($text) {
         '<strong>IMPACTS...</strong>'
     ];
     $text = preg_replace($patterns, $replacements, $text);
+    <?php
 
     $text = preg_replace('/(<br>\s*){2,}/', '</p><p>', $text);
     $text = '<p>' . $text . '</p>';

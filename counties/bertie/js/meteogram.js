@@ -1,6 +1,16 @@
 // ==============================
 // Bertie County Meteogram Builder - meteogram.js
-// Purpose: County-specific meteogram using getHourlyData() from countyData.js
+//
+// Renders a customizable meteogram chart with selectable timeframes and weather parameters.
+// Utilizes Chart.js for rendering the chart and provides controls for user interaction.
+//
+// Features:
+// - Timeframes: Now, 24h, 48h, 72h, 96h
+// - Parameters: Temperature, Dew Point, Humidity, Wind (with direction arrows), Precipitation Chance
+// - Dynamic chart updates based on user selections
+// - Responsive design for various screen sizes
+//
+// - Template with comments left in for clarity
 // ==============================
 
 import { getHourlyData } from './countyData.js';
@@ -8,7 +18,24 @@ import { getHourlyData } from './countyData.js';
 // Utility function to convert degrees to cardinal direction
 function degreesToCardinal(deg) {
   if (deg == null) return 'N/A';
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  const dirs = [
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW',
+  ];
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
@@ -25,9 +52,9 @@ function processHourlyData(hourlyData) {
   // Handle your specific data structure
   let periods;
   if (hourlyData.hours && Array.isArray(hourlyData.hours)) {
-    periods = hourlyData.hours;  // Your actual structure
+    periods = hourlyData.hours; // Your actual structure
   } else if (hourlyData.periods && Array.isArray(hourlyData.periods)) {
-    periods = hourlyData.periods;  // Fallback for standard NWS format
+    periods = hourlyData.periods; // Fallback for standard NWS format
   } else {
     console.error('Invalid hourly data structure:', hourlyData);
     console.log('Expected: {hours: [...]} or {periods: [...]}');
@@ -38,7 +65,7 @@ function processHourlyData(hourlyData) {
   console.log(`Processing ${periods.length} hourly periods for meteogram`);
 
   const now = new Date();
-  const timeframes = { "0": [], "24": [], "48": [], "72": [], "96": [] };
+  const timeframes = { 0: [], 24: [], 48: [], 72: [], 96: [] };
 
   periods.forEach((period) => {
     if (!period) return;
@@ -52,29 +79,29 @@ function processHourlyData(hourlyData) {
 
     // Calculate hours from now
     const hoursSinceNow = Math.floor((timestamp - now) / (60 * 60 * 1000));
-    
+
     // Only include future hours
     if (hoursSinceNow < 0) return;
 
     // Determine timeframe
     let timeframeKey;
-    if (hoursSinceNow < 24) timeframeKey = "0";
-    else if (hoursSinceNow < 48) timeframeKey = "24";
-    else if (hoursSinceNow < 72) timeframeKey = "48";
-    else if (hoursSinceNow < 96) timeframeKey = "72";
-    else if (hoursSinceNow < 120) timeframeKey = "96";
+    if (hoursSinceNow < 24) timeframeKey = '0';
+    else if (hoursSinceNow < 48) timeframeKey = '24';
+    else if (hoursSinceNow < 72) timeframeKey = '48';
+    else if (hoursSinceNow < 96) timeframeKey = '72';
+    else if (hoursSinceNow < 120) timeframeKey = '96';
     else return; // Skip beyond 120h
 
     // Extract data - handle your specific format
-    const temp = period.temperature;  // Direct number
-    
-// NEW: Extract dewpoint and humidity from your updated data format
-const dewpoint = period.dewpoint || null;  // Now available in Fahrenheit
-const humidity = period.relativeHumidity || null;  // Now available as percentage
-    
+    const temp = period.temperature; // Direct number
+
+    // NEW: Extract dewpoint and humidity from your updated data format
+    const dewpoint = period.dewpoint || null; // Now available in Fahrenheit
+    const humidity = period.relativeHumidity || null; // Now available as percentage
+
     // Precipitation probability - your format is direct number, not object
     const precipChance = period.probabilityOfPrecipitation || null;
-    
+
     // Parse wind speed (handle "6 mph" format)
     let windSpeed = null;
     if (period.windSpeed) {
@@ -87,10 +114,22 @@ const humidity = period.relativeHumidity || null;  // Now available as percentag
     let windDirection = null;
     if (period.windDirection) {
       const cardinalMap = {
-        'N': 0, 'NNE': 22.5, 'NE': 45, 'ENE': 67.5,
-        'E': 90, 'ESE': 112.5, 'SE': 135, 'SSE': 157.5,
-        'S': 180, 'SSW': 202.5, 'SW': 225, 'WSW': 247.5,
-        'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5
+        N: 0,
+        NNE: 22.5,
+        NE: 45,
+        ENE: 67.5,
+        E: 90,
+        ESE: 112.5,
+        SE: 135,
+        SSE: 157.5,
+        S: 180,
+        SSW: 202.5,
+        SW: 225,
+        WSW: 247.5,
+        W: 270,
+        WNW: 292.5,
+        NW: 315,
+        NNW: 337.5,
       };
       windDirection = cardinalMap[period.windDirection] ?? null;
     }
@@ -98,11 +137,11 @@ const humidity = period.relativeHumidity || null;  // Now available as percentag
     timeframes[timeframeKey].push({
       timestamp,
       temperature: temp,
-      dewpoint,  // Will be null
-      humidity,  // Will be null  
+      dewpoint, // Will be null
+      humidity, // Will be null
       precipChance,
       windSpeed,
-      windDirection
+      windDirection,
     });
   });
 
@@ -112,16 +151,16 @@ const humidity = period.relativeHumidity || null;  // Now available as percentag
     if (!group.length) continue;
 
     processed[key] = {
-      labels: group.map(p => ({
+      labels: group.map((p) => ({
         date: p.timestamp.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric' }),
-        time: p.timestamp.getHours().toString().padStart(2, '0') + ":00"
+        time: p.timestamp.getHours().toString().padStart(2, '0') + ':00',
       })),
-      temperature: group.map(p => p.temperature),
-      dewpoint: group.map(p => p.dewpoint),      // Will be all null
-      humidity: group.map(p => p.humidity),      // Will be all null
-      precipChance: group.map(p => p.precipChance),
-      windSpeed: group.map(p => p.windSpeed),
-      windDirection: group.map(p => p.windDirection)
+      temperature: group.map((p) => p.temperature),
+      dewpoint: group.map((p) => p.dewpoint), // Will be all null
+      humidity: group.map((p) => p.humidity), // Will be all null
+      precipChance: group.map((p) => p.precipChance),
+      windSpeed: group.map((p) => p.windSpeed),
+      windDirection: group.map((p) => p.windDirection),
     };
   }
 
@@ -163,7 +202,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       tension: 0.3,
       yAxisID: 'y-temp',
       pointRadius: 3,
-      order: 1
+      order: 1,
     });
   }
 
@@ -179,7 +218,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       tension: 0.3,
       yAxisID: 'y-temp',
       pointRadius: 3,
-      order: 2
+      order: 2,
     });
   }
 
@@ -195,11 +234,11 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       tension: 0.3,
       yAxisID: 'y-humidity',
       pointRadius: 3,
-      order: 3
+      order: 3,
     });
   }
 
-// Wind
+  // Wind
   if (selectedParams.includes('wind') && data.windSpeed) {
     // Create arrow images for point style
     const pointImages = data.windDirection.map((direction, index) => {
@@ -218,7 +257,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       ctx.save();
       ctx.translate(20, 25);
 
-      // Rotate to show direction wind is blowing towards 
+      // Rotate to show direction wind is blowing towards
       // (wind direction is where wind is coming FROM, so add 180°)
       ctx.rotate(((direction + 180) * Math.PI) / 180);
 
@@ -226,7 +265,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(0, -20);
-      ctx.strokeStyle = 'rgb(153, 102, 255)';  // Match the line color
+      ctx.strokeStyle = 'rgb(153, 102, 255)'; // Match the line color
       ctx.lineWidth = 3;
       ctx.stroke();
 
@@ -236,7 +275,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       ctx.lineTo(8, -8);
       ctx.lineTo(-8, -8);
       ctx.closePath();
-      ctx.fillStyle = 'rgb(153, 102, 255)';  // Match the line color
+      ctx.fillStyle = 'rgb(153, 102, 255)'; // Match the line color
       ctx.fill();
 
       ctx.restore();
@@ -252,10 +291,10 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       borderWidth: 2,
       tension: 0.3,
       yAxisID: 'y-wind',
-      pointRadius: 6,           // Larger points to show arrows
+      pointRadius: 6, // Larger points to show arrows
       pointHoverRadius: 8,
-      pointStyle: pointImages,  // Use custom arrow images
-      order: 4
+      pointStyle: pointImages, // Use custom arrow images
+      order: 4,
     });
   }
 
@@ -269,7 +308,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       borderColor: 'rgb(255, 159, 64)',
       borderWidth: 1,
       yAxisID: 'y-precip',
-      order: 5
+      order: 5,
     });
   }
 
@@ -281,9 +320,9 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
         callback: function (val, index) {
           const labelObj = data.labels[index];
           return [labelObj.time, labelObj.date];
-        }
-      }
-    }
+        },
+      },
+    },
   };
 
   if (selectedParams.includes('temperature') || selectedParams.includes('dewpoint')) {
@@ -291,7 +330,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       type: 'linear',
       display: true,
       position: 'left',
-      title: { display: true, text: 'Temperature (°F)' }
+      title: { display: true, text: 'Temperature (°F)' },
     };
   }
 
@@ -303,7 +342,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       title: { display: true, text: 'Humidity (%)' },
       min: 0,
       max: 100,
-      grid: { drawOnChartArea: false }
+      grid: { drawOnChartArea: false },
     };
   }
 
@@ -314,7 +353,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       position: 'right',
       title: { display: true, text: 'Wind Speed (mph)' },
       min: 0,
-      grid: { drawOnChartArea: false }
+      grid: { drawOnChartArea: false },
     };
   }
 
@@ -326,7 +365,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       title: { display: true, text: 'Precipitation (%)' },
       min: 0,
       max: 100,
-      grid: { drawOnChartArea: false }
+      grid: { drawOnChartArea: false },
     };
   }
 
@@ -343,24 +382,26 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
         legend: { position: 'top' },
         tooltip: {
           callbacks: {
-            title: context => {
+            title: (context) => {
               const index = context[0]?.dataIndex;
               if (index === undefined) return 'Time: Unknown';
               const label = data.labels[index];
               return `Time: ${label.time} on ${label.date}`;
             },
-            afterBody: context => {
+            afterBody: (context) => {
               if (selectedParams.includes('wind') && data.windDirection) {
                 const index = context[0]?.dataIndex;
                 const direction = data.windDirection[index];
-                return direction != null ? `Wind Direction: ${degreesToCardinal(direction)}` : '';
+                return direction != null
+                  ? `Wind Direction: ${degreesToCardinal(direction)}`
+                  : '';
               }
               return '';
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
 
   window.meteogramChartInstance = chart;
@@ -383,7 +424,7 @@ function setupMeteogramControls(processedData) {
   function getSelectedParameters() {
     const params = [];
     const paramIds = ['temperature', 'dewpoint', 'humidity', 'wind', 'precipitation'];
-    
+
     for (const param of paramIds) {
       const checkbox = document.getElementById(`param-${param}`);
       if (checkbox?.checked) params.push(param);
@@ -400,12 +441,12 @@ function setupMeteogramControls(processedData) {
 
   // Add event listeners
   const checkboxes = document.querySelectorAll('.meteogram-param-checkbox');
-  checkboxes.forEach(checkbox => {
+  checkboxes.forEach((checkbox) => {
     checkbox.addEventListener('change', updateChart);
   });
 
   const timeframeRadios = document.querySelectorAll('input[name="meteogramTime"]');
-  timeframeRadios.forEach(radio => {
+  timeframeRadios.forEach((radio) => {
     radio.addEventListener('change', updateChart);
   });
 
@@ -437,7 +478,6 @@ export async function initMeteogram() {
 
     console.log('Meteogram initialized successfully');
     return true;
-
   } catch (error) {
     console.error('Error initializing meteogram:', error);
     return false;

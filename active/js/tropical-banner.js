@@ -1,10 +1,11 @@
-/**
- * Tropical Banner Module
- * Handles the display of alerts for active tropical systems
- * Consolidated single system for the .tropical-banner div
- */
+// =============================
+// Tropical Alert banner - active/js/tropical-banner.js
+// Handles rendering of the tropical alert banner
+//
+// Uses the NHC active storms data to display a banner alert of current active tropical systems in the Atlantic basin
+// User can click on the system name to go to the detailed active storm page
+// ==============================
 
-// Storm classification mapping for readable display
 const STORM_CLASSIFICATIONS = {
   TD: "Tropical Depression",
   TS: "Tropical Storm",
@@ -27,7 +28,7 @@ const STORM_CLASSIFICATIONS = {
 async function fetchActiveStorms() {
   try {
     const CACHE_URL = new URL(
-      "../../js/modules/cache/nhc_current_storms.json?v=" + Date.now(),
+      "../cache/nhc_current_storms.json?v=" + Date.now(),
       import.meta.url
     ).pathname;
     const response = await fetch(CACHE_URL);
@@ -38,7 +39,6 @@ async function fetchActiveStorms() {
 
     const data = await response.json();
 
-    // Handle different data structures
     let activeStorms = [];
     if (Array.isArray(data.activeStorms)) {
       activeStorms = data.activeStorms;
@@ -50,7 +50,6 @@ async function fetchActiveStorms() {
 
     console.log("Raw active storms:", activeStorms);
 
-    // Filter for Atlantic storms - accept both AL and AT prefixes
     const atlanticStorms = activeStorms.filter((storm) => {
       if (!storm.binNumber) return false;
       const binUpper = storm.binNumber.toUpperCase();
@@ -99,7 +98,6 @@ function displayActiveStorms(storms) {
 
   bannerContainer.innerHTML = "";
 
-  // Create header
   const alertHeader = document.createElement("div");
   alertHeader.className = "active-systems-header";
 
@@ -108,20 +106,16 @@ function displayActiveStorms(storms) {
     storms.length === 1 ? "Active System" : "Active Systems";
   alertHeader.appendChild(headerText);
 
-  // Create storms container
   const stormsContainer = document.createElement("div");
   stormsContainer.className = "active-systems-container";
 
-  // Add each storm
   storms.forEach((storm) => {
     const stormDiv = document.createElement("div");
     stormDiv.className = "active-system-item";
 
-    // Add hurricane icon with color coding
     const stormIcon = document.createElement("i");
     stormIcon.className = "fa-solid fa-hurricane";
 
-    // Color code by intensity
     if (storm.classification === "HU" || storm.classification === "MH") {
       stormIcon.style.color = "red";
     } else if (
@@ -133,7 +127,6 @@ function displayActiveStorms(storms) {
       stormIcon.style.color = "blue";
     }
 
-    // Create storm info link
     const stormLink = document.createElement("a");
     stormLink.href = `active/?storm=${storm.id.toUpperCase()}`;
     stormLink.className = "active-system-link";
@@ -146,13 +139,11 @@ function displayActiveStorms(storms) {
             <span class="storm-name">${storm.name}</span>
         `;
 
-    // Assemble storm item
     stormDiv.appendChild(stormIcon);
     stormDiv.appendChild(stormLink);
     stormsContainer.appendChild(stormDiv);
   });
 
-  // Add to banner
   bannerContainer.appendChild(alertHeader);
   bannerContainer.appendChild(stormsContainer);
 }

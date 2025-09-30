@@ -1,10 +1,25 @@
-// js/modules/satellite.js
-// Standalone satellite loader for Tropical page with sector selection support.
-// Uses GOES-16 sectors for Atlantic basin imagery.
+// =============================
+// Satellite Image Module - js/modules/satellite.js
+// Handles dynamic loading and display of tropical satellite imagery for various sectors.
+// Provides product selection, animation controls, and accessibility features for the satellite viewer UI.
+//
+// Products handled:
+// - "Clean" Enhanced Infrared ABI Band 13
+// - GeoColor - ABI Bands 2, 3, 4
+// - "Red" Visible - ABI Band 2
+// - Upper Level Water Vapor - ABI Band 8
+//
+// Sectors handled:
+// - Tropical Atlantic Wide (taw)
+// - North Atlantic (na)
+// - Eastern US (eus)
+// - Caribbean (car)
+// - Gulf of Mexico (ga)
+// =============================
 
 export function initSatellite(options = {}) {
   const mod = new SatelliteModule({
-    sector: options.sector || 'taw', // 'taw' = Tropical Atlantic Wide
+    sector: options.sector || 'taw',
     selectorId: options.selectorId || 'tropical-satellite-product-select',
     typeSelectId: options.typeSelectId || 'tropical-satellite-type-select',
     sectorSelectName: options.sectorSelectName || 'satellite-sector',
@@ -22,7 +37,7 @@ export function initSatellite(options = {}) {
 class SatelliteModule {
   constructor(cfg) {
     this.cfg = cfg;
-    this.platform = 'GOES16'; // Atlantic imagery
+    this.platform = 'GOES19';
     this.isAnimating = false;
     this.currentSector = cfg.sector || 'taw';
 
@@ -35,7 +50,6 @@ class SatelliteModule {
       'ga': { name: 'Gulf', satellite: 'GOES19' }
     };
 
-    // DOM refs
     this.sel = null;
     this.typeSelect = null;
     this.sectorInputs = null;
@@ -46,7 +60,6 @@ class SatelliteModule {
     this.error = null;
     this.timestamp = null;
 
-    // bound handlers
     this.onProductChange = this.onProductChange.bind(this);
     this.onTypeChange = this.onTypeChange.bind(this);
     this.onSectorChange = this.onSectorChange.bind(this);
@@ -54,7 +67,6 @@ class SatelliteModule {
   }
 
   init() {
-    // Capture elements
     this.sel = document.getElementById(this.cfg.selectorId);
     this.typeSelect = document.getElementById(this.cfg.typeSelectId);
     this.sectorInputs = document.querySelectorAll(`input[name="${this.cfg.sectorSelectName}"]`);
@@ -70,7 +82,6 @@ class SatelliteModule {
       return false;
     }
 
-    // Listeners
     this.sel.addEventListener('change', this.onProductChange);
     if (this.typeSelect) {
       this.typeSelect.addEventListener('change', this.onTypeChange);
@@ -84,46 +95,41 @@ class SatelliteModule {
       this.btn.addEventListener('click', this.onPlayPause);
     }
 
-    // Set default sector if not already selected
     const defaultSectorInput = document.querySelector(`input[name="${this.cfg.sectorSelectName}"][value="${this.cfg.sector}"]`);
     if (defaultSectorInput && !document.querySelector(`input[name="${this.cfg.sectorSelectName}"]:checked`)) {
       defaultSectorInput.checked = true;
     }
 
-    // Initial UI state
     if (this.btn) {
       this.setPlayIcon(false);
     }
-    
-    // Set initial aspect ratio based on default sector
+
     this.updateContainerAspectRatio();
-    
-    this.load(); // first load as static
+
+    this.load();
 
     console.info('[satellite] initialized');
     return true;
   }
 
   onProductChange() {
-    this.load(); // reload current mode when product changes
+    this.load();
   }
 
   onTypeChange() {
-    // If type select exists, use it to determine animation state
     if (this.typeSelect) {
       this.isAnimating = this.typeSelect.value === 'animated';
       if (this.btn) {
         this.setPlayIcon(this.isAnimating);
       }
     }
-    this.load(); // reload in the new mode
+    this.load();
   }
 
   onSectorChange(e) {
     if (e.target.checked) {
       this.currentSector = e.target.value;
-      
-      // Reset to static when switching sectors
+
       this.isAnimating = false;
       if (this.btn) {
         this.setPlayIcon(false);
@@ -131,27 +137,24 @@ class SatelliteModule {
       if (this.typeSelect) {
         this.typeSelect.value = 'static';
       }
-      
-      // Update container aspect ratio based on sector
+
       this.updateContainerAspectRatio();
-      
-      // Update satellite action button if available
+
       if (typeof window.updateSatelliteActionButton === 'function') {
         window.updateSatelliteActionButton(this.currentSector);
       }
-      
-      this.load(); // reload with new sector
+
+      this.load();
     }
   }
 
   onPlayPause() {
     this.isAnimating = !this.isAnimating;
     this.setPlayIcon(this.isAnimating);
-    // Update type select if it exists
     if (this.typeSelect) {
       this.typeSelect.value = this.isAnimating ? 'animated' : 'static';
     }
-    this.load(); // reload in the new mode
+    this.load();
   }
 
   setPlayIcon(playing) {
@@ -168,14 +171,11 @@ class SatelliteModule {
 
   updateContainerAspectRatio() {
     if (!this.container || !this.img) return;
-    
-    // Remove existing sector classes
+
     this.img.classList.remove('sector-taw', 'sector-na', 'sector-eus', 'sector-car', 'sector-ga');
-    
-    // Add sector-specific class for width styling
+
     this.img.classList.add(`sector-${this.currentSector}`);
-    
-    // Remove the container aspect ratio styling to prevent excess space
+
     this.container.style.aspectRatio = '';
   }
 
@@ -185,9 +185,8 @@ class SatelliteModule {
     const satellite = sectorConfig ? sectorConfig.satellite : this.platform;
     const base = `https://cdn.star.nesdis.noaa.gov/${satellite}/ABI/SECTOR/${sector}/${product}/`;
 
-    // NOAA canonical sizes - adjust based on sector
     let staticSize, loopSize;
-    
+
     switch (sector) {
       case 'taw': // Tropical Atlantic Wide
         staticSize = '3600x2160';
@@ -244,7 +243,7 @@ class SatelliteModule {
     if (!this.timestamp) return;
     const sectorConfig = this.sectors[this.currentSector];
     const sectorName = sectorConfig ? sectorConfig.name : this.currentSector.toUpperCase();
-    
+
     if (this.isAnimating) {
       this.timestamp.textContent = `${sectorName} - Animated Loop`;
       return;
@@ -262,12 +261,11 @@ class SatelliteModule {
 
   load() {
     const product = this.sel.value || 'GEOCOLOR';
-    
-    // Determine animation state from type select if available, otherwise use button state
+
     if (this.typeSelect) {
       this.isAnimating = this.typeSelect.value === 'animated';
     }
-    
+
     const { static: staticUrl, animated } = this.urlsFor(product);
     const url = this.isAnimating ? animated : staticUrl;
 
@@ -275,10 +273,8 @@ class SatelliteModule {
 
     const test = new Image();
     test.onload = () => {
-      // swap in
       this.img.src = url;
 
-      // alt text
       const productText =
         this.sel.options[this.sel.selectedIndex]?.text || product;
       const sectorConfig = this.sectors[this.currentSector];

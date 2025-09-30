@@ -1,6 +1,12 @@
-// ncCountyMap.js
-// North Carolina Alert Zone & Weather Map Module
-// Expects global D3 (<script src="https://d3js.org/d3.v7.min.js"></script>)
+// =============================
+// Dynamic Eastern NC County Map - js/modules/ncCountyMap.js
+// North Carolina County Map with Weather Stations and Alerts
+// Renders an interactive SVG map of NC counties with weather station markers.
+// Fetches and displays current weather data and alerts for each county.
+// Colors counties based on active alerts using a predefined color scheme.
+//
+// Functionality to added soon to select different parameters to display on the map.
+// =============================
 
 import { warningColors, warningPriorities } from "./warningColors.js";
 import {
@@ -15,11 +21,10 @@ export class NCCountyMap {
   constructor(containerId, options = {}) {
     this.container = document.getElementById(containerId);
 
-    // Set base dimensions for viewBox (internal coordinates)
+    // Set base dimensions for viewBox
     this.baseWidth = 1200;
     this.baseHeight = 675;
 
-    // These will be used for the viewBox
     this.width = options.width || this.baseWidth;
     this.height = options.height || this.baseHeight;
 
@@ -111,8 +116,6 @@ export class NCCountyMap {
     this.d3 = window.d3;
   }
 
-  // getStationData with debug logging for skipped stations
-  // getStationData with cache-busting and 60m freshness
   async getStationData(stationConfig) {
     const BUST_BUCKET_MS = 15 * 60 * 1000;
     const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
@@ -128,7 +131,7 @@ export class NCCountyMap {
     for (const url of urls) {
       try {
         const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) continue; // Skip 404/other errors silently
+        if (!response.ok) continue;
         const data = await response.json();
         const stationData = Object.values(data.stations || {}).find(
           (s) => s.id === stationConfig.id
@@ -144,7 +147,6 @@ export class NCCountyMap {
           updatedIso: data.generated || stationData.observation?.timestamp,
         };
       } catch (err) {
-        // Keep quiet except for debugging unexpected failures
         console.warn(`Error fetching ${stationConfig.id} from ${url}:`, err);
         continue;
       }
@@ -152,7 +154,6 @@ export class NCCountyMap {
     return null;
   }
 
-  // Add this new method to create station markers
   addStationMarker(stationConfig, weather) {
     const [x, y] = this.projection([stationConfig.lon, stationConfig.lat]);
     const g = this.svg.append("g").attr("class", "station-marker");
@@ -195,7 +196,6 @@ export class NCCountyMap {
       const topoData = await response.json();
       const zoneIds = Object.keys(this.zoneToCountyMap);
 
-      // Filter features to only include zones we care about
       const filteredFeatures = topoData.features.filter((feature) => {
         const zoneCode = feature.properties?.zoneCode;
         return zoneIds.includes(zoneCode);
@@ -250,7 +250,7 @@ export class NCCountyMap {
       .append("div")
       .style("position", "relative")
       .style("width", "100%")
-      .style("padding-bottom", `${(this.height / this.width) * 100}%`) // Aspect ratio trick
+      .style("padding-bottom", `${(this.height / this.width) * 100}%`)
       .style("overflow", "hidden");
 
     this.svg = wrapper
@@ -269,7 +269,6 @@ export class NCCountyMap {
   }
 
   async updateWeatherData() {
-    // Provide fallback counties if siteConfig is missing or empty
     const defaultCounties = [
       {
         name: "Dare",
@@ -335,18 +334,15 @@ export class NCCountyMap {
         ? window.siteConfig.counties
         : defaultCounties;
 
-    // Process county markers (existing code)
     await Promise.all(
       counties.map(async (county) => {
         try {
-          // Get weather data
           let weather = await fetchCurrentWeather(county.lat, county.lon);
           if (!weather || weather.temp == "N/A") {
             weather = getDefaultWeatherData();
           }
           weather.city = county.city;
 
-          // Get alerts using zone-based method
           const alerts = await fetchAlerts(county.lat, county.lon);
 
           const key = county.name.toLowerCase();
@@ -363,7 +359,6 @@ export class NCCountyMap {
       })
     );
 
-    // Process individual station markers (new code)
     await Promise.all(
       this.additionalStations.map(async (station) => {
         try {
@@ -391,7 +386,6 @@ export class NCCountyMap {
     const strokeWidth = options.strokeWidth || "0";
     const clickHandler = options.onClick || null;
 
-    // Get responsive settings based on viewport width
     const responsiveSettings = this.getResponsiveSettings();
 
     const g = this.svg.append("g").attr("class", "weather-marker");
@@ -402,7 +396,6 @@ export class NCCountyMap {
       .attr("y", y + responsiveSettings.tempYOffset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      // Remove font-size attribute - let CSS handle it
       .attr("fill", fillColor)
       .attr("stroke", "#000")
       .attr("stroke-width", strokeWidth)
@@ -415,13 +408,11 @@ export class NCCountyMap {
       .attr("y", y + responsiveSettings.labelYOffset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      // Remove font-size attribute - let CSS handle it
       .attr("fill", "#fff")
       .text(`${weather.city}`)
       .on("click", () => options.onClick && options.onClick());
   }
 
-  // Update getResponsiveSettings to only return offsets
   getResponsiveSettings() {
     const width = window.innerWidth;
 
@@ -451,16 +442,13 @@ export class NCCountyMap {
   colorZonesForCounty(countyKey, alerts) {
     if (!alerts || !Array.isArray(alerts) || !alerts.length) return;
 
-    // Group alerts by the zones they affect
     const alertsByZone = new Map();
 
     alerts.forEach((alert) => {
       if (!alert) return;
 
-      // Extract zones this alert affects
       let affectedZones = [];
 
-      // Check different possible structures for zone information
       if (alert.properties?.zones) {
         affectedZones = alert.properties.zones.map((zoneUrl) =>
           zoneUrl.split("/").pop()
@@ -477,7 +465,6 @@ export class NCCountyMap {
         affectedZones = [alert.forecastZone];
       }
 
-      // Get event name - check multiple possible locations
       let eventName = null;
       if (alert.properties?.event) {
         eventName = alert.properties.event;
@@ -489,7 +476,6 @@ export class NCCountyMap {
 
       if (!eventName || affectedZones.length === 0) return;
 
-      // Add alert to each affected zone
       affectedZones.forEach((zoneId) => {
         if (!alertsByZone.has(zoneId)) {
           alertsByZone.set(zoneId, []);
@@ -502,11 +488,9 @@ export class NCCountyMap {
       });
     });
 
-    // Color each zone based on its highest priority alert
     alertsByZone.forEach((zoneAlerts, zoneId) => {
       if (zoneAlerts.length === 0) return;
 
-      // Find highest priority alert for this zone
       let bestAlert = null;
       let bestPriority = Infinity;
 
@@ -518,7 +502,6 @@ export class NCCountyMap {
       });
 
       if (bestAlert) {
-        // Color the specific zone path
         this.svg
           .selectAll(`path[data-zone-id="${zoneId}"]`)
           .attr("fill", bestAlert.color);
@@ -538,7 +521,6 @@ export class NCCountyMap {
       alerts.forEach((alert) => {
         if (!alert) return;
 
-        // Handle different alert data structures
         let eventName = null;
         if (alert.properties && alert.properties.event) {
           eventName = alert.properties.event;
@@ -550,7 +532,6 @@ export class NCCountyMap {
           eventName = alert;
         }
 
-        // Only add to legend if we found a valid event name and it has a color
         if (eventName && warningColors[eventName]) {
           active.set(eventName, warningColors[eventName]);
         } else if (eventName) {

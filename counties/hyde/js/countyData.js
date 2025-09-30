@@ -1,11 +1,19 @@
-// counties/dare/js/countyData.js - Unified Multi-Zone Version
-// Returns Bertie-compatible data format with zone-aware loading
+// =======================
+// Hyde County Page Data Handler - countyData.js
+//
+// Products:
+//   • Current Conditions
+//   • Forecast/Hourly/Alerts/AFD
+//
+// Units Conversion: km/h↔mph, m/s↔mph, Pa→mb, m→miles
+//
+// Derived: Heat Index(°F) + Wind Chill(°F)
+// ========================
 
 let config = null;
 
-const FRESH_MINUTES = 120; // accept obs ≤ 120 minutes old
+const FRESH_MINUTES = 120;
 
-// ---------- helpers ----------
 function minutesSince(iso) {
   if (!iso) return Infinity;
   return Math.max(
@@ -48,11 +56,9 @@ function windSpeedToMph(val, unitCode) {
   if (u.includes("km_h-1") || u.includes("km/h")) return kphToMph(val);
   if (u.includes("m_s-1") || u.includes("m/s")) return msToMph(val);
   if (u.includes("mph")) return round(val);
-  // Unknown: assume km/h for non-airport sensors
   return kphToMph(val);
 }
 
-// Derived indices
 function computeHeatIndexF(T, RH) {
   if (T == null || RH == null) return null;
   const t = Number(T),
@@ -91,12 +97,10 @@ function computeWindChillF(T, Vmph) {
 
 function shortenStationName(name, id) {
   if (!name) return id;
-  // Heuristic: if name contains " AT ", take tail (common for river gauges)
   const m = name.split(/\s+AT\s+/i);
   if (m.length > 1) {
     return m[m.length - 1].trim();
   }
-  // Trim overly long names
   return name.length > 28 ? name.slice(0, 25).trim() + "…" : name;
 }
 
@@ -111,14 +115,12 @@ export async function init() {
 
     config = await res.json();
 
-    // Determine current zone (from localStorage, URL param, or default)
     const urlParams = new URLSearchParams(window.location.search);
     const urlZone = urlParams.get("zone");
     const storedZone = localStorage.getItem("selectedZone");
     const currentZone =
       urlZone || storedZone || config.county?.defaultZone || "mainland";
 
-    // Store current zone in config for easy access
     config.currentZone = currentZone;
 
     console.log(
@@ -139,13 +141,11 @@ function getDataPath(fileName) {
     throw new Error("Config not initialized. Call init() first.");
   }
 
-  // For multi-zone counties, use zone-specific paths
   if (config.county?.multiZone) {
     const currentZone = config.currentZone;
     return `./data/${currentZone}/${fileName}`;
   }
 
-  // For single-zone counties, use direct data path
   return `./data/${fileName}`;
 }
 
@@ -170,7 +170,7 @@ function getCurrentZoneStations() {
  */
 export async function getCurrentConditions() {
   try {
-    await init(); // Ensure config is loaded
+    await init();
 
     const dataPath = getDataPath("current.json");
     console.log(`[countyData] Fetching current conditions from: ${dataPath}`);
@@ -190,7 +190,6 @@ export async function getCurrentConditions() {
       throw new Error("Invalid cache data structure");
     }
 
-    // Convert station ID-keyed data to array for selection logic
     const stationEntries = Object.entries(cacheData.stations);
     const currentZoneStations = getCurrentZoneStations();
 
@@ -202,7 +201,6 @@ export async function getCurrentConditions() {
       };
     }
 
-    // Process each station and find the best one
     const results = [];
 
     for (const [stationId, stationData] of stationEntries) {
@@ -215,7 +213,6 @@ export async function getCurrentConditions() {
       const ageMinutes = stationData.observation.age_minutes;
       const isFresh = ageMinutes <= FRESH_MINUTES;
 
-      // Find station config for friendly name
       const stationConfig = currentZoneStations.find((s) => s.id === stationId);
 
       const result = {
@@ -248,7 +245,6 @@ export async function getCurrentConditions() {
       };
     }
 
-    // Select the best station (prefer fresh data, then most recent)
     const fresh = results.find((r) => r.isFresh && r.data.temperature != null);
     const chosen =
       fresh ||
@@ -259,16 +255,13 @@ export async function getCurrentConditions() {
 
     const d = chosen.data;
 
-    // Build wind string like Bertie
     const windStr =
       d.windSpeed == null || d.windSpeed < 1
         ? "Calm"
         : `${d.windDirection || "--"} at ${d.windSpeed} mph`;
 
-    // Build visibility string
     const visStr = d.visibility == null ? "N/A" : `${d.visibility} miles`;
 
-    // Build secondaries list (all other stations with temperature)
     const secondaries = results
       .filter(
         (r) => r.stationId !== chosen.stationId && r.data.temperature != null
@@ -281,11 +274,9 @@ export async function getCurrentConditions() {
         hasIcon: !!r.data.icon,
       }));
 
-    // Find any icon among results if chosen lacks one (for background only)
     const bgIcon =
       d.icon || results.find((r) => r.data.icon)?.data.icon || null;
 
-    // Return Bertie-compatible format
     return {
       status: "ok",
       stationId: chosen.stationId,
@@ -321,7 +312,7 @@ export async function getCurrentConditions() {
  */
 export async function getForecast() {
   try {
-    await init(); // Ensure config is loaded
+    await init();
 
     const dataPath = getDataPath("forecast.json");
     console.log(`[countyData] Fetching forecast from: ${dataPath}`);
@@ -352,7 +343,7 @@ export async function getForecast() {
  */
 export async function getHourlyData() {
   try {
-    await init(); // Ensure config is loaded
+    await init();
 
     const dataPath = getDataPath("hourly.json");
     console.log(`[countyData] Fetching hourly data from: ${dataPath}`);
@@ -384,8 +375,7 @@ export async function getHourlyData() {
  */
 export async function getAlerts() {
   try {
-    await init(); // Ensure config is loaded
-
+    await init();
     const dataPath = getDataPath("alerts.json");
     console.log(`[countyData] Fetching alerts from: ${dataPath}`);
 
@@ -401,7 +391,6 @@ export async function getAlerts() {
     const data = await response.json();
     console.log(`[countyData] Loaded ${data.alerts?.length || 0} alerts`);
 
-    // Return Bertie-compatible format
     return {
       status: "ok",
       list: Array.isArray(data.alerts) ? data.alerts : [],
@@ -418,9 +407,8 @@ export async function getAlerts() {
  */
 export async function getAFD() {
   try {
-    await init(); // Ensure config is loaded
+    await init();
 
-    // AFD is always county-wide, so use direct path
     const dataPath = "./data/discussion.json";
     console.log(`[countyData] Fetching AFD from: ${dataPath}`);
 
@@ -436,7 +424,6 @@ export async function getAFD() {
     const data = await response.json();
     console.log("[countyData] Loaded AFD discussion");
 
-    // Return Bertie-compatible format
     return {
       status: "ok",
       text: data.text || "",
@@ -463,7 +450,6 @@ export function getCurrentZone() {
     };
   }
 
-  // Single zone county
   return {
     id: "single",
     displayName: config.county.name,
@@ -499,13 +485,10 @@ export function switchZone(zoneId) {
     return false;
   }
 
-  // Update current zone
   config.currentZone = zoneId;
 
-  // Store in localStorage
   localStorage.setItem("selectedZone", zoneId);
 
-  // Update URL parameter
   const url = new URL(window.location);
   url.searchParams.set("zone", zoneId);
   window.history.replaceState({}, "", url);

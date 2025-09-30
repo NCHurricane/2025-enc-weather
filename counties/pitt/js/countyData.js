@@ -1,18 +1,17 @@
-// ===== counties/bertie/js/countyData.js =====
-// FULL DROP-IN — replaces the existing file entirely
-// Purpose:
-//   • Current Conditions: live NWS fallback (GCRN7 → WNRN7 → KEDE), freshness ≤60 min
-//   • Forecast/Hourly/Alerts/AFD: read from local cache JSON (./data/*.json)
-//   • Units: km/h↔mph, m/s↔mph, Pa→mb, m→miles
-//   • Derived: Heat Index (°F) + Wind Chill (°F)
-//   • NEW (WMO rule): Only ONE of Heat Index OR Wind Chill is returned as non-null
-//       - Heat Index when T ≥ 80°F AND RH ≥ 40%
-//       - Wind Chill when T ≤ 50°F AND wind ≥ 3 mph
-//       - If both mathematically appear due to edge rounding, prefer HI when T ≥ 65°F, otherwise WC
+// =======================
+// Pitt County Page Data Handler - countyData.js
+//
+// Products:
+//   • Current Conditions
+//   • Forecast/Hourly/Alerts/AFD
+//
+// Units Conversion: km/h↔mph, m/s↔mph, Pa→mb, m→miles
+//
+// Derived: Heat Index(°F) + Wind Chill(°F)
+// ========================
 
-const FRESH_MINUTES = 120; // accept obs ≤ 60 minutes old
+const FRESH_MINUTES = 120;
 
-// ---------- helpers ----------
 function minutesSince(iso) {
   if (!iso) return Infinity;
   return Math.max(
@@ -55,11 +54,9 @@ function windSpeedToMph(val, unitCode) {
   if (u.includes("km_h-1") || u.includes("km/h")) return kphToMph(val);
   if (u.includes("m_s-1") || u.includes("m/s")) return msToMph(val);
   if (u.includes("mph")) return round(val);
-  // Unknown: assume km/h for non-airport sensors
   return kphToMph(val);
 }
 
-// Derived indices
 function computeHeatIndexF(T, RH) {
   if (T == null || RH == null) return null;
   const t = Number(T),
@@ -98,12 +95,10 @@ function computeWindChillF(T, Vmph) {
 
 function shortenStationName(name, id) {
   if (!name) return id;
-  // Heuristic: if name contains " AT ", take tail (common for river gauges)
   const m = name.split(/\s+AT\s+/i);
   if (m.length > 1) {
     return m[m.length - 1].trim();
   }
-  // Trim overly long names
   return name.length > 28 ? name.slice(0, 25).trim() + "…" : name;
 }
 
@@ -114,9 +109,6 @@ async function httpGetJson(url) {
   if (!res.ok) throw new Error(`GET ${url} ${res.status}`);
   return res.json();
 }
-
-// Updated fetchLatestObs function for countyData.js
-// Replace the existing fetchLatestObs function with this version
 
 async function fetchLatestObs(stationId) {
   const res = await fetch(url, {
@@ -132,119 +124,89 @@ async function fetchLatestObs(stationId) {
   const ageMinutes = Math.round(ageMs / (60 * 1000));
   const isFresh = ageMinutes <= FRESH_MINUTES;
 
-  // Temperature conversion (handle both Celsius and Fahrenheit)
   let tempF = null;
   if (data.temperature?.value != null) {
     if (data.temperature.unitCode === "wmoUnit:degC") {
-      // Convert Celsius to Fahrenheit
       tempF = (data.temperature.value * 9 / 5) + 32;
     } else {
-      // Already in Fahrenheit or other units
       tempF = data.temperature.value;
     }
   }
 
-  // Dewpoint conversion
   let dewF = null;
   if (data.dewpoint?.value != null) {
     if (data.dewpoint.unitCode === "wmoUnit:degC") {
-      // Convert Celsius to Fahrenheit
       dewF = (data.dewpoint.value * 9 / 5) + 32;
     } else {
-      // Already in Fahrenheit or other units
       dewF = data.dewpoint.value;
     }
   }
 
-  // Wind speed conversion (handle km/h, m/s, and mph)
   let wspdMph = null;
   if (data.windSpeed?.value != null) {
     if (data.windSpeed.unitCode === "wmoUnit:km_h-1") {
-      // Convert km/h to mph
       wspdMph = data.windSpeed.value * 0.621371;
     } else if (data.windSpeed.unitCode === "wmoUnit:m_s-1") {
-      // Convert m/s to mph  
       wspdMph = data.windSpeed.value * 2.237;
     } else {
-      // Assume already in mph or use as-is
       wspdMph = data.windSpeed.value;
     }
   }
 
-  // Wind gust conversion
   let gustMph = null;
   if (data.windGust?.value != null) {
     if (data.windGust.unitCode === "wmoUnit:km_h-1") {
-      // Convert km/h to mph
       gustMph = data.windGust.value * 0.621371;
     } else if (data.windGust.unitCode === "wmoUnit:m_s-1") {
-      // Convert m/s to mph
       gustMph = data.windGust.value * 2.237;
     } else {
-      // Assume already in mph or use as-is
       gustMph = data.windGust.value;
     }
   }
 
-  // Pressure conversion (Pascals to millibars)
   let prMb = null;
   if (data.barometricPressure?.value != null) {
     if (data.barometricPressure.unitCode === "wmoUnit:Pa") {
-      // Convert Pascals to millibars
       prMb = data.barometricPressure.value / 100;
     } else {
-      // Assume already in millibars or use as-is
       prMb = data.barometricPressure.value;
     }
   }
 
-  // Visibility conversion (meters to miles)
   let visMi = null;
   if (data.visibility?.value != null) {
     if (data.visibility.unitCode === "wmoUnit:m") {
-      // Convert meters to miles
       visMi = data.visibility.value / 1609.34;
     } else {
-      // Assume already in miles or use as-is
       visMi = data.visibility.value;
     }
   }
 
-  // Heat Index conversion
   let heatIndex = null;
   if (data.heatIndex?.value != null) {
     if (data.heatIndex.unitCode === "wmoUnit:degC") {
-      // Convert Celsius to Fahrenheit
       heatIndex = (data.heatIndex.value * 9 / 5) + 32;
     } else {
-      // Already in Fahrenheit or other units
       heatIndex = data.heatIndex.value;
     }
   }
 
-  // Wind Chill conversion
   let windChill = null;
   if (data.windChill?.value != null) {
     if (data.windChill.unitCode === "wmoUnit:degC") {
-      // Convert Celsius to Fahrenheit
       windChill = (data.windChill.value * 9 / 5) + 32;
     } else {
-      // Already in Fahrenheit or other units
       windChill = data.windChill.value;
     }
   }
 
-  // Humidity (should already be in percent)
   const rhPct = data.relativeHumidity?.value;
 
-  // Wind direction (degrees)
   const wdir = data.windDirection?.value;
 
-  // Text description and icon
   const textDesc = data.textDescription || null;
   const icon = data.icon || null;
 
-  // Convert wind direction from degrees to cardinal
   const cardinalDir = wdir != null ? degreesToCardinal(wdir) : null;
 
   return {
@@ -270,7 +232,6 @@ async function fetchLatestObs(stationId) {
   };
 }
 
-// Helper function to convert degrees to cardinal direction
 function degreesToCardinal(degrees) {
   if (degrees == null) return null;
   const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
@@ -282,18 +243,14 @@ function degreesToCardinal(degrees) {
 export async function init() {
   const res = await fetch("./data/config.json?t=" + Date.now(), {
     headers: { "User-Agent": "NCHurricane.com Weather App/1.0" },
-    cache: "no-store" // Ensure we get fresh config
+    cache: "no-store"
   });
   if (!res.ok) throw new Error("Failed to load config.json");
   return res.json();
 }
 
-// Updated getCurrentConditions function for countyData.js
-// Replace the existing getCurrentConditions function with this version
-
 export async function getCurrentConditions() {
   try {
-    // Load config to get station list
     const config = await init();
     const stations = config.stations || [];
 
@@ -319,7 +276,6 @@ export async function getCurrentConditions() {
       throw new Error("Invalid cache data structure");
     }
 
-    // Process each configured station
     const results = [];
 
     for (const station of stations) {
@@ -335,7 +291,6 @@ export async function getCurrentConditions() {
       const ageMinutes = cachedStation.observation.age_minutes;
       const isFresh = ageMinutes <= FRESH_MINUTES;
 
-      // Data is already converted to proper units by PHP cache
       const data = cachedStation.data;
 
       const result = {
@@ -350,7 +305,7 @@ export async function getCurrentConditions() {
           humidity: data.humidity,
           pressure: data.pressure,
           windSpeed: data.windSpeed,
-          windDirection: data.windDirection, // Already converted to cardinal
+          windDirection: data.windDirection,
           windGust: data.windGust,
           visibility: data.visibility,
           conditions: data.conditions,
@@ -373,7 +328,6 @@ export async function getCurrentConditions() {
       };
     }
 
-    // Select the best station (same logic as before)
     const fresh = results.find((r) => r.isFresh);
     const chosen =
       fresh ||
@@ -382,7 +336,6 @@ export async function getCurrentConditions() {
         .sort((a, b) => a.ageMinutes - b.ageMinutes)[0] ||
       results[0];
 
-    // Find the config for the chosen station
     const chosenConfig = stations.find(st => st.id === chosen.stationId);
 
     const d = chosen.data;
@@ -392,7 +345,6 @@ export async function getCurrentConditions() {
         : `${d.windDirection || "--"} at ${d.windSpeed} mph`;
     const visStr = d.visibility == null ? "N/A" : `${d.visibility} miles`;
 
-    // Build secondaries list (others with a temperature)
     const secondaries = results
       .filter(r => r.stationId !== chosen.stationId && r.data.temperature != null)
       .map(r => {
@@ -406,7 +358,6 @@ export async function getCurrentConditions() {
         };
       });
 
-    // Find any icon among results if chosen lacks one (for background only)
     const bgIcon = d.icon || results.find((r) => r.data.icon)?.data.icon || null;
 
     return {

@@ -1,9 +1,10 @@
-/**
- * Map Aggregator Module
- * Aggregates weather data from county-specific files for main index map display
- */
+// =============================
+// Map Data Aggregator - js/modules/mapAggregator.js
+// Aggregates weather and alert data for multiple counties.
+// Provides functions to fetch current weather and alerts based on coordinates.
+// Designed for use with the NC County Map and other modules.
+// =============================
 
-// County list to aggregate
 const COUNTIES = [
   "bertie",
   "pitt",
@@ -103,7 +104,6 @@ export function getDefaultWeatherData() {
  * Main aggregator function - replaces the old fetchCurrentWeather function
  */
 export async function fetchCurrentWeather(lat, lon) {
-  // Find county name from coordinates using existing siteConfig
   let countyName = null;
 
   if (window.siteConfig?.counties) {
@@ -133,7 +133,6 @@ export async function fetchCurrentWeather(lat, lon) {
 export async function fetchAlerts(lat, lon) {
   const BUST_BUCKET_MS = 15 * 60 * 1000;
   const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
-  // Find county name from coordinates
   let countyName = null;
 
   if (window.siteConfig?.counties) {
@@ -148,7 +147,6 @@ export async function fetchAlerts(lat, lon) {
     return [];
   }
 
-  // Get county config to determine zones
   try {
     const configResponse = await fetch(
       `counties/${countyName}/data/config.json?v=${bust}`,
@@ -162,12 +160,11 @@ export async function fetchAlerts(lat, lon) {
     let allAlerts = [];
 
     if (isMultiZone) {
-      // Multi-zone: collect alerts from all zones WITH zone identification
       const zones = Object.keys(config.zones || {});
 
       for (const zoneName of zones) {
         const zoneConfig = config.zones[zoneName];
-        const forecastZone = zoneConfig.forecast; // e.g., "NCZ203"
+        const forecastZone = zoneConfig.forecast;
 
         try {
           const alertsResponse = await fetch(
@@ -177,10 +174,8 @@ export async function fetchAlerts(lat, lon) {
           if (alertsResponse.ok) {
             const alertsData = await alertsResponse.json();
             if (alertsData.alerts && Array.isArray(alertsData.alerts)) {
-              // Add zone information to each alert
               const zoneAlerts = alertsData.alerts.map((alert) => ({
                 ...alert,
-                // Ensure zone info is preserved/added
                 zones: [forecastZone],
                 sourceZone: zoneName,
                 forecastZone: forecastZone,
@@ -196,7 +191,6 @@ export async function fetchAlerts(lat, lon) {
         }
       }
     } else {
-      // Single-zone: fetch directly and add zone info
       try {
         const alertsResponse = await fetch(
           `counties/${countyName}/data/alerts.json?v=${bust}`,
@@ -205,7 +199,6 @@ export async function fetchAlerts(lat, lon) {
         if (alertsResponse.ok) {
           const alertsData = await alertsResponse.json();
           if (alertsData.alerts && Array.isArray(alertsData.alerts)) {
-            // Add zone information based on county config
             const forecastZone = config.zones?.forecast;
             allAlerts = alertsData.alerts.map((alert) => ({
               ...alert,
@@ -220,12 +213,10 @@ export async function fetchAlerts(lat, lon) {
       }
     }
 
-    // Remove duplicates but preserve zone information
     const uniqueAlerts = [];
     const seenIds = new Set();
 
     for (const alert of allAlerts) {
-      // Include forecastZone in the deduplication key to preserve zone-specific alerts
       const id = `${alert.id || alert.identifier || alert.event}-${alert.forecastZone
         }`;
 
@@ -278,8 +269,7 @@ export async function updateMapData() {
   return { weatherData, alertsData };
 }
 
-// Configurable maximum station data age (minutes). Default 90; can be changed at runtime via setStationMaxAgeMinutes.
-let STATION_MAX_AGE_MINUTES = 90;
+// Configurable maximum station data age (minutes). Default 90;
 export function setStationMaxAgeMinutes(mins) {
   if (typeof mins === "number" && mins > 0) {
     STATION_MAX_AGE_MINUTES = mins;

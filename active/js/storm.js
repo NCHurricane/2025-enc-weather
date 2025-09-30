@@ -1,12 +1,27 @@
 // ==============================
-// Active Storm Page Cache Reader - storm.js
+// Active Storm Page Cache Reader - active/js/storm.js
 // Reads advisory.json and storm.json from cache and renders the data to the page.
 //
 // Products Rendered:
-// - Storm Header
-// - Overview v1 (legacy, hidden)
-// - Overview v2 (current)
-// - Radii Table (if radii data present)
+// - Dynamic Page Title and Header
+// - Storm Overview Section (v2)
+// - Floater Satellite Imagery (if satellite.js loaded)
+// - Text Products (if storm_text.js loaded)
+// - Storm Graphics (if storm-graphics.js loaded)
+// - - 3 and 5-day forecast tracks
+// - - Current Wind Field
+// - - Wind History
+// - - Earliest Reasonable Arrival of 34kt Winds
+// - - Earliest Likely Arrival of 34kt Winds
+// - - Current Wind Speed Probabilities
+// - - - (0 to 60 hours for 34kt, 50kt, and 64kt winds)
+// - Wind Radii Compass (if radii data present)
+// - Wind Analysis from MTCSWA / OSHO
+// - Storm Surge Graphics (if surge data present)
+// - Peak Storm Surge Graphic (if issued)
+// - Day 1-2 QPF Graphic (if issued)
+// - QPF International Forecast Graphic (if issued)
+// - WPC Excessive Rainfall Outlook (if issued)
 // ==============================
 
 "use strict";
@@ -104,7 +119,6 @@ function formatUtcShort(ts) {
 }
 
 
-// Collapsible section logic removed. Only init() is called on DOMContentLoaded or immediately if already loaded.
 if (document.readyState === "loading") {
   document.addEventListener(
     "DOMContentLoaded",
@@ -272,7 +286,6 @@ function renderOverviewV2(advisory, longId) {
     </div>
   `;
 
-  // Display the NHC advisory headlines from advisory.headlines (array)
   let nhcHeadlinesBlock = '';
   if (Array.isArray(advisory?.headlines) && advisory.headlines.length > 0) {
     nhcHeadlinesBlock = `
@@ -284,10 +297,9 @@ function renderOverviewV2(advisory, longId) {
     `;
   }
 
-  // Insert headlines block after the first info line (message-type)
   let linesWithHeadlines = [];
   if (lines.length > 0) {
-    linesWithHeadlines.push(lines[0]); // message-type line
+    linesWithHeadlines.push(lines[0]);
     if (nhcHeadlinesBlock) linesWithHeadlines.push(nhcHeadlinesBlock);
     for (let i = 1; i < lines.length; ++i) {
       linesWithHeadlines.push(lines[i]);

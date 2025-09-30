@@ -1,22 +1,23 @@
 // ==============================
-// Text Products Module for Active Storm Pages - storm_text.js
+// Text Products Module for Active Storm Pages - active/js/storm_text.js
 // Handles loading and displaying NHC text products with tabbed interface
-// 
+//
 // Products handled:
 // - TCP: Tropical Cyclone Public Advisory
-// - TCM: Tropical Cyclone Forecast/Advisory  
+// - TCM: Tropical Cyclone Forecast/Advisory
 // - TCD: Tropical Cyclone Discussion
 // - PWS: Wind Speed Probabilities
 // - TCU: Tropical Cyclone Update (optional)
 // - TAS: Spanish Public Advisory (Atlantic only)
 // - TDS: Spanish Discussion (Atlantic only)
 // - TUS: Spanish Update (Atlantic only)
-//
+// ==============================
+
 "use strict";
 
 /* ==============================
      Config & Constants
-     ============================== */
+============================== */
 const TEXT_CONFIG = {
   STORMS_ROOT: "./storms",
   FALLBACK_MESSAGES: {

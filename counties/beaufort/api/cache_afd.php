@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS Area Forecast Discussion (AFD) Script - cache_afd.php
  * Fetches NWS Area Forecast Discussion and caches it as JSON.
@@ -7,6 +10,7 @@
  *
  * For Beaufort County, NC Page
  */
+
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
 $configPath = $dataDir . '/config.json';

@@ -1,4 +1,9 @@
-// siteConfig.js - simplified, synchronous version with normalization baked in
+// =============================
+// Counties Configuration File - js/siteConfig.js
+//
+// Centralized configuration for county-specific data, including county names, coordinates, URLs, weather stations, and zones
+//
+// ==============================
 window.siteConfig = {
     counties: [
         {

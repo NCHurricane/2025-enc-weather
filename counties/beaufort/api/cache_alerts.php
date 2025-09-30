@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 error_reporting(E_ALL);
 
@@ -13,9 +12,9 @@ error_reporting(E_ALL);
  * 
  */
 
-$scriptDir = dirname(__FILE__);
-$dataDir = $scriptDir . '/../data';
-$configPath = $scriptDir . '/../data/config.json';
+$root = dirname(__DIR__);
+$dataDir = $root . '/data';
+$configPath = $dataDir . '/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 
 if (!is_dir($dataDir)) {

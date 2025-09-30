@@ -1,17 +1,21 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Forecast Script - cache_forecast.php
  * Fetches NWS API forecast data and caches it as JSON.
  *
  * Multi-zone county:
- * - Dare County, NC (see config for all zones)
+ * - Dare County (county code: NCC055)
+ * - Mainland Dare County, NC (zone: NCZ047)
+ * - Northern Outer Banks (zone: NCZ203)
+ * - Hatteras Island (zone: NCZ205)
  *
  */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-$dataDir = '../data';
+$root = dirname(__DIR__);
+$dataDir = $root . '/data';
 $configPath = $dataDir . '/config.json';
 $userAgent = "NCHurricane.com Weather App/1.0";
 

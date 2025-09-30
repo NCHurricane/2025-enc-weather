@@ -1,46 +1,46 @@
 {
-  "county": {
-    "name": "Martin",
-    "state": "NC",
-    "timezone": "America/New_York"
-  },
-  "location": {
-    "lat": 35.5466,
-    "lon": -77.0522,
-    "city": "Washington"
-  },
-  "zones": {
-    "forecast": "NCZ080",
-    "county": "NCC013"
-  },
-  "forecastOffice": {
-    "id": "MHX",
-    "name": "Newport/Morehead City"
-  },
-  "stations": [
-    {
-      "id": "KMCZ",
-      "name": "Martin County Airport",
-      "url": "https://www.weather.gov/wrh/timeseries?site=KMCZ",
-      "friendlyName": "Williamston",
-      "lat": 35.86219,
-      "lon": -77.1782
+    "county": {
+        "name": "Martin",
+        "state": "NC",
+        "timezone": "America/New_York"
     },
-    {
-      "id": "WNRN7",
-      "name": "Cashie River in Windsor, NC",
-      "friendlyName": "Windsor",
-      "url": "https://www.weather.gov/wrh/timeseries?site=WNRN7",
-      "lat": 35.99389,
-      "lon": -76.9425
+    "location": {
+        "lat": 35.5466,
+        "lon": -77.0522,
+        "city": "Williamston"
     },
-    {
-      "id": "KOCW",
-      "name": "Washington-Warren Airport",
-      "url": "https://www.weather.gov/wrh/timeseries?site=KOCW",
-      "friendlyName": "Washington",
-      "lat": 35.57056,
-      "lon": -77.0497199
-    }
-  ]
+    "zones": {
+        "forecast": "NCZ029",
+        "county": "NCC117"
+    },
+    "forecastOffice": {
+        "id": "MHX",
+        "name": "Newport/Morehead City"
+    },
+    "stations": [
+        {
+            "id": "KMCZ",
+            "name": "Martin County Airport",
+            "url": "https://www.weather.gov/wrh/timeseries?site=KMCZ",
+            "friendlyName": "Williamston",
+            "lat": 35.86219,
+            "lon": -77.1782
+        },
+        {
+            "id": "WNRN7",
+            "name": "Cashie River in Windsor, NC",
+            "friendlyName": "Windsor",
+            "url": "https://www.weather.gov/wrh/timeseries?site=WNRN7",
+            "lat": 35.99389,
+            "lon": -76.9425
+        },
+        {
+            "id": "KOCW",
+            "name": "Washington-Warren Airport",
+            "url": "https://www.weather.gov/wrh/timeseries?site=KOCW",
+            "friendlyName": "Washington",
+            "lat": 35.57056,
+            "lon": -77.0497199
+        }
+    ]
 }

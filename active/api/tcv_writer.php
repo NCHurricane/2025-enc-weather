@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NHC TCV Writer (Atlantic)
  * Fixes:
@@ -9,8 +12,6 @@
  *  4) Ensure HTTP headers are passed as a string for PHP 8.4 stream context.
  */
 
-declare(strict_types=1);
-error_reporting(E_ALL);
 
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
@@ -23,8 +24,7 @@ function web_json($data, int $status = 200): void {
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 }
 
-// Resolve project root reliably from /active/api/tcv_writer.php
-$ROOT = realpath(dirname(__DIR__, 2)); // from /active/api -> /2025_weather
+$ROOT = realpath(dirname(__DIR__, 2));
 if ($ROOT === false) {
     if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: Unable to resolve project ROOT from ' . __DIR__ . "
 "); }
@@ -33,15 +33,21 @@ if ($ROOT === false) {
 }
 $PUBLIC    = $ROOT;
 $ACTIVE    = $ROOT . '/active';
-$JS_DATA   = $ROOT . '/js/data';
-$JS_MODULE = $ROOT . '/js/modules';
-$CACHE_DIR = $JS_DATA . '/zones/cache';
+$CACHE_DIR = $ROOT . '/js/data/zones/cache';
 @mkdir($ACTIVE, 0775, true);
 @mkdir($CACHE_DIR, 0775, true);
 
-// Where to find current storms list. Support multiple historical locations.
+function out(string $msg): void {
+    $ROOT = realpath(dirname(__DIR__, 2));
+    $logDir = $ROOT . '/active/logs';
+    if (!is_dir($logDir)) {@mkdir($logDir, 0775, true);}
+    $logFile = $logDir . '/tcv_writer.log';
+    $ts = date('Y-m-d H:i:s');
+    @file_put_contents($logFile, "[$ts] $msg\n", FILE_APPEND);
+}
+
 $stormListCandidates = [
-    $JS_MODULE . '/cache/nhc_current_storms.json',  // sole local source
+    $ACTIVE . '/cache/nhc_current_storms.json',
 ];
 
 $currentStormsPath = null;
@@ -52,9 +58,7 @@ $currentStormsJson = '';
 if ($currentStormsPath !== null) {
     $currentStormsJson = file_get_contents($currentStormsPath);
 } else {
-    // Local file not found; fall back to NHC public source
     $remote = 'https://www.nhc.noaa.gov/CurrentStorms.json';
-    // Minimal fetch here (http_get is declared later); use file_get_contents with a simple UA
     $ctx = stream_context_create([
         'http' => [
             'method'  => 'GET',
@@ -80,7 +84,6 @@ if (!is_array($stormsData)) {
     exit(1);
 }
 
-// This vlog call was here, but the stray '}' and duplicated code after it are now removed.
 vlog($log ?? false, "Using storms list: $currentStormsPath\n");
 
 $argvStr = PHP_SAPI === 'cli' ? implode(' ', array_slice($argv, 1)) : '';
@@ -100,11 +103,12 @@ foreach ($parts as $p) {
     }
 }
 if (!$stormArg) { $stormArg = 'ALL'; }
-function vlog(bool $on, string $msg): void { if ($on) echo $msg; }
+function vlog(bool $on, string $msg): void {
+    if ($on) echo $msg;
+    out($msg);
+}
 
-// (storms list resolution moved above with candidates and log trace)
 
-// --- Robust GET with header string (PHP 8.4) and ignore_errors to capture bodies on non-200
 function http_get(string $url, int $tries = 3, int $timeout = 12): string {
     $last = '';
     $ua = "NCHurricane.com TCV fetcher";
@@ -114,8 +118,8 @@ function http_get(string $url, int $tries = 3, int $timeout = 12): string {
             'http' => [
                 'method'        => 'GET',
                 'timeout'       => $timeout,
-                'header'        => $hdr,   // string per PHP 8.x docs
-                'ignore_errors' => true,   // still return body on 4xx/5xx
+                'header'        => $hdr,
+                'ignore_errors' => true,
             ],
             'ssl' => [
                 'verify_peer'      => true,
@@ -136,7 +140,6 @@ function parse_tcv_text(string $txt): array {
     foreach ($lines as $ln) {
         if ($adv === null && preg_match('/Advisory\s+(Number\s+)?(\d+)/i', $ln, $m)) { $adv = (int)$m[2]; }
         if ($issued === null && preg_match('/\b(\d{1,2}:\d{2}\s*[AP]M\s*(?:EDT|EST|CDT|CST|UTC))\b/i', $ln, $m)) { $issued = trim($m[1]); }
-        // Strict zone token capture only (e.g., NCZ045). Avoid broad ranges here to prevent false positives.
         if (preg_match_all('/\b([A-Z]{3}\d{3})\b/', $ln, $mm)) {
             foreach ($mm[1] as $z) { $zones[] = strtoupper($z); }
         }
@@ -168,7 +171,6 @@ function write_storm_tcv(string $stormId, array $payload): void {
 function process_storm(string $stormId, array $stormsData, bool $force, bool $log): bool {
     vlog($log, "Processing TCV for $stormId...\n");
 
-    // Locate storm record
     $stormRec = null;
     foreach (($stormsData['data']['activeStorms'] ?? []) as $s) {
         if (strtoupper($s['id'] ?? '') === $stormId) { $stormRec = $s; break; }
@@ -180,7 +182,6 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
         return true;
     }
 
-    // Build MIATCVAT candidates (no year suffix). Prefer raw FTP text; fall back to .shtml pages.
     $candidates = [];
     for ($n = 1; $n <= 5; $n++) {
         $candidates[] = sprintf('https://www.nhc.noaa.gov/ftp/pub/forecasts/public/MIATCVAT%d', $n);
@@ -194,11 +195,10 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
         try {
             $txt = http_get($url, 2, 10);
         } catch (Throwable $e) {
-            continue; // try next candidate
+            continue;
         }
         if (!is_string($txt) || trim($txt) === '') continue;
 
-        // Require either the ATCF id (e.g., AL082025) OR the storm name + year
         $ok = (stripos($txt, $stormId) !== false);
         if (!$ok) {
             $name = strtoupper(trim($stormRec['name'] ?? ''));
@@ -219,7 +219,6 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
 
     $parsed = parse_tcv_text($chosenRaw);
 
-    // Cache geometries defensively; never abort the storm on cache errors.
     foreach ($parsed['zones'] as $z) {
         try { cache_zone_geo($z); }
         catch (Throwable $e) { vlog($log, "  WARN: zone cache failed for $z: " . $e->getMessage() . "\n"); }
@@ -250,7 +249,6 @@ try {
                 $ok = process_storm($sid, $stormsData, $force, $log);
                 if (!$ok) vlog($log, "  ERROR: processing failed for $sid\n");
             } catch (Throwable $e) {
-                // Do NOT abort the batch; write empty tcv.json for this storm and continue
                 vlog($log, "  ERROR: unhandled for $sid: " . $e->getMessage() . "\n");
                 write_storm_tcv($sid, ['stormId'=>$sid,'tcv'=>null,'zones'=>[],'error'=>$e->getMessage()]);
             }
@@ -259,7 +257,6 @@ try {
         exit(0);
     }
 
-    // Single storm path
     if (!preg_match('/^AL\d{2}\d{4}$/', $stormArg)) {
         $msg = "ERROR: Invalid storm id: $stormArg\n"; vlog($log, $msg); if (PHP_SAPI !== 'cli') web_json(['error'=>$msg], 400); exit(1);
     }

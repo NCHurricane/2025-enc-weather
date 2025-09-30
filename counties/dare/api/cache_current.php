@@ -1,17 +1,14 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Current Conditions Script - cache_current.php
- * Fetches NWS API current conditions and caches them as JSON.
+ * Fetches NWS current conditions for configured stations and caches them as JSON.
  *
- * Multi-zone county:
- * - Dare County, NC (see config for all zones)
+ * - Dare County, NC
  *
  */
-
-declare(strict_types=1);
-
-// Multi-zone version of Bertie's working cache_current.php
-// Processes each zone separately: mainland, northern, hatteras
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

@@ -1,9 +1,14 @@
 <?php
-// counties/dare/api/cache_current.php
 declare(strict_types=1);
+error_reporting(E_ALL);
 
-// Multi-zone version of Bertie's working cache_current.php
-// Processes each zone separately: mainland, northern, hatteras
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS current conditions for configured stations and caches them as JSON.
+ *
+ * - Hyde County, NC
+ *
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

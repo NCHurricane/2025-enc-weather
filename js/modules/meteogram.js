@@ -1,10 +1,12 @@
-// js/modules/meteogram.js
-// Updated to work with county-specific architecture
-// Removes dependencies on weatherData.js
+// =============================
+// Meteogram Chart Module - js/modules/meteogram.js
+// Fetches hourly weather data for the current county and renders a meteogram chart using Chart.js.
+// Allows selection of timeframes (now, 24, 48, 72, 96 hours) and parameters (temperature, wind, precipitation).
+// =============================
 
 function degreesToCardinal(deg) {
   if (deg == null) return null;
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
@@ -140,7 +142,7 @@ function processHourlyData(hourlyData) {
  */
 function createMeteogramChart(timeframeKey, processedData, selectedParams) {
   if (!processedData || !processedData[timeframeKey]) return null;
-  
+
   const canvas = document.getElementById('meteogramChart');
   if (!canvas) return null;
 
@@ -292,7 +294,7 @@ function setupMeteogramControls(processedData) {
   function getSelectedParameters() {
     const params = [];
     const paramIds = ['temperature', 'wind', 'precipitation'];
-    
+
     for (const param of paramIds) {
       const checkbox = document.getElementById(`param-${param}`);
       if (checkbox?.checked) params.push(param);

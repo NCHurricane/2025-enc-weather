@@ -1,15 +1,14 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 // nhc_graphics_cache_ep.php
 // Downloads and caches NHC storm graphics for all active EP storms for the current year
 // Uses js/modules/cache/nhc_current_storms.json (fallback: live NHC JSON)
 // Saves to active/storms/{STORM}/
 // Overwrites existing files, logs errors to active/logs/nhc_graphics_cache_ep.log
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
-$local_json = __DIR__ . '/../../js/modules/cache/nhc_current_storms.json';
+$local_json = __DIR__ . '/cache/nhc_current_storms.json';
 $remote_json = 'https://www.nhc.noaa.gov/CurrentStorms.json';
 $base_url = 'https://www.nhc.noaa.gov/storm_graphics';
 $storm_dir_base = __DIR__ . '/../storms/';
@@ -73,24 +72,23 @@ try {
                 continue;
             }
         }
-        // Graphics to download
         $graphics = [
             // Track and Messages
-            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_no_line_and_wind.png", '3day_cone_no_line_and_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_no_line_and_wind.png", '5day_cone_no_line_and_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_key_messages.png", 'key_messages.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_spanish_key_messages.png", 'spanish_key_messages.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_no_line_and_wind_sm2.png", '3day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_no_line_and_wind_sm2.png", '5day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_key_messages_sm2.png", 'key_messages.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_spanish_key_messages_sm2.png", 'spanish_key_messages.png'],
             // Wind Field/History/Arrival
-            ["{$base_url}/$basinFolder/{$stormId}_current_wind.png", 'current_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_wind_history.png", 'wind_history.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_earliest_reasonable_toa_34.png", '3day_earliest_reasonable_toa_34.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_most_likely_toa_34.png", '3day_most_likely_toa_34.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_current_wind_sm2.png", 'current_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_wind_history_sm2.png", 'wind_history.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_earliest_reasonable_toa_34_sm2.png", '3day_earliest_reasonable_toa_34.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_most_likely_toa_34_sm2.png", '3day_most_likely_toa_34.png'],
             // Peak Surge
-            ["{$base_url}/$basinFolder/{$stormId}_peak_surge.png", 'peak_surge.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_peak_surge_sm2.png", 'peak_surge.png'],
             // Rainfall/Excess Rain (2-digit year)
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCQPF.gif", 'WPCQPF.gif'],
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}INTQPF.gif", 'INTQPF.gif'],
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCERO.gif", 'WPCERO.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCQPF_sm2.gif", 'WPCQPF.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}INTQPF_sm2.gif", 'INTQPF.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCERO_sm2.gif", 'WPCERO.gif'],
         ];
         // Wind Probabilities (all timeframes)
         foreach ([34, 50, 64] as $kt) {

@@ -1,18 +1,14 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Current Conditions Script - cache_current.php
- * Fetches NWS API current conditions and caches them as JSON.
+ * Fetches NWS current conditions for configured stations and caches them as JSON.
  *
- * Single-zone county:
- * - Bertie County, NC (zone: NCZ030)
- * - Bertie County, NC (zone: NCC015)
+ * Bertie County, NC
  *
  */
-declare(strict_types=1);
-
-// Requirements ref: instructions.txt (Current Conditions Cache) 
-// - poll all stations in config array format
-// - normalize units, compute age_minutes, allow nulls; write data/current.json
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';

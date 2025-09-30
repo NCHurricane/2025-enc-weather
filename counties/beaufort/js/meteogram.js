@@ -1,36 +1,44 @@
 // ==============================
 // Beaufort County Meteogram Builder - meteogram.js
-// Purpose: County-specific meteogram using getHourlyData() from countyData.js
+//
+// Renders a customizable meteogram chart with selectable timeframes and weather parameters.
+// Utilizes Chart.js for rendering the chart and provides controls for user interaction.
+//
+// Features:
+// - Timeframes: Now, 24h, 48h, 72h, 96h
+// - Parameters: Temperature, Dew Point, Humidity, Wind (with direction arrows), Precipitation Chance
+// - Dynamic chart updates based on user selections
+// - Responsive design for various screen sizes
 // ==============================
 
-import { getHourlyData } from "./countyData.js";
+import { getHourlyData } from './countyData.js';
 
 function degreesToCardinal(deg) {
-  if (deg == null) return "N/A";
+  if (deg == null) return 'N/A';
   const dirs = [
-    "N",
-    "NNE",
-    "NE",
-    "ENE",
-    "E",
-    "ESE",
-    "SE",
-    "SSE",
-    "S",
-    "SSW",
-    "SW",
-    "WSW",
-    "W",
-    "WNW",
-    "NW",
-    "NNW",
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW',
   ];
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
 function processHourlyData(hourlyData) {
   if (!hourlyData) {
-    console.error("No hourly data provided");
+    console.error('No hourly data provided');
     return null;
   }
 
@@ -40,9 +48,9 @@ function processHourlyData(hourlyData) {
   } else if (hourlyData.periods && Array.isArray(hourlyData.periods)) {
     periods = hourlyData.periods;
   } else {
-    console.error("Invalid hourly data structure:", hourlyData);
-    console.log("Expected: {hours: [...]} or {periods: [...]}");
-    console.log("Received keys:", Object.keys(hourlyData));
+    console.error('Invalid hourly data structure:', hourlyData);
+    console.log('Expected: {hours: [...]} or {periods: [...]}');
+    console.log('Received keys:', Object.keys(hourlyData));
     return null;
   }
 
@@ -56,7 +64,7 @@ function processHourlyData(hourlyData) {
 
     const timestamp = new Date(period.startTime);
     if (isNaN(timestamp.getTime())) {
-      console.warn("Invalid timestamp in period:", period);
+      console.warn('Invalid timestamp in period:', period);
       return;
     }
 
@@ -65,11 +73,11 @@ function processHourlyData(hourlyData) {
     if (hoursSinceNow < 0) return;
 
     let timeframeKey;
-    if (hoursSinceNow < 24) timeframeKey = "0";
-    else if (hoursSinceNow < 48) timeframeKey = "24";
-    else if (hoursSinceNow < 72) timeframeKey = "48";
-    else if (hoursSinceNow < 96) timeframeKey = "72";
-    else if (hoursSinceNow < 120) timeframeKey = "96";
+    if (hoursSinceNow < 24) timeframeKey = '0';
+    else if (hoursSinceNow < 48) timeframeKey = '24';
+    else if (hoursSinceNow < 72) timeframeKey = '48';
+    else if (hoursSinceNow < 96) timeframeKey = '72';
+    else if (hoursSinceNow < 120) timeframeKey = '96';
     else return;
 
     const temp = period.temperature;
@@ -126,11 +134,11 @@ function processHourlyData(hourlyData) {
 
     processed[key] = {
       labels: group.map((p) => ({
-        date: p.timestamp.toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "numeric",
+        date: p.timestamp.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'numeric',
         }),
-        time: p.timestamp.getHours().toString().padStart(2, "0") + ":00",
+        time: p.timestamp.getHours().toString().padStart(2, '0') + ':00',
       })),
       temperature: group.map((p) => p.temperature),
       dewpoint: group.map((p) => p.dewpoint),
@@ -141,7 +149,7 @@ function processHourlyData(hourlyData) {
     };
   }
 
-  console.log("Successfully processed meteogram data");
+  console.log('Successfully processed meteogram data');
   return processed;
 }
 
@@ -151,9 +159,9 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
     return null;
   }
 
-  const canvas = document.getElementById("meteogramChart");
+  const canvas = document.getElementById('meteogramChart');
   if (!canvas) {
-    console.error("Meteogram canvas not found");
+    console.error('Meteogram canvas not found');
     return null;
   }
 
@@ -161,69 +169,65 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
     window.meteogramChartInstance.destroy();
   }
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   const data = processedData[timeframeKey];
   const datasets = [];
 
-  if (selectedParams.includes("temperature")) {
+  if (selectedParams.includes('temperature')) {
     datasets.push({
-      type: "line",
-      label: "Temp (°F)",
+      type: 'line',
+      label: 'Temp (°F)',
       data: data.temperature,
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
+      borderColor: 'rgb(255, 99, 132)',
+      backgroundColor: 'rgba(255, 99, 132, 0.5)',
       borderWidth: 2,
       tension: 0.3,
-      yAxisID: "y-temp",
+      yAxisID: 'y-temp',
       pointRadius: 3,
       order: 1,
     });
   }
 
-  if (selectedParams.includes("dewpoint") && data.dewpoint) {
+  if (selectedParams.includes('dewpoint') && data.dewpoint) {
     datasets.push({
-      type: "line",
-      label: "Dew Point (°F)",
+      type: 'line',
+      label: 'Dew Point (°F)',
       data: data.dewpoint,
-      borderColor: "rgb(75, 192, 192)",
-      backgroundColor: "rgba(75, 192, 192, 0.5)",
+      borderColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgba(75, 192, 192, 0.5)',
       borderWidth: 2,
       tension: 0.3,
-      yAxisID: "y-temp",
+      yAxisID: 'y-temp',
       pointRadius: 3,
       order: 2,
     });
   }
 
-  if (selectedParams.includes("humidity") && data.humidity) {
+  if (selectedParams.includes('humidity') && data.humidity) {
     datasets.push({
-      type: "line",
-      label: "Humidity (%)",
+      type: 'line',
+      label: 'Humidity (%)',
       data: data.humidity,
-      borderColor: "rgb(54, 162, 235)",
-      backgroundColor: "rgba(54, 162, 235, 0.5)",
+      borderColor: 'rgb(54, 162, 235)',
+      backgroundColor: 'rgba(54, 162, 235, 0.5)',
       borderWidth: 2,
       tension: 0.3,
-      yAxisID: "y-humidity",
+      yAxisID: 'y-humidity',
       pointRadius: 3,
       order: 3,
     });
   }
 
-  if (selectedParams.includes("wind") && data.windSpeed) {
+  if (selectedParams.includes('wind') && data.windSpeed) {
     const pointImages = data.windDirection.map((direction, index) => {
-      if (
-        direction === null ||
-        direction === undefined ||
-        data.windSpeed[index] === 0
-      ) {
+      if (direction === null || direction === undefined || data.windSpeed[index] === 0) {
         return undefined;
       }
 
-      const canvas = document.createElement("canvas");
+      const canvas = document.createElement('canvas');
       canvas.width = 40;
       canvas.height = 50;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
 
       ctx.save();
       ctx.translate(20, 25);
@@ -233,7 +237,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(0, -20);
-      ctx.strokeStyle = "rgb(153, 102, 255)";
+      ctx.strokeStyle = 'rgb(153, 102, 255)';
       ctx.lineWidth = 3;
       ctx.stroke();
 
@@ -242,7 +246,7 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
       ctx.lineTo(8, -8);
       ctx.lineTo(-8, -8);
       ctx.closePath();
-      ctx.fillStyle = "rgb(153, 102, 255)";
+      ctx.fillStyle = 'rgb(153, 102, 255)';
       ctx.fill();
 
       ctx.restore();
@@ -250,14 +254,14 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
     });
 
     datasets.push({
-      type: "line",
-      label: "Wind (mph)",
+      type: 'line',
+      label: 'Wind (mph)',
       data: data.windSpeed,
-      borderColor: "rgb(153, 102, 255)",
-      backgroundColor: "rgba(153, 102, 255, 0.5)",
+      borderColor: 'rgb(153, 102, 255)',
+      backgroundColor: 'rgba(153, 102, 255, 0.5)',
       borderWidth: 2,
       tension: 0.3,
-      yAxisID: "y-wind",
+      yAxisID: 'y-wind',
       pointRadius: 6,
       pointHoverRadius: 8,
       pointStyle: pointImages,
@@ -265,22 +269,22 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
     });
   }
 
-  if (selectedParams.includes("precipitation") && data.precipChance) {
+  if (selectedParams.includes('precipitation') && data.precipChance) {
     datasets.push({
-      type: "bar",
-      label: "Precip. Chance (%)",
+      type: 'bar',
+      label: 'Precip. Chance (%)',
       data: data.precipChance,
-      backgroundColor: "rgba(255, 159, 64, 0.7)",
-      borderColor: "rgb(255, 159, 64)",
+      backgroundColor: 'rgba(255, 159, 64, 0.7)',
+      borderColor: 'rgb(255, 159, 64)',
       borderWidth: 1,
-      yAxisID: "y-precip",
+      yAxisID: 'y-precip',
       order: 5,
     });
   }
 
   const scales = {
     x: {
-      title: { display: true, text: "Time" },
+      title: { display: true, text: 'Time' },
       ticks: {
         callback: function (val, index) {
           const labelObj = data.labels[index];
@@ -290,47 +294,44 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
     },
   };
 
-  if (
-    selectedParams.includes("temperature") ||
-    selectedParams.includes("dewpoint")
-  ) {
-    scales["y-temp"] = {
-      type: "linear",
+  if (selectedParams.includes('temperature') || selectedParams.includes('dewpoint')) {
+    scales['y-temp'] = {
+      type: 'linear',
       display: true,
-      position: "left",
-      title: { display: true, text: "Temperature (°F)" },
+      position: 'left',
+      title: { display: true, text: 'Temperature (°F)' },
     };
   }
 
-  if (selectedParams.includes("humidity")) {
-    scales["y-humidity"] = {
-      type: "linear",
+  if (selectedParams.includes('humidity')) {
+    scales['y-humidity'] = {
+      type: 'linear',
       display: true,
-      position: "right",
-      title: { display: true, text: "Humidity (%)" },
+      position: 'right',
+      title: { display: true, text: 'Humidity (%)' },
       min: 0,
       max: 100,
       grid: { drawOnChartArea: false },
     };
   }
 
-  if (selectedParams.includes("wind")) {
-    scales["y-wind"] = {
-      type: "linear",
+  if (selectedParams.includes('wind')) {
+    scales['y-wind'] = {
+      type: 'linear',
       display: true,
-      position: "right",
-      title: { display: true, text: "Wind Speed (mph)" },
+      position: 'right',
+      title: { display: true, text: 'Wind Speed (mph)' },
       min: 0,
       grid: { drawOnChartArea: false },
     };
   }
 
-  if (selectedParams.includes("precipitation")) {
-    scales["y-precip"] = {
-      type: "linear",
+  if (selectedParams.includes('precipitation')) {
+    scales['y-precip'] = {
+      type: 'linear',
       display: true,
-      position: "right",
-      title: { display: true, text: "Precipitation (%)" },
+      position: 'right',
+      title: { display: true, text: 'Precipitation (%)' },
       min: 0,
       max: 100,
       grid: { drawOnChartArea: false },
@@ -338,32 +339,32 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
   }
 
   const chart = new Chart(ctx, {
-    type: "line",
+    type: 'line',
     data: { labels: data.labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: "index", intersect: false },
+      interaction: { mode: 'index', intersect: false },
       scales,
       plugins: {
-        legend: { position: "top" },
+        legend: { position: 'top' },
         tooltip: {
           callbacks: {
             title: (context) => {
               const index = context[0]?.dataIndex;
-              if (index === undefined) return "Time: Unknown";
+              if (index === undefined) return 'Time: Unknown';
               const label = data.labels[index];
               return `Time: ${label.time} on ${label.date}`;
             },
             afterBody: (context) => {
-              if (selectedParams.includes("wind") && data.windDirection) {
+              if (selectedParams.includes('wind') && data.windDirection) {
                 const index = context[0]?.dataIndex;
                 const direction = data.windDirection[index];
                 return direction != null
                   ? `Wind Direction: ${degreesToCardinal(direction)}`
-                  : "";
+                  : '';
               }
-              return "";
+              return '';
             },
           },
         },
@@ -377,32 +378,26 @@ function createMeteogramChart(timeframeKey, processedData, selectedParams) {
 
 function setupMeteogramControls(processedData) {
   function getSelectedTimeframe() {
-    const timeframes = ["now", "24", "48", "72", "96"];
+    const timeframes = ['now', '24', '48', '72', '96'];
     for (const time of timeframes) {
       const radio = document.getElementById(`meteogram-${time}`);
       if (radio?.checked) {
-        return time === "now" ? "0" : time;
+        return time === 'now' ? '0' : time;
       }
     }
-    return "0";
+    return '0';
   }
 
   function getSelectedParameters() {
     const params = [];
-    const paramIds = [
-      "temperature",
-      "dewpoint",
-      "humidity",
-      "wind",
-      "precipitation",
-    ];
+    const paramIds = ['temperature', 'dewpoint', 'humidity', 'wind', 'precipitation'];
 
     for (const param of paramIds) {
       const checkbox = document.getElementById(`param-${param}`);
       if (checkbox?.checked) params.push(param);
     }
 
-    return params.length > 0 ? params : ["temperature"];
+    return params.length > 0 ? params : ['temperature'];
   }
 
   function updateChart() {
@@ -411,16 +406,14 @@ function setupMeteogramControls(processedData) {
     createMeteogramChart(timeframe, processedData, selectedParams);
   }
 
-  const checkboxes = document.querySelectorAll(".meteogram-param-checkbox");
+  const checkboxes = document.querySelectorAll('.meteogram-param-checkbox');
   checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener("change", updateChart);
+    checkbox.addEventListener('change', updateChart);
   });
 
-  const timeframeRadios = document.querySelectorAll(
-    'input[name="meteogramTime"]'
-  );
+  const timeframeRadios = document.querySelectorAll('input[name="meteogramTime"]');
   timeframeRadios.forEach((radio) => {
-    radio.addEventListener("change", updateChart);
+    radio.addEventListener('change', updateChart);
   });
 
   updateChart();
@@ -428,26 +421,26 @@ function setupMeteogramControls(processedData) {
 
 export async function initMeteogram() {
   try {
-    console.log("Initializing meteogram...");
+    console.log('Initializing meteogram...');
 
     const hourlyData = await getHourlyData();
     if (!hourlyData) {
-      console.error("Failed to fetch hourly data");
+      console.error('Failed to fetch hourly data');
       return false;
     }
 
     const processedData = processHourlyData(hourlyData);
     if (!processedData) {
-      console.error("Failed to process hourly data");
+      console.error('Failed to process hourly data');
       return false;
     }
 
     setupMeteogramControls(processedData);
 
-    console.log("Meteogram initialized successfully");
+    console.log('Meteogram initialized successfully');
     return true;
   } catch (error) {
-    console.error("Error initializing meteogram:", error);
+    console.error('Error initializing meteogram:', error);
     return false;
   }
 }

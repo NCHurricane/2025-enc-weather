@@ -1,5 +1,5 @@
 // =============================
-// Storm Graphics Module — storm-graphics.js
+// Storm Graphics Module — active/js/storm-graphics.js
 // Renders NHC storm graphics with an accessible tabbed UI.
 //
 // // Products handled:

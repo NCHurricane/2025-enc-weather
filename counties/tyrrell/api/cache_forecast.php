@@ -1,9 +1,16 @@
 <?php
-// counties/bertie/api/cache_forecast.php
 declare(strict_types=1);
+error_reporting(E_ALL);
 
-// Spec: use lat/lon -> gridpoint -> forecast & hourly; ensure icons size=large;
-// write forecast.json and hourly.json.
+/**
+ * NWS API Current Conditions Script - cache_current.php
+ * Fetches NWS API current conditions and caches them as JSON.
+ *
+ * Single-zone county:
+ * - Tyrrell County, NC (zone: NCZ046)
+ * - Tyrrell County, NC (zone: NCC177)
+ * 
+ *//
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
@@ -84,7 +91,6 @@ atomic_write_json($dataDir . '/forecast.json', $outForecast);
 // Build hourly.json (write raw-ish but present) - ENHANCED with dewpoint and humidity
 $outHourly = [
   'generated' => $nowIso,
-  'hours' => []
 ];
 if ($hourly && isset($hourly['properties']['periods'])) {
   foreach ($hourly['properties']['periods'] as $h) {
@@ -104,6 +110,7 @@ if ($hourly && isset($hourly['properties']['periods'])) {
       'relativeHumidity' => $relativeHumidityRounded,  // NEW: Rounded percentage
       'windSpeed' => $h['windSpeed'] ?? null,
       'windDirection' => $h['windDirection'] ?? null,
+  <?php
       'shortForecast' => $h['shortForecast'] ?? null,
       'icon' => ensure_large_icon($h['icon'] ?? null),
       'probabilityOfPrecipitation' => $h['probabilityOfPrecipitation']['value'] ?? null

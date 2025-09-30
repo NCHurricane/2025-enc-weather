@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 /**
  * NWS API Forecast Script - cache_forecast.php
  * Fetches NWS API forecast data and caches it as JSON.
@@ -8,8 +11,6 @@
  * - Bertie County, NC (zone: NCC015)
  *
  */
-
-declare(strict_types=1);
 
 // Spec: use lat/lon -> gridpoint -> forecast & hourly; ensure icons size=large;
 // write forecast.json and hourly.json.
