@@ -24,9 +24,9 @@
 // - WPC Excessive Rainfall Outlook (if issued)
 // ==============================
 
-"use strict";
 
 import { initStormGraphics } from './storm-graphics.js';
+import { RadiiVisualization } from './radii-visualization.js';
 
 const CONFIG = {
   STORMS_ROOT: "./storms",
@@ -350,11 +350,9 @@ async function init() {
   try {
     const rad = cache?.radii || null;
     const fixes = Array.isArray(cache?.fixes) ? cache.fixes : null;
-    if ((rad || fixes) && window.RadiiVisualization) {
+    if (rad || fixes) {
       const stormName = advisory?.systemName || "Active Storm";
-      window.RadiiVisualization.render(rad, fixes, stormName);
-    } else if (!window.RadiiVisualization) {
-      console.error("RadiiVisualization module not loaded");
+      RadiiVisualization.render(rad, fixes, stormName);
     } else {
       console.info("No radii data available in storm.json");
     }

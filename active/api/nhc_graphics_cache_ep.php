@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 // Saves to active/storms/{STORM}/
 // Overwrites existing files, logs errors to active/logs/nhc_graphics_cache_ep.log
 
-$local_json = __DIR__ . '/cache/nhc_current_storms.json';
+$local_json = dirname(__DIR__) . '/cache/nhc_current_storms.json';
 $remote_json = 'https://www.nhc.noaa.gov/CurrentStorms.json';
 $base_url = 'https://www.nhc.noaa.gov/storm_graphics';
 $storm_dir_base = __DIR__ . '/../storms/';

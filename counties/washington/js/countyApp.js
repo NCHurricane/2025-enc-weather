@@ -1,10 +1,10 @@
 // =======================
-// Washington County, NC Page Builder - countyApp.js
-// Builds the front-end UI for Washington County, NC weather page.
+// Bertie County, NC Page Builder - countyApp.js
+// Builds the front-end UI for Bertie County, NC weather page.
 //
 // Single-zone county:
-// - Washington County, NC (zone: NCZ045)
-// - Washington County, NC (zone: NCC187)
+// - Bertie County, NC (zone: NCZ030)
+// - Bertie County, NC (zone: NCC015)
 // ========================
 
 // Alert Colors and Priorities
@@ -476,7 +476,7 @@ async function renderForecast() {
       const tempUnit = p?.temperatureUnit || 'F';
       const isDaytime = p?.isDaytime;
 
-      const tempColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
+      const tempColor = isDaytime ? '#d50000' : '#1976d2';
 
       const tempDisplay = temp != null
         ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
@@ -522,7 +522,7 @@ async function renderDetailedForecast() {
     const detailedItems = periods.map(p => {
       const isDaytime = p?.isDaytime;
 
-      const dayColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
+      const dayColor = isDaytime ? '#d50000' : '#1976d2';
 
       const dayName = p?.name || 'N/A';
       const detailedText = p?.detailedForecast || p?.shortForecast || 'No forecast details available.';
@@ -573,8 +573,8 @@ async function renderAlerts() {
         `
         <div class="alert" style="background-color: #dc3545;">
           <div class="alert-none">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            <b>NO ACTIVE ALERTS</b>
+            <span class="alert-title-chip"><i class="fa-solid fa-circle-check fa-lg"></i>
+            <b>NO ACTIVE ALERTS</b></span>
           </div>
         </div>
       `
@@ -594,20 +594,16 @@ async function renderAlerts() {
       .map((alert, index) => {
         const eventName = alert.event || alert.type || alert.headline || "Alert";
         const description = alert.description || alert.summary || "";
-
         const alertColor = warningColors[eventName] || "#dc3545";
-
         const priority = warningPriorities[eventName] || 999;
         const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
-
         const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
 
         return `
         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
           <input type="checkbox" id="alert-${index}" class="alert-toggle">
           <label for="alert-${index}" class="alert-title">
-            
-            ${eventName}${expiresInline}
+            <span class="alert-title-chip">${eventName}${expiresInline}</span>
           </label>
           <div class="alert-details">
             <p>${description}</p>

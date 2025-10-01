@@ -5,35 +5,62 @@
 // Designed for use with the NC County Map and other modules.
 // =============================
 
-const COUNTIES = [
-  "bertie",
-  "pitt",
-  "beaufort",
-  "martin",
-  "dare",
-  "hyde",
-  "washington",
-  "tyrrell",
-];
+
+// Configurable maximum station data age (minutes). Default 90
+let STATION_MAX_AGE_MINUTES = 90;
+
+const COUNTIES = ['bertie', 'pitt', 'beaufort', 'martin', 'dare', 'hyde', 'washington', 'tyrrell'];
+
+/**
+ * Preferred station mapping: countyName (or countyName.zoneName) => preferred station ID(s)
+ * Example: { beaufort: 'KOCW', 'dare.mainland': ['KHSE', 'KFFA'] }
+ */
+const PREFERRED_STATIONS = {
+  // Example entries (customize as needed):
+  beaufort: 'KOCW',
+  washington: 'KOCW',
+  // 'dare.mainland': ['KHSE', 'KFFA'],
+  // Add more as needed
+};
 
 /**
  * Select best station from county data (handles both single and multi-zone)
+ * Prefers station(s) from PREFERRED_STATIONS if available, else falls back to first usable.
  */
-function selectBestStationFromCounty(countyData, isMultiZone = false) {
+function selectBestStationFromCounty(countyData, isMultiZone = false, countyName = '', zoneName = '') {
   const usable = (st) =>
     st?.data?.temperature !== null &&
     (st.observation?.age_minutes ?? 999) < STATION_MAX_AGE_MINUTES;
+
+  // Helper to find preferred station in a stations object
+  function findPreferred(stations, preferred) {
+    if (!stations || !preferred) return null;
+    const ids = Array.isArray(preferred) ? preferred : [preferred];
+    for (const id of ids) {
+      if (stations[id] && usable(stations[id])) return stations[id];
+    }
+    return null;
+  }
+
   if (isMultiZone) {
-    for (const zoneName of Object.keys(countyData)) {
-      const zone = countyData[zoneName];
+    for (const zn of Object.keys(countyData)) {
+      const zone = countyData[zn];
       if (!zone?.stations) continue;
+      // Try per-county+zone preferred, then per-county
+      const preferred = PREFERRED_STATIONS[`${countyName}.${zn}`] || PREFERRED_STATIONS[countyName];
+      const found = findPreferred(zone.stations, preferred);
+      if (found) return found;
+      // Fallback: first usable
       for (const st of Object.values(zone.stations)) {
-        if (usable(st)) return st; // first station wins
+        if (usable(st)) return st;
       }
     }
     return null;
   } else {
     if (!countyData.stations) return null;
+    const preferred = PREFERRED_STATIONS[countyName];
+    const found = findPreferred(countyData.stations, preferred);
+    if (found) return found;
     for (const st of Object.values(countyData.stations)) {
       if (usable(st)) return st;
     }
@@ -48,10 +75,9 @@ async function fetchCountyWeather(countyName) {
   const BUST_BUCKET_MS = 15 * 60 * 1000;
   const bust = Math.floor(Date.now() / BUST_BUCKET_MS);
   try {
-    const configResponse = await fetch(
-      `counties/${countyName}/data/config.json?v=${bust}`,
-      { cache: "no-store" }
-    );
+    const configResponse = await fetch(`counties/${countyName}/data/config.json?v=${bust}`, {
+      cache: 'no-store',
+    });
     if (!configResponse.ok) return null;
     const config = await configResponse.json();
     const isMultiZone = config.county?.multiZone || false;
@@ -63,7 +89,7 @@ async function fetchCountyWeather(countyName) {
         try {
           const resp = await fetch(
             `counties/${countyName}/data/${zone}/current.json?v=${bust}`,
-            { cache: "no-store" }
+            { cache: 'no-store' }
           );
           if (resp.ok) zoneData[zone] = await resp.json();
         } catch { }
@@ -71,19 +97,24 @@ async function fetchCountyWeather(countyName) {
       weatherData = zoneData;
     } else {
       try {
-        const resp = await fetch(
-          `counties/${countyName}/data/current.json?v=${bust}`,
-          { cache: "no-store" }
-        );
+        const resp = await fetch(`counties/${countyName}/data/current.json?v=${bust}`, {
+          cache: 'no-store',
+        });
         if (resp.ok) weatherData = await resp.json();
       } catch { }
     }
     if (!weatherData) return null;
-    const bestStation = selectBestStationFromCounty(weatherData, isMultiZone);
+    // Pass countyName and zoneName for preferred station logic
+    const bestStation = selectBestStationFromCounty(weatherData, isMultiZone, countyName);
     if (!bestStation) return null;
+    // Extract all needed parameters, with null fallback
     return {
-      temp: bestStation.data.temperature,
-      conditions: bestStation.data.conditions || "N/A",
+      temp: bestStation.data.temperature ?? null,
+      humidity: bestStation.data.humidity ?? null,
+      dewpoint: bestStation.data.dewpoint ?? null,
+      windSpeed: bestStation.data.windSpeed ?? null,
+      windDirection: bestStation.data.windDirection ?? null,
+      conditions: bestStation.data.conditions || 'N/A',
       stationName: bestStation.name || bestStation.id,
       age: bestStation.observation?.age_minutes || 0,
       updatedIso: weatherData.generated || bestStation.observation?.timestamp,
@@ -97,13 +128,17 @@ async function fetchCountyWeather(countyName) {
  * Default weather data fallback (when no data available)
  */
 export function getDefaultWeatherData() {
-  return { temp: "N/A", conditions: "N/A", stationName: "No Data", age: 999 };
+  return { temp: 'N/A', conditions: 'N/A', stationName: 'No Data', age: 999 };
 }
 
 /**
  * Main aggregator function - replaces the old fetchCurrentWeather function
  */
-export async function fetchCurrentWeather(lat, lon) {
+/**
+ * Fetch current weather for a county at lat/lon, returning all parameters for the marker
+ * Optionally accepts a parameter argument ("temperature", "humidity", "dewpoint", "wind")
+ */
+export async function fetchCurrentWeather(lat, lon, parameter = 'temperature') {
   let countyName = null;
 
   if (window.siteConfig?.counties) {
@@ -115,15 +150,16 @@ export async function fetchCurrentWeather(lat, lon) {
 
   if (!countyName || !COUNTIES.includes(countyName)) {
     console.warn(`No county match found for coordinates ${lat}, ${lon}`);
-    return { temp: "N/A", conditions: "N/A" };
+    return { temp: 'N/A', conditions: 'N/A' };
   }
 
   const weather = await fetchCountyWeather(countyName);
 
   if (!weather) {
-    return { temp: "N/A", conditions: "N/A" };
+    return { temp: 'N/A', conditions: 'N/A' };
   }
 
+  // Always return all parameters so the map can switch between them
   return weather;
 }
 
@@ -148,10 +184,9 @@ export async function fetchAlerts(lat, lon) {
   }
 
   try {
-    const configResponse = await fetch(
-      `counties/${countyName}/data/config.json?v=${bust}`,
-      { cache: "no-store" }
-    );
+    const configResponse = await fetch(`counties/${countyName}/data/config.json?v=${bust}`, {
+      cache: 'no-store',
+    });
     if (!configResponse.ok) return [];
 
     const config = await configResponse.json();
@@ -169,7 +204,7 @@ export async function fetchAlerts(lat, lon) {
         try {
           const alertsResponse = await fetch(
             `counties/${countyName}/data/${zoneName}/alerts.json?v=${bust}`,
-            { cache: "no-store" }
+            { cache: 'no-store' }
           );
           if (alertsResponse.ok) {
             const alertsData = await alertsResponse.json();
@@ -194,7 +229,7 @@ export async function fetchAlerts(lat, lon) {
       try {
         const alertsResponse = await fetch(
           `counties/${countyName}/data/alerts.json?v=${bust}`,
-          { cache: "no-store" }
+          { cache: 'no-store' }
         );
         if (alertsResponse.ok) {
           const alertsData = await alertsResponse.json();
@@ -203,7 +238,7 @@ export async function fetchAlerts(lat, lon) {
             allAlerts = alertsData.alerts.map((alert) => ({
               ...alert,
               zones: forecastZone ? [forecastZone] : [],
-              sourceZone: "single",
+              sourceZone: 'single',
               forecastZone: forecastZone,
             }));
           }
@@ -217,8 +252,7 @@ export async function fetchAlerts(lat, lon) {
     const seenIds = new Set();
 
     for (const alert of allAlerts) {
-      const id = `${alert.id || alert.identifier || alert.event}-${alert.forecastZone
-        }`;
+      const id = `${alert.id || alert.identifier || alert.event}-${alert.forecastZone}`;
 
       if (!seenIds.has(id)) {
         seenIds.add(id);
@@ -237,7 +271,7 @@ export async function fetchAlerts(lat, lon) {
  * Batch update function for efficiency (optional enhancement)
  */
 export async function updateMapData() {
-  console.log("[mapAggregator] Starting batch update for all counties");
+  console.log('[mapAggregator] Starting batch update for all counties');
 
   const weatherData = {};
   const alertsData = {};
@@ -261,17 +295,14 @@ export async function updateMapData() {
 
   await Promise.all(promises);
 
-  console.log(
-    `[mapAggregator] Updated data for ${Object.keys(weatherData).length
-    } counties`
-  );
+  console.log(`[mapAggregator] Updated data for ${Object.keys(weatherData).length} counties`);
 
   return { weatherData, alertsData };
 }
 
 // Configurable maximum station data age (minutes). Default 90;
 export function setStationMaxAgeMinutes(mins) {
-  if (typeof mins === "number" && mins > 0) {
+  if (typeof mins === 'number' && mins > 0) {
     STATION_MAX_AGE_MINUTES = mins;
   }
 }

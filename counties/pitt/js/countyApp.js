@@ -1,10 +1,10 @@
 // =======================
-// Pitt County, NC Page Builder - countyApp.js
-// Builds the front-end UI for Pitt County, NC weather page.
+// Bertie County, NC Page Builder - countyApp.js
+// Builds the front-end UI for Bertie County, NC weather page.
 //
 // Single-zone county:
-// - Pitt County, NC (zone: NCZ044)
-// - Pitt County, NC (zone: NCC147)
+// - Bertie County, NC (zone: NCZ030)
+// - Bertie County, NC (zone: NCC015)
 // ========================
 
 // Alert Colors and Priorities
@@ -324,10 +324,7 @@ function ensureWeatherIcon() {
 
 async function loadStationUrls() {
   try {
-    const configResponse = await fetch('./data/config.json?t=' + Date.now(), {
-      headers: { "User-Agent": "NCHurricane.com Weather App/1.0" },
-      cache: "no-store"
-    });
+    const configResponse = await fetch('./data/config.json?v=' + Date.now(), { cache: 'no-store' });
     if (!configResponse.ok) {
       throw new Error(`Failed to load config: ${configResponse.status}`);
     }
@@ -479,7 +476,7 @@ async function renderForecast() {
       const tempUnit = p?.temperatureUnit || 'F';
       const isDaytime = p?.isDaytime;
 
-      const tempColor = isDaytime ? '#d50000' : '#1976d2'; // Red for day, blue for night
+      const tempColor = isDaytime ? '#d50000' : '#1976d2';
 
       const tempDisplay = temp != null
         ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
@@ -576,8 +573,8 @@ async function renderAlerts() {
         `
         <div class="alert" style="background-color: #dc3545;">
           <div class="alert-none">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            <b>NO ACTIVE ALERTS</b>
+            <span class="alert-title-chip"><i class="fa-solid fa-circle-check fa-lg"></i>
+            <b>NO ACTIVE ALERTS</b></span>
           </div>
         </div>
       `
@@ -597,20 +594,16 @@ async function renderAlerts() {
       .map((alert, index) => {
         const eventName = alert.event || alert.type || alert.headline || "Alert";
         const description = alert.description || alert.summary || "";
-
         const alertColor = warningColors[eventName] || "#dc3545";
-
         const priority = warningPriorities[eventName] || 999;
         const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
-
         const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
 
         return `
         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
           <input type="checkbox" id="alert-${index}" class="alert-toggle">
           <label for="alert-${index}" class="alert-title">
-            
-            ${eventName}${expiresInline}
+            <span class="alert-title-chip">${eventName}${expiresInline}</span>
           </label>
           <div class="alert-details">
             <p>${description}</p>

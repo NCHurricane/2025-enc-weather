@@ -333,12 +333,33 @@ class StormGraphics {
   renderGraphicItem(name, localUrl, optional = false, id = '', sectionId = '', remoteUrl = '', className = '', ospoUrl = '') {
     const placeholderUrl = '../images/404-image.webp';
     const errorHtml = sectionId === 'surge-rain'
-      ? `<img src='${placeholderUrl}' alt='Graphic Missing or Not Issued' width='500' height='411' />`
+      ? `<img src='${placeholderUrl}' alt='Graphic Missing or Not Issued' width='600' height='411' />`
       : `<div class='graphic-error'>Graphic Missing or Not Issued</div>`;
 
-    // Fallback logic: for wind-analysis, only local image, fallback to 404
+    // List of graphics that should NOT fallback to remote if local is missing
+    const noRemoteFallback = [
+      'peak_surge.png',
+      'WPCQPF.gif',
+      'INTQPF.gif',
+      'WPCERO.gif'
+    ];
+
+    // Determine if this graphic is one of the four
+    let isNoRemoteFallback = false;
+    if (id && typeof id === 'string') {
+      const idLower = id.toLowerCase();
+      isNoRemoteFallback =
+        idLower.includes('peak-surge') ||
+        idLower.includes('rainfall') ||
+        idLower.includes('excess-rain');
+    }
+
+    // Fallback logic
     let fallback;
     if (sectionId === 'wind-analysis') {
+      fallback = `this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';`;
+    } else if (isNoRemoteFallback) {
+      // Do NOT fallback to remote for these graphics
       fallback = `this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';`;
     } else if (remoteUrl) {
       fallback = `this.onerror=function(){this.onerror=null; this.src='${placeholderUrl}'; this.alt='Image not available'; var actionsDiv = document.getElementById('actions-${id}'); if (actionsDiv) actionsDiv.style.display = 'none';}; this.src='${remoteUrl}';`;

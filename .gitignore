@@ -14,3 +14,4 @@ images/*
 .github/gemini-instructions.md
 .htaccess
 active/storms/AL052025/*
+WEATHER_PARAMETER_SELECTOR_PLAN.md

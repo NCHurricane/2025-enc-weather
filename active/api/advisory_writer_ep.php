@@ -310,8 +310,7 @@ function processSingleStorm($stormId) {
 
 function processAllEPStorms() {
     global $isCli;
-    $currentStormsPath = dirname(__FILE__) . '/../../js/modules/cache/nhc_current_storms.json';
-    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
+    $currentStormsPath = dirname(__FILE__) . '/../cache/nhc_current_storms.json';    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
     
     if (!file_exists($currentStormsPath)) {
         bail(500, "Current storms cache not found at {$currentStormsPath}");

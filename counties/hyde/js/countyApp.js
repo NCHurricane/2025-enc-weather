@@ -1,11 +1,12 @@
 // =======================
-// Hyde County, NC Page Builder - countyApp.js
-// Builds the front-end UI for Hyde County, NC weather page.
+// Dare County, NC Page Builder - countyApp.js
+// Builds the front-end UI for Dare County, NC weather page.
 //
 // Multi - zone county:
-// - Hyde County, NC(county code: NCC095)
-// - Mainland Hyde County, NC(zone: NCZ081)
-// - Ocracoke Island(zone: NCZ204)
+// - Dare County(county code: NCC055)
+// - Mainland Dare County, NC(zone: NCZ047)
+// - Northern Outer Banks(zone: NCZ203)
+// - Hatteras Island(zone: NCZ205)
 // ========================
 
 // Alert Colors and Priorities
@@ -328,7 +329,7 @@ function ensureWeatherIcon() {
 
 async function loadStationUrls() {
   try {
-    const configResponse = await fetch("./data/config.json?t=" + Date.now());
+    const configResponse = await fetch('./data/config.json?v=' + Date.now(), { cache: 'no-store' });
     if (!configResponse.ok) {
       throw new Error(`Failed to load config: ${configResponse.status}`);
     }
@@ -698,8 +699,8 @@ async function renderAlerts() {
         `
         <div class="alert" style="background-color: #dc3545;">
           <div class="alert-none">
-            <i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>
-            <b>NO ACTIVE ALERTS</b>
+            <span class="alert-title-chip"><i class="fa-solid fa-circle-check fa-lg"></i>
+            <b>NO ACTIVE ALERTS</b></span>
           </div>
         </div>
       `
@@ -721,18 +722,16 @@ async function renderAlerts() {
         const description = alert.description || alert.summary || "";
 
         const alertColor = warningColors[eventName] || "#dc3545";
-
         const priority = warningPriorities[eventName] || 999;
         const borderWidth = priority <= 10 ? "4px" : priority <= 50 ? "2px" : "1px";
 
-        const expiresInline = alert.expires ? `<br /> until ${fmtTimeLocal(alert.expires)}` : "";
+        const expiresLabel = alert.expires ? ` until ${fmtTimeLocal(alert.expires)}` : "";
 
         return `
         <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
           <input type="checkbox" id="alert-${index}" class="alert-toggle">
           <label for="alert-${index}" class="alert-title">
-            
-            ${eventName}${expiresInline}
+            <span class="alert-title-chip"><i class="fa-sharp-duotone fa-solid fa-triangle-exclamation fa-xl fontawesome-icon"></i>${eventName}<br />${expiresLabel}</span>
           </label>
           <div class="alert-details">
             <p>${description}</p>

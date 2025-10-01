@@ -212,7 +212,7 @@ function getAdvisoryNumber($stormId) {
 }
 
 function getActiveStorms() {
-    $cacheFile = __DIR__ . '/cache/nhc_current_storms.json';
+    $cacheFile = dirname(__DIR__) . '/cache/nhc_current_storms.json';
     
     if (!file_exists($cacheFile)) {
         logMessage("Current storms cache file not found: {$cacheFile}", 'ERROR');

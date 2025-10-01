@@ -1,3 +1,99 @@
+/* ======================== */
+/* MAP PARAMETER TABS (Current Conditions) */
+/* ======================== */
+.map-parameter-tabs {
+    background: linear-gradient(
+        180deg,
+        var(--color-gradient-start) 20%,
+        var(--color-gradient-end) 100%
+    );
+    border-radius: var(--border-radius);
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+.map-parameter-tab-labels {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--color-background);
+    margin: 0;
+    padding: 0;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid var(--color-primary, #007acc);
+}
+
+.map-parameter-tab {
+    flex: 1;
+    min-width: 100px;
+    background-color: var(--color-background);
+    color: var(--color-text, #333);
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.95em;
+    padding: 10px 6px;
+    text-align: center;
+    transition: all 0.2s ease;
+    position: relative;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: none;
+}
+
+.map-parameter-tab:first-child {
+    border-radius: 8px 0 0 0;
+}
+.map-parameter-tab:last-child {
+    border-radius: 0 8px 0 0;
+}
+.map-parameter-tab:hover {
+    background-color: var(--color-accent);
+    color: var(--color-text, #333);
+}
+
+input[name='mapParameterTab'] {
+    display: none;
+}
+
+#tab-temp:checked ~ .map-parameter-tab-labels label[for='tab-temp'],
+#tab-wind:checked ~ .map-parameter-tab-labels label[for='tab-wind'],
+#tab-humidity:checked ~ .map-parameter-tab-labels label[for='tab-humidity'],
+#tab-dewpoint:checked ~ .map-parameter-tab-labels label[for='tab-dewpoint'] {
+    background-color: var(--color-primary, #007acc);
+    color: var(--color-text-light, #ffffff);
+    font-weight: bold;
+}
+
+#tab-temp:checked ~ .map-parameter-tab-labels label[for='tab-temp']::after,
+#tab-wind:checked ~ .map-parameter-tab-labels label[for='tab-wind']::after,
+#tab-humidity:checked ~ .map-parameter-tab-labels label[for='tab-humidity']::after,
+#tab-dewpoint:checked ~ .map-parameter-tab-labels label[for='tab-dewpoint']::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-accent, #ff6b35);
+}
+
+.wind-arrow-icon {
+    fill: yellow;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.7);
+    pointer-events: none; /* clicks pass through to number */
+    paint-order: stroke fill;
+    stroke: #000;
+    stroke-width: 6px; /* creates bold edge for visibility */
+    stroke-linejoin: round;
+}
+
+@media (max-width: 768px) {
+    .map-parameter-tab {
+        font-size: 0.8rem;
+        padding: 6px 4px;
+        min-width: 70px;
+    }
+}
 /*--------------------*/
 /* INDEX PAGE STYLES */
 /*--------------------*/
@@ -6,18 +102,18 @@
 /* BASE STYLES */
 /* ======================== */
 body {
-  background-image: url("../images/hatteras_bg.webp");
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center top;
-  background-repeat: no-repeat;
-  max-width: 100vw;
-  overflow-x: hidden;
+    background-image: url('../images/hatteras_bg.webp');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center top;
+    background-repeat: no-repeat;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 html {
-  max-width: 100vw;
-  overflow-x: hidden;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* ======================== */
@@ -28,17 +124,17 @@ html {
 .map-container,
 .tropical-container,
 .radsat-container {
-  background-color: var(--color-primary);
-  border-radius: var(--border-radius);
-  padding: 15px;
-  margin: 0;
-  color: var(--color-text-light);
-  box-shadow: var(--shadow-standard);
-  flex: 1;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
+    background-color: var(--color-primary);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin: 0;
+    color: var(--color-text-light);
+    box-shadow: var(--shadow-standard);
+    flex: 1;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* Title Styles - Shared across sections */
@@ -46,350 +142,364 @@ html {
 .current-title,
 .storm-header-title,
 .radsat-title {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
 .tropical-title i,
 .current-title i,
 .storm-header-title i,
 .radsat-title i {
-  margin-right: 15px;
-  color: var(--color-accent);
+    margin-right: 15px;
+    color: var(--color-accent);
 }
 
 .tropical-title h2,
 .current-title h2,
 .storm-header-title h2,
 .radsat-title h2 {
-  margin: 0;
-  font-size: 1rem;
-  text-transform: uppercase;
+    margin: 0;
+    font-size: 1rem;
+    text-transform: uppercase;
 }
 
 /* Content Containers */
 .tropical-content {
-  text-align: center;
-  padding: 15px;
-  border-radius: 5px;
-  color: var(--color-text);
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
+    text-align: center;
+    padding: 15px;
+    border-radius: 5px;
+    color: var(--color-text);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .current-content,
 .radsat-content,
 .tropical-content {
-  background: linear-gradient(
-    180deg,
-    var(--color-gradient-start) 20%,
-    var(--color-gradient-end) 100%
-  );
-  border-radius: 5px;
-  color: var(--color-text);
-  padding: var(--padding-section);
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
+    background: linear-gradient(
+        180deg,
+        var(--color-gradient-start) 20%,
+        var(--color-gradient-end) 100%
+    );
+    border-radius: 5px;
+    color: var(--color-text);
+    padding: var(--padding-section);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .current-content {
-  background-color: #262626;
+    background-color: #262626;
 }
 
 /* ======================== */
 /* DASHBOARD LAYOUT */
 /* ======================== */
 .dashboard-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .dashboard-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* ======================== */
 /* MAP SECTION */
 /* ======================== */
 .map-container {
-  background-color: rgba(0, 119, 204, 0.7);
+    background-color: rgba(0, 119, 204, 0.7);
 }
 
 .current-condition-heading {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
 .county-map-container {
-  height: 450px;
-  width: 100%;
-  border-radius: var(--border-radius);
-  margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    height: 450px;
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .map-legend {
-  background-color: rgb(197, 197, 197);
-  color: rgb(62, 62, 62);
-  padding: 8px;
-  border-radius: 4px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  width: 100%;
-  max-width: 98%;
-  margin: 0 10px 5px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  box-sizing: border-box;
+    background-color: rgb(197, 197, 197);
+    color: rgb(62, 62, 62);
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 98%;
+    margin: 0 10px 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-sizing: border-box;
 }
 
 #legend-title {
-  font-family: "Montserrat", sans-serif;
-  font-size: 1rem;
-  font-weight: 900;
-  margin-bottom: 3px;
-  border-bottom: 1px solid #333;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    margin-bottom: 3px;
+    border-bottom: 1px solid #333;
 }
 
 /* Weather markers */
 .marker-temp {
-  transition: transform 0.2s ease;
-  text-shadow: 5px 5px 3px rgba(0, 0, 0, 0.7);
-  font-family: "Montserrat", sans-serif;
-  font-size: 4rem;
-  font-weight: 800;
-  fill: yellow;
-  cursor: pointer;
+    transition: transform 0.2s ease;
+    text-shadow: 5px 5px 3px rgba(0, 0, 0, 0.7);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 4rem;
+    font-weight: 800;
+    fill: yellow;
+    cursor: pointer;
+    paint-order: stroke fill;
+    stroke: #000;
+    stroke-width: 6px; /* creates bold edge for visibility */
+    stroke-linejoin: round;
+}
+
+.marker-calm {
+    font-size: 2.5rem !important; /* much smaller than regular wind speed numbers */
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.6);
 }
 
 .marker-label {
-  text-transform: uppercase;
-  font-family: "Roboto", Arial, sans-serif;
-  font-size: 1.5rem;
-  padding-top: 10px;
-  font-weight: 800;
-  text-shadow: 4px 4px 3px rgba(0, 0, 0, 1);
-  cursor: pointer;
+    text-transform: uppercase;
+    font-family: 'Roboto', Arial, sans-serif;
+    font-size: 1.5rem;
+    padding-top: 10px;
+    font-weight: 800;
+    text-shadow: 4px 4px 3px rgba(0, 0, 0, 1);
+    cursor: pointer;
+    paint-order: stroke fill;
+    stroke: #000;
+    stroke-width: 6px; /* creates bold edge for visibility */
+    stroke-linejoin: round;
 }
 
 #nc-county-map {
-  max-width: 55%;
-  margin: 0 auto;
+    max-width: 55%;
+    margin: 0 auto;
 }
 
 #nc-county-map svg {
-  width: 100%;
-  height: auto;
+    width: 100%;
+    height: auto;
 }
 
 /* County paths */
 .counties path {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
 }
 
 .counties path:hover {
-  opacity: 0.8;
+    opacity: 0.8;
 }
 
 /* ======================== */
 /* TROPICAL SECTION */
 /* ======================== */
 .tropical-container.tropical-full {
-  min-width: 300px;
+    min-width: 300px;
 }
 
 /* Tropical Alert Banner */
 .tropical-alert-banner {
-  background-color: #940000;
-  color: #ffffff;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 9999;
-  width: 100%;
-  box-sizing: border-box;
+    background-color: #940000;
+    color: #ffffff;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 9999;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .tropical-alert-banner.in-content {
-  margin-bottom: 20px;
-  margin-top: 0;
+    margin-bottom: 20px;
+    margin-top: 0;
 }
 
 .tropical-alert-banner i {
-  margin-right: 10px;
-  font-size: 1.2rem;
+    margin-right: 10px;
+    font-size: 1.2rem;
 }
 
 .tropical-alert-banner a {
-  color: #fff200;
-  margin-left: 5px;
-  text-decoration: underline;
+    color: #fff200;
+    margin-left: 5px;
+    text-decoration: underline;
 }
 
 .tropical-alert-banner button {
-  background: none;
-  border: none;
-  color: #ffffff;
-  margin-left: auto;
-  cursor: pointer;
-  padding: 0 5px;
+    background: none;
+    border: none;
+    color: #ffffff;
+    margin-left: auto;
+    cursor: pointer;
+    padding: 0 5px;
 }
 
 /* ======================== */
 /* RADAR/SATELLITE SECTION */
 /* ======================== */
 .radsat-container {
-  min-width: 300px;
+    min-width: 300px;
 }
 
 .radsat-tabs {
-  background: linear-gradient(
-    180deg,
-    var(--color-gradient-start) 20%,
-    var(--color-gradient-end) 100%
-  );
-  border-radius: var(--border-radius);
-  margin: 15px 0 0 0;
+    background: linear-gradient(
+        180deg,
+        var(--color-gradient-start) 20%,
+        var(--color-gradient-end) 100%
+    );
+    border-radius: var(--border-radius);
+    margin: 15px 0 0 0;
 }
 
 /* Tab Labels Container */
 .radsat-tab-labels {
-  display: flex;
-  flex-wrap: wrap;
-  background-color: var(--color-background);
-  margin: 0;
-  padding: 0;
-  border-radius: 8px 8px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--color-background);
+    margin: 0;
+    padding: 0;
+    border-radius: 8px 8px 0 0;
 }
 
 /* Individual Tab Buttons */
 .radsat-tab {
-  flex: 1;
-  min-width: 120px;
-  background-color: var(--color-background);
-  color: var(--color-text, #333);
-  cursor: pointer;
-  font-family: var(--font-primary);
-  font-size: 0.9em;
-  padding: 12px 8px;
-  text-align: center;
-  transition: all 0.2s ease;
-  position: relative;
-  font-weight: 600;
-  text-transform: uppercase;
+    flex: 1;
+    min-width: 120px;
+    background-color: var(--color-background);
+    color: var(--color-text, #333);
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.9em;
+    padding: 12px 8px;
+    text-align: center;
+    transition: all 0.2s ease;
+    position: relative;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .radsat-tab:first-child {
-  border-radius: 8px 0 0 0;
+    border-radius: 8px 0 0 0;
 }
 
 .radsat-tab:last-child {
-  border-radius: 0 8px 0 0;
+    border-radius: 0 8px 0 0;
 }
 
 .radsat-tab:hover {
-  background-color: var(--color-accent);
-  color: var(--color-text, #333);
+    background-color: var(--color-accent);
+    color: var(--color-text, #333);
 }
 
 /* Hidden radio inputs for tab functionality */
-input[name="radsatTab"] {
-  display: none;
+input[name='radsatTab'] {
+    display: none;
 }
 
 /* Active tab styling */
-#radar-tab:checked ~ .radsat-tab-labels label[for="radar-tab"],
-#satellite-tab:checked ~ .radsat-tab-labels label[for="satellite-tab"] {
-  background-color: var(--color-primary, #007acc);
-  color: var(--color-text-light, #ffffff);
-  font-weight: bold;
+#radar-tab:checked ~ .radsat-tab-labels label[for='radar-tab'],
+#satellite-tab:checked ~ .radsat-tab-labels label[for='satellite-tab'] {
+    background-color: var(--color-primary, #007acc);
+    color: var(--color-text-light, #ffffff);
+    font-weight: bold;
 }
 
 /* Active tab accent bar */
-#radar-tab:checked ~ .radsat-tab-labels label[for="radar-tab"]::after,
-#satellite-tab:checked ~ .radsat-tab-labels label[for="satellite-tab"]::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: var(--color-accent, #ff6b35);
+#radar-tab:checked ~ .radsat-tab-labels label[for='radar-tab']::after,
+#satellite-tab:checked ~ .radsat-tab-labels label[for='satellite-tab']::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-accent, #ff6b35);
 }
 
 /* Tab Panels */
 .radsat-panel {
-  display: none;
-  border-radius: 0 0 8px 8px;
-  padding: 20px;
-  color: var(--color-text);
-  overflow-x: hidden;
-  max-width: 100%;
+    display: none;
+    border-radius: 0 0 8px 8px;
+    padding: 20px;
+    color: var(--color-text);
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 /* Show active tab content */
 #radar-tab:checked ~ .radsat-tab-content #radar-panel,
 #satellite-tab:checked ~ .radsat-tab-content #satellite-panel {
-  display: block;
+    display: block;
 }
 
 /* Image Container */
 .image-container {
-  position: relative;
-  display: block;
-  width: 100%;
-  text-align: center;
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: center;
 }
 
 .weather-image {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  border-radius: 5px;
-  background-color: #f5f5f5;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 5px;
+    background-color: #f5f5f5;
 }
 
 /* ======================== */
 /* ANIMATIONS */
 /* ======================== */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ======================== */
@@ -398,114 +508,114 @@ input[name="radsatTab"] {
 
 /* Desktop - ensure equal width */
 @media (min-width: 1024px) {
-  .map-container,
-  .radsat-container {
-    flex: 1;
-    min-width: 0;
-  }
+    .map-container,
+    .radsat-container {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 /* Tablet */
 @media (max-width: 1023px) {
-  .dashboard-row {
-    flex-direction: column;
-    gap: 0;
-  }
+    .dashboard-row {
+        flex-direction: column;
+        gap: 0;
+    }
 
-  .map-container,
-  .radsat-container {
-    width: 100%;
-    min-width: 0;
-  }
+    .map-container,
+    .radsat-container {
+        width: 100%;
+        min-width: 0;
+    }
 
-  .weather-image {
-    width: 90%;
-  }
+    .weather-image {
+        width: 90%;
+    }
 }
 
 @media (max-width: 1024px) {
-  #nc-county-map {
-    max-width: 75%;
-    margin: 0 auto;
-  }
-  .county-map-container {
-    height: 400px;
-  }
+    #nc-county-map {
+        max-width: 75%;
+        margin: 0 auto;
+    }
+    .county-map-container {
+        height: 400px;
+    }
 }
 
 @media (max-width: 768px) {
-  #nc-county-map {
-    max-width: 85%;
-    margin: 0 auto;
-  }
+    #nc-county-map {
+        max-width: 85%;
+        margin: 0 auto;
+    }
 
-  .county-map-container {
-    height: 400px;
-  }
+    .county-map-container {
+        height: 400px;
+    }
 
-  .map-container,
-  .tropical-container {
-    width: 100%;
-    margin-bottom: 20px;
-  }
+    .map-container,
+    .tropical-container {
+        width: 100%;
+        margin-bottom: 20px;
+    }
 
-  .tropical-title h2,
-  .current-title h2,
-  .storm-header-title h2,
-  .radsat-title h2 {
-    text-transform: uppercase;
-  }
+    .tropical-title h2,
+    .current-title h2,
+    .storm-header-title h2,
+    .radsat-title h2 {
+        text-transform: uppercase;
+    }
 
-  .radsat-tab {
-    font-size: 0.8rem;
-    padding: 6px 10px;
-  }
+    .radsat-tab {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
 }
 
 /* Mobile */
 @media (max-width: 600px) {
-  #nc-county-map {
-    max-width: 95%;
-    margin: 0 auto;
-  }
-  .county-map-container {
-    width: 100%;
-    height: 250px;
-  }
+    #nc-county-map {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+    .county-map-container {
+        width: 100%;
+        height: 250px;
+    }
 
-  .county-label,
-  .label-background,
-  .marker-label {
-    display: none;
-  }
+    .county-label,
+    .label-background,
+    .marker-label {
+        display: none;
+    }
 
-  .marker-temp {
-    font-size: 5rem;
-  }
+    .marker-temp {
+        font-size: 5rem;
+    }
 
-  .map-legend {
-    font-size: 0.9rem;
-    padding: 5px;
-  }
+    .map-legend {
+        font-size: 0.9rem;
+        padding: 5px;
+    }
 
-  #legend-title {
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-  }
+    #legend-title {
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
 
-  .tropical-title h2,
-  .current-title h2,
-  .storm-header-title h2,
-  .radsat-title h2 {
-    font-size: 0.8rem;
-  }
+    .tropical-title h2,
+    .current-title h2,
+    .storm-header-title h2,
+    .radsat-title h2 {
+        font-size: 0.8rem;
+    }
 
-  .radsat-image-container,
-  .radsat-content {
-    padding: 5px;
-  }
+    .radsat-image-container,
+    .radsat-content {
+        padding: 5px;
+    }
 
-  .radsat-tab {
-    text-align: center;
-  }
+    .radsat-tab {
+        text-align: center;
+    }
 }

@@ -1,10 +1,5 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set('log_errors', 1);
-ini_set('error_log', dirname(__DIR__) . '/logs/advisory_writer_error.log');
-
 /**
  * NHC Advisory Writer, Atlantic - advisory_writer.php
  * Fetches NHC advisory XML (Atlantic only) and caches a compact advisory.json under:
@@ -19,13 +14,24 @@ ini_set('error_log', dirname(__DIR__) . '/logs/advisory_writer_error.log');
  * php advisory_writer.php (defaults to --storm=ALL)
  */
 
+// --- Basic Setup ---
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', dirname(__DIR__) . '/logs/advisory_writer_error.log');
+
+// --- Core Logic Start ---
+
+// Determine execution mode (Command Line or Web)
 $isCli = (PHP_SAPI === 'cli' || defined('STDIN'));
 
+// Initialize storm variable
 $storm = '';
 
 if ($isCli) {
+    // --- CLI Mode ---
     echo "--- Running in CLI mode ---\n";
-    $storm = 'ALL';
+    $storm = 'ALL'; // Default for CLI
     if (isset($argv)) {
         foreach ($argv as $arg) {
             if (strpos($arg, '--storm=') === 0) {
@@ -35,15 +41,19 @@ if ($isCli) {
         }
     }
     echo "Processing storm target: $storm\n";
+    // Manually set $_GET so the rest of the script can use it consistently
     $_GET['storm'] = $storm;
 
 } else {
+    // --- Web Mode ---
+    // Set headers FIRST before any potential output to avoid errors.
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
 
     $storm = isset($_GET['storm']) ? strtoupper(trim($_GET['storm'])) : '';
 }
 
+// --- Functions ---
 
 $LOWERCASE_ALL = false;
 
@@ -99,6 +109,7 @@ function ok($d) {
   exit;
 }
 
+// --- Data Formatting and Helper Functions ---
 
 function formatToShortDateTime($dateTimeStr, $monthStyle = 'short') {
   $s = trim((string)$dateTimeStr);
@@ -201,6 +212,7 @@ function array_filter_non_empty($s) {
     return $s !== '';
 }
 
+// --- Core Processing Functions ---
 
 function processSingleStorm($stormId) {
     $stormId = strtoupper($stormId);
@@ -245,30 +257,37 @@ function processSingleStorm($stormId) {
     $messageRaw = strval_safe(isset($xml->message) ? $xml->message : '');
     $headlines = array();
     if ($messageRaw !== '') {
+        // Split into lines, normalize line endings
         $lines = preg_split('/\r?\n|(?<=\s)\n|(?<=\n)/', $messageRaw);
         $foundDate = false;
         $collect = false;
         $headlineLines = array();
         foreach ($lines as $i => $line) {
             $trimmed = trim($line);
+            // Find the date/time line (e.g., '300 PM GMT Fri Sep 26 2025')
             if (!$foundDate && preg_match('/\d{1,4}\s*(AM|PM)\s+[A-Z]{2,4}\s+.+\d{4}/i', $trimmed)) {
                 $foundDate = true;
                 $collect = true;
                 continue;
             }
             if ($collect) {
+                // Stop at first line containing 'ADVISORY' or 'SUMMARY' (case-insensitive)
                 if (stripos($trimmed, 'ADVISORY') !== false || stripos($trimmed, 'SUMMARY') !== false) {
                     break;
                 }
+                // Only collect non-empty lines
                 if ($trimmed !== '') {
                     $headlineLines[] = $trimmed;
                 }
             }
         }
+        // Now join lines into logical headlines: group consecutive lines, join, remove leading/trailing ...
         $current = '';
         foreach ($headlineLines as $line) {
+            // If line starts with ... it's a new headline
             if (preg_match('/^\.\.\./', $line)) {
                 if ($current !== '') {
+                    // Clean up: remove leading/trailing ... and whitespace, collapse spaces
                     $clean = preg_replace('/^\.*|\.*$/', '', $current);
                     $clean = preg_replace('/\s+/', ' ', $clean);
                     $clean = trim($clean);
@@ -276,15 +295,18 @@ function processSingleStorm($stormId) {
                 }
                 $current = $line;
             } else {
+                // Continuation of previous headline
                 $current .= ' ' . $line;
             }
         }
+        // Add last headline
         if ($current !== '') {
             $clean = preg_replace('/^\.*|\.*$/', '', $current);
             $clean = preg_replace('/\s+/', ' ', $clean);
             $clean = trim($clean);
             if ($clean !== '') $headlines[] = $clean . '...';
         }
+        // Remove duplicate trailing ... if present
         $headlines = array_map(function($h) {
             return preg_replace('/\.\.\.$/', '...', $h);
         }, $headlines);
@@ -417,6 +439,7 @@ function is_al_storm($id) {
     return preg_match('/^AL\d{2}\d{4}$/', strtoupper(trim($id)));
 }
 
+// --- Main Execution Block ---
 try {
     adv_log("Script execution started for target: {$storm}", 'INFO');
     

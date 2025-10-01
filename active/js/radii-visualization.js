@@ -21,9 +21,9 @@ const RADII_CONFIG = {
   EXTRA_FRAME: 20, // extra outer room around compass
   LABEL_OFFSET: 18, // gap from compass circle to cardinal label
   LABEL_SAFE_PAD: 25, // keep labels X px inside the canvas edge
-  VERTEX_LABEL_OFFSET: 1, // distance of vertex labels away from polygon
-  MIN_RADII_EXTENT: 100, // minimum maxDist in nm (adjustable)
-  RADII_PADDING: 100, // padding in nm beyond largest r34
+  VERTEX_LABEL_OFFSET: 50, // distance of vertex labels away from polygon
+  MIN_RADII_EXTENT: 50, // minimum maxDist in nm (adjustable)
+  RADII_PADDING: 120, // padding in nm beyond largest r34
 };
 
 function devicePixelRatioSafe() {
@@ -261,7 +261,7 @@ class RadiiDrawer {
     if (!q) return;
 
     // Exaggeration factor for polygons
-    const EXAGGERATION = 1.5;
+    const EXAGGERATION = 1.2;
 
     const ne = Math.max(0, Number(q.NE) || 0) * EXAGGERATION;
     const se = Math.max(0, Number(q.SE) || 0) * EXAGGERATION;
@@ -365,25 +365,34 @@ function renderRadiiVisualAndTable(cacheRadii, fixes, stormName) {
   if (!section) return;
   section.innerHTML = "";
 
-  let largestR34 = 0;
-  if (Array.isArray(fixes)) {
-    for (const f of fixes) {
-      const r = f?.r34;
-      if (r) {
-        for (const k of ["NE", "SE", "SW", "NW"]) {
-          const v = Number(r[k]) || 0;
-          if (v > largestR34) largestR34 = v;
+  // Helper to get largest value for a given wind type (34, 50, 64)
+  function getLargestRadii(rad, fixes, windType) {
+    let maxVal = 0;
+    const key = `r${windType}`;
+    if (Array.isArray(fixes)) {
+      for (const f of fixes) {
+        const r = f?.[key];
+        if (r) {
+          for (const k of ["NE", "SE", "SW", "NW"]) {
+            const v = Number(r[k]) || 0;
+            if (v > maxVal) maxVal = v;
+          }
         }
       }
     }
-  }
-  if (cacheRadii && cacheRadii.r34) {
-    for (const k of ["NE", "SE", "SW", "NW"]) {
-      const v = Number(cacheRadii.r34[k]) || 0;
-      if (v > largestR34) largestR34 = v;
+    if (rad && rad[key]) {
+      for (const k of ["NE", "SE", "SW", "NW"]) {
+        const v = Number(rad[key][k]) || 0;
+        if (v > maxVal) maxVal = v;
+      }
     }
+    return maxVal;
   }
-  let maxDist = Math.max(largestR34 + RADII_CONFIG.RADII_PADDING, RADII_CONFIG.MIN_RADII_EXTENT);
+
+  // Initial maxDist: use r34 as default
+  let selectedWind = "34";
+  let largestVal = getLargestRadii(cacheRadii, fixes, selectedWind);
+  let maxDist = Math.max(largestVal + RADII_CONFIG.RADII_PADDING, RADII_CONFIG.MIN_RADII_EXTENT);
 
   const hours = collectForecastHours(fixes);
   const hourControls = document.createElement("div");
@@ -516,19 +525,25 @@ function renderRadiiVisualAndTable(cacheRadii, fixes, stormName) {
   }
 
   let selectedHour = hours[0] || 0;
-  let selectedWind = "34";
+  // selectedWind is already declared above
 
   function updateForSelection() {
     const rad = radiiAtHour(cacheRadii, fixes, selectedHour);
 
-    let largestR34Sel = 0;
-    if (rad && rad.r34) {
-      for (const k of ["NE", "SE", "SW", "NW"]) {
-        const v = Number(rad.r34[k]) || 0;
-        if (v > largestR34Sel) largestR34Sel = v;
-      }
+    // Dynamically adjust maxDist based on selected wind type
+    let windType = selectedWind;
+    let largest = 0;
+    if (windType === "all") {
+      // Use the largest of all three wind types
+      largest = Math.max(
+        getLargestRadii(rad, fixes, "34"),
+        getLargestRadii(rad, fixes, "50"),
+        getLargestRadii(rad, fixes, "64")
+      );
+    } else {
+      largest = getLargestRadii(rad, fixes, windType);
     }
-    let newMaxDist = Math.max(largestR34Sel + RADII_CONFIG.RADII_PADDING, maxDist);
+    let newMaxDist = Math.max(largest + RADII_CONFIG.RADII_PADDING, RADII_CONFIG.MIN_RADII_EXTENT);
     updateDrawerMaxDist(newMaxDist);
 
     const has = {

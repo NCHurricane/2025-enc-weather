@@ -97,17 +97,31 @@
             <!-- Current Weather Section -->
             <div class="dashboard-row">
                <section aria-labelledby="current-conditions-heading" class="map-container">
+
                   <div class="current-title">
                      <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>
-                     <h2 id="current-conditions-heading">Current Temperatures</h2>
-
+                     <h2 id="current-conditions-heading">Current Conditions</h2>
                   </div>
-                  <div class="current-content">
-                     <div id="nc-county-map" class="county-map-container">
-                     </div>
 
-                     <div id="map-alerts-legend" class="map-legend" style="display: none">
+                  <!-- Parameter Tabs -->
+                  <div class="map-parameter-tabs">
+                     <input type="radio" name="mapParameterTab" id="tab-temp" value="temperature" checked />
+                     <input type="radio" name="mapParameterTab" id="tab-wind" value="wind" />
+                     <input type="radio" name="mapParameterTab" id="tab-humidity" value="humidity" />
+                     <input type="radio" name="mapParameterTab" id="tab-dewpoint" value="dewpoint" />
+
+                     <div class="map-parameter-tab-labels" role="tablist">
+                        <label for="tab-temp" class="map-parameter-tab" role="tab"
+                           aria-selected="true">Temperature</label>
+                        <label for="tab-wind" class="map-parameter-tab" role="tab">Wind</label>
+                        <label for="tab-humidity" class="map-parameter-tab" role="tab">Humidity</label>
+                        <label for="tab-dewpoint" class="map-parameter-tab" role="tab">Dewpoint</label>
                      </div>
+                  </div>
+
+                  <div class="current-content">
+                     <div id="nc-county-map" class="county-map-container"></div>
+                     <div id="map-alerts-legend" class="map-legend" style="display: none"></div>
                   </div>
                   <p class="instructions">Click on each location to go to the county page</p>
 
@@ -219,8 +233,12 @@
       <script src="https://d3js.org/d3.v7.min.js"></script>
 
       <script type="module" src="js/modules/mapAggregator.js?v=09.29.25c"></script>
+      <!-- <script type="module" src="js/modules/mapAggregator-orig.js?v=09.29.25c"></script> -->
+
       <script type="module">
          import { initCountyMap } from "./js/modules/ncCountyMap.js?v=09.29.25c";
+         // import { initCountyMap } from "./js/modules/ncCountyMap-orig.js?v=09.29.25c";
+
          import { initTropicalBanner } from "./active/js/tropical-banner.js?v=09.29.25c";
          import { initRadSat } from "./js/modules/radSatModule.js?v=09.29.25c";
 

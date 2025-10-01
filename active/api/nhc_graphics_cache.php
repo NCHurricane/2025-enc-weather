@@ -1,20 +1,35 @@
 <?php
+declare(strict_types=1);
+error_reporting(E_ALL);
+
 // nhc_graphics_cache.php
 // Downloads and caches NHC storm graphics for all active AL/EP storms for the current year
 // Uses js/modules/cache/nhc_current_storms.json (fallback: live NHC JSON)
 // Saves to active/storms/{STORM}/
 // Overwrites existing files, logs errors to active/logs/nhc_graphics_cache.log
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
-$local_json = __DIR__ . '/cache/nhc_current_storms.json';
+$local_json = dirname(__DIR__) . '/cache/nhc_current_storms.json';
 $remote_json = 'https://www.nhc.noaa.gov/CurrentStorms.json';
 $base_url = 'https://www.nhc.noaa.gov/storm_graphics';
 $storm_dir_base = __DIR__ . '/../storms/';
 $log_dir = __DIR__ . '/../logs';
 $log_file = $log_dir . '/nhc_graphics_cache.log';
+    // Delete files older than 24 hours in the storm/{stormID} directory
+    function delete_old_files($stormDir) {
+        if (!is_dir($stormDir)) return;
+        $now = time();
+        $files = glob($stormDir . '/*');
+        foreach ($files as $file) {
+            if (is_file($file) && ($now - filemtime($file)) > 86400) {
+                @unlink($file);
+            }
+        }
+    }
+    $stormID = isset($stormID) ? $stormID : (isset($_GET['storm']) ? $_GET['storm'] : null);
+    if ($stormID) {
+        $stormDir = __DIR__ . '/../storms/' . $stormID;
+        delete_old_files($stormDir);
+    }
 if (!is_dir($log_dir)) {
     mkdir($log_dir, 0775, true);
 }
@@ -101,8 +116,34 @@ try {
                 ];
             }
         }
+        // Helper to get remote file's Last-Modified header as a timestamp
+        function get_remote_last_modified($url) {
+            $headers = @get_headers($url, $associative = true);
+            if (is_array($headers) && isset($headers['Last-Modified'])) {
+                $lm = is_array($headers['Last-Modified']) ? end($headers['Last-Modified']) : $headers['Last-Modified'];
+                $ts = strtotime($lm);
+                if ($ts !== false) return $ts;
+            }
+            return false;
+        }
+        // List of graphics to check remote age before saving
+        $age_sensitive = ['WPCQPF_sm2.gif', 'INTQPF_sm2.gif', 'WPCERO_sm2.gif', 'peak_surge_sm2.png'];
         foreach ($graphics as [$url, $filename]) {
             $dest = $storm_dir . $filename;
+            $check_age = in_array($filename, $age_sensitive, true);
+            if ($check_age) {
+                $remote_ts = get_remote_last_modified($url);
+                $now = time();
+                if ($remote_ts !== false && ($now - $remote_ts) > 86400) {
+                    // Remote file is older than 24h, skip download and delete local if exists
+                    if (file_exists($dest)) {
+                        @unlink($dest);
+                        log_msg("Deleted stale $dest (remote file >24h old)");
+                    }
+                    log_msg("Skipped $url (remote file >24h old)");
+                    continue;
+                }
+            }
             try {
                 save_image($url, $dest);
                 log_msg("Saved $url to $dest");
