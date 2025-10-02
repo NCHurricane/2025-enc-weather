@@ -11,7 +11,7 @@
 import { warningColors, warningPriorities } from './warningColors.js';
 import { fetchCurrentWeather, fetchAlerts, getDefaultWeatherData } from './mapAggregator.js';
 
-const STATION_MAX_AGE_MINUTES = 90;
+const STATION_MAX_AGE_MINUTES = 180;
 
 // Wind direction arrows
 const WIND_ARROWS = {
@@ -173,8 +173,75 @@ export class NCCountyMap {
         name: 'Gum Neck',
         county: 'tyrrell',
         url: 'counties/tyrrell',
-        lat: 35.5449,
-        lon: -77.45209,
+        lat: 35.72139,
+        lon: -76.19237,
+      },
+      {
+        id: "PNGN7",
+        name: "Ponzer",
+        friendlyName: "Ponzer",
+        county: "hyde",
+        zone: 'mainland',
+        lat: 35.58528,
+        lon: -76.38556
+      }
+    ];
+    this.defaultCounties = [
+      {
+        name: 'Dare',
+        city: 'Manteo',
+        lat: 35.9082,
+        lon: -75.6757,
+        url: '/counties/dare/?=mainland',
+      },
+      {
+        name: 'Hyde',
+        city: 'Swan Quarter',
+        lat: 35.4546,
+        lon: -76.3272,
+        url: '/counties/hyde/?=mainland',
+      },
+      {
+        name: 'Beaufort',
+        city: 'Washington',
+        lat: 35.5466,
+        lon: -77.0497,
+        url: '/counties/beaufort/',
+      },
+      {
+        name: 'Bertie',
+        city: 'Windsor',
+        lat: 36.0015,
+        lon: -76.9459,
+        url: '/counties/bertie/',
+      },
+      {
+        name: 'Martin',
+        city: 'Williamston',
+        lat: 35.8546,
+        lon: -77.0544,
+        url: '/counties/martin/',
+      },
+      {
+        name: 'Pitt',
+        city: 'Greenville',
+        lat: 35.6127,
+        lon: -77.3664,
+        url: '/counties/pitt/',
+      },
+      {
+        name: 'Washington',
+        city: 'Plymouth',
+        lat: 35.8674,
+        lon: -76.7475,
+        url: '/counties/washington/',
+      },
+      {
+        name: 'Tyrrell',
+        city: 'Columbia',
+        lat: 35.9182,
+        lon: -76.2522,
+        url: '/counties/tyrrell/',
       },
     ];
 
@@ -204,7 +271,10 @@ export class NCCountyMap {
         const ageMinutes = stationData.observation?.age_minutes ?? 999;
         if (ageMinutes > STATION_MAX_AGE_MINUTES) continue;
         return {
-          temp: stationData.data.temperature !== null ? Math.round(Number(stationData.data.temperature)) : null,
+          temp:
+            stationData.data.temperature !== null
+              ? Math.round(Number(stationData.data.temperature))
+              : null,
           humidity: stationData.data.humidity ?? null,
           dewpoint: stationData.data.dewpoint ?? null,
           windSpeed: stationData.data.windSpeed ?? null,
@@ -242,10 +312,16 @@ export class NCCountyMap {
       value = weather.temp !== undefined && weather.temp !== null ? weather.temp : 'N/A';
       unit = '°F';
     } else if (this.selectedParameter === 'humidity') {
-      value = weather.humidity !== undefined && weather.humidity !== null ? weather.humidity : 'N/A';
+      value =
+        weather.humidity !== undefined && weather.humidity !== null
+          ? weather.humidity
+          : 'N/A';
       unit = '%';
     } else if (this.selectedParameter === 'dewpoint') {
-      value = weather.dewpoint !== undefined && weather.dewpoint !== null ? weather.dewpoint : 'N/A';
+      value =
+        weather.dewpoint !== undefined && weather.dewpoint !== null
+          ? weather.dewpoint
+          : 'N/A';
       unit = '°F';
     } else if (this.selectedParameter === 'wind') {
       if (weather.windSpeed !== undefined && weather.windSpeed !== null) {
@@ -265,7 +341,8 @@ export class NCCountyMap {
     // Hide N/A values entirely (no marker number / arrow), still show label
     if (value !== 'N/A') {
       if (this.selectedParameter === 'wind') {
-        const numberText = g.append('text')
+        const numberText = g
+          .append('text')
           .attr('class', isCalm ? 'marker-temp marker-calm' : 'marker-temp')
           .attr('x', x)
           .attr('y', y + responsiveSettings.tempYOffset)
@@ -356,24 +433,27 @@ export class NCCountyMap {
       console.error('Container not found for NCCountyMap');
       return;
     }
+
+    // Use a more reliable approach - let CSS handle the container, then size the SVG appropriately
     const wrapper = this.d3
       .select(this.container)
       .append('div')
       .style('position', 'relative')
       .style('width', '100%')
-      .style('padding-bottom', `${(this.height / this.width) * 100}%`)
-      .style('overflow', 'hidden');
+      .style('height', '100%')
+      .style('display', 'flex')
+      .style('align-items', 'center')
+      .style('justify-content', 'center');
 
     this.svg = wrapper
       .append('svg')
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet')
-      .style('position', 'absolute')
-      .style('top', '0')
-      .style('left', '0')
       .style('width', '100%')
-      .style('height', '100%');
-
+      .style('height', '100%')
+      .style('max-width', '100%')
+      .style('max-height', '100%')
+      .style('object-fit', 'contain');
     await this.loadCountyData();
     this.drawMap();
     await this.updateWeatherData();
@@ -409,70 +489,12 @@ export class NCCountyMap {
     this.svg.selectAll('.station-marker').remove();
 
     // Redraw county markers
-    const defaultCounties = [
-      {
-        name: 'Dare',
-        city: 'Manteo',
-        lat: 35.9082,
-        lon: -75.6757,
-        url: '/counties/dare/?=mainland',
-      },
-      {
-        name: 'Hyde',
-        city: 'Swan Quarter',
-        lat: 35.4546,
-        lon: -76.3272,
-        url: '/counties/hyde/?=mainland',
-      },
-      {
-        name: 'Beaufort',
-        city: 'Washington',
-        lat: 35.5466,
-        lon: -77.0497,
-        url: '/counties/beaufort/',
-      },
-      {
-        name: 'Bertie',
-        city: 'Windsor',
-        lat: 36.0015,
-        lon: -76.9459,
-        url: '/counties/bertie/',
-      },
-      {
-        name: 'Martin',
-        city: 'Williamston',
-        lat: 35.8546,
-        lon: -77.0544,
-        url: '/counties/martin/',
-      },
-      {
-        name: 'Pitt',
-        city: 'Greenville',
-        lat: 35.6127,
-        lon: -77.3664,
-        url: '/counties/pitt/',
-      },
-      {
-        name: 'Washington',
-        city: 'Plymouth',
-        lat: 35.8674,
-        lon: -76.7475,
-        url: '/counties/washington/',
-      },
-      {
-        name: 'Tyrrell',
-        city: 'Columbia',
-        lat: 35.9182,
-        lon: -76.2522,
-        url: '/counties/tyrrell/',
-      },
-    ];
     const counties =
       window.siteConfig &&
         Array.isArray(window.siteConfig.counties) &&
         window.siteConfig.counties.length > 0
         ? window.siteConfig.counties
-        : defaultCounties;
+        : this.defaultCounties;
 
     counties.forEach((county) => {
       const key = county.name.toLowerCase();
@@ -500,75 +522,21 @@ export class NCCountyMap {
   }
 
   async updateWeatherData() {
-    const defaultCounties = [
-      {
-        name: 'Dare',
-        city: 'Manteo',
-        lat: 35.9082,
-        lon: -75.6757,
-        url: '/counties/dare/?=mainland',
-      },
-      {
-        name: 'Hyde',
-        city: 'Swan Quarter',
-        lat: 35.4546,
-        lon: -76.3272,
-        url: '/counties/hyde/?=mainland',
-      },
-      {
-        name: 'Beaufort',
-        city: 'Washington',
-        lat: 35.5466,
-        lon: -77.0497,
-        url: '/counties/beaufort/',
-      },
-      {
-        name: 'Bertie',
-        city: 'Windsor',
-        lat: 36.0015,
-        lon: -76.9459,
-        url: '/counties/bertie/',
-      },
-      {
-        name: 'Martin',
-        city: 'Williamston',
-        lat: 35.8546,
-        lon: -77.0544,
-        url: '/counties/martin/',
-      },
-      {
-        name: 'Pitt',
-        city: 'Greenville',
-        lat: 35.6127,
-        lon: -77.3664,
-        url: '/counties/pitt/',
-      },
-      {
-        name: 'Washington',
-        city: 'Plymouth',
-        lat: 35.8674,
-        lon: -76.7475,
-        url: '/counties/washington/',
-      },
-      {
-        name: 'Tyrrell',
-        city: 'Columbia',
-        lat: 35.9182,
-        lon: -76.2522,
-        url: '/counties/tyrrell/',
-      },
-    ];
     const counties =
       window.siteConfig &&
         Array.isArray(window.siteConfig.counties) &&
         window.siteConfig.counties.length > 0
         ? window.siteConfig.counties
-        : defaultCounties;
+        : this.defaultCounties;
 
     await Promise.all(
       counties.map(async (county) => {
         try {
-          let weather = await fetchCurrentWeather(county.lat, county.lon, this.selectedParameter);
+          let weather = await fetchCurrentWeather(
+            county.lat,
+            county.lon,
+            this.selectedParameter
+          );
           if (!weather || weather.temp == 'N/A') {
             weather = getDefaultWeatherData();
           }
@@ -641,7 +609,8 @@ export class NCCountyMap {
     }
     if (value !== 'N/A') {
       if (this.selectedParameter === 'wind') {
-        const numberText = g.append('text')
+        const numberText = g
+          .append('text')
           .attr('class', isCalm ? 'marker-temp marker-calm' : 'marker-temp')
           .attr('x', x)
           .attr('y', y + responsiveSettings.tempYOffset)
@@ -699,13 +668,13 @@ export class NCCountyMap {
     } else if (width <= 1024) {
       return {
         tempYOffset: -12,
-        labelYOffset: 25,
+        labelYOffset: 20,
         arrowXOffset: 42,
       };
     } else {
       return {
         tempYOffset: -15,
-        labelYOffset: 30,
+        labelYOffset: 20,
         arrowXOffset: 45,
       };
     }
@@ -776,8 +745,15 @@ export class NCCountyMap {
   }
 
   createWarningLegend() {
-    const old = document.querySelector('.map-legend');
-    if (old) old.remove();
+    // Find the alerts legend container in the new layout
+    const legendContainer = document.getElementById('map-alerts-legend');
+    if (!legendContainer) {
+      console.warn('Alerts legend container not found');
+      return;
+    }
+
+    // Clear existing content
+    legendContainer.innerHTML = '';
 
     const active = new Map();
 
@@ -806,20 +782,33 @@ export class NCCountyMap {
       });
     });
 
-    if (!active.size) return;
+    if (!active.size) {
+      // Hide the alerts container when no alerts
+      const alertsContainer = legendContainer.closest('.alerts-legend-container');
+      if (alertsContainer) {
+        alertsContainer.style.display = 'none';
+      }
+      return;
+    }
 
-    const legend = document.createElement('div');
-    legend.className = 'map-legend';
-    legend.id = 'map-alerts-legend';
-    legend.innerHTML = `<div id="legend-title">Active Alerts</div>`;
+    // Show the alerts container when alerts exist
+    const alertsContainer = legendContainer.closest('.alerts-legend-container');
+    if (alertsContainer) {
+      alertsContainer.style.display = 'block';
+    }
 
+    // Add title
+    const title = document.createElement('div');
+    title.id = 'legend-title';
+    title.textContent = 'Active Alerts';
+    legendContainer.appendChild(title);
+
+    // Add alert items
     Object.entries(Object.fromEntries(active)).forEach(([eventName, color]) => {
       const item = document.createElement('div');
       item.innerHTML = `<span style="display:inline-block;width:12px;height:12px;background:${color};margin-right:5px;border:1px solid #333;"></span><strong>${eventName}</strong>`;
-      legend.appendChild(item);
+      legendContainer.appendChild(item);
     });
-
-    this.container.parentNode.insertBefore(legend, this.container.nextSibling);
   }
 }
 

@@ -1,0 +1,130 @@
+{
+    "county": {
+        "name": "Dare",
+        "state": "NC",
+        "timezone": "America/New_York",
+        "multiZone": true,
+        "defaultZone": "mainland"
+    },
+    "forecastOffice": {
+        "id": "MHX",
+        "name": "Newport/Morehead City"
+    },
+    "zones": {
+        "mainland": {
+            "displayName": "Mainland Dare",
+            "forecast": "NCZ047",
+            "lat": 35.9082,
+            "lon": -75.6757,
+            "city": "Manteo",
+            "stations": [
+                {
+                    "id": "KMQI",
+                    "name": "Dare County Regional Airport",
+                    "friendlyName": "Manteo",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KMQI",
+                    "lat": 35.91667,
+                    "lon": -75.7
+                },
+                {
+                    "id": "STCN7",
+                    "name": "Dare Bomb Range",
+                    "friendlyName": "Manns Harbor",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=STCN7",
+                    "lat": 35.76082,
+                    "lon": -75.87145
+                },
+                {
+                    "id": "K2DP",
+                    "name": "Dare County Gunnery Range",
+                    "friendlyName": "Stumpy Point",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=K2DP",
+                    "lat": 35.66667,
+                    "lon": -75.9
+                },
+                {
+                    "id": "F5918",
+                    "name": "Nags Head",
+                    "friendlyName": "Nags Head",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=F5918",
+                    "lat": 35.87433,
+                    "lon": -75.57783
+                }
+            ]
+        },
+        "northern": {
+            "displayName": "Northern Beaches",
+            "forecast": "NCZ203",
+            "lat": 36.0646,
+            "lon": -75.7057,
+            "city": "Duck",
+            "stations": [
+                {
+                    "id": "KFFA",
+                    "name": "First Flight Airport",
+                    "friendlyName": "Kill Devil Hills Airport",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KFFA",
+                    "lat": 36.01667,
+                    "lon": -75.66667
+                },
+                {
+                    "id": "F6624",
+                    "name": "F6624 CWOP - Southern Shore",
+                    "friendlyName": "Southern Shore",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=F6624",
+                    "lat": 36.124,
+                    "lon": -75.723
+                },
+                {
+                    "id": "DUKN7",
+                    "name": "NOAA - Duck",
+                    "friendlyName": "Duck",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=DUKN7",
+                    "lat": 36.1833,
+                    "lon": -75.74667
+                },
+                {
+                    "id": "1046W",
+                    "name": "Corolla Fire Station",
+                    "friendlyName": "Corolla",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=1046W",
+                    "lat": 36.33176,
+                    "lon": -75.81335
+                }
+            ]
+        },
+        "hatteras": {
+            "displayName": "Hatteras",
+            "forecast": "NCZ205",
+            "lat": 35.2195,
+            "lon": -75.6903,
+            "city": "Hatteras",
+            "stations": [
+                {
+                    "id": "KHSE",
+                    "name": "Billy Mitchell Airport",
+                    "friendlyName": "Hatteras Airport",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KHSE",
+                    "lat": 35.23222,
+                    "lon": -75.6225
+                },
+                {
+                    "id": "TT700",
+                    "name": "TT700 - Buxton",
+                    "friendlyName": "Buxton",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=TT700",
+                    "lat": 35.24611,
+                    "lon": -75.53402
+                },
+                {
+                    "id": "HCGN7",
+                    "name": "USCG Station Hatteras",
+                    "friendlyName": "USCG Hatteras",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=HCGN7",
+                    "lat": 35.20864,
+                    "lon": -75.70417
+                }
+            ]
+        }
+    }
+}

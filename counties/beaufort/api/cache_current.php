@@ -10,9 +10,6 @@ error_reporting(E_ALL);
  *
  */
 
-declare(strict_types=1);
-error_reporting(E_ALL);
-
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
 $configPath = $dataDir . '/config.json';
@@ -121,8 +118,24 @@ foreach ($stations as $index => $station) {
   
   error_log("Processing station: {$sid}");
   
-  $url = "https://api.weather.gov/stations/{$sid}/observations/latest?require_qc=false";
+  // Fetch the list of recent observations to find the latest one with a temperature reading.
+  $url = "https://api.weather.gov/stations/{$sid}/observations?limit=5";
   $json = http_get_json($url);
+
+  $observationProperties = null;
+
+  if ($json && isset($json['features']) && is_array($json['features'])) {
+      foreach ($json['features'] as $observation) {
+          // Check if this observation has a non-null temperature value.
+          if (isset($observation['properties']['temperature']['value']) && $observation['properties']['temperature']['value'] !== null) {
+              $observationProperties = $observation['properties'];
+              error_log("Found valid observation for {$sid} at timestamp: " . ($observationProperties['timestamp'] ?? 'N/A'));
+              break; // Use the first one found (which is the most recent).
+          }
+      }
+  } else if ($json && isset($json['properties'])) {
+      $observationProperties = $json['properties'];
+  }
 
   $entry = [
     'id' => $sid,
@@ -147,8 +160,8 @@ foreach ($stations as $index => $station) {
     ]
   ];
 
-  if ($json && isset($json['properties'])) {
-    $p = $json['properties'];
+  if ($observationProperties) {
+    $p = $observationProperties;
     $tObs = $p['timestamp'] ?? null;
     $ageMin = null;
     if ($tObs) {

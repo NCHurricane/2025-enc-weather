@@ -1,0 +1,97 @@
+{
+    "county": {
+        "name": "Hyde",
+        "state": "NC",
+        "timezone": "America/New_York",
+        "multiZone": true,
+        "defaultZone": "mainland"
+    },
+    "forecastOffice": {
+        "id": "MHX",
+        "name": "Newport/Morehead City"
+    },
+    "zones": {
+        "mainland": {
+            "displayName": "Mainland Hyde",
+            "forecast": "NCZ081",
+            "lat": 35.4085,
+            "lon": -76.3302,
+            "city": "Swan Quarter",
+            "stations": [
+                {
+                    "id": "K7W6",
+                    "name": "Hyde County Airport",
+                    "friendlyName": "Hyde County Airport",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=K7W6",
+                    "lat": 35.56204,
+                    "lon": -75.95566
+                },
+                {
+                    "id": "TS161",
+                    "name": "Lake Mattamuskeet",
+                    "friendlyName": "Lake Mattamuskeet",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=TS161",
+                    "lat": 35.54172,
+                    "lon": -76.22308
+                },
+                {
+                    "id": "EGHN7",
+                    "name": "Far Creek at Engelhard",
+                    "friendlyName": "Engelhard",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=EGHN7",
+                    "lat": 35.50889,
+                    "lon": -75.99694
+                },
+                {
+                    "id": "PNGN7",
+                    "name": "Pungo River",
+                    "friendlyName": "Ponzer",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=PNGN7",
+                    "lat": 35.58528,
+                    "lon": -76.48556
+                }
+            ]
+        },
+        "ocracoke": {
+            "displayName": "Ocracoke",
+            "forecast": "NCZ204",
+            "lat": 35.1154,
+            "lon": -75.9843,
+            "city": "Ocracoke",
+            "stations": [
+                {
+                    "id": "KHSE",
+                    "name": "Billy Mitchell Airport",
+                    "friendlyName": "Hatteras Airport",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KHSE",
+                    "lat": 35.23222,
+                    "lon": -75.6225
+                },
+                {
+                    "id": "CTIN7",
+                    "name": "Cedar Island Ferry Terminal",
+                    "friendlyName": "Cedar Island",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=CTIN7",
+                    "lat": 35.01833,
+                    "lon": -76.31444
+                },
+                {
+                    "id": "HCGN7",
+                    "name": "USGS Station Hatteras",
+                    "friendlyName": "USGS Station Hatteras",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=HCGN7",
+                    "lat": 35.20864,
+                    "lon": -75.70417
+                },
+                {
+                    "id": "TT700",
+                    "name": "Buxton",
+                    "friendlyName": "Buxton",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=TT700",
+                    "lat": 35.24611,
+                    "lon": -75.53402
+                }
+            ]
+        }
+    }
+}

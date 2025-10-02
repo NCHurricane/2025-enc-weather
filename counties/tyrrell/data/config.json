@@ -1,0 +1,62 @@
+{
+    "county": {
+        "name": "Tyrrell",
+        "state": "NC",
+        "timezone": "America/New_York"
+    },
+    "location": {
+        "lat": 35.9177,
+        "lon": -76.2522,
+        "city": "Columbia"
+    },
+    "zones": {
+        "forecast": "NCZ046",
+        "county": "NCC177"
+    },
+    "forecastOffice": {
+        "id": "MHX",
+        "name": "Newport/Morehead City"
+    },
+    "stations": [
+        {
+            "id": "K7W6",
+            "name": "Hyde County Airport",
+            "friendlyName": "Engelhard",
+            "url": "https://www.weather.gov/wrh/timeseries?site=K7W6",
+            "lat": 35.56204,
+            "lon": -75.95566
+        },
+        {
+            "id": "COLN7",
+            "name": "Columbia Town Hall",
+            "url": "https://www.weather.gov/wrh/timeseries?site=COLN7",
+            "friendlyName": "Columbia",
+            "lat": 35.9175,
+            "lon": -76.25444
+        },
+        {
+            "id": "ALIN7",
+            "name": "ALIN7 N Alligator River",
+            "url": "https://www.weather.gov/wrh/timeseries?site=ALIN7",
+            "friendlyName": "Gum Neck",
+            "lat": 35.72139,
+            "lon": -76.19237
+        },
+        {
+            "id": "F0226",
+            "name": "F0226 CWOP - Pea Ridge",
+            "url": "https://www.weather.gov/wrh/timeseries?site=F0226",
+            "friendlyName": "Pea Ridge",
+            "lat": 35.9525,
+            "lon": -76.4665
+        },
+        {
+            "id": "TS161",
+            "name": "TS161 CWOP - Lake Mattamuskeet",
+            "url": "https://www.weather.gov/wrh/timeseries?site=TS161",
+            "friendlyName": "Fairfield",
+            "lat": 35.54172,
+            "lon": -76.22308
+        }
+    ]
+}

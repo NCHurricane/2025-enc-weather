@@ -1,0 +1,62 @@
+{
+    "county": {
+        "name": "Bertie",
+        "state": "NC",
+        "timezone": "America/New_York"
+    },
+    "location": {
+        "lat": 35.9985,
+        "lon": -76.9461,
+        "city": "Windsor"
+    },
+    "zones": {
+        "forecast": "NCZ030",
+        "county": "NCC015"
+    },
+    "forecastOffice": {
+        "id": "AKQ",
+        "name": "Wakefield"
+    },
+    "stations": [
+        {
+            "id": "KEDE",
+            "name": "Northeastern Regional Airport",
+            "friendlyName": "Edenton",
+            "url": "https://www.weather.gov/wrh/timeseries?site=KEDE",
+            "lat": 36.02778,
+            "lon": -76.56722
+        },
+        {
+            "id": "WNRN7",
+            "name": "Cashie River in Windsor, NC",
+            "friendlyName": "Cashie River Bridge",
+            "url": "https://www.weather.gov/wrh/timeseries?site=WNRN7",
+            "lat": 35.99389,
+            "lon": -76.9425
+        },
+        {
+            "id": "GCRN7",
+            "name": "Greens Cross Fire RAWS",
+            "friendlyName": "Greens Cross",
+            "url": "https://www.weather.gov/wrh/timeseries?site=GCRN7",
+            "lat": 36.01766,
+            "lon": -76.89126
+        },
+        {
+            "id": "KASJ",
+            "name": "Tri-County Airport",
+            "friendlyName": "Ahoskie",
+            "url": "https://www.weather.gov/wrh/timeseries?site=KASJ",
+            "lat": 36.2975,
+            "lon": -77.17083
+        },
+        {
+            "id": "TIDN7",
+            "name": "Tidewater Research Station",
+            "friendlyName": "Roper",
+            "url": "https://www.weather.gov/wrh/timeseries?site=TIDN7",
+            "lat": 35.86667,
+            "lon": -76.65
+        }
+    ]
+}

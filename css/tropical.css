@@ -576,13 +576,6 @@ label[for="text-two-spanish"]:hover {
   color: var(--color-primary, #007acc);
 }
 
-/* Action buttons */
-.text-actions {
-  margin-top: 15px;
-  /* padding-top: 15px; */
-  text-align: center;
-}
-
 .nhc-link-btn {
   display: inline-flex;
   align-items: center;

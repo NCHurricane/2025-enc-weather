@@ -116,24 +116,9 @@ function processZoneStations(array $stations, string $zoneName): array {
     
     error_log("Processing zone {$zoneName}, station: {$sid}");
     
-    // Fetch the list of recent observations to find the latest one with a temperature reading.
-    $url = "https://api.weather.gov/stations/{$sid}/observations?limit=5";
+    // NWS obs endpoint pattern: /stations/{id}/observations/latest
+    $url = "https://api.weather.gov/stations/{$sid}/observations/latest?require_qc=false";
     $json = http_get_json($url);
-
-    $observationProperties = null;
-
-    if ($json && isset($json['features']) && is_array($json['features'])) {
-        foreach ($json['features'] as $observation) {
-            // Check if this observation has a non-null temperature value.
-            if (isset($observation['properties']['temperature']['value']) && $observation['properties']['temperature']['value'] !== null) {
-                $observationProperties = $observation['properties'];
-                error_log("Found valid observation for {$sid} at timestamp: " . ($observationProperties['timestamp'] ?? 'N/A'));
-                break; // Use the first one found (which is the most recent).
-            }
-        }
-    } else if ($json && isset($json['properties'])) {
-        $observationProperties = $json['properties'];
-    }
 
     $entry = [
       'id' => $sid,
@@ -158,8 +143,8 @@ function processZoneStations(array $stations, string $zoneName): array {
       ]
     ];
 
-    if ($observationProperties) {
-      $p = $observationProperties;
+    if ($json && isset($json['properties'])) {
+      $p = $json['properties'];
       $tObs = $p['timestamp'] ?? null;
       $ageMin = null;
       if ($tObs) {

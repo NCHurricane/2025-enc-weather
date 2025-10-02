@@ -1,0 +1,70 @@
+{
+    "county": {
+        "name": "Pitt",
+        "state": "NC",
+        "timezone": "America/New_York"
+    },
+    "location": {
+        "lat": 35.6115,
+        "lon": -77.3752,
+        "city": "Greenville"
+    },
+    "zones": {
+        "forecast": "NCZ044",
+        "county": "NCC147"
+    },
+    "forecastOffice": {
+        "id": "MHX",
+        "name": "Newport/Morehead City"
+    },
+    "stations": [
+        {
+            "id": "KPGV",
+            "name": "Pitt-Greenville Airport",
+            "friendlyName": "Greenville",
+            "url": "https://www.weather.gov/wrh/timeseries?site=KPGV",
+            "lat": 35.63742,
+            "lon": -77.38506
+        },
+        {
+            "id": "0589W",
+            "name": "East Carolina University",
+            "url": "https://www.weather.gov/wrh/timeseries?site=0589W",
+            "friendlyName": "ECU",
+            "lat": 35.59634,
+            "lon": -77.36522
+        },
+        {
+            "id": "AT913",
+            "name": "AT913 CWOP - Winterville",
+            "url": "https://www.weather.gov/wrh/timeseries?site=AT913",
+            "friendlyName": "E Winterville",
+            "lat": 35.5449,
+            "lon": -77.45209
+        },
+        {
+            "id": "G3801",
+            "name": "G3801 CWOP - Winterville",
+            "url": "https://www.weather.gov/wrh/timeseries?site=G3801",
+            "friendlyName": "W Winterville",
+            "lat": 35.5215,
+            "lon": -77.41917
+        },
+        {
+            "id": "G6223",
+            "name": "GW6223 CWOP - Black Jack",
+            "url": "https://www.weather.gov/wrh/timeseries?site=G6223",
+            "friendlyName": "Black Jack",
+            "lat": 35.5245,
+            "lon": -77.22833
+        },
+        {
+            "id": "GBYN7",
+            "name": "GBYN7 HADS - Tar River",
+            "url": "https://www.weather.gov/wrh/timeseries?site=GBYN7",
+            "friendlyName": "Tar River - US264",
+            "lat": 35.64528,
+            "lon": -77.42278
+        }
+    ]
+}
