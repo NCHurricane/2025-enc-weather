@@ -941,7 +941,6 @@ For technical questions about this codebase:
 
 -   Open an issue: https://github.com/NCHurricane/2025-enc-weather/issues
 -   Review documentation in this README
--   Check `.github/copilot-instructions.md` for additional development notes
 
 For questions about the live website or weather information:
 
@@ -1186,11 +1185,6 @@ For questions about the live website or weather information:
     -   Per-county radar loops using NWS data
     -   Local satellite imagery for each county page
     -   Animated loops with customizable time ranges
-
--   **Live Streaming Dashboard**:
-    -   Unified control interface for all weather functions
-    -   Real-time data aggregation across counties and tropical systems
-    -   Broadcasting-ready layout with customizable overlays
 
 ### Technical Improvements
 
