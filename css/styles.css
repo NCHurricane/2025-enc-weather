@@ -14,6 +14,7 @@
     --color-black: #000;
     --color-white: #fff;
     --color-light-gray: rgb(231, 231, 231);
+    --color-gray: #acacac;
     --color-background: #c8c8c8;
     --color-gradient-start: rgb(36, 48, 181);
     --color-gradient-end: rgb(166, 80, 0);
@@ -34,7 +35,7 @@
 
     /* Fonts */
     --font-primary: 'Roboto', Arial, sans-serif;
-    --font-heading: 'Montserrat', monospace;
+    --font-heading: 'Montserrat', sans-serif;
     --font-mono: 'Fira Code', monospace;
     --font-active: 'Saira', sans-serif;
 
@@ -47,6 +48,67 @@
 /*--------------------*/
 /* BASE STYLES */
 /*--------------------*/
+/* Local font faces */
+/* Prefer WOFF2 if available; using variable TTFs present in fonts/ as source. */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat/Montserrat-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat/Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-stretch: 75% 125%;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto/Roboto-Italic-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-stretch: 75% 125%;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Saira';
+    src: url('../fonts/Saira/Saira-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-stretch: 75% 125%;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Saira';
+    src: url('../fonts/Saira/Saira-Italic-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-stretch: 75% 125%;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Fira Code';
+    src: url('../fonts/Fira_Code/FiraCode-VariableFont_wght.ttf') format('truetype');
+    font-weight: 300 700;
+    font-style: normal;
+    font-display: swap;
+}
 html {
     scroll-behavior: smooth;
 }
@@ -471,7 +533,7 @@ button {
 }
 
 .active-systems-header {
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 2.5vw, 1.1rem);
     background-color: var(--color-alert);
     color: var(--color-white);
     padding: 8px 10px;
@@ -483,6 +545,37 @@ button {
     justify-content: center;
     text-transform: uppercase;
 }
+
+.basin-link {
+    padding: 0.5em;
+    margin: 0.5em 0;
+    font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+    max-width: 200px;
+    border-radius: 5px;
+    background-color: var(--color-secondary);
+}
+
+.basin-link a {
+    color: var(--color-gray);
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.basin-link i {
+    margin-right: 8px;
+}
+
+.basin-link:hover {
+    background-color: var(--color-primary);
+}
+
+.basin-link:hover a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    font-style: italic;
+}
+
 
 .active-systems-container {
     display: flex;
@@ -497,9 +590,9 @@ button {
     justify-content: center;
     gap: 8px;
     flex: 1;
-    font-weight: 800;
+    font-weight: 700;
     padding: 10px 12px;
-    background-color: var(--color-accent);
+    background-color: var(--color-light-gray);
     border-radius: 5px;
 }
 
@@ -512,18 +605,19 @@ button {
     color: var(--color-primary);
     text-decoration: none;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 2.5vw, 1.1rem);
 }
 
 .active-system-link:hover {
-    text-decoration: underline;
+    font-weight: 900;
+    font-style: italic;
 }
 
 .no-active-systems {
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 2.5vw, 1.1rem);
     text-transform: uppercase;
-    background-color: #f2ff00; /* This yellow is slightly different from accent */
-    color: var(--color-success);
+    background-color: var(--color-alert);
+    color: var(--color-accent);
     padding: 8px 10px;
     border-radius: 2px;
     display: flex;
@@ -537,7 +631,7 @@ button {
 .no-active-systems i {
     margin-right: 10px;
     font-size: 1rem;
-    color: var(--color-success);
+    color: var(--color-accent);
 }
 
 /*--------------------*/

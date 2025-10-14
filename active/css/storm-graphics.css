@@ -194,6 +194,7 @@
 /* Content container */
 .graphics-content-container {
   position: relative;
+  padding-bottom: 2em;
 }
 
 .graphics-content-panel {

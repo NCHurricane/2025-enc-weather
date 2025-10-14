@@ -19,6 +19,7 @@ $outPath = $dataDir . '/discussion.json';
 function http_get_json(string $url, int $timeout = 30, int $retries = 2) {
   $attempt = 0;
   $delay = 250000; // 0.25s
+  while (true) {  // <-- This line is missing!
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_RETURNTRANSFER => true,
@@ -38,7 +39,6 @@ function http_get_json(string $url, int $timeout = 30, int $retries = 2) {
     }
 
     if ($attempt >= $retries) return null;
-  <?php
     usleep($delay);
     $delay *= 2;
     $attempt++;

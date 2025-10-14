@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342712,
+        "cached_at_iso": "2025-10-13T04:05:12-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "lastBuildDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "title": "Atlantic Remnants of Jerry Discussion Number 18",
+            "description": "National Hurricane Center - Discussion for Atlantic wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Atlantic Remnants of Jerry Discussion Number 18",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Atlantic Remnants of Jerry Discussion Number 18",
+                "description": [],
+                "pubDate": "Sat, 11 Oct 2025 20:33:40 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCDAT5.shtml",
+                "guid": "202510112033",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "483 \nWTNT45 KNHC 112033\nTCDAT5\n \nRemnants Of Jerry Discussion Number  18\nNWS National Hurricane Center Miami FL       AL102025\n500 PM AST Sat Oct 11 2025\n \nA combination of scatterometer data, GOES-East derived motion \nwinds, and a recent GPM microwave pass seems to confirm that Jerry \ndoes not have a well-defined center and has degenerated into a \ntrough with deep convection located at the southeastern end of the \naxis.  As a result, this will be the last NHC advisory on this \nsystem.  Maximum winds are estimated to be 40 kt based on ASCAT data \nfrom this morning.\n \nThe rough motion estimate is northward, or 360\/14 kt.  The remnant \ntrough is expected to move northward and then northeastward, with \nthe European, Canadian, and UKMET models showing it merging with a \nfrontal boundary to its north in 24-36 hours.  Gale-force winds are \nlikely to continue to the east and north of the trough until it \nmerges with the front.  The GFS continues to keep the remnants as a \ndistinct feature, but given that its initial position of the \nremnants is too far to the southeast, it is still considered an \noutlier solution.\n \nAdditional information on this system can be found in High Seas\nForecasts issued by the National Weather Service, under AWIPS\nheader NFDHSFAT1, WMO header FZNT01 KWBC, and online at \nocean.weather.gov\/shtml\/NFDHSFAT1.php\n\nFORECAST POSITIONS AND MAX WINDS\n \nINIT  11\/2100Z 27.6N  63.6W   40 KT  45 MPH\n 12H  12\/0600Z...DISSIPATED\n \n$$\nForecaster Berg"
+}

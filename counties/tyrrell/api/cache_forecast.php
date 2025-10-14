@@ -10,7 +10,7 @@ error_reporting(E_ALL);
  * - Tyrrell County, NC (zone: NCZ046)
  * - Tyrrell County, NC (zone: NCC177)
  * 
- *//
+ */
 
 $root = dirname(__DIR__);
 $dataDir = $root . '/data';
@@ -110,7 +110,6 @@ if ($hourly && isset($hourly['properties']['periods'])) {
       'relativeHumidity' => $relativeHumidityRounded,  // NEW: Rounded percentage
       'windSpeed' => $h['windSpeed'] ?? null,
       'windDirection' => $h['windDirection'] ?? null,
-  <?php
       'shortForecast' => $h['shortForecast'] ?? null,
       'icon' => ensure_large_icon($h['icon'] ?? null),
       'probabilityOfPrecipitation' => $h['probabilityOfPrecipitation']['value'] ?? null

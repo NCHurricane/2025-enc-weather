@@ -77,7 +77,7 @@ function writeJsonAtomic(string $filepath, array $payload): bool {
         logMessage("JSON encode failed for {$filepath}", 'ERROR');
         return false;
     }
-    $tmp = $filepath . '.tmp-' . bin2hex(random_bytes(4));
+    $tmp = $filepath . '.tmp-' . bin2hex(random_bytes(4));    
     $fp = @fopen($tmp, 'wb');
     if (!$fp) {
         logMessage("Cannot open temp file: {$tmp}", 'ERROR');

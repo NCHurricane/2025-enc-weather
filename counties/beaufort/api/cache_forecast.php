@@ -28,7 +28,8 @@ function http_get_json($url, $timeout=10, $retries=2) {
     ]);
     $body=curl_exec($ch); $err=curl_errno($ch); $code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE); curl_close($ch);
     if(!$err && $code>=200 && $code<300 && $body){ $j=json_decode($body,true); if(json_last_error()===JSON_ERROR_NONE) return $j; }
-    if($attempt>=2) return null; usleep($delay); $delay*=2; $attempt++;
+    if($attempt>=$retries) return null; // <-- Changed from hardcoded `2` to use the parameter
+    usleep($delay); $delay*=2; $attempt++;
   }
 }
 

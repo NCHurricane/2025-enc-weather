@@ -181,10 +181,10 @@ function apply_selective_lowercase($adv) {
   if (
       isset($adv['motion']) &&
       is_array($adv['motion']) &&
-      isset($adv['motion']['dirText']) &&
-      is_string($adv['motion']['dirText'])
+      isset($adv['motion']['direction']) &&
+      is_string($adv['motion']['direction'])
   ) {
-      $adv['motion']['dirText'] = lc_str($adv['motion']['dirText']);
+      $adv['motion']['direction'] = lc_str($adv['motion']['direction']);
   }
 
   if (isset($adv['geo']) && is_array($adv['geo'])) {
@@ -242,7 +242,63 @@ function processSingleStorm($stormId) {
     if ($xml === false) {
         throw new Exception('Failed to parse advisory XML.');
     }
-    
+        $messageRaw = strval_safe(isset($xml->message) ? $xml->message : '');
+    $headlines = array();
+    if ($messageRaw !== '') {
+        // Split into lines, normalize line endings
+        $lines = preg_split('/\r?\n|(?<=\s)\n|(?<=\n)/', $messageRaw);
+        $foundDate = false;
+        $collect = false;
+        $headlineLines = array();
+        foreach ($lines as $i => $line) {
+            $trimmed = trim($line);
+            // Find the date/time line (e.g., '300 PM GMT Fri Sep 26 2025')
+            if (!$foundDate && preg_match('/\d{1,4}\s*(AM|PM)\s+[A-Z]{2,4}\s+.+\d{4}/i', $trimmed)) {
+                $foundDate = true;
+                $collect = true;
+                continue;
+            }
+            if ($collect) {
+                // Stop at first line containing 'ADVISORY' or 'SUMMARY' (case-insensitive)
+                if (stripos($trimmed, 'ADVISORY') !== false || stripos($trimmed, 'SUMMARY') !== false) {
+                    break;
+                }
+                // Only collect non-empty lines
+                if ($trimmed !== '') {
+                    $headlineLines[] = $trimmed;
+                }
+            }
+        }
+        // Now join lines into logical headlines: group consecutive lines, join, remove leading/trailing ...
+        $current = '';
+        foreach ($headlineLines as $line) {
+            // If line starts with ... it's a new headline
+            if (preg_match('/^\.\.\./', $line)) {
+                if ($current !== '') {
+                    // Clean up: remove leading/trailing ... and whitespace, collapse spaces
+                    $clean = preg_replace('/^\.*|\.*$/', '', $current);
+                    $clean = preg_replace('/\s+/', ' ', $clean);
+                    $clean = trim($clean);
+                    if ($clean !== '') $headlines[] = $clean . '...';
+                }
+                $current = $line;
+            } else {
+                // Continuation of previous headline
+                $current .= ' ' . $line;
+            }
+        }
+        // Add last headline
+        if ($current !== '') {
+            $clean = preg_replace('/^\.*|\.*$/', '', $current);
+            $clean = preg_replace('/\s+/', ' ', $clean);
+            $clean = trim($clean);
+            if ($clean !== '') $headlines[] = $clean . '...';
+        }
+        // Remove duplicate trailing ... if present
+        $headlines = array_map(function($h) {
+            return preg_replace('/\.\.\.$/', '...', $h);
+        }, $headlines);
+    }
     $advisory = array(
         'atcfID' => $stormId,
         'generated' => gmdate('c'),
@@ -266,16 +322,19 @@ function processSingleStorm($stormId) {
             'mb'  => intval_safe(isset($xml->systemMslpMb) ? $xml->systemMslpMb : ''),
         ),
         'motion' => array(
-            'dirText' => strval_safe(isset($xml->systemDirectionOfMotion) ? $xml->systemDirectionOfMotion : ''),
-            'mph'     => intval_safe(isset($xml->systemSpeedMph) ? $xml->systemSpeedMph : ''),
-            'kph'     => intval_safe(isset($xml->systemSpeedKph) ? $xml->systemSpeedKph : ''),
-            'kts'     => intval_safe(isset($xml->systemSpeedKts) ? $xml->systemSpeedKts : ''),
+            'direction' => strval_safe(isset($xml->systemDirectionOfMotion) ? $xml->systemDirectionOfMotion : ''),
+            'speed' => array(
+                'mph'     => intval_safe(isset($xml->systemSpeedMph) ? $xml->systemSpeedMph : ''),
+                'kph'     => intval_safe(isset($xml->systemSpeedKph) ? $xml->systemSpeedKph : ''),
+                'kts'     => intval_safe(isset($xml->systemSpeedKts) ? $xml->systemSpeedKts : ''),
+            )
         ),
         'geo' => array_values(array_filter(array(
             strval_safe(isset($xml->systemGeoRefPt1) ? $xml->systemGeoRefPt1 : ''),
             strval_safe(isset($xml->systemGeoRefPt2) ? $xml->systemGeoRefPt2 : ''),
         ), 'array_filter_non_empty')),
-        'message' => strval_safe(isset($xml->message) ? $xml->message : ''),
+        'message' => $messageRaw,
+        'headlines' => $headlines,
     );
     
     if ($advisory['intensity']['mph'] !== null) {
@@ -310,7 +369,8 @@ function processSingleStorm($stormId) {
 
 function processAllEPStorms() {
     global $isCli;
-    $currentStormsPath = dirname(__FILE__) . '/../cache/nhc_current_storms.json';    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
+    $currentStormsPath = dirname(__DIR__) . '/cache/nhc_current_storms.json';    
+    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
     
     if (!file_exists($currentStormsPath)) {
         bail(500, "Current storms cache not found at {$currentStormsPath}");
@@ -325,7 +385,7 @@ function processAllEPStorms() {
     
     $stormIds = array();
     foreach($stormsData['data']['activeStorms'] as $storm) {
-        $stormIds[] = strtoupper($storm['id']);
+        $stormIds[] = $storm['id'];
     }
 
     $alStorms = array_filter($stormIds, 'is_ep_storm');

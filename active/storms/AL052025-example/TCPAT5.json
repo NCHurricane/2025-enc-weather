@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342712,
+        "cached_at_iso": "2025-10-13T04:05:12-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "lastBuildDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "title": "Atlantic Remnants of Jerry Advisory Number 18",
+            "description": "National Hurricane Center - Public Advisory for Atlantic wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Atlantic Remnants of Jerry Advisory Number 18",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Atlantic Remnants of Jerry Advisory Number 18",
+                "description": [],
+                "pubDate": "Sat, 11 Oct 2025 20:33:10 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCPAT5.shtml",
+                "guid": "202510112033",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "475 \nWTNT35 KNHC 112033\nTCPAT5\n \nBULLETIN\nRemnants Of Jerry Advisory Number  18\nNWS National Hurricane Center Miami FL       AL102025\n500 PM AST Sat Oct 11 2025\n \n...JERRY DEGENERATES INTO A TROUGH...\n...THIS IS THE LAST ADVISORY...\n\nSUMMARY OF 500 PM AST...2100 UTC...INFORMATION\n----------------------------------------------\nLOCATION...27.6N 63.6W\nABOUT 330 MI...535 KM SSE OF BERMUDA\nMAXIMUM SUSTAINED WINDS...45 MPH...75 KM\/H\nPRESENT MOVEMENT...N OR 360 DEGREES AT 16 MPH...26 KM\/H\nMINIMUM CENTRAL PRESSURE...1005 MB...29.68 INCHES\n\nWATCHES AND WARNINGS\n--------------------\nThere are no coastal watches or warnings in effect.\n\nDISCUSSION AND OUTLOOK\n----------------------\nAt 500 PM AST (2100 UTC), the remnants of Jerry were located near\nlatitude 27.6 North, longitude 63.6 West.  The remnants are moving\ntoward the north near 16 mph (26 km\/h) but are expected to turn \ntoward the northeast over the next couple of days.\n \nMaximum sustained winds are near 45 mph (75 km\/h) with higher \ngusts.  The remnants are expected to continue producing gale-force \nwinds until it merges with a frontal boundary in a day or two.\n \nGale-force winds extend outward up to 240 miles (390 km) to the \neast of the remnant center.\n \nThe estimated minimum central pressure is 1005 mb (29.68 inches).\n\nHAZARDS AFFECTING LAND\n----------------------\nSURF: Swells are affecting the Leeward Islands, Virgin Islands, \nPuerto Rico, Dominican Republic, the Turks and Caicos Islands, and \nthe Bahamas.  These swells will likely cause life-threatening surf \nand rip current conditions.  Please consult products from your local \nweather office for more information.\n \nA depiction of rip current risk for Puerto Rico and the U.S. Virgin\nIslands can be found at:\nhurricanes.gov\/graphics_at5.shtml?ripCurrents\n\nNEXT ADVISORY\n-------------\nThis is the last public advisory issued by the National Hurricane\nCenter on this system.  Additional information on this system can be \nfound in High Seas Forecasts issued by the National Weather Service, \nunder AWIPS header NFDHSFAT1, WMO header FZNT01 KWBC, and online at \nocean.weather.gov\/shtml\/NFDHSFAT1.php\n \n$$\nForecaster Berg"
+}

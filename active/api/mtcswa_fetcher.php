@@ -73,10 +73,31 @@ try {
     $js = fetch_js($js_url);
     $list = parse_stormlist($js);
     $count = 0;
+    $stormIdx = 0;
+    $processedStorms = 0;
+    $totalStorms = count($list);
+    log_msg("Total storms in list: $totalStorms");
     foreach ($list as $entry) {
-        if (!isset($entry['basin'], $entry['storm'], $entry['0hr'])) continue;
-        if ($entry['basin'] !== 'AL' && $entry['basin'] !== 'EP') continue;
-        if (isset($entry['id']) && strtoupper($entry['id']) === 'INVEST') continue;
+        $stormIdx++;
+        if (!isset($entry['basin'], $entry['basinName'], $entry['storm'], $entry['0hr'])) {
+            log_msg("Skipping storm #$stormIdx: missing required fields");
+            continue;
+        }
+        // Only process Atlantic (AL, Atlantic) and East Pacific (EP, East Pacific) storms
+        $basin = strtoupper(trim($entry['basin']));
+        $basinName = trim($entry['basinName']);
+        $isAtlantic = ($basin === 'AL' && strcasecmp($basinName, 'Atlantic') === 0);
+        $isEastPac = ($basin === 'EP' && strcasecmp($basinName, 'East Pacific') === 0);
+        if (!($isAtlantic || $isEastPac)) {
+            log_msg("Skipping storm #$stormIdx: not Atlantic or East Pacific (basin: $basin, basinName: $basinName)");
+            continue;
+        }
+        if (isset($entry['id']) && strtoupper($entry['id']) === 'INVEST') {
+            log_msg("Skipping storm #$stormIdx: INVEST");
+            continue;
+        }
+        log_msg("Processing storm #$stormIdx: " . $entry['storm'] . " (" . $entry['basinName'] . ")");
+        $processedStorms++;
         $storm_dir = $storm_dir_base . $entry['storm'] . '/';
         if (!is_dir($storm_dir)) {
             if (!mkdir($storm_dir, 0775, true)) {
@@ -95,6 +116,7 @@ try {
                     } else {
                         $img_dest = $storm_dir . basename($imgset[$type]);
                     }
+                    log_msg("Attempting to save image: $img_url to $img_dest");
                     try {
                         save_image($img_url, $img_dest);
                         log_msg("Saved $img_url to $img_dest");
@@ -106,6 +128,8 @@ try {
             }
         }
     }
+    log_msg("Total storms processed: $processedStorms");
+    log_msg("End of storm list loop. StormIdx: $stormIdx, Total in list: $totalStorms");
     log_msg("Done. $count images saved.");
 } catch (Exception $e) {
     log_msg("Fatal error: " . $e->getMessage());

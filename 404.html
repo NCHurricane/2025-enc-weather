@@ -6,7 +6,6 @@
         <title>NCHurricane — Page Not Found (404)</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex, nofollow" />
-        <meta name="theme-color" content="#0b1e3b" />
         <link rel="canonical" href="https://nchurricane.com/404" />
 
         <meta name="description"
@@ -26,6 +25,7 @@
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@chuckcopelandwx" />
+        <meta name="twitter:creator" content="@chuckcopelandwx" />
         <meta name="twitter:title" content="Page Not Found — NCHurricane" />
         <meta name="twitter:description"
             content="This page isn't available. Visit the homepage for current weather updates." />
@@ -35,18 +35,30 @@
         <link rel="stylesheet" href="./css/active.css" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
         <script type="application/ld+json">
-        [
-          {"@context":"https://schema.org","@type":"Organization","name":"NCHurricane","url":"https://nchurricane.com/","logo":"https://nchurricane.com/assets/img/logo.png"},
-          {"@context":"https://schema.org","@type":"WebPage","name":"Page Not Found","url":"https://nchurricane.com/404","isPartOf":{"@type":"WebSite","name":"NCHurricane.com","url":"https://nchurricane.com/"}}
-        ]
+            [
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "NCHurricane",
+                    "url": "https://nchurricane.com/",
+                    "logo": "https://nchurricane.com/assets/img/logo.png"
+                },
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Page Not Found",
+                    "url": "https://nchurricane.com/404.html",
+                    "isPartOf": {
+                        "@type": "WebSite",
+                        "name": "NCHurricane.com",
+                        "url": "https://nchurricane.com/"
+                    }
+                }
+            ]
         </script>
     </head>
 
@@ -60,13 +72,14 @@
             <!-- Single panel, same “section container” look as other pages -->
             <section class="notfound-container" aria-labelledby="notfound-title">
                 <div id="notfound-title" class="notfound-title">
-                    <i class="fa-solid fa-signs-post" style="color: yellow;"></i>&nbsp;&nbsp;Time to evacuate this
-                    page
+                    <i class="fa-solid fa-signs-post" style="color: yellow"></i>&nbsp;&nbsp;Time to
+                    evacuate this page
                 </div>
 
                 <figure class="evac-figure">
                     <p class="notfound-subtitle muted">
-                        JUST LIKE A CATEGORY 6 HURRICANE,<br />THE PAGE YOU'RE LOOKING FOR DOESN'T EXIST.
+                        JUST LIKE A CATEGORY 6 HURRICANE,<br />THE PAGE YOU'RE LOOKING FOR DOESN'T
+                        EXIST.
                     </p>
                     <img src="./images/evac.webp" alt="Evacuation sign illustration" class="evac-illustration" />
                     <figcaption class="notfound-caption muted" style="text-align: center; margin-top: 6px">
@@ -102,16 +115,15 @@
                     </a>
                 </div>
                 <p class="disclaimer">
-                    NCHurricane.com is for informative purposes only. Do not use the
-                    information on this site to make decisions regarding protecting your
-                    life and/or personal property. Rely only on information from official
-                    sources of information, such as your
+                    NCHurricane.com is for informative purposes only. Do not use the information on
+                    this site to make decisions regarding protecting your life and/or personal
+                    property. Rely only on information from official sources of information, such as
+                    your
                     <a href="https://weather.gov" target="_blank">
                         <strong>local NWS office</strong> </a>,
-                    <a href="https://nhc.noaa.gov" target="_blank">
-                        <strong>the NHC</strong> </a>, your local AMS certified meteorologists to make such decisions in
-                    a
-                    severe weather event.
+                    <a href="https://nhc.noaa.gov" target="_blank"> <strong>the NHC</strong> </a>,
+                    your local AMS certified meteorologists to make such decisions in a severe
+                    weather event.
                 </p>
                 <p class="copyright">
                     Copyright ©2003, 2025 NCHurricane.<br />Website design by
@@ -127,7 +139,6 @@
                 NavigationModule.init('./');
             });
         </script>
-
     </body>
 
 </html>

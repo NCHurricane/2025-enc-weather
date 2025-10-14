@@ -84,7 +84,7 @@ if (!$zoneIds) {
   exit(0);
 }
 
-$geojsonPath = $siteRoot . '/js/data/basemaps/us_states_counties.geojson';
+$geojsonPath = $siteRoot . '/active/cache/us_states_counties.geojson';
 if (!is_file($geojsonPath)) {
   fwrite(STDERR, "GeoJSON not found: $geojsonPath\n");
   exit(1);

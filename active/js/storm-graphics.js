@@ -375,13 +375,6 @@ class StormGraphics {
             <i class="fa-solid fa-external-link-alt"></i> View Full MTCSWA Analysis at OSPO
           </a>
         </div>`;
-    } else if (remoteUrl && id) {
-      actionsHtml = `
-        <div class="text-actions" id="actions-${id}">
-          <a href="${remoteUrl}" class="nhc-link-btn" id="link-${id}" target="_blank" rel="noopener">
-            <i class="fa-solid fa-external-link-alt"></i> View Full Graphic on NHC Website
-          </a>
-        </div>`;
     }
 
     return `

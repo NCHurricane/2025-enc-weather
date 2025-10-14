@@ -17,6 +17,7 @@
             "lat": 35.9082,
             "lon": -75.6757,
             "city": "Manteo",
+            "primaryStation": "KMQI",
             "stations": [
                 {
                     "id": "KMQI",
@@ -57,7 +58,8 @@
             "forecast": "NCZ203",
             "lat": 36.0646,
             "lon": -75.7057,
-            "city": "Duck",
+            "city": "Kill Devil Hills",
+            "primaryStation": "F5918",
             "stations": [
                 {
                     "id": "KFFA",
@@ -69,8 +71,8 @@
                 },
                 {
                     "id": "F6624",
-                    "name": "F6624 CWOP - Southern Shore",
-                    "friendlyName": "Southern Shore",
+                    "name": "F6624 CWOP - Southern Shores",
+                    "friendlyName": "Southern Shores",
                     "url": "https://www.weather.gov/wrh/timeseries?site=F6624",
                     "lat": 36.124,
                     "lon": -75.723
@@ -90,6 +92,22 @@
                     "url": "https://www.weather.gov/wrh/timeseries?site=1046W",
                     "lat": 36.33176,
                     "lon": -75.81335
+                },
+                {
+                    "id": "ORIN7",
+                    "name": "Oregon Inlet Marina",
+                    "friendlyName": "Oregon Inlet",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=ORIN7",
+                    "lat": 35.795,
+                    "lon": -75.5483
+                },
+                {
+                    "id": "F5918",
+                    "name": "Nags Head",
+                    "friendlyName": "Nags Head",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=F5918",
+                    "lat": 35.87433,
+                    "lon": -75.57783
                 }
             ]
         },
@@ -99,7 +117,16 @@
             "lat": 35.2195,
             "lon": -75.6903,
             "city": "Hatteras",
+            "primaryStation": "KHSE",
             "stations": [
+                {
+                    "id": "ORIN7",
+                    "name": "Oregon Inlet Marina",
+                    "friendlyName": "Oregon Inlet",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=ORIN7",
+                    "lat": 35.795,
+                    "lon": -75.5483
+                },
                 {
                     "id": "KHSE",
                     "name": "Billy Mitchell Airport",
@@ -123,6 +150,14 @@
                     "url": "https://www.weather.gov/wrh/timeseries?site=HCGN7",
                     "lat": 35.20864,
                     "lon": -75.70417
+                },
+                {
+                    "id": "41025",
+                    "name": "Diamond Shoals Lighted Buoy",
+                    "friendlyName": "Diamond Shoals",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=41025",
+                    "lat": 35.0,
+                    "lon": -75.4
                 }
             ]
         }

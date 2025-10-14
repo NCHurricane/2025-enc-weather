@@ -156,6 +156,7 @@ foreach ($stations as $index => $station) {
       'conditions' => null,
       'heatIndex' => null,
       'windChill' => null,
+      'feelsLike' => null,
       'icon' => null
     ]
   ];
@@ -215,12 +216,37 @@ foreach ($stations as $index => $station) {
       'windChill' => convert_temperature($windChill, $windChillUnit),
       'icon' => $icon ? str_replace('size=medium', 'size=large', $icon) : null,
     ];
+
+    // Determine canonical feels-like selection while preserving raw values
+    $T  = $entry['data']['temperature'];
+    $RH = $entry['data']['humidity'];
+    $HI = $entry['data']['heatIndex'];
+    $WCv = $entry['data']['windChill'];
+
+    $showHI = ($HI !== null) && ($T !== null && $T >= 80) && ($RH === null || $RH >= 40);
+    $showWC = ($WCv !== null) && ($T !== null && $T <= 50);
+
+    if ($showHI && $showWC) {
+      // Prefer heat index in warm scenarios if both conditions somehow trip
+      $showWC = false;
+    }
+
+    $feelsLike = null;
+    if ($showHI) {
+      $feelsLike = ['type' => 'heatIndex', 'value' => $HI];
+    } elseif ($showWC) {
+      $feelsLike = ['type' => 'windChill', 'value' => $WCv];
+    }
+
+    $entry['data']['feelsLike'] = $feelsLike;
     
-    error_log("Successfully processed {$sid}: temp={$entry['data']['temperature']}, wind={$entry['data']['windSpeed']}");
+  $flType = $entry['data']['feelsLike']['type'] ?? 'none';
+  error_log("Successfully processed {$sid}: temp={$entry['data']['temperature']}, wind={$entry['data']['windSpeed']}, feelsLike={$flType}");
   } else {
     error_log("Failed to get data for station: {$sid}");
   }
 
+  
   $result['stations'][$sid] = $entry;
 }
 

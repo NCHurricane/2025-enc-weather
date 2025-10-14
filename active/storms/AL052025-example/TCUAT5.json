@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342713,
+        "cached_at_iso": "2025-10-13T04:05:13-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Fri, 10 Oct 2025 15:33:10 +0000",
+            "lastBuildDate": "Fri, 10 Oct 2025 15:33:10 +0000",
+            "title": "Atlantic Tropical Storm Jerry Tropical Cyclone Update",
+            "description": "National Hurricane Center - Tropical Cyclone Update for Atlantic wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Atlantic Tropical Storm Jerry Tropical Cyclone Update",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Atlantic Tropical Storm Jerry Tropical Cyclone Update",
+                "description": [],
+                "pubDate": "Fri, 10 Oct 2025 09:36:12 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCUAT5.shtml",
+                "guid": "202510100936",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "786 \nWTNT65 KNHC 100936\nTCUAT5\n \nTropical Storm Jerry Tropical Cyclone Update\nNWS National Hurricane Center Miami FL       AL102025\n535 AM AST Fri Oct 10 2025\n \n...TROPICAL STORM WATCH DISCONTINUED FOR SABA AND ST. EUSTATIUS...\n \nThe meteorological service of the Netherlands has discontinued the \nTropical Storm Watch for Saba and St. Eustatius.\n \n$$\nForecaster Reinhart"
+}

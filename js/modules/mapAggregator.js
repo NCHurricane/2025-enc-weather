@@ -30,6 +30,8 @@ const PREFERRED_STATIONS = {
 function selectBestStationFromCounty(countyData, isMultiZone = false, countyName = '', zoneName = '') {
   const usable = (st) =>
     st?.data?.temperature !== null &&
+    st?.data?.temperature !== undefined &&
+    st?.observation?.timestamp !== null &&
     (st.observation?.age_minutes ?? 999) < STATION_MAX_AGE_MINUTES;
 
   // Helper to find preferred station in a stations object
@@ -106,18 +108,22 @@ async function fetchCountyWeather(countyName) {
     if (!weatherData) return null;
     // Pass countyName and zoneName for preferred station logic
     const bestStation = selectBestStationFromCounty(weatherData, isMultiZone, countyName);
-    if (!bestStation) return null;
-    // Extract all needed parameters, with null fallback
+    if (!bestStation) {
+      console.warn(`No valid weather data available for ${countyName}`);
+      return null;
+    }
+    // Extract all needed parameters, with 'N/A' fallback for null values
     return {
-      temp: bestStation.data.temperature ?? null,
-      humidity: bestStation.data.humidity ?? null,
-      dewpoint: bestStation.data.dewpoint ?? null,
-      windSpeed: bestStation.data.windSpeed ?? null,
-      windDirection: bestStation.data.windDirection ?? null,
+      temp: bestStation.data.temperature ?? 'N/A',
+      humidity: bestStation.data.humidity ?? 'N/A',
+      dewpoint: bestStation.data.dewpoint ?? 'N/A',
+      windSpeed: bestStation.data.windSpeed ?? 'N/A',
+      windDirection: bestStation.data.windDirection ?? 'N/A',
+      windGust: bestStation.data.windGust ?? bestStation.data.gust ?? 'N/A',
       conditions: bestStation.data.conditions || 'N/A',
       stationName: bestStation.name || bestStation.id,
-      age: bestStation.observation?.age_minutes || 0,
-      updatedIso: weatherData.generated || bestStation.observation?.timestamp,
+      age: bestStation.observation?.age_minutes || 999,
+      updatedIso: bestStation.observation?.timestamp || weatherData.generated,
     };
   } catch {
     return null;

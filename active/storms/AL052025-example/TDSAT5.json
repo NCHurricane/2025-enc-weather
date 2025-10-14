@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342713,
+        "cached_at_iso": "2025-10-13T04:05:13-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "lastBuildDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "title": "Remanentes De Jerry Discusión Número 18",
+            "description": "National Hurricane Center - Pronóstico Discusión de Atlántico para cartera 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Remanentes De Jerry Discusión Número 18",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Remanentes De Jerry Discusión Número 18",
+                "description": [],
+                "pubDate": "Sat, 11 Oct 2025 20:34:39 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATDSAT5.shtml",
+                "guid": "202510112034",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "228 \nWTNT55 KNHC 112034\nTDSAT5\n\nRemanentes De Jerry Discusión Número 18\nCentro Nacional de Huracanes del SNM Miami FL  AL102025\n500 PM AST sábado 11 de octubre de 2025\n\nUna combinación de datos del disperómetro, vientos de movimiento\nderivados del GOES-Este, y un paso de microondas GPM reciente parece\nconfirmar que Jerry no tiene un centro bien definido y ha degenerado\nen una vaguada con convección profunda ubicada en el extremo sureste\ndel eje. Como resultado, esta será la última advertencia del CNH en\neste sistema. Los vientos máximos se estiman en 40 kt basado en datos\nASCAT de esta mañana.\n\nLa estimación de movimiento aproximado es hacia el norte, o 360\/14 kt.\nSe espera que la vaguada remanente se mueva hacia el norte y luego\nhacia el noreste, con los modelos europeo, canadiense y UKMET que\nmuestran que se fusiona con un límite frontal a su norte en 24-36\nhoras. Vientos con fuerza de tormenta son probables que continúen al\neste y al norte de la vaguada hasta que se fusiona con el frente. El\nGFS continúa manteniendo los remanentes como una característica\ndistinta, pero dado que su posición inicial de los remanentes está\ndemasiado lejos al sureste, todavía se considera una solución atírica.\n\nInformación adicional sobre este sistema se puede encontrar en\nPronósticos de Alta Mar emitidos por el Servicio Nacional de\nMeteorología, bajo el encabezado de AWIPS NFDHSFAT1, el encabezado de\nla OMM FZNT01 KWBC, y en línea en\nocean.weather.gov\/shtml\/NFDHSFAT1.php\n\nPOSICIONES DE PRONÓSTICO Y VIENTOS MÁXIMOS\n\nINIT 11\/2100Z 27.6N 63.6W 40 KT 45 MPH\n 12H 12\/0600Z...DISIPADO\n\n$$\nPronosticador Berg\n\n*** Este producto ha sido procesado automáticamente utilizando un\nprograma de traducción y puede contener omisiones y errores. El\nServicio Nacional de Meteorología no puede garantizar la precisión del\ntexto convertido. De haber alguna duda, el texto en inglés es siempre\nla versión autorizada. ***"
+}

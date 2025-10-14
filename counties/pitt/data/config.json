@@ -17,6 +17,7 @@
         "id": "MHX",
         "name": "Newport/Morehead City"
     },
+    "primaryStation": "KPGV",
     "stations": [
         {
             "id": "KPGV",

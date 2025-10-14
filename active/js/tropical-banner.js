@@ -1,5 +1,5 @@
 // =============================
-// Tropical Alert banner - active/js/tropical-banner.js
+// Atlantic Tropical Alert banner - active/js/tropical-banner.js
 // Handles rendering of the tropical alert banner
 //
 // Uses the NHC active storms data to display a banner alert of current active tropical systems in the Atlantic basin
@@ -27,11 +27,15 @@ const STORM_CLASSIFICATIONS = {
  */
 async function fetchActiveStorms() {
   try {
-    const CACHE_URL = new URL(
-      "../cache/nhc_current_storms.json?v=" + Date.now(),
-      import.meta.url
-    ).pathname;
-    const response = await fetch(CACHE_URL);
+    // Use relative path from document root
+    const CACHE_URL = "active/cache/nhc_current_storms.json";
+
+    // Add cache-busting with 15-minute bucket
+    const now = new Date();
+    const bucket = Math.floor(now.getTime() / (15 * 60 * 1000));
+    const cacheBustedUrl = `${CACHE_URL}?t=${bucket}`;
+
+    const response = await fetch(cacheBustedUrl);
     if (!response.ok) {
       console.warn("Cache not available, attempting direct API...");
       return [];
@@ -98,6 +102,7 @@ function displayActiveStorms(storms) {
 
   bannerContainer.innerHTML = "";
 
+
   const alertHeader = document.createElement("div");
   alertHeader.className = "active-systems-header";
 
@@ -106,15 +111,19 @@ function displayActiveStorms(storms) {
     storms.length === 1 ? "Active System" : "Active Systems";
   alertHeader.appendChild(headerText);
 
+
   const stormsContainer = document.createElement("div");
   stormsContainer.className = "active-systems-container";
+
 
   storms.forEach((storm) => {
     const stormDiv = document.createElement("div");
     stormDiv.className = "active-system-item";
 
+
     const stormIcon = document.createElement("i");
     stormIcon.className = "fa-solid fa-hurricane";
+
 
     if (storm.classification === "HU" || storm.classification === "MH") {
       stormIcon.style.color = "red";

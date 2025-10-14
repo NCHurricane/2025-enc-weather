@@ -59,8 +59,6 @@ function formatNwsDescription($text) {
         '<strong>IMPACTS...</strong>'
     ];
     $text = preg_replace($patterns, $replacements, $text);
-    <?php
-
     $text = preg_replace('/(<br>\s*){2,}/', '</p><p>', $text);
     $text = '<p>' . $text . '</p>';
 

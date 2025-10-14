@@ -80,7 +80,7 @@ const DEFAULT_DOMAIN = { lonMin: -106, lonMax: -60, latMin: 18, latMax: 50 };
 const DEBUG_LABELS = true;
 // Dynamic base path for subdirectory support
 const BASE_PATH = window.location.pathname.split('/active')[0] || '';
-const BASEMAP_URL = `${BASE_PATH}/js/data/basemaps/us_states_counties.geojson`;
+const BASEMAP_URL = `${BASE_PATH}/active/cache/us_states_counties.geojson`;
 
 const INSETS = {
   PR: {
@@ -129,8 +129,7 @@ const _tileCache = new Map();
 const _drawVersionByCanvas = new Map();
 
 // Place names
-const PLACENAMES_URL = `${BASE_PATH}/js/data/coastal_placenames.json?v=` + Date.now();
-
+const PLACENAMES_URL = `${BASE_PATH}/active/cache/coastal_placenames.json?v=` + Date.now();
 const SHOW_PLACENAMES = true;
 const MIN_ZOOM_FOR_PLACENAMES = 6;
 const PLACENAMES_ZOOM_OFFSET = -1;
@@ -585,7 +584,7 @@ function drawPlacenames(ctx, domain, rect, zoom) {
 
 async function fetchZoneFeature(zoneId, zoneType) {
   const cacheParam = LOCAL_ZONE_CACHE_BUST ? `?v=${Date.now()}` : "";
-  const localUrl = `${BASE_PATH}/js/data/zones/cache/${zoneId}.json${cacheParam}`;
+  const localUrl = `${BASE_PATH}/active/cache/zones/${zoneId}.json${cacheParam}`;
   try {
     const r = await fetch(localUrl, {
       cache: LOCAL_ZONE_CACHE_BUST ? "no-cache" : "force-cache",

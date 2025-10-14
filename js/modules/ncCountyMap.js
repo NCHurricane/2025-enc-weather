@@ -165,8 +165,8 @@ export class NCCountyMap {
         name: 'Hobucken',
         county: 'beaufort',
         url: 'counties/beaufort/',
-        lat: 35.38967,
-        lon: -77.1235,
+        lat: 35.245,
+        lon: -76.59167,
       },
       {
         id: 'ALIN7',
@@ -275,11 +275,12 @@ export class NCCountyMap {
             stationData.data.temperature !== null
               ? Math.round(Number(stationData.data.temperature))
               : null,
-          humidity: stationData.data.humidity ?? null,
-          dewpoint: stationData.data.dewpoint ?? null,
-          windSpeed: stationData.data.windSpeed ?? null,
-          windDirection: stationData.data.windDirection ?? null,
-          conditions: stationData.data.conditions || 'N/A',
+          humidity: stationData.data.humidity ?? '',
+          dewpoint: stationData.data.dewpoint ?? '',
+          windSpeed: stationData.data.windSpeed ?? '',
+          windDirection: stationData.data.windDirection ?? '',
+          windGust: stationData.data.windGust ?? '',
+          conditions: stationData.data.conditions || '',
           stationName: stationData.name || stationConfig.name,
           age: ageMinutes,
           updatedIso: data.generated || stationData.observation?.timestamp,
@@ -326,11 +327,19 @@ export class NCCountyMap {
     } else if (this.selectedParameter === 'wind') {
       if (weather.windSpeed !== undefined && weather.windSpeed !== null) {
         if (Number(weather.windSpeed) === 0) {
-          value = 'CALM';
+          value = 'Calm';
           isCalm = true;
         } else {
           value = `${weather.windSpeed}`; // arrow added separately
         }
+        unit = 'mph';
+      } else {
+        value = 'N/A';
+        unit = '';
+      }
+    } else if (this.selectedParameter === 'gusts') {
+      if (weather.windGust !== undefined && weather.windGust !== null && weather.windGust !== '') {
+        value = `${weather.windGust}`;
         unit = 'mph';
       } else {
         value = 'N/A';
@@ -380,7 +389,7 @@ export class NCCountyMap {
 
   async loadCountyData() {
     try {
-      const response = await fetch('js/data/NC-county-topo.json?v=' + Date.now(), {
+      const response = await fetch('counties/NC-county-topo.json?v=' + Date.now(), {
         cache: 'no-store',
       });
       if (!response.ok) throw new Error(`Failed to load topo data: ${response.status}`);
@@ -463,7 +472,7 @@ export class NCCountyMap {
   }
 
   setupParameterTabListener() {
-    const tabIds = ['tab-temp', 'tab-wind', 'tab-humidity', 'tab-dewpoint'];
+    const tabIds = ['tab-temp', 'tab-wind', 'tab-gusts', 'tab-humidity', 'tab-dewpoint'];
     tabIds.forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
@@ -471,6 +480,7 @@ export class NCCountyMap {
           if (el.checked) {
             let param = 'temperature';
             if (id === 'tab-wind') param = 'wind';
+            else if (id === 'tab-gusts') param = 'gusts';
             else if (id === 'tab-humidity') param = 'humidity';
             else if (id === 'tab-dewpoint') param = 'dewpoint';
             this.selectedParameter = param;
@@ -601,6 +611,14 @@ export class NCCountyMap {
         } else {
           value = `${weather.windSpeed}`; // arrow added separately
         }
+        unit = 'mph';
+      } else {
+        value = 'N/A';
+        unit = '';
+      }
+    } else if (this.selectedParameter === 'gusts') {
+      if (weather.windGust !== undefined && weather.windGust !== null && weather.windGust !== '') {
+        value = `${weather.windGust}`;
         unit = 'mph';
       } else {
         value = 'N/A';

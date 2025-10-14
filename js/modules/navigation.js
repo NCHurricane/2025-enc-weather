@@ -27,7 +27,15 @@ export const NavigationModule = {
           { text: "Washington", href: "counties/washington/index.html" }
         ]
       },
-      { text: "Tropical", href: "tropical.html" },
+      {
+        text: "Tropical",
+        href: "#",
+        hasSubmenu: true,
+        submenu: [
+          { text: "Atlantic", href: "tropical_at.html" },
+          { text: "Pacific", href: "tropical_ep.html" },
+        ]
+      },
     ]
   },
 

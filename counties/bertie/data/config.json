@@ -17,6 +17,7 @@
         "id": "AKQ",
         "name": "Wakefield"
     },
+    "primaryStation": "GCRN7",
     "stations": [
         {
             "id": "KEDE",

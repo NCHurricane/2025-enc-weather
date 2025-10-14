@@ -12,7 +12,6 @@
       <meta name="description"
          content="Near real-time radar, satellite, tropical outlooks, and county-level conditions for Eastern North Carolina using National Weather Service data." />
 
-      <!-- Open Graph (Facebook, LinkedIn, Slack, Discord, Reddit, iMessage, WhatsApp, Telegram, Bluesky) -->
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="NCHurricane.com" />
       <meta property="og:locale" content="en_US" />
@@ -23,53 +22,39 @@
       <meta property="og:image" content="https://nchurricane.com/assets/images/2025-OG-Card.webp" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="Map and radar preview for Eastern North Carolina weather" />
+      <meta property="og:image:alt" content="Weather conditions, forecasts, and alerts for Eastern North Carolina" />
 
-      <!-- Twitter -->
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@chuckcopelandwx" />
+      <meta name="twitter:creator" content="@chuckcopelandwx" />
       <meta name="twitter:title" content="Eastern North Carolina Weather - NCHurricane.com" />
       <meta name="twitter:description"
          content="Near real-time radar, satellite, and tropical updates for Eastern North Carolina." />
-      <meta name="twitter:image" content="https://nchurricane.com/assets/images/2025-OG-Card.webp" />
+      <meta name="twitter:image" content="https://nchurricane.com/images/2025-OG-Card.webp" />
 
-      <!-- Icons / PWA (optional — update paths if available) -->
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <!-- <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png" /> -->
-      <!-- <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" /> -->
-      <!-- <link rel="manifest" href="/site.webmanifest" /> -->
-      <meta name="theme-color" content="#0b1e3b" />
+      <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+      <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+      <link rel="manifest" href="/site.webmanifest" />
 
-      <!-- Performance hints -->
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-      <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-
-      <!-- Fonts -->
-      <link
-         href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Saira:ital,wght@0,100..900;1,100..900&display=swap"
-         rel="stylesheet" />
-
-      <!-- Styles -->
       <link rel="stylesheet" href="css/styles.css?v=10.01.25a" />
       <link rel="stylesheet" href="css/index.css?v=10.01.25a" />
 
-      <!-- Structured data -->
       <script type="application/ld+json">
             [
                 {
                     "@context": "https://schema.org",
                     "@type": "WebSite",
-                    "name": "NCHurricane.com",
-                    "url": "https://nchurricane.com/"
+                    "name": "Eastern North Carolina Weather - NCHurricane.com",
+                    "url": "https://nchurricane.com/",
+                    "description": "Near real-time radar, satellite, tropical outlooks, and county-level conditions for Eastern North Carolina using National Weather Service data."
                 },
                 {
                     "@context": "https://schema.org",
                     "@type": "Organization",
                     "name": "NCHurricane",
                     "url": "https://nchurricane.com/",
-                    "logo": "https://nchurricane.com/assets/img/logo.png",
+                    "logo": "https://nchurricane.com/images/2025-NCH-logo.png",
                     "sameAs": [
                         "https://bsky.app/profile/nchurricane.com",
                         "https://twitter.com/chuckcopelandwx",
@@ -97,47 +82,45 @@
    </head>
 
    <body>
-      <!-- Navigation will be dynamically generated here -->
       <header class="header"></header>
 
       <main class="container">
          <h1 class="main-title">Eastern North Carolina Weather</h1>
 
          <!-- Row 1: Current Weather Map + Alerts Legend -->
-         <div class="cc-layout-container">
-            <div>
-               <div class="current-title">
-                  <h2 id="current-conditions-heading">
-                     <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>Current Conditions
-                  </h2>
+         <div class="current-title">
+            <h2 id="current-conditions-heading">
+               <i class="fa-solid fa-map-location-dot fa-xl" aria-hidden="true"></i>HIGHWAY 64/264 WEATHER
+            </h2>
+         </div>
+         <section aria-labelledby="current-conditions-heading" class="map-container glass">
+            <!-- Parameter Tabs -->
+            <div class="map-parameter-tabs">
+               <input type="radio" name="mapParameterTab" id="tab-temp" value="temperature" checked />
+               <input type="radio" name="mapParameterTab" id="tab-wind" value="wind" />
+               <input type="radio" name="mapParameterTab" id="tab-gusts" value="gusts" />
+               <input type="radio" name="mapParameterTab" id="tab-humidity" value="humidity" />
+               <input type="radio" name="mapParameterTab" id="tab-dewpoint" value="dewpoint" />
+
+               <div class="map-parameter-tab-labels" role="tablist">
+                  <label for="tab-temp" class="map-parameter-tab" role="tab" aria-selected="true">Temp</label>
+                  <label for="tab-wind" class="map-parameter-tab" role="tab">Wind</label>
+                  <label for="tab-gusts" class="map-parameter-tab" role="tab">Gusts</label>
+                  <label for="tab-humidity" class="map-parameter-tab" role="tab">Humidity</label>
+                  <label for="tab-dewpoint" class="map-parameter-tab" role="tab">Dewpoint</label>
                </div>
-               <section aria-labelledby="current-conditions-heading" class="map-container glass">
-                  <!-- Parameter Tabs -->
-                  <div class="map-parameter-tabs">
-                     <input type="radio" name="mapParameterTab" id="tab-temp" value="temperature" checked />
-                     <input type="radio" name="mapParameterTab" id="tab-wind" value="wind" />
-                     <input type="radio" name="mapParameterTab" id="tab-humidity" value="humidity" />
-                     <input type="radio" name="mapParameterTab" id="tab-dewpoint" value="dewpoint" />
-
-                     <div class="map-parameter-tab-labels" role="tablist">
-                        <label for="tab-temp" class="map-parameter-tab" role="tab" aria-selected="true">Temp</label>
-                        <label for="tab-wind" class="map-parameter-tab" role="tab">Wind</label>
-                        <label for="tab-humidity" class="map-parameter-tab" role="tab">Humidity</label>
-                        <label for="tab-dewpoint" class="map-parameter-tab" role="tab">Dewpoint</label>
-                     </div>
-                  </div>
-
-                  <div class="current-content">
-                     <div id="nc-county-map" class="county-map-container"></div>
-                  </div>
-                  <p class="instructions">Click on each location to go to the county page</p>
-               </section>
             </div>
 
-            <section aria-labelledby="alerts-legend-heading" class="alerts-legend-container">
+            <div class="current-content">
+               <div id="nc-county-map" class="county-map-container"></div>
+            </div>
+            <p class="instructions">Click on each location to go to the county page</p>
+            <div aria-labelledby="alerts-legend-heading" class="alerts-legend-container">
                <div id="map-alerts-legend" class="map-legend"></div>
-            </section>
-         </div>
+            </div>
+         </section>
+
+
 
          <!-- Row 2: Radar/Satellite + Tropical -->
          <div class="rt-layout-container">
@@ -160,15 +143,14 @@
                      <div class="radsat-tab-content">
                         <div id="radar-panel" class="radsat-panel" role="tabpanel">
                            <div class="image-container">
-                              <img id="radar-image" src="https://radar.weather.gov/ridge/standard/KMHX_0.gif"
+                              <img id="radar-image" src="https://radar.weather.gov/ridge/standard/KMHX_loop.gif"
                                  alt="KMHX Radar Image" class="weather-image" loading="lazy" />
                            </div>
                         </div>
-
                         <div id="satellite-panel" class="radsat-panel" role="tabpanel">
                            <div class="image-container">
                               <img id="satellite-image"
-                                 src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/se/GEOCOLOR/600x600.jpg"
+                                 src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/se/GEOCOLOR/GOES19-SE-GEOCOLOR-600x600.gif"
                                  alt="Southeast Satellite Image" class="weather-image" loading="lazy" />
                            </div>
                         </div>
@@ -177,27 +159,59 @@
                </section>
             </div>
 
+            <!-- New Tropical Section -->
             <div>
                <div class="tropical-title">
                   <h2 id="tropical-weather-heading">
-                     <i class="fa-solid fa-hurricane fa-xl" aria-hidden="true"></i>Atlantic Tropical Weather
+                     <i class="fa-solid fa-hurricane fa-xl" aria-hidden="true"></i>Current Tropical Weather
                   </h2>
                </div>
                <section aria-labelledby="tropical-weather-heading" class="tropical-container glass">
-                  <div class="tropical-banner"></div>
-                  <div class="tropical-content">
-                     <div class="tropical-image-container">
-                        <img id="tropical-outlook-image" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
-                           alt="Atlantic Tropical Weather Outlook" class="tropical-outlook-image" loading="lazy" />
+                  <div class="tropical-tabs">
+                     <input type="radio" name="tropicalTab" id="tropical-atlantic-tab" checked />
+                     <input type="radio" name="tropicalTab" id="tropical-pacific-tab" />
+
+                     <div class="tropical-tab-labels" role="tablist">
+                        <label for="tropical-atlantic-tab" class="tropical-tab" role="tab"
+                           aria-selected="true">Atlantic</label>
+                        <label for="tropical-pacific-tab" class="tropical-tab" role="tab">Pacific</label>
                      </div>
-                  </div>
-                  <div class="text-actions">
-                     <a href="tropical.html" class="main-link-btn text-actions" id="link-tropical-page">
-                        <i class="fa-solid fa-external-link-alt" aria-hidden="true"></i> Go to the Tropical Page
-                     </a>
+
+                     <div class="tropical-tab-content">
+                        <div id="tropical-atlantic-panel" class="tropical-panel" role="tabpanel">
+                           <div class="tropical-banner"></div>
+                           <div class="trop-container">
+                              <img id="tropical-atlantic-image" src="https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png"
+                                 alt="Current Atlantic Tropical Weather Outlook" class="weather-image" loading="lazy" />
+                           </div>
+                           <div class="text-actions">
+                              <a href="tropical_at.html" class="main-link-btn text-actions" id="link-tropical-page">
+                                 <i class="fa-solid fa-external-link-alt" aria-hidden="true"></i> Go to the Atlantic
+                                 Tropical
+                                 Page
+                              </a>
+                           </div>
+                        </div>
+
+                        <div id="tropical-pacific-panel" class="tropical-panel" role="tabpanel">
+                           <div class="tropical-banner-ep"></div>
+                           <div class="trop-container">
+                              <img id="tropical-pacific-image" src="https://www.nhc.noaa.gov/xgtwo/two_pac_0d0.png"
+                                 alt="Current Pacific Tropical Weather Outlook" class="weather-image" loading="lazy" />
+                           </div>
+                           <div class="text-actions">
+                              <a href="tropical_ep.html" class="main-link-btn text-actions" id="link-tropical-page">
+                                 <i class="fa-solid fa-external-link-alt" aria-hidden="true"></i> Go to the Eastern
+                                 Pacific Tropical
+                                 Page
+                              </a>
+                           </div>
+                        </div>
+                     </div>
                   </div>
                </section>
             </div>
+
          </div>
       </main>
 
@@ -253,11 +267,11 @@
       <!-- <script type="module" src="js/modules/mapAggregator-orig.js?v=09.29.25c"></script> -->
 
       <script type="module">
-         import { initCountyMap } from './js/modules/ncCountyMap.js?v=09.29.25c';
-         // import { initCountyMap } from "./js/modules/ncCountyMap-orig.js?v=09.29.25c";
+         import { initCountyMap } from './js/modules/ncCountyMap.js?v=10.27.25';
 
-         import { initTropicalBanner } from './active/js/tropical-banner.js?v=09.29.25c';
-         import { initRadSat } from './js/modules/radSatModule.js?v=09.29.25c';
+         import { initTropicalBanner } from './active/js/tropical-banner.js?v=10.27.25';
+         import { initTropicalBannerEP } from './active/js/tropical-banner-ep.js?v=10.07.25';
+         import { initRadSat } from './js/modules/radSatModule.js?v=10.07.25';
 
          async function initIndexPage() {
             console.log('Initializing index page...');
@@ -265,7 +279,8 @@
             const countyMap = initCountyMap();
             window.countyMap = countyMap;
 
-            initTropicalBanner();
+            initTropicalBanner();      // Atlantic basin
+            initTropicalBannerEP();    // Eastern Pacific basin
 
             const radSat = initRadSat();
             window.radSat = radSat;

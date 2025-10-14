@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342713,
+        "cached_at_iso": "2025-10-13T04:05:13-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Fri, 10 Oct 2025 17:31:00 +0000",
+            "lastBuildDate": "Fri, 10 Oct 2025 17:31:00 +0000",
+            "title": "Tormenta Tropical Jerry Ciclón Tropical Actualización",
+            "description": "National Hurricane Center - Declaracion de Actualización de Atlántico para cartera 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Tormenta Tropical Jerry Ciclón Tropical Actualización",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Tormenta Tropical Jerry Ciclón Tropical Actualización",
+                "description": [],
+                "pubDate": "Fri, 10 Oct 2025 09:37:28 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATUSAT5.shtml",
+                "guid": "202510100937",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "361 \nWTNT75 KNHC 100937\nTUSAT5\n\nTormenta Tropical Jerry Ciclón Tropical Actualización\nCentro Nacional de Huracanes del SNM Miami FL  AL102025\n535 AM AST viernes 10 de octubre de 2025\n\n...VIGILANCIA DE TORMENTA TROPICAL DISCONTINUADA PARA SABA Y ST.\nEUSTATIUS...\n\nEl servicio meteorológico de los Países Bajos ha descontinuado la\nVigilancia de Tormenta Tropical para Saba y St. Eustatius.\n\n$$\nPronosticador Reinhart\n\n*** Este producto ha sido procesado automáticamente utilizando un\nprograma de traducción y puede contener omisiones y errores. El\nServicio Nacional de Meteorología no puede garantizar la precisión del\ntexto convertido. De haber alguna duda, el texto en inglés es siempre\nla versión autorizada. ***"
+}

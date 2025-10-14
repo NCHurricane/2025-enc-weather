@@ -17,6 +17,7 @@
             "lat": 35.4085,
             "lon": -76.3302,
             "city": "Swan Quarter",
+            "primaryStation": "K7W6",
             "stations": [
                 {
                     "id": "K7W6",
@@ -58,6 +59,7 @@
             "lat": 35.1154,
             "lon": -75.9843,
             "city": "Ocracoke",
+            "primaryStation": "KHSE",
             "stations": [
                 {
                     "id": "KHSE",

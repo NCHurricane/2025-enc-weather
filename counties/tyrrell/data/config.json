@@ -17,14 +17,15 @@
         "id": "MHX",
         "name": "Newport/Morehead City"
     },
+    "primaryStation": "D5342",
     "stations": [
         {
-            "id": "K7W6",
-            "name": "Hyde County Airport",
-            "friendlyName": "Engelhard",
-            "url": "https://www.weather.gov/wrh/timeseries?site=K7W6",
-            "lat": 35.56204,
-            "lon": -75.95566
+            "id": "D5342",
+            "name": "Creswell",
+            "friendlyName": "Creswell",
+            "url": "https://www.weather.gov/wrh/timeseries?site=D5342",
+            "lat": 35.83783,
+            "lon": -76.41983
         },
         {
             "id": "COLN7",

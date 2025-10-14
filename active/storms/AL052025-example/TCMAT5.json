@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342712,
+        "cached_at_iso": "2025-10-13T04:05:12-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "lastBuildDate": "Sun, 12 Oct 2025 03:32:36 +0000",
+            "title": "Atlantic Remnants of Jerry Forecast\/Advisory Number 18",
+            "description": "National Hurricane Center - Forecast\/Advisory for Atlantic wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Atlantic Remnants of Jerry Forecast\/Advisory Number 18",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Atlantic Remnants of Jerry Forecast\/Advisory Number 18",
+                "description": [],
+                "pubDate": "Sat, 11 Oct 2025 20:32:42 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCMAT5.shtml",
+                "guid": "202510112032",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTNT25 KNHC 112032\nTCMAT5\n \nREMNANTS OF JERRY FORECAST\/ADVISORY NUMBER  18\nNWS NATIONAL HURRICANE CENTER MIAMI FL       AL102025\n2100 UTC SAT OCT 11 2025\n \nREMNANTS OF CENTER LOCATED NEAR 27.6N  63.6W AT 11\/2100Z\nPOSITION ACCURATE WITHIN  60 NM\n \nPRESENT MOVEMENT TOWARD THE NORTH OR 360 DEGREES AT  14 KT\n \nESTIMATED MINIMUM CENTRAL PRESSURE 1005 MB\nMAX SUSTAINED WINDS  40 KT WITH GUSTS TO  50 KT.\n34 KT.......150NE 210SE   0SW   0NW.\n4 M SEAS....180NE 180SE  90SW 150NW.\nWINDS AND SEAS VARY GREATLY IN EACH QUADRANT.  RADII IN NAUTICAL\nMILES ARE THE LARGEST RADII EXPECTED ANYWHERE IN THAT QUADRANT.\n \nREPEAT...CENTER LOCATED NEAR 27.6N  63.6W AT 11\/2100Z\nAT 11\/1800Z CENTER WAS LOCATED NEAR 27.0N  63.7W\n \nFORECAST VALID 12\/0600Z...DISSIPATED\n \nREQUEST FOR 3 HOURLY SHIP REPORTS WITHIN 300 MILES OF 27.6N  63.6W\n \nTHIS IS THE LAST FORECAST\/ADVISORY ISSUED BY THE NATIONAL HURRICANE \nCENTER ON THIS SYSTEM.  ADDITIONAL INFORMATION ON THIS SYSTEM CAN BE \nFOUND IN HIGH SEAS FORECASTS ISSUED BY THE NATIONAL WEATHER \nSERVICE...UNDER AWIPS HEADER NFDHSFAT1 AND WMO HEADER FZNT01 KWBC.\n\n$$\nFORECASTER BERG"
+}

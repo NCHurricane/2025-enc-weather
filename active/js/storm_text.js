@@ -249,11 +249,7 @@ function createTabInterface(availableProducts) {
          aria-labelledby="tab-${product.code}"
          hidden>
       <pre class="text-content" id="text-${product.code}">${TEXT_CONFIG.FALLBACK_MESSAGES.loading}</pre>
-      <div class="text-actions" id="actions-${product.code}" style="display: none;">
-        <a href="#" class="nhc-link-btn" id="link-${product.code}" target="_blank" rel="noopener">
-          <i class="fa-solid fa-external-link-alt"></i> View Full Text on NHC Website
-        </a>
-      </div>
+      <div class="text-actions" id="actions-${product.code}" style="display: none;"></div>
     </div>
   `).join('');
 
@@ -400,10 +396,7 @@ async function loadSingleProduct(stormId, productCode, preloadedData = null) {
     const extracted = extractTextFromProduct(productData);
     textEl.textContent = extracted.content;
 
-    if (actionsEl && linkEl && extracted.link) {
-      linkEl.href = extracted.link;
-      actionsEl.style.display = 'block';
-    }
+    // NHC Website link removed per requirements
 
   } catch (error) {
     console.error(`Error loading ${productCode}:`, error);

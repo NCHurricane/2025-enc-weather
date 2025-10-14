@@ -33,7 +33,7 @@ if ($ROOT === false) {
 }
 $PUBLIC    = $ROOT;
 $ACTIVE    = $ROOT . '/active';
-$CACHE_DIR = $ROOT . '/js/data/zones/cache';
+$CACHE_DIR = $ACTIVE . '/cache/zones';
 @mkdir($ACTIVE, 0775, true);
 @mkdir($CACHE_DIR, 0775, true);
 

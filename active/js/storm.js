@@ -276,6 +276,23 @@ function renderOverviewV2(advisory, longId) {
   }
 
 
+  // Calculate NHC graphics link
+  function getNHCLink(longId) {
+    const basin = longId.slice(0, 2);
+    const stormNum = parseInt(longId.slice(2, 4), 10);
+    if (!['AL', 'EP'].includes(basin) || isNaN(stormNum)) return null;
+    const n = ((stormNum - 1) % 5) + 1;
+    const url = basin === 'AL'
+      ? `https://www.nhc.noaa.gov/graphics_at${n}.shtml?start#contents`
+      : `https://www.nhc.noaa.gov/graphics_ep${n}.shtml?start#contents`;
+    return url;
+  }
+
+  const nhcLinkUrl = getNHCLink(longId);
+  const nhcLinkHtml = nhcLinkUrl
+    ? `<a href="${nhcLinkUrl}" class="nhc-link-btn" target="_blank" rel="noopener">Go to the system's NHC Page</a>`
+    : "";
+
   const centerSection = `
     <div class="ov-center-section">
       <div class="ov-center-content">
@@ -285,6 +302,8 @@ function renderOverviewV2(advisory, longId) {
       </div>
     </div>
   `;
+
+  const nhcLinkBlock = nhcLinkHtml ? `<div class="ov-nhc-link-block">${nhcLinkHtml}</div>` : "";
 
   let nhcHeadlinesBlock = '';
   if (Array.isArray(advisory?.headlines) && advisory.headlines.length > 0) {
@@ -310,6 +329,7 @@ function renderOverviewV2(advisory, longId) {
     <div class="overview-v2">
       ${linesWithHeadlines.join("")}
       ${centerSection}
+      ${nhcLinkBlock}
     </div>
   `;
 

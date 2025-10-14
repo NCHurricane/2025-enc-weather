@@ -155,6 +155,7 @@ function processZoneStations(array $stations, string $zoneName): array {
         'conditions' => null,
         'heatIndex' => null,
         'windChill' => null,
+        'feelsLike' => null,
         'icon' => null
       ]
     ];
@@ -213,10 +214,35 @@ function processZoneStations(array $stations, string $zoneName): array {
         'conditions' => $wx,
         'heatIndex' => convert_temperature($heatIdx, $heatIdxUnit),
         'windChill' => convert_temperature($windChill, $windChillUnit),
+        'feelsLike' => null,
         'icon' => $icon ? str_replace('size=medium', 'size=large', $icon) : null,
       ];
       
-      error_log("Successfully processed {$zoneName}:{$sid}: temp={$entry['data']['temperature']}, wind={$entry['data']['windSpeed']}");
+      // Determine canonical feels-like selection while preserving raw values
+      $T  = $entry['data']['temperature'];
+      $RH = $entry['data']['humidity'];
+      $HI = $entry['data']['heatIndex'];
+      $WCv = $entry['data']['windChill'];
+
+      $showHI = ($HI !== null) && ($T !== null && $T >= 80) && ($RH === null || $RH >= 40);
+      $showWC = ($WCv !== null) && ($T !== null && $T <= 50);
+
+      if ($showHI && $showWC) {
+        // Prefer heat index in warm scenarios if both conditions somehow trip
+        $showWC = false;
+      }
+
+      $feelsLike = null;
+      if ($showHI) {
+        $feelsLike = ['type' => 'heatIndex', 'value' => $HI];
+      } elseif ($showWC) {
+        $feelsLike = ['type' => 'windChill', 'value' => $WCv];
+      }
+
+      $entry['data']['feelsLike'] = $feelsLike;
+
+      $flType = $entry['data']['feelsLike']['type'] ?? 'none';
+      error_log("Successfully processed {$zoneName}:{$sid}: temp={$entry['data']['temperature']}, wind={$entry['data']['windSpeed']}, feelsLike={$flType}");
     } else {
       error_log("Failed to get data for station: {$zoneName}:{$sid}");
     }

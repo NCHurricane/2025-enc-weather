@@ -1,17 +1,81 @@
-js/modules/cache/*.json
-js/modules/logs/*.log
-*.txt
-*.zip
-*.bat
-js/data/*
-fonts/*
-test/*
-js/data/*
-.vscode/*
+# Cache and Generated Data - County Level
+counties/*/data/alerts.json
+counties/*/data/current.json
+counties/*/data/forecast.json
+counties/*/data/hourly.json
+counties/*/data/afd.json
+counties/*/data/*/
+
+# Keep config files (they're not cache)
+!counties/*/data/config.json
+
+# Tiles for Active Tropical Alert Maps
+js/data/tiles/
+
+# BUT: Keep example data from Bertie for documentation
+!counties/bertie/data/alerts.json
+!counties/bertie/data/current.json
+!counties/bertie/data/forecast.json
+!counties/bertie/data/hourly.json
+!counties/bertie/data/afd.json
+
+# Tropical Cache Files
+active/cache/*.json
+
+# BUT: Keep example tropical cache for documentation
+!active/cache/nhc_current_storms.json
+!active/cache/coastal_placenames.json
+!active/cache/us_states_counties.geojson
+
+# Generated Storm Directories (exclude all except example)
+active/storms/*
+active/cache/zones/  
+
+# But keep the example storm for documentation/testing
+!active/storms/AL052025-example/
+!active/storms/AL052025-example/**
+
+# Exclude graphics from example storm (large files, available from NHC)
+active/storms/AL052025-example/*.png
+active/storms/AL052025-example/*.gif
+
+# Logs
+*.log
+active/logs/
+counties/*/logs/
+
+# Temporary Files
+*.tmp
+*.swp
+*~
+
+# OS Files
 .DS_Store
-.github/copilot-instructions.md
-images/*
-.github/gemini-instructions.md
+Thumbs.db
+desktop.ini
 .htaccess
-active/storms/AL052025/*
-WEATHER_PARAMETER_SELECTOR_PLAN.md
+
+# IDE (optional - keeping commented for team consistency)
+.vscode/
+.idea/
+.github/
+
+# Large generated graphics
+images/graphics/
+images/county/*.webp
+
+# Test output files
+test/output/
+test/*.json
+
+# Environment files with secrets
+test/.env
+.env
+*.env
+!*.env.example
+
+# Backup files
+*.bak
+
+# Fonts - exclude static variants (keep only variable fonts)
+fonts/*/static/

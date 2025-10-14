@@ -257,9 +257,21 @@ function getTextProductTypes() {
             'parser' => 'xmlToOutlookJson',
             'type' => 'general'
         ],
+        'TWOEP' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWOEP.xml',
+            'filename' => 'twoep.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
         'TWOSAT' => [
             'url' => 'https://www.nhc.noaa.gov/xml/TWOSAT.xml',
             'filename' => 'twosat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+        'TWOSEP' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWOSEP.xml',
+            'filename' => 'twosep.json',
             'parser' => 'xmlToOutlookJson',
             'type' => 'general'
         ],
@@ -269,9 +281,21 @@ function getTextProductTypes() {
             'parser' => 'xmlToOutlookJson',
             'type' => 'general'
         ],
+        'TWDEP' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWDEP.xml',
+            'filename' => 'twdep.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
         'TWSAT' => [
             'url' => 'https://www.nhc.noaa.gov/xml/TWSAT.xml',
             'filename' => 'twsat.json',
+            'parser' => 'xmlToOutlookJson',
+            'type' => 'general'
+        ],
+        'TWSEP' => [
+            'url' => 'https://www.nhc.noaa.gov/xml/TWSEP.xml',
+            'filename' => 'twsep.json',
             'parser' => 'xmlToOutlookJson',
             'type' => 'general'
         ],

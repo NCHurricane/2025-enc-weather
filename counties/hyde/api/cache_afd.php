@@ -82,7 +82,6 @@ function atomic_write_json(string $path, array $data): bool {
 /**
  * Extract AFD text from HTML page
  */
-      <?php
 function extractAfdFromHtml(string $html): ?string {
   // Try to find the AFD content in <pre> tags
   if (preg_match('/<pre[^>]*>(.*?)<\/pre>/s', $html, $matches)) {
