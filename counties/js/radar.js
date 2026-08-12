@@ -1,6 +1,6 @@
 // =======================
-// Beaufort County Radar Module - radar.js
-// Simple radar implementation with two dropdowns
+// Shared County Radar Module - radar.js
+// Station/product selectors with a dedicated animation control.
 //
 // It will be replaced with a more robust solution later.
 // ========================
@@ -9,33 +9,36 @@ class RadarModule {
     constructor() {
         this.stationSelect = null;
         this.productSelect = null;
+        this.playButton = null;
         this.radarImage = null;
         this.radarTimestamp = null;
         this.loadingDiv = null;
         this.errorDiv = null;
+        this.initialized = false;
+        this.hasLoaded = false;
+        this.isPlaying = false;
         
         this.localProducts = [
-            { value: 'reflectivity-static', text: 'Reflectivity Static' },
-            { value: 'reflectivity-loop', text: 'Reflectivity Loop' },
-            { value: 'velocity-static', text: 'Velocity Static' },
-            { value: 'velocity-loop', text: 'Velocity Loop' }
+            { value: 'reflectivity', text: 'Reflectivity' },
+            { value: 'velocity', text: 'Velocity' }
         ];
         
         this.regionalProducts = [
-            { value: 'reflectivity-static', text: 'Reflectivity Static' },
-            { value: 'reflectivity-loop', text: 'Reflectivity Loop' }
+            { value: 'reflectivity', text: 'Reflectivity' }
         ];
     }
 
     init() {
+        if (this.initialized) return true;
         this.stationSelect = document.getElementById('radar-station-select');
         this.productSelect = document.getElementById('radar-product-select');
+        this.playButton = document.getElementById('radar-play-pause');
         this.radarImage = document.getElementById('radar-image');
         this.radarTimestamp = document.getElementById('radar-timestamp');
         this.loadingDiv = document.getElementById('radar-loading');
         this.errorDiv = document.getElementById('radar-error');
 
-        if (!this.stationSelect || !this.productSelect || !this.radarImage) {
+        if (!this.stationSelect || !this.productSelect || !this.playButton || !this.radarImage) {
             console.warn('Radar: Required elements not found');
             return false;
         }
@@ -49,8 +52,21 @@ class RadarModule {
             this.loadRadarImage();
         });
 
+        this.playButton.addEventListener('click', () => {
+            this.isPlaying = !this.isPlaying;
+            this.updatePlayButton();
+            this.loadRadarImage();
+        });
+
         this.updateProductOptions();
-        this.loadRadarImage();
+        this.updatePlayButton();
+        this.initialized = true;
+        const accordion = document.getElementById('radar-toggle');
+        const loadWhenVisible = () => {
+            if (accordion?.checked && !this.hasLoaded) this.loadRadarImage();
+        };
+        accordion?.addEventListener('change', loadWhenVisible);
+        if (!accordion || accordion.checked) this.loadRadarImage();
 
         console.log('Radar module initialized');
         return true;
@@ -74,8 +90,21 @@ class RadarModule {
         if (products.some(p => p.value === currentProduct)) {
             this.productSelect.value = currentProduct;
         } else {
-            this.productSelect.value = 'reflectivity-static';
+            this.productSelect.value = 'reflectivity';
         }
+    }
+
+    updatePlayButton() {
+        const icon = this.playButton?.querySelector('i');
+        if (!icon || !this.playButton) return;
+
+        icon.classList.toggle('fa-play', !this.isPlaying);
+        icon.classList.toggle('fa-pause', this.isPlaying);
+        this.playButton.setAttribute(
+            'aria-label',
+            this.isPlaying ? 'Pause radar animation' : 'Play radar animation'
+        );
+        this.playButton.setAttribute('aria-pressed', String(this.isPlaying));
     }
 
     buildRadarUrl() {
@@ -83,26 +112,17 @@ class RadarModule {
         const product = this.productSelect.value;
         
         const baseUrl = 'https://radar.weather.gov/ridge/standard/';
+        const suffix = this.isPlaying ? 'loop' : '0';
         
         if (station === 'SOUTHEAST') {
-            if (product === 'reflectivity-static') {
-                return `${baseUrl}SOUTHEAST_0.gif`;
-            } else if (product === 'reflectivity-loop') {
-                return `${baseUrl}SOUTHEAST_loop.gif`;
-            }
-        } else {
-            if (product === 'reflectivity-static') {
-                return `${baseUrl}${station}_0.gif`;
-            } else if (product === 'reflectivity-loop') {
-                return `${baseUrl}${station}_loop.gif`;
-            } else if (product === 'velocity-static') {
-                return `${baseUrl}base_velocity/${station}_0.gif`;
-            } else if (product === 'velocity-loop') {
-                return `${baseUrl}base_velocity/${station}_loop.gif`;
-            }
+            return `${baseUrl}SOUTHEAST_${suffix}.gif`;
+        }
+
+        if (product === 'velocity') {
+            return `${baseUrl}base_velocity/${station}_${suffix}.gif`;
         }
         
-        return `${baseUrl}${station}_0.gif`;
+        return `${baseUrl}${station}_${suffix}.gif`;
     }
 
     showLoading() {
@@ -127,6 +147,7 @@ class RadarModule {
     }
 
     loadRadarImage() {
+        this.hasLoaded = true;
         const url = this.buildRadarUrl();
         
         if (!url) {
@@ -140,7 +161,8 @@ class RadarModule {
         
         img.onload = () => {
             this.radarImage.src = url;
-            this.radarImage.alt = `${this.stationSelect.options[this.stationSelect.selectedIndex].text} ${this.productSelect.options[this.productSelect.selectedIndex].text}`;
+            const animationText = this.isPlaying ? 'animated loop' : 'static image';
+            this.radarImage.alt = `${this.stationSelect.options[this.stationSelect.selectedIndex].text} ${this.productSelect.options[this.productSelect.selectedIndex].text} ${animationText}`;
             this.hideLoading();
             this.updateTimestamp();
         };

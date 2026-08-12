@@ -30,6 +30,7 @@ import { RadiiVisualization } from './radii-visualization.js';
 
 const CONFIG = {
   STORMS_ROOT: "./storms",
+  ACTIVE_STORMS_CACHE: "./cache/nhc_current_storms.json",
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -88,6 +89,24 @@ async function loadRadiiCache(longId) {
     longId
   )}/storm.json?${Date.now()}`;
   return await getJson(url);
+}
+
+async function isCurrentlyActiveStorm(longId) {
+  const payload = await getJson(`${CONFIG.ACTIVE_STORMS_CACHE}?${Date.now()}`);
+  const storms = Array.isArray(payload?.activeStorms)
+    ? payload.activeStorms
+    : Array.isArray(payload?.data?.activeStorms)
+      ? payload.data.activeStorms
+      : [];
+
+  return storms.some((storm) => {
+    const candidate = String(storm?.id || storm?.atcfID || "").toUpperCase();
+    return candidate === longId;
+  });
+}
+
+function redirectToNotFound() {
+  window.location.replace("/404.html");
 }
 
 function fmtTripletSlash(tri) {
@@ -345,13 +364,18 @@ function renderOverviewV2(advisory, longId) {
 async function init() {
   const raw = getStormParam();
   if (!raw) {
-    window.location.href = "/404.html";
+    redirectToNotFound();
     return;
   }
 
   const longId = raw.toUpperCase();
   if (!isValidLongId(longId)) {
-    window.location.href = "/404.html";
+    redirectToNotFound();
+    return;
+  }
+
+  if (!(await isCurrentlyActiveStorm(longId))) {
+    redirectToNotFound();
     return;
   }
 
@@ -360,8 +384,9 @@ async function init() {
     loadRadiiCache(longId),
   ]);
 
-  if (!advisory) {
-    window.location.href = "/404.html";
+  const advisoryId = String(advisory?.atcfID || "").toUpperCase();
+  if (!advisory || advisoryId !== longId) {
+    redirectToNotFound();
     return;
   }
 

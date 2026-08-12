@@ -1,0 +1,4 @@
+# Prevent Apache from autocorrecting a nonexistent storm directory to the
+# nearest real storm ID, which can expose stale data under the wrong URL.
+CheckSpelling Off
+Options -MultiViews

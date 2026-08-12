@@ -249,6 +249,7 @@ let stationUrls = {};
 //   init, getCurrentConditions, getForecast, getHourlyData?, getAlerts, getAFD, initMeteogram?
 // }
 let API = {};
+let meteogramListenerBound = false;
 
 const SEL = {
   wrap: '#current-container',
@@ -550,7 +551,7 @@ async function renderForecast() {
         <div class="forecast-item">
           <div class="forecast-cell forecast-day">${dayName}</div>
           <div class="forecast-cell forecast-icon">
-            ${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}">` : ''}
+            ${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}" loading="lazy" decoding="async">` : ''}
           </div>
           <div class="forecast-cell forecast-temp">${tempDisplay}</div>
         </div>
@@ -607,7 +608,7 @@ async function renderDetailedForecast() {
             <div class="detailed-col-icon">
               <div class="detailed-icon">
                 ${iconSrc
-            ? `<img src="${iconSrc}" alt="${iconAlt}">`
+            ? `<img src="${iconSrc}" alt="${iconAlt}" loading="lazy" decoding="async">`
             : '<span class="value">No Icon</span>'
           }
               </div>
@@ -720,6 +721,29 @@ async function renderAFD() {
   }
 }
 
+async function loadMeteogram() {
+  try {
+    if (API.getHourlyData) await API.getHourlyData();
+    if (document.getElementById('meteogram-chart-container') && API.initMeteogram) {
+      await API.initMeteogram();
+    }
+  } catch (e) {
+    console.warn('[countyApp] hourly/meteogram load failed (non-fatal)', e);
+  }
+}
+
+function setupDeferredMeteogram() {
+  const toggle = document.getElementById('meteogram-toggle');
+  if (!toggle) return;
+  if (!meteogramListenerBound) {
+    toggle.addEventListener('change', () => {
+      if (toggle.checked) loadMeteogram();
+    });
+    meteogramListenerBound = true;
+  }
+  if (toggle.checked) loadMeteogram();
+}
+
 async function loadAll() {
   try {
     if (API.init) {
@@ -732,17 +756,7 @@ async function loadAll() {
   await renderCurrent();
   await renderForecast();
 
-  try {
-    if (API.getHourlyData) {
-      await API.getHourlyData();
-    }
-
-    if (document.getElementById('meteogram-chart-container') && API.initMeteogram) {
-      await API.initMeteogram();
-    }
-  } catch (e) {
-    console.warn('[countyApp] hourly/meteogram load failed (non-fatal)', e);
-  }
+  setupDeferredMeteogram();
 
   await renderAlerts();
   await renderAFD();

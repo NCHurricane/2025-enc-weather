@@ -347,6 +347,21 @@ export class NCCountyMap {
       }
     }
 
+    if (clickHandler) {
+      const spokenValue = value === 'N/A' ? 'data unavailable' : `${value}${unit ? ` ${unit}` : ''}`;
+      g.attr('role', 'link')
+        .attr('tabindex', 0)
+        .attr('aria-label', `${stationConfig.name}: ${spokenValue}. Open local weather page`)
+        .style('cursor', 'pointer')
+        .on('click', clickHandler)
+        .on('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            clickHandler();
+          }
+        });
+    }
+
     // Hide N/A values entirely (no marker number / arrow), still show label
     if (value !== 'N/A') {
       if (this.selectedParameter === 'wind') {
@@ -358,8 +373,7 @@ export class NCCountyMap {
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'middle')
           .attr('fill', '#ffff00')
-          .text(`${value}`)
-          .on('click', clickHandler);
+          .text(`${value}`);
         if (!isCalm && weather.windSpeed !== null && weather.windSpeed !== undefined) {
           appendWindArrow(g, numberText, x, y, weather.windDirection, responsiveSettings);
         }
@@ -371,8 +385,7 @@ export class NCCountyMap {
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'middle')
           .attr('fill', '#ffff00')
-          .text(`${value}`)
-          .on('click', clickHandler);
+          .text(`${value}`);
       }
     }
 
@@ -383,8 +396,7 @@ export class NCCountyMap {
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#fff')
-      .text(stationConfig.name.toUpperCase())
-      .on('click', clickHandler);
+      .text(stationConfig.name.toUpperCase());
   }
 
   async loadCountyData() {
@@ -625,6 +637,20 @@ export class NCCountyMap {
         unit = '';
       }
     }
+    if (clickHandler) {
+      const spokenValue = value === 'N/A' ? 'data unavailable' : `${value}${unit ? ` ${unit}` : ''}`;
+      g.attr('role', 'link')
+        .attr('tabindex', 0)
+        .attr('aria-label', `${weather.city}: ${spokenValue}. Open local weather page`)
+        .style('cursor', 'pointer')
+        .on('click', clickHandler)
+        .on('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            clickHandler();
+          }
+        });
+    }
     if (value !== 'N/A') {
       if (this.selectedParameter === 'wind') {
         const numberText = g
@@ -637,8 +663,7 @@ export class NCCountyMap {
           .attr('fill', fillColor)
           .attr('stroke', '#000')
           .attr('stroke-width', strokeWidth)
-          .text(`${value}`)
-          .on('click', clickHandler);
+          .text(`${value}`);
         if (!isCalm && weather.windSpeed !== null && weather.windSpeed !== undefined) {
           appendWindArrow(g, numberText, x, y, weather.windDirection, responsiveSettings);
         }
@@ -652,8 +677,7 @@ export class NCCountyMap {
           .attr('fill', fillColor)
           .attr('stroke', '#000')
           .attr('stroke-width', strokeWidth)
-          .text(`${value}`)
-          .on('click', clickHandler);
+          .text(`${value}`);
       }
     }
 
@@ -664,8 +688,7 @@ export class NCCountyMap {
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#fff')
-      .text(`${weather.city}`)
-      .on('click', () => options.onClick && options.onClick());
+      .text(`${weather.city}`);
   }
 
   getResponsiveSettings() {

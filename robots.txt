@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /test/
+Disallow: /active/api/
+Disallow: /counties/*/api/
+Disallow: /counties/*/data/
+
+Sitemap: https://nchurricane.com/sitemap.xml

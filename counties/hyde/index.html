@@ -45,7 +45,7 @@
       <!-- CHANGE THE IMAGE -->
       <style>
          .current-container {
-            background-image: url('../../images/county/hyde.png');
+            background-image: url('../../images/county/hyde-background.webp');
          }
       </style>
 
@@ -195,13 +195,13 @@
                   <div class="radar-select-container">
                      <label for="radar-product-select" class="radar-label">Product:</label>
                      <select id="radar-product-select" class="radar-select">
-                        <option value="reflectivity-static" selected>
-                           Reflectivity Static
-                        </option>
-                        <option value="reflectivity-loop">Reflectivity Loop</option>
-                        <option value="velocity-static">Velocity Static</option>
-                        <option value="velocity-loop">Velocity Loop</option>
+                        <option value="reflectivity" selected>Reflectivity</option>
+                        <option value="velocity">Velocity</option>
                      </select>
+                     <button id="radar-play-pause" class="radar-button" type="button"
+                        aria-label="Play radar animation" aria-pressed="false">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                     </button>
                   </div>
                </div>
                <div class="radar-content">
@@ -241,13 +241,10 @@
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                  </div>
-                  <div class="satellite-select-container">
-                     <label for="satellite-type-select" class="satellite-label">Type:</label>
-                     <select id="satellite-type-select" class="satellite-select">
-                        <option value="static" selected>Static</option>
-                        <option value="animated">Animated Loop</option>
-                     </select>
+                     <button id="satellite-play-pause" class="satellite-button" type="button"
+                        aria-label="Play satellite animation" aria-pressed="false">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                     </button>
                   </div>
                </div>
                <div class="satellite-content">

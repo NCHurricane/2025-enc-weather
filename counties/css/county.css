@@ -9,9 +9,11 @@
 /* Zone Selector Styles */
 .zone-selector {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   gap: 5px;
   margin: 0.5em 0;
+  max-width: 100%;
 }
 
 .zone-btn {
@@ -25,6 +27,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
+  max-width: 100%;
 }
 
 .zone-btn:hover {
@@ -42,17 +45,23 @@
 /* Mobile Zone Selector */
 @media (max-width: 768px) {
   .zone-selector {
-    gap: 2px;
+    width: 100%;
+    max-width: 90vw;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
     margin: 0.3em 0;
   }
 
   .zone-btn {
-    padding: 10px;
-    font-size: 0.8rem;
-    min-width: 100px;
+    min-width: 0;
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 0.78rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
-
 /* CURRENT CONDITIONS */
 .current-container {
   border-radius: 8px;
@@ -471,8 +480,6 @@ canvas#meteogramChart {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 10px;
-  padding: 5px;
   align-items: center;
 }
 
@@ -490,7 +497,7 @@ canvas#meteogramChart {
   border-radius: 5px;
   border: 1px solid #ccc;
   font-family: "Roboto", Arial, sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   background-color: var(--color-text-light);
 }
@@ -505,11 +512,15 @@ canvas#meteogramChart {
 .satellite-button {
   padding: 5px 15px;
   border-radius: 5px;
-  border: 1px solid var(--color-accent);
-  background-color: var(--color-primary);
+  border: 0;
+  background-color: var(--color-gradient-start);
   color: var(--color-text-light);
   cursor: pointer;
   transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
 }
 
 .radar-button:hover,
@@ -603,15 +614,17 @@ canvas#meteogramChart {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
-  margin-bottom: 15px;
-  align-items: end;
+  align-items: center;
+  justify-content: center;
 }
 
 .radar-select-container {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 180px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  min-width: 0;
 }
 
 .radar-label {
@@ -622,13 +635,13 @@ canvas#meteogramChart {
 }
 
 .radar-select {
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 5px;
   background-color: white;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--color-text);
-  min-height: 38px;
+  text-transform: uppercase;
 }
 
 .radar-select:focus {
@@ -718,14 +731,14 @@ canvas#meteogramChart {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .radar-controls {
-    flex-direction: row; /* Keep horizontal instead of column */
-    gap: 10px; /* Reduce gap for tighter spacing */
-    align-items: end; /* Keep alignment */
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
   }
 
   .radar-select-container {
-    min-width: unset;
-    flex: 1; /* Allow containers to share available space */
+    min-width: 0;
+    flex: 0 1 auto;
   }
 
   .radar-label,
@@ -764,32 +777,34 @@ canvas#meteogramChart {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
-  margin-bottom: 15px;
-  align-items: end;
+  align-items: center;
+  justify-content: center;
 }
 
 .satellite-select-container {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 140px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  min-width: 0;
 }
 
 .satellite-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: bold;
   color: var(--color-text-light);
   text-transform: uppercase;
 }
 
 .satellite-select {
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 5px;
   background-color: white;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--color-text);
-  min-height: 38px;
+  text-transform: uppercase;
 }
 
 .satellite-select:focus {
@@ -897,14 +912,14 @@ canvas#meteogramChart {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .satellite-controls {
-    flex-direction: row; /* Keep horizontal instead of column */
-    gap: 10px; /* Reduce gap for tighter spacing */
-    align-items: end; /* Keep alignment */
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
   }
 
   .satellite-select-container {
-    min-width: unset;
-    flex: 1; /* Allow containers to share available space */
+    min-width: 0;
+    flex: 0 1 auto;
   }
 
   .satellite-label,
@@ -975,6 +990,13 @@ canvas#meteogramChart {
   .satellite-select-container {
     flex-direction: row;
     width: 100%;
+    justify-content: center;
+  }
+
+  .radar-select,
+  .satellite-select {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 

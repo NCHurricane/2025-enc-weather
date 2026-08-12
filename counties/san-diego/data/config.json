@@ -1,0 +1,199 @@
+{
+    "county": {
+        "name": "San Diego",
+        "state": "CA",
+        "timezone": "America/Los_Angeles",
+        "multiZone": true,
+        "defaultZone": "coastal"
+    },
+    "forecastOffice": {
+        "id": "SGX",
+        "name": "San Diego"
+    },
+    "zones": {
+        "coastal": {
+            "displayName": "Coastal Areas",
+            "forecast": "CAZ043",
+            "lat": 32.8328,
+            "lon": -117.2713,
+            "city": "La Jolla",
+            "primaryStation": "MSDSD",
+            "stations": [
+                {
+                    "id": "MSDSD",
+                    "name": "Mt. Soledad",
+                    "friendlyName": "La Jolla",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=MSDSD",
+                    "lat": 32.81418,
+                    "lon": -117.24088
+                },
+                {
+                    "id": "KNKX",
+                    "name": "San Diego, Miramar MCAS/Mitscher Field Airport",
+                    "friendlyName": "Miramar MCAS",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KNKX",
+                    "lat": 32.86833,
+                    "lon": -117.1425
+                },
+                {
+                    "id": "KMYF",
+                    "name": "San Diego, Montgomery Field",
+                    "friendlyName": "Montgomery Field",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KMYF",
+                    "lat": 32.81444,
+                    "lon": -117.13639
+                },
+                {
+                    "id": "KSAN",
+                    "name": "San Diego International Airport",
+                    "friendlyName": "San Diego Intl",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KSAN",
+                    "lat": 32.73361,
+                    "lon": -117.18306
+                },
+                {
+                    "id": "KCRQ",
+                    "name": "Carlsbad, McClellan-Palomar Airport",
+                    "friendlyName": "Carlsbad",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KCRQ",
+                    "lat": 33.12806,
+                    "lon": -117.28
+                },
+                {
+                    "id": "KOKB",
+                    "name": "Oceanside Municipal Airport",
+                    "friendlyName": "Oceanside",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KOKB",
+                    "lat": 33.21722,
+                    "lon": -117.35333
+                }
+            ]
+        },
+        "valleys": {
+            "displayName": "Inland Valleys",
+            "forecast": "CAZ050",
+            "lat": 33.1192,
+            "lon": -117.0864,
+            "city": "Escondido",
+            "primaryStation": "KSEE",
+            "stations": [
+                {
+                    "id": "KSEE",
+                    "name": "Gillespie Field Airport",
+                    "friendlyName": "Gillespie Field",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KSEE",
+                    "lat": 32.82622,
+                    "lon": -116.97244
+                },
+                {
+                    "id": "KRNM",
+                    "name": "Ramona Airport",
+                    "friendlyName": "Ramona",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KRNM",
+                    "lat": 33.03917,
+                    "lon": -116.91525
+                },
+                {
+                    "id": "KL18",
+                    "name": "Fallbrook Community Airpark",
+                    "friendlyName": "Fallbrook",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KL18",
+                    "lat": 33.35417,
+                    "lon": -117.25083
+                },
+                {
+                    "id": "PSQC1",
+                    "name": "Poway",
+                    "friendlyName": "Poway",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=PSQC1",
+                    "lat": 32.96667,
+                    "lon": -117.03333
+                }
+            ]
+        },
+        "mountains": {
+            "displayName": "Mountains",
+            "forecast": "CAZ058",
+            "lat": 33.0787,
+            "lon": -116.602,
+            "city": "Julian",
+            "primaryStation": "JULC1",
+            "stations": [
+                {
+                    "id": "JULC1",
+                    "name": "Julian",
+                    "friendlyName": "Julian",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=JULC1",
+                    "lat": 33.075,
+                    "lon": -116.59278
+                },
+                {
+                    "id": "MLGC1",
+                    "name": "Mount Laguna",
+                    "friendlyName": "Mount Laguna",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=MLGC1",
+                    "lat": 32.88333,
+                    "lon": -116.41667
+                },
+                {
+                    "id": "CMNC1",
+                    "name": "Cameron",
+                    "friendlyName": "Cameron",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=CMNC1",
+                    "lat": 32.69028,
+                    "lon": -116.47278
+                },
+                {
+                    "id": "RCHC1",
+                    "name": "Ranchita",
+                    "friendlyName": "Ranchita",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=RCHC1",
+                    "lat": 33.21667,
+                    "lon": -116.51667
+                }
+            ]
+        },
+        "deserts": {
+            "displayName": "Deserts",
+            "forecast": "CAZ062",
+            "lat": 33.2559,
+            "lon": -116.375,
+            "city": "Borrego Springs",
+            "primaryStation": "KL08",
+            "stations": [
+                {
+                    "id": "KL08",
+                    "name": "Borrego Valley Airport",
+                    "friendlyName": "Borrego Springs",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=KL08",
+                    "lat": 33.25889,
+                    "lon": -116.32083
+                },
+                {
+                    "id": "UCAB",
+                    "name": "Anza Borrego Desert Research Center",
+                    "friendlyName": "Anza-Borrego",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=UCAB",
+                    "lat": 33.25833,
+                    "lon": -116.38333
+                },
+                {
+                    "id": "E9979",
+                    "name": "Borrego Springs",
+                    "friendlyName": "Borrego Springs",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=E9979",
+                    "lat": 33.25,
+                    "lon": -116.37
+                },
+                {
+                    "id": "FHCC1",
+                    "name": "Fish Creek Mountains",
+                    "friendlyName": "Fish Creek",
+                    "url": "https://www.weather.gov/wrh/timeseries?site=FHCC1",
+                    "lat": 32.99472,
+                    "lon": -116.08194
+                }
+            ]
+        }
+    }
+}

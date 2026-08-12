@@ -39,6 +39,7 @@ class SatelliteModule {
         this.cfg = cfg;
         this.platform = 'GOES19';
         this.isAnimating = false;
+        this.hasLoaded = false;
         this.currentSector = cfg.sector || 'taw';
 
         // Sector configuration
@@ -106,7 +107,12 @@ class SatelliteModule {
 
         this.updateContainerAspectRatio();
 
-        this.load();
+        const accordion = document.getElementById('tropical-satellite-toggle');
+        const loadWhenVisible = () => {
+            if (accordion?.checked && !this.hasLoaded) this.load();
+        };
+        accordion?.addEventListener('change', loadWhenVisible);
+        if (!accordion || accordion.checked) this.load();
 
         console.info('[satellite] initialized');
         return true;
@@ -260,6 +266,7 @@ class SatelliteModule {
     }
 
     load() {
+        this.hasLoaded = true;
         const product = this.sel.value || 'GEOCOLOR';
 
         if (this.typeSelect) {

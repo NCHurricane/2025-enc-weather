@@ -1,4 +1,4 @@
-<h1 align="center">NCHurricane.com 2025</h1>
+<h1 align="center">NCHurricane.com</h1>
 
 <p align="center">
   <img src="images/2025-NCH-logo.png" alt="NCHurricane.com" height="80" />
@@ -6,7 +6,7 @@
   <a href="https://nchurricane.com">https://nchurricane.com</a>
 </p>
 
-A real-time weather dashboard platform for Eastern North Carolina, providing hyperlocal county-level weather data and comprehensive tropical storm coverage. Built with vanilla ES modules (no build tools), PHP 8.x caching layer, and file-based data storage.
+A real-time local-weather and tropical-intelligence platform centered on Eastern North Carolina, with a reusable multi-market architecture and a San Diego pilot. Built with vanilla ES modules, a PHP 8.x caching layer, and file-based data storage.
 
 ---
 
@@ -119,12 +119,14 @@ A real-time weather dashboard platform for Eastern North Carolina, providing hyp
 
 ### Covered Counties
 
-Eight counties in Eastern North Carolina are currently supported:
+Eight counties in Eastern North Carolina and one market pilot are currently supported:
 
 -   **Single-Zone Counties**: Beaufort, Bertie, Martin, Pitt, Tyrrell, Washington
 -   **Multi-Zone Counties**:
     -   **Dare** (3 zones): Mainland, Northern Outer Banks, Hatteras Island
     -   **Hyde** (2 zones): Mainland, Ocracoke Island
+-   **Other Markets**:
+    -   **San Diego** (3 zones): Coastal, Inland, Mountains
 
 ### Dual-Zone Alert Strategy
 
@@ -547,31 +549,45 @@ docker run -d -p 8000:80 -v $(pwd):/var/www/html php:8.4-apache
 Some features (like the development dashboard) require environment variables. Copy the example configuration and customize:
 
 ```bash
-cp test/.env.example test/.env
+cp test/.env-example test/.env
 ```
+
+On PowerShell, use `Copy-Item test/.env-example test/.env`.
 
 Edit `test/.env` and configure:
 
--   `DASHBOARD_PASSWORD` - Strong password for dashboard access
+-   `DASHBOARD_ENABLED` - Must be explicitly set to `true`; otherwise the dashboard intentionally returns 404
+-   `DASHBOARD_PASSWORD` - A hash produced by PHP `password_hash()`, never the plain-text password
 -   `ADMIN_EMAIL` - Your email for notifications
--   `ALLOWED_IPS` - (Optional) Comma-separated list of IP addresses to whitelist
+-   `ALLOWED_IPS` - Required comma-separated IP allowlist; use `127.0.0.1,::1` for local access
 -   `MAX_EXECUTIONS_PER_HOUR` - Rate limiting for cache refresh endpoints
+-   `MAX_CACHE_PURGES_PER_HOUR` - Rate limiting for destructive imagery tile purges
+-   `MAX_DASHBOARD_LOG_BYTES` - Rotate registered dashboard logs after this size (default 5 MB)
+-   `DASHBOARD_LOG_RETAIN_BYTES` - Bytes retained from the end of a rotated log (default 2 MB)
 
-**Example `test/.env.example`**:
+Generate a password hash, then paste its complete output into `DASHBOARD_PASSWORD`:
+
+```powershell
+php -r "echo password_hash('choose-a-strong-local-password', PASSWORD_DEFAULT), PHP_EOL;"
+```
+
+**Example `test/.env-example`**:
 
 ```env
 # Weather Dashboard Environment Configuration
 # Copy this file to .env and set your actual values
 
-# Dashboard password (use a strong, unique password)
-DASHBOARD_PASSWORD=your_secure_password_here
+# Dashboard is hidden behind a 404 unless explicitly enabled
+DASHBOARD_ENABLED=true
+
+# Paste the complete PHP password_hash() output here
+DASHBOARD_PASSWORD=PASTE_PASSWORD_HASH_HERE
 
 # Admin email for password recovery and notifications
 ADMIN_EMAIL=your-email@example.com
 
-# Optional: IP restrictions (comma-separated list)
-# Uncomment and add specific IPs to whitelist access
-# ALLOWED_IPS=192.168.1.100,10.0.0.50
+# Local-only IP allowlist
+ALLOWED_IPS=127.0.0.1,::1
 
 # Optional: Enable additional security logging
 SECURITY_LOGGING=true
@@ -579,9 +595,16 @@ SECURITY_LOGGING=true
 # Rate limiting (executions per hour per IP)
 # Prevents abuse of cache refresh endpoints
 MAX_EXECUTIONS_PER_HOUR=40
+
+# Destructive imagery tile cache purges per hour per IP
+MAX_CACHE_PURGES_PER_HOUR=4
+
+# Bound operational log growth while retaining recent entries
+MAX_DASHBOARD_LOG_BYTES=5242880
+DASHBOARD_LOG_RETAIN_BYTES=2097152
 ```
 
-> **Security Note**: Never commit `test/.env` to version control. The `.gitignore` file already excludes it. Only `test/.env.example` should be committed.
+> **Security Note**: Never commit `test/.env` to version control. The `.gitignore` file already excludes it. Keep `DASHBOARD_ENABLED=false` on deployments where this maintenance surface is not needed.
 
 ### Initial Data Population
 
@@ -659,6 +682,13 @@ For quick testing without setting up cron jobs:
 1. Run cache scripts manually (as shown above)
 2. Refresh browser to see cached data
 3. Cache files remain valid until manually deleted or updated
+
+### Automated Quality Checks
+
+-   `node scripts/validate-site.mjs` parses JSON and JSON-LD, checks duplicate HTML IDs, and verifies local HTML references.
+-   PHP files are checked with `php -l`; JavaScript files are checked with `node --check`.
+-   `.github/workflows/site-quality.yml` runs the same static checks on pull requests and pushes to the primary branch.
+-   Controlled-browser checks remain a separate release step for keyboard behavior, responsive layouts, network requests, and console errors.
 
 ### Development Notes
 
@@ -860,7 +890,7 @@ This site does not issue warnings, watches, or advisories. All displayed data is
 The source code (HTML, CSS, JavaScript, PHP) is licensed under the **MIT License**:
 
 ```
-Copyright (c) 2025 NCHurricane.com
+Copyright (c) 2026 NCHurricane.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -923,7 +953,7 @@ If you use this code or architecture as inspiration for your own project:
 
 NCHurricane.com provides hyperlocal weather information for Eastern North Carolina with a focus on tropical storm preparedness. The platform aggregates official National Weather Service data and presents it in an accessible, real-time format for residents and visitors of coastal North Carolina.
 
-**Coverage Area**: Eight counties in Eastern North Carolina (Beaufort, Bertie, Dare, Hyde, Martin, Pitt, Tyrrell, Washington)
+**Coverage Area**: Eight counties in Eastern North Carolina (Beaufort, Bertie, Dare, Hyde, Martin, Pitt, Tyrrell, Washington) plus a San Diego multi-zone pilot
 
 **Maintained by**: Chuck Copeland Weather  
 **Website**: https://nchurricane.com  
@@ -1210,7 +1240,7 @@ For questions about the live website or weather information:
 
     -   Unit tests for PHP cache scripts
     -   Integration tests for data pipeline
-    -   Automated frontend testing
+    -   Automated browser regression testing beyond the current static CI gate
 
 -   **Monitoring**:
     -   Cache health dashboard

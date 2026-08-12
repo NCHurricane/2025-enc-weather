@@ -45,90 +45,40 @@
 
       <style>
          .current-container {
-            background-image: url('../../images/county/martin.png');
+            background-image: url('../../images/county/martin-background.webp');
          }
       </style>
 
       <script type="application/ld+json">
-            [
-                {
-                    "@context": "https://schema.org",
-                    "@type": "Organization",
-                    "name": "NCHurricane",
-                    "url": "https://nchurricane.com/",
-                    "logo": "https://nchurricane.com/assets/img/logo.png"
-                },
-                {
-                    "@context": "https://schema.org",
-                    "@type": "WebPage",
-                    "name": "Martin County, NC Weather",
-                    "url": "https://nchurricane.com/counties/martin/",
-                    "description": "Up-to-date weather for Martin County, North Carolina with current conditions, alerts, radar, satellite, and forecast from the National Weather Service.",
-                    "isPartOf": {
-                        "@type": "WebSite",
-                        "name": "NCHurricane.com",
-                        "url": "https://nchurricane.com/"
-                    },
-                    "primaryImageOfPage": {
-                        "@type": "ImageObject",
-                        "url": "https://nchurricane.com/images/county/2025-OG-Card-Martin.webp"
-                    },
-                    "breadcrumb": {
-                        "@type": "BreadcrumbList",
-                        "itemListElement": [
-                            {
-                                "@type": "ListItem",
-                           [
-                              {
-                                 "@context": "https://schema.org",
-                                 "@type": "Organization",
-                                 "name": "NCHurricane",
-                                 "url": "https://nchurricane.com/",
-                                 "logo": "https://nchurricane.com/images/2025-NCH-logo.png"
-                              },
-                              {
-                                 "@context": "https://schema.org",
-                                 "@type": "WebPage",
-                                 "name": "Martin County, NC Weather",
-                                 "url": "https://nchurricane.com/counties/martin/",
-                                 "description": "Up-to-date weather for Martin County, North Carolina with current conditions, alerts, radar, satellite, and forecast from the National Weather Service.",
-                                 "isPartOf": {
-                                    "@type": "WebSite",
-                                    "name": "NCHurricane.com",
-                                    "url": "https://nchurricane.com/"
-                                 },
-                                 "primaryImageOfPage": {
-                                    "@type": "ImageObject",
-                                    "url": "https://nchurricane.com/images/county/2025-OG-Card-Martin.webp",
-                                    "width": 1200,
-                                    "height": 630
-                                 },
-                                 "breadcrumb": {
-                                    "@type": "BreadcrumbList",
-                                    "itemListElement": [
-                                       {
-                                          "@type": "ListItem",
-                                          "position": 1,
-                                          "name": "Home",
-                                          "item": "https://nchurricane.com/"
-                                       },
-                                       {
-                                          "@type": "ListItem",
-                                          "position": 2,
-                                          "name": "Counties",
-                                          "item": "https://nchurricane.com/counties/"
-                                       },
-                                       {
-                                          "@type": "ListItem",
-                                          "position": 3,
-                                          "name": "Martin",
-                                          "item": "https://nchurricane.com/counties/martin/"
-                                       }
-                                    ]
-                                 }
-                              }
-                           ]
-        </script>
+         {
+            "@context": "https://schema.org",
+            "@graph": [
+               {
+                  "@type": "Organization",
+                  "@id": "https://nchurricane.com/#organization",
+                  "name": "NCHurricane",
+                  "url": "https://nchurricane.com/",
+                  "logo": "https://nchurricane.com/images/2025-NCH-logo.png"
+               },
+               {
+                  "@type": "WebPage",
+                  "name": "Martin County, NC Weather",
+                  "url": "https://nchurricane.com/counties/martin/",
+                  "description": "Up-to-date weather for Martin County, North Carolina with current conditions, alerts, radar, satellite, and forecast from the National Weather Service.",
+                  "isPartOf": { "@type": "WebSite", "name": "NCHurricane.com", "url": "https://nchurricane.com/" },
+                  "primaryImageOfPage": { "@type": "ImageObject", "url": "https://nchurricane.com/images/county/2025-OG-Card-Martin.webp", "width": 1200, "height": 630 },
+                  "breadcrumb": {
+                     "@type": "BreadcrumbList",
+                     "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://nchurricane.com/" },
+                        { "@type": "ListItem", "position": 2, "name": "Counties", "item": "https://nchurricane.com/counties/" },
+                        { "@type": "ListItem", "position": 3, "name": "Martin", "item": "https://nchurricane.com/counties/martin/" }
+                     ]
+                  }
+               }
+            ]
+         }
+      </script>
    </head>
 
    <body>
@@ -218,13 +168,13 @@
                   <div class="radar-select-container">
                      <label for="radar-product-select" class="radar-label">Product:</label>
                      <select id="radar-product-select" class="radar-select">
-                        <option value="reflectivity-static" selected>
-                           Reflectivity Static
-                        </option>
-                        <option value="reflectivity-loop">Reflectivity Loop</option>
-                        <option value="velocity-static">Velocity Static</option>
-                        <option value="velocity-loop">Velocity Loop</option>
+                        <option value="reflectivity" selected>Reflectivity</option>
+                        <option value="velocity">Velocity</option>
                      </select>
+                     <button id="radar-play-pause" class="radar-button" type="button"
+                        aria-label="Play radar animation" aria-pressed="false">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                     </button>
                   </div>
                </div>
                <div class="radar-content">
@@ -264,13 +214,10 @@
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                  </div>
-                  <div class="satellite-select-container">
-                     <label for="satellite-type-select" class="satellite-label">Type:</label>
-                     <select id="satellite-type-select" class="satellite-select">
-                        <option value="static" selected>Static</option>
-                        <option value="animated">Animated Loop</option>
-                     </select>
+                     <button id="satellite-play-pause" class="satellite-button" type="button"
+                        aria-label="Play satellite animation" aria-pressed="false">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                     </button>
                   </div>
                </div>
                <div class="satellite-content">

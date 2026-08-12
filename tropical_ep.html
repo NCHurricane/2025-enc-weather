@@ -18,7 +18,7 @@
         <meta property="og:title" content="Eastern Pacific Tropical Weather - NCHurricane.com" />
         <meta property="og:description"
             content="Eastern Pacific tropical outlooks, graphics, satellite, and text products for Eastern North Carolina." />
-        <meta property="og:image" content="https://nchurricane.com/images/2025-OG-Card.webp" />
+        <meta property="og:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
         <meta property="og:image:alt" content="Eastern Pacific tropical outlook map and NHC graphics preview" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -29,12 +29,12 @@
         <meta name="twitter:title" content="Eastern Pacific Tropical Weather - NCHurricane.com" />
         <meta name="twitter:description"
             content="Eastern Pacific tropical outlooks, graphics, satellite, and text products from the National Hurricane Center and NOAA." />
-        <meta name="twitter:image" content="https://nchurricane.com/images/2025-OG-Card.webp" />
+        <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="manifest" href="/site.webmanifest?v=20260812-1" />
 
         <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin />
         <link rel="dns-prefetch" href="//kit.fontawesome.com" />
@@ -71,7 +71,7 @@
       "isPartOf": { "@type": "WebSite", "name": "NCHurricane.com", "url": "https://nchurricane.com/" },
       "primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": "https://nchurricane.com/images/2025-OG-Card.webp"
+                    "url": "https://nchurricane.com/images/2026-OG-Card.webp"
       },
       "breadcrumb": {
         "@type": "BreadcrumbList",
@@ -109,42 +109,25 @@
                     <i class="fa-solid fa-hurricane fa-xl fontawesome-icon" aria-hidden="true"></i>
                     Tropical Graphics</label>
                 <div class="tropical-graphics-tabs">
-                    <input type="radio" name="graphicsTab" id="graphics-current" checked />
-                    <input type="radio" name="graphicsTab" id="graphics-two-day" />
+                    <input type="radio" name="graphicsTab" id="graphics-two-day" checked />
                     <input type="radio" name="graphicsTab" id="graphics-seven-day" />
                     <input type="radio" name="graphicsTab" id="graphics-surface" />
 
                     <!-- Graphics Product Selection -->
                     <div class="tropical-graphics-tab-content">
                         <div class="tropical-graphics-tab-labels" role="tablist">
-                            <label for="graphics-current" class="tropical-graphics-tab" role="tab"
-                                aria-selected="true">Current</label>
-                            <label for="graphics-two-day" class="tropical-graphics-tab" role="tab">2-Day</label>
+                            <label for="graphics-two-day" class="tropical-graphics-tab" role="tab"
+                                aria-selected="true">2-Day</label>
                             <label for="graphics-seven-day" class="tropical-graphics-tab" role="tab">7-Day</label>
                             <label for="graphics-surface" class="tropical-graphics-tab" role="tab">Surface
                                 Analysis</label>
-                        </div>
-
-                        <!-- Current Activity Tab -->
-                        <div class="tropical-graphics-panel" id="current-activity-panel" role="tabpanel">
-                            <div class="tropical-image-container">
-                                <img id="current-activity-img" src="https://www.nhc.noaa.gov/xgtwo/two_pac_0d0.png"
-                                    alt="Current Tropical Activity" />
-                            </div>
-                            <div class="text-actions" id="graphics-current-actions">
-                                <a href="https://www.nhc.noaa.gov" class="nhc-link-btn" id="graphics-current-link"
-                                    target="_blank" rel="noopener">
-                                    <i class="fa-solid fa-external-link-alt"></i>
-                                    View on NHC
-                                </a>
-                            </div>
                         </div>
 
                         <!-- Two-Day Outlook Tab -->
                         <div class="tropical-graphics-panel" id="two-day-panel" role="tabpanel">
                             <div class="tropical-image-container">
                                 <img id="two-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_pac_2d0.png"
-                                    alt="Two-Day Tropical Weather Outlook" />
+                                    alt="Two-Day Tropical Weather Outlook" decoding="async" />
                             </div>
                             <div class="text-actions" id="graphics-two-day-actions">
                                 <a href="https://www.nhc.noaa.gov/gtwo.php?basin=epac&fdays=2" class="nhc-link-btn"
@@ -158,8 +141,8 @@
                         <!-- Seven-Day Outlook Tab -->
                         <div class="tropical-graphics-panel" id="seven-day-panel" role="tabpanel">
                             <div class="tropical-image-container">
-                                <img id="seven-day-img" src="https://www.nhc.noaa.gov/xgtwo/two_pac_7d0.png"
-                                    alt="Seven-Day Tropical Weather Outlook" />
+                                <img id="seven-day-img" data-src="https://www.nhc.noaa.gov/xgtwo/two_pac_7d0.png"
+                                    alt="Seven-Day Tropical Weather Outlook" loading="lazy" decoding="async" />
                             </div>
                             <div class="text-actions" id="graphics-seven-day-actions">
                                 <a href="https://www.nhc.noaa.gov/gtwo.php?basin=epac&fdays=7" class="nhc-link-btn"
@@ -173,8 +156,8 @@
                         <!-- Surface Analysis Tab -->
                         <div class="tropical-graphics-panel" id="surface-panel" role="tabpanel">
                             <div class="tropical-image-container">
-                                <img id="surface-img" src="https://ocean.weather.gov/P_sfc_full_ocean_color.png"
-                                    alt="Eastern Pacific Surface Analysis" />
+                                <img id="surface-img" data-src="https://ocean.weather.gov/P_sfc_full_ocean_color.png"
+                                    alt="Eastern Pacific Surface Analysis" loading="lazy" decoding="async" />
                             </div>
                             <div class="text-actions" id="graphics-surface-actions">
                                 <a href="https://www.nhc.noaa.gov/marine/" class="nhc-link-btn"
@@ -319,7 +302,7 @@
                         </div>
                         <div id="tropical-satellite-image-container" class="tropical-satellite-image-container">
                             <img id="tropical-satellite-image" class="tropical-satellite-image"
-                                alt="GOES-18 Eastern Pacific Satellite" />
+                                alt="GOES-18 Eastern Pacific Satellite" loading="lazy" decoding="async" />
                         </div>
                         <div class="text-actions" id="satellite-actions" style="display: none;">
                             <a href="#" class="nhc-link-btn" id="satellite-link" target="_blank" rel="noopener">

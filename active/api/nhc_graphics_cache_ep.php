@@ -74,8 +74,18 @@ try {
         }
         $graphics = [
             // Track and Messages
-            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_no_line_and_wind_sm2.png", '3day_cone_no_line_and_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_no_line_and_wind_sm2.png", '5day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_sm2.png", '3day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_sm2.png", '5day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_es_sm2.png", '3day_cone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_es_sm2.png", '5day_cone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_fr_sm2.png", '3day_cone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_fr_sm2.png", '5day_cone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_sm2.png", '3day_expCone.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_sm2.png", '5day_expCone.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_es_sm2.png", '3day_expCone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_es_sm2.png", '5day_expCone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_fr_sm2.png", '3day_expCone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_fr_sm2.png", '5day_expCone_fr.png'],
             ["{$base_url}/$basinFolder/{$stormId}_key_messages_sm2.png", 'key_messages.png'],
             ["{$base_url}/$basinFolder/{$stormId}_spanish_key_messages_sm2.png", 'spanish_key_messages.png'],
             // Wind Field/History/Arrival

@@ -31,6 +31,9 @@ active/cache/*.json
 active/storms/*
 active/cache/zones/  
 
+# Keep storm-route hardening in source control.
+!active/storms/.htaccess
+
 # But keep the example storm for documentation/testing
 !active/storms/AL052025-example/
 !active/storms/AL052025-example/**
@@ -54,15 +57,21 @@ counties/*/logs/
 Thumbs.db
 desktop.ini
 .htaccess
+!/.htaccess
+!active/storms/.htaccess
 
 # IDE (optional - keeping commented for team consistency)
 .vscode/
 .idea/
-.github/
+.github/*
+!.github/workflows/
+.github/workflows/*
+!.github/workflows/site-quality.yml
 
 # Large generated graphics
 images/graphics/
 images/county/*.webp
+!images/county/*-background.webp
 
 # Test output files
 test/output/

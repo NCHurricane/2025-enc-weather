@@ -97,7 +97,7 @@ window.siteConfig = {
             end: "11-30"
         },
         graphics: {
-            atlanticOutlook: "https://www.nhc.noaa.gov/xgtwo/two_atl_5d0.png",
+            atlanticOutlook: "https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png",
             atlanticWinds: "https://www.nhc.noaa.gov/storm_graphics/AT01/AL012023_PROB34_F120_1280x1024.jpg"
         }
     }

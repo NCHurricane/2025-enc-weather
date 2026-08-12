@@ -69,7 +69,7 @@ export class RadSatModule {
         // Refresh tropical image
         const tropicalImage = document.getElementById('tropical-outlook-image');
         if (tropicalImage) {
-            const tropicalUrl = `https://www.nhc.noaa.gov/xgtwo/two_atl_0d0.png?t=${timestamp}`;
+            const tropicalUrl = `https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png?t=${timestamp}`;
             tropicalImage.src = tropicalUrl;
         }
     }

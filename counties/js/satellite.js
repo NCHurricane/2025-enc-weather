@@ -3,48 +3,72 @@
 class SatelliteModule {
     constructor() {
         this.productSelect = null;
-        this.typeSelect = null;
+        this.playButton = null;
         this.satelliteImage = null;
         this.satelliteTimestamp = null;
         this.loadingDiv = null;
         this.errorDiv = null;
+        this.initialized = false;
+        this.hasLoaded = false;
+        this.isPlaying = false;
 
         this.sector = 'eus';
         this.satellite = 'GOES19';
     }
 
     init() {
+        if (this.initialized) return true;
         this.productSelect = document.getElementById('satellite-product-select');
-        this.typeSelect = document.getElementById('satellite-type-select');
+        this.playButton = document.getElementById('satellite-play-pause');
         this.satelliteImage = document.getElementById('satellite-image');
         this.satelliteTimestamp = document.getElementById('satellite-timestamp');
         this.loadingDiv = document.getElementById('satellite-loading');
         this.errorDiv = document.getElementById('satellite-error');
 
-        if (!this.productSelect || !this.typeSelect || !this.satelliteImage) {
+        if (!this.productSelect || !this.playButton || !this.satelliteImage) {
             console.warn('Satellite: Required elements not found');
             return false;
         }
 
         this.productSelect.addEventListener('change', () => this.loadSatelliteImage());
-        this.typeSelect.addEventListener('change', () => this.loadSatelliteImage());
+        this.playButton.addEventListener('click', () => {
+            this.isPlaying = !this.isPlaying;
+            this.updatePlayButton();
+            this.loadSatelliteImage();
+        });
 
-        this.loadSatelliteImage();
+        this.updatePlayButton();
+        this.initialized = true;
+        const accordion = document.getElementById('satellite-toggle');
+        const loadWhenVisible = () => {
+            if (accordion?.checked && !this.hasLoaded) this.loadSatelliteImage();
+        };
+        accordion?.addEventListener('change', loadWhenVisible);
+        if (!accordion || accordion.checked) this.loadSatelliteImage();
         return true;
     }
 
     buildSatelliteUrl() {
         const product = this.productSelect.value;
-        const type = this.typeSelect.value;
         const baseUrl = `https://cdn.star.nesdis.noaa.gov/${this.satellite}/ABI/SECTOR/${this.sector}/${product}/`;
 
-        if (type === 'static') {
+        if (!this.isPlaying) {
             return `${baseUrl}2000x2000.jpg`;
         }
-        if (type === 'animated') {
-            return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
-        }
-        return null;
+        return `${baseUrl}${this.satellite}-${this.sector.toUpperCase()}-${product}-1000x1000.gif`;
+    }
+
+    updatePlayButton() {
+        const icon = this.playButton?.querySelector('i');
+        if (!icon || !this.playButton) return;
+
+        icon.classList.toggle('fa-play', !this.isPlaying);
+        icon.classList.toggle('fa-pause', this.isPlaying);
+        this.playButton.setAttribute(
+            'aria-label',
+            this.isPlaying ? 'Pause satellite animation' : 'Play satellite animation'
+        );
+        this.playButton.setAttribute('aria-pressed', String(this.isPlaying));
     }
 
     showLoading() {
@@ -61,8 +85,7 @@ class SatelliteModule {
 
     updateTimestamp() {
         if (!this.satelliteTimestamp) return;
-        const type = this.typeSelect.value;
-        if (type === 'animated') {
+        if (this.isPlaying) {
             this.satelliteTimestamp.textContent = 'Animated Loop';
         } else {
             const now = new Date();
@@ -74,6 +97,7 @@ class SatelliteModule {
     }
 
     loadSatelliteImage() {
+        this.hasLoaded = true;
         const url = this.buildSatelliteUrl();
         if (!url) { this.showError(); return; }
 
@@ -82,7 +106,7 @@ class SatelliteModule {
         img.onload = () => {
             this.satelliteImage.src = url;
             const productText = this.productSelect.options[this.productSelect.selectedIndex]?.text || '';
-            const typeText = this.typeSelect.options[this.typeSelect.selectedIndex]?.text || '';
+            const typeText = this.isPlaying ? 'Animated Loop' : 'Static';
             this.satelliteImage.alt = `GOES-19 ${productText} ${typeText} - Eastern US`;
             this.hideLoading();
             this.updateTimestamp();

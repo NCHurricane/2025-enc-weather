@@ -301,7 +301,7 @@
   }
 
   /* Two-row layout for graphics-tabs except time-tabs and category-tabs */
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls) {
+  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls):not(.track-language-tabs):not(.track-product-tabs) {
     display: flex;
     flex-wrap: wrap;
     gap: 0;
@@ -309,7 +309,7 @@
     border-bottom: 2px solid #e0e0e0;
   }
 
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls) .graphics-tab {
+  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls):not(.track-language-tabs):not(.track-product-tabs) .graphics-tab {
     width: 50%;
     box-sizing: border-box;
   }
@@ -353,5 +353,71 @@
     justify-self: stretch;
     min-width: 0;
     max-width: 100%;
+  }
+}
+
+/* Track & Key Messages uses language tabs with a second product-tab row. */
+.graphics-tabs.track-language-tabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.graphics-tabs.track-product-tabs {
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.track-language-tab,
+.track-product-tab {
+  min-width: 0;
+  width: auto;
+  white-space: normal;
+}
+
+.track-product-tab {
+  font-size: clamp(0.75rem, 1.25vw, 0.95rem);
+  line-height: 1.2;
+  padding: 10px 6px;
+}
+
+.track-language-panel[hidden] {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .graphics-tabs.track-language-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+
+  .graphics-tabs.track-product-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+
+  .graphics-tabs.track-language-tabs .graphics-tab,
+  .graphics-tabs.track-product-tabs .graphics-tab {
+    width: auto;
+    max-width: none;
+    padding: 0.55rem 0.35rem;
+    white-space: normal;
+  }
+
+  .track-product-tabs .track-product-tab:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 420px) {
+  .graphics-tabs.track-language-tabs .graphics-tab {
+    font-size: 0.72rem;
+  }
+
+  .graphics-tabs.track-product-tabs .graphics-tab {
+    font-size: 0.72rem;
   }
 }

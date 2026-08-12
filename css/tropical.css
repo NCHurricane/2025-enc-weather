@@ -231,7 +231,6 @@ input[name='textTab'] {
 /* TAB CONTENT VISIBILITY                                         */
 /*-----------------------------------------------------------------*/
 /* Show active tab content */
-#graphics-current:checked ~ .tropical-graphics-tab-content #current-activity-panel,
 #graphics-two-day:checked ~ .tropical-graphics-tab-content #two-day-panel,
 #graphics-seven-day:checked ~ .tropical-graphics-tab-content #seven-day-panel,
 #graphics-surface:checked ~ .tropical-graphics-tab-content #surface-panel,
@@ -243,10 +242,6 @@ input[name='textTab'] {
 }
 
 /* Active graphics tab styling - Fixed selectors */
-#graphics-current:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-current'],
 #graphics-two-day:checked
     ~ .tropical-graphics-tab-content
     .tropical-graphics-tab-labels
@@ -265,10 +260,6 @@ input[name='textTab'] {
 }
 
 /* Active graphics tab accent bar - Fixed selectors */
-#graphics-current:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-current']::after,
 #graphics-two-day:checked
     ~ .tropical-graphics-tab-content
     .tropical-graphics-tab-labels

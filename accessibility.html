@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="index, follow" />
+    <title>Accessibility — NCHurricane.com</title>
+    <meta name="description" content="NCHurricane.com's accessibility approach, current features, known limitations, and feedback path." />
+    <link rel="canonical" href="https://nchurricane.com/accessibility.html" />
+    <meta property="og:title" content="Accessibility — NCHurricane.com" />
+    <meta property="og:description" content="Accessibility information and feedback for NCHurricane.com." />
+    <meta property="og:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/info.css" />
+    <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header class="header"></header>
+    <main class="info-main">
+        <article class="info-panel">
+            <p class="eyebrow">Site information</p>
+            <h1>Accessibility</h1>
+            <p class="info-updated">Last updated August 12, 2026</p>
+            <p>NCHurricane.com aims to provide a usable weather experience for people with disabilities and is working toward conformance with WCAG 2.2 Level AA.</p>
+            <h2>Current accessibility features</h2>
+            <ul>
+                <li>A skip link and semantic main-content target on site pages.</li>
+                <li>Keyboard-operable navigation, submenus, accordions, tab groups, and homepage weather markers.</li>
+                <li>Programmatic expanded and selected states for interactive controls.</li>
+                <li>Text alternatives for weather imagery and icon treatment that avoids duplicate announcements.</li>
+                <li>Responsive layouts and minimum touch-target sizing for primary controls.</li>
+                <li>Visible focus treatment and Escape-key support for open navigation.</li>
+            </ul>
+            <h2>Known limitations</h2>
+            <p>Some maps, charts, radar loops, satellite products, and third-party weather graphics are inherently visual. The site provides surrounding labels and text products where practical, but not every detail in those external images has an equivalent text description. Dynamic public-weather data may also contain terminology or formatting controlled by the source agency.</p>
+            <h2>Feedback</h2>
+            <p>If you encounter an accessibility barrier, please share the page, device, browser, assistive technology, and a short description through <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>. Accessibility issues will be reviewed as product defects.</p>
+        </article>
+    </main>
+    <footer class="footer"><div class="footer-content"><p class="disclaimer">NCHurricane.com is for informational purposes only. Use official NWS and NHC guidance for life-safety decisions.</p><p class="copyright">Copyright ©2003–2026 NCHurricane.<br />Designed and developed by <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>.</p></div></footer>
+    <script type="module">import { NavigationModule } from './js/modules/navigation.js'; NavigationModule.init('./');</script>
+</body>
+</html>

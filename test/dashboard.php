@@ -6,16 +6,50 @@
  * Features:
  * - Script monitoring and manual execution
  * - Log file management and viewing
+ * - Generated imagery tile cache inspection and purge
  * - Health checks and file age monitoring
  * - Rate limiting and audit logging
  */
 
-session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', '0');
 
 // Load environment configuration
 loadEnvironmentConfig();
+
+// This maintenance surface is intentionally unavailable unless production
+// configuration explicitly enables it.
+header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+header('Cache-Control: no-store, max-age=0', true);
+header('Pragma: no-cache', true);
+header('X-Content-Type-Options: nosniff', true);
+header('X-Frame-Options: DENY', true);
+header('Referrer-Policy: no-referrer', true);
+header("Permissions-Policy: camera=(), microphone=(), geolocation=()", true);
+header("Content-Security-Policy: default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'", true);
+
+if (strtolower((string) getConfig('DASHBOARD_ENABLED', 'false')) !== 'true') {
+    http_response_code(404);
+    exit('Not found');
+}
+
+session_name('nch_dashboard');
+$dashboardRemoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
+$dashboardIsLoopback = in_array($dashboardRemoteAddress, ['127.0.0.1', '::1'], true);
+$dashboardIsHttps = isset($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/test/',
+    // Permit local HTTP development; non-loopback dashboard sessions remain HTTPS-only.
+    'secure' => $dashboardIsHttps || !$dashboardIsLoopback,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
+session_start();
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 /**
  * Safely get remote IP address (handles CLI context)
@@ -39,6 +73,7 @@ if (!is_dir($baseDir . '/active')) {
 define('BASE_DIR', $baseDir);
 define('LOGS_DIR', BASE_DIR . '/active/logs');
 define('AUDIT_LOG', __DIR__ . '/dashboard_audit.log');
+define('IMAGERY_TILES_DIR', BASE_DIR . '/js/data/tiles/imagery');
 
 // Ensure logs directory exists
 if (!file_exists(LOGS_DIR)) {
@@ -48,15 +83,26 @@ if (!file_exists(LOGS_DIR)) {
 // Check IP restrictions if configured
 checkIPRestriction();
 
+$configuredPassword = (string) getConfig('DASHBOARD_PASSWORD', '');
+if ($configuredPassword === '' || !password_get_info($configuredPassword)['algo']) {
+    http_response_code(503);
+    exit('Dashboard configuration unavailable');
+}
+
 // Authentication check
 if (!isset($_SESSION['dashboard_authenticated']) || $_SESSION['dashboard_authenticated'] !== true) {
     if (isset($_POST['password'])) {
-        if (verifyPassword($_POST['password'])) {
+        verifyCsrfToken();
+        enforceRateLimit('login', (int) getConfig('MAX_LOGIN_ATTEMPTS_PER_HOUR', 5), false);
+        if (verifyPassword((string) $_POST['password'])) {
+            session_regenerate_id(true);
             $_SESSION['dashboard_authenticated'] = true;
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             auditLog("Login successful from " . getRemoteIP());
             header('Location: ' . $_SERVER['PHP_SELF']);
             exit;
         } else {
+            enforceRateLimit('login', (int) getConfig('MAX_LOGIN_ATTEMPTS_PER_HOUR', 5), true);
             $loginError = 'Invalid password. Please try again.';
             auditLog("Login failed from " . getRemoteIP());
         }
@@ -66,18 +112,19 @@ if (!isset($_SESSION['dashboard_authenticated']) || $_SESSION['dashboard_authent
 }
 
 // Handle logout
-if (isset($_GET['logout'])) {
+if (isset($_POST['logout'])) {
+    verifyCsrfToken();
     auditLog("Logout from " . getRemoteIP());
+    $_SESSION = [];
     session_destroy();
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 
-// Rate limiting check
-checkRateLimit();
-
 // AJAX handlers
 if (isset($_POST['action'])) {
+    verifyCsrfToken();
+    checkRateLimit();
     header('Content-Type: application/json');
     
     switch ($_POST['action']) {
@@ -98,6 +145,12 @@ if (isset($_POST['action'])) {
             break;
         case 'get_scripts':
             handleGetScripts();
+            break;
+        case 'get_imagery_cache_stats':
+            handleGetImageryCacheStats();
+            break;
+        case 'purge_imagery_cache':
+            handlePurgeImageryCache();
             break;
         default:
             echo json_encode(['error' => 'Invalid action']);
@@ -316,6 +369,63 @@ if (isset($_POST['action'])) {
             background: #218838;
         }
 
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .cache-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .cache-stat {
+            padding: 14px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            text-align: center;
+        }
+
+        .cache-stat strong,
+        .cache-stat span {
+            display: block;
+        }
+
+        .cache-stat strong {
+            margin-bottom: 4px;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .cache-stat span,
+        .cache-note,
+        .cache-action-status {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .cache-note {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .cache-action-status {
+            min-height: 20px;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        .cache-action-status.success {
+            color: #155724;
+        }
+
+        .cache-action-status.error {
+            color: #721c24;
+        }
+
         .execution-output {
             background: #1e1e1e;
             color: #f8f8f2;
@@ -396,6 +506,10 @@ if (isset($_POST['action'])) {
             .script-actions {
                 flex-wrap: wrap;
             }
+
+            .cache-summary {
+                grid-template-columns: 1fr;
+            }
         }
 
         .loading {
@@ -429,7 +543,10 @@ if (isset($_POST['action'])) {
                 </div>
                 <button class="btn btn-warning" onclick="debugPaths()">Debug</button>
                 <button class="btn btn-success" onclick="testScripts()">Test Scripts</button>
-                <button class="btn btn-danger" onclick="window.location.href='?logout=1'">Logout</button>
+                <form method="post" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES) ?>">
+                    <button class="btn btn-danger" type="submit" name="logout" value="1">Logout</button>
+                </form>
             </div>
         </div>
 
@@ -466,6 +583,15 @@ if (isset($_POST['action'])) {
                 </div>
             </div>
 
+            <!-- Temporary San Diego Weather -->
+            <div class="card">
+                <h2>🌴 Temporary San Diego Weather</h2>
+                <div id="temp-san-diego-scripts" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading scripts...</p>
+                </div>
+            </div>
+
             <!-- Cache Management -->
             <div class="card">
                 <h2>🗄️ Cache Management</h2>
@@ -473,6 +599,27 @@ if (isset($_POST['action'])) {
                     <div class="spinner"></div>
                     <p>Loading scripts...</p>
                 </div>
+            </div>
+
+            <!-- Generated Imagery Tile Cache -->
+            <div class="card">
+                <h2>🧹 Imagery Tile Cache</h2>
+                <p class="cache-note">Review and purge generated imagery basemap tiles. This action does not affect topographic tiles, source data, or application code.</p>
+                <div class="cache-summary" aria-live="polite">
+                    <div class="cache-stat">
+                        <strong id="imagery-cache-files">—</strong>
+                        <span>Generated files</span>
+                    </div>
+                    <div class="cache-stat">
+                        <strong id="imagery-cache-size">—</strong>
+                        <span>Disk usage</span>
+                    </div>
+                </div>
+                <div class="script-actions">
+                    <button class="btn btn-primary" type="button" onclick="loadImageryCacheStats()">Refresh</button>
+                    <button id="purge-imagery-cache" class="btn btn-danger" type="button" onclick="purgeImageryCache()" disabled>Purge Imagery Tiles</button>
+                </div>
+                <div id="imagery-cache-status" class="cache-action-status" role="status"></div>
             </div>
 
             <!-- System Health -->
@@ -511,15 +658,19 @@ if (isset($_POST['action'])) {
 
     <script>
         // Dashboard JavaScript functionality
+        const CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token']) ?>;
+        const dashboardBody = (params) => `${params}&csrf_token=${encodeURIComponent(CSRF_TOKEN)}`;
         let currentScript = null;
         let executionQueue = [];
         let isExecuting = false;
         let allCountyScripts = []; // Store all county scripts for filtering
+        let imageryCacheStats = null;
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadScripts();
             loadHealthInfo();
+            loadImageryCacheStats();
             
             // Setup modal handlers
             setupModals();
@@ -528,6 +679,7 @@ if (isset($_POST['action'])) {
             setInterval(() => {
                 loadScripts();
                 loadHealthInfo();
+                loadImageryCacheStats();
             }, 300000);
         });
 
@@ -551,43 +703,31 @@ if (isset($_POST['action'])) {
         }
 
         function loadScripts() {
-            console.log('Loading scripts...');
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=get_scripts'
+                body: dashboardBody('action=get_scripts')
             })
-            .then(response => {
-                console.log('Response status:', response.status);
+            .then(async response => {
+                const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(data.error || `Request failed with status ${response.status}`);
                 }
-                return response.text(); // Get as text first to see raw response
+                return data;
             })
-            .then(text => {
-                console.log('Raw response:', text);
-                try {
-                    const data = JSON.parse(text);
-                    console.log('Parsed data:', data);
-                    
-                    // Render scripts for each category
-                    renderScripts('tropical-scripts', data.tropical || []);
-                    
-                    // Store county scripts and apply current filter
-                    allCountyScripts = data.county || [];
-                    filterCountyScripts(); // Apply current filter
-                    
-                    renderScripts('cache-scripts', data.cache || []);
-                } catch (e) {
-                    console.error('JSON parse error:', e);
-                    throw new Error('Invalid JSON response: ' + text.substring(0, 200));
-                }
+            .then(data => {
+                renderScripts('tropical-scripts', data.tropical || []);
+                allCountyScripts = data.county || [];
+                filterCountyScripts();
+                renderScripts('temp-san-diego-scripts', data.temp_san_diego || []);
+                renderScripts('cache-scripts', data.cache || []);
             })
             .catch(error => {
                 console.error('Fetch error:', error);
                 // Show error message in UI
                 document.getElementById('tropical-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
                 document.getElementById('county-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
+                document.getElementById('temp-san-diego-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
                 document.getElementById('cache-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
             });
         }
@@ -596,7 +736,7 @@ if (isset($_POST['action'])) {
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=check_health'
+                body: dashboardBody('action=check_health')
             })
             .then(response => response.json())
             .then(data => {
@@ -604,6 +744,97 @@ if (isset($_POST['action'])) {
                 updateSystemStatus(data.overall_status);
             })
             .catch(error => console.error('Error:', error));
+        }
+
+        function requestDashboardAction(action) {
+            return fetch('dashboard.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: dashboardBody(`action=${encodeURIComponent(action)}`)
+            }).then(async response => {
+                const data = await response.json();
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || `Request failed with status ${response.status}`);
+                }
+                return data;
+            });
+        }
+
+        function setImageryCacheStatus(message, type = '') {
+            const status = document.getElementById('imagery-cache-status');
+            status.textContent = message;
+            status.className = `cache-action-status${type ? ` ${type}` : ''}`;
+        }
+
+        function renderImageryCacheStats(stats) {
+            imageryCacheStats = stats;
+            const fileCount = Number(stats.file_count) || 0;
+            const lowerBoundSuffix = stats.scan_complete === false ? '+' : '';
+            document.getElementById('imagery-cache-files').textContent = `${fileCount.toLocaleString()}${lowerBoundSuffix}`;
+            document.getElementById('imagery-cache-size').textContent = `${stats.size_formatted || '0 B'}${lowerBoundSuffix}`;
+
+            const purgeButton = document.getElementById('purge-imagery-cache');
+            purgeButton.disabled = !stats.exists || !stats.writable || !stats.has_files;
+
+            if (!stats.exists) {
+                setImageryCacheStatus('The imagery tile cache directory does not exist.', 'error');
+            } else if (!stats.writable) {
+                setImageryCacheStatus('The imagery tile cache is not writable by the dashboard process.', 'error');
+            }
+        }
+
+        function loadImageryCacheStats() {
+            setImageryCacheStatus('Loading imagery tile cache statistics...');
+            return requestDashboardAction('get_imagery_cache_stats')
+                .then(data => {
+                    renderImageryCacheStats(data);
+                    if (data.exists && data.writable) {
+                        setImageryCacheStatus(
+                            data.scan_complete === false
+                                ? 'Showing a quick lower-bound estimate; the full cache is checked only during purge.'
+                                : 'Imagery tile cache statistics are current.'
+                        );
+                    }
+                })
+                .catch(error => {
+                    imageryCacheStats = null;
+                    document.getElementById('purge-imagery-cache').disabled = true;
+                    setImageryCacheStatus(`Unable to load cache statistics: ${error.message}`, 'error');
+                });
+        }
+
+        function purgeImageryCache() {
+            if (!imageryCacheStats || !imageryCacheStats.has_files) {
+                setImageryCacheStatus('There are no imagery tiles to purge.');
+                return;
+            }
+
+            const fileCount = Number(imageryCacheStats.file_count).toLocaleString();
+            const cacheSize = imageryCacheStats.size_formatted || 'unknown size';
+            const estimatePrefix = imageryCacheStats.scan_complete === false ? 'at least ' : '';
+            const confirmed = confirm(
+                `Permanently delete ${estimatePrefix}${fileCount} generated imagery tile files (${estimatePrefix}${cacheSize})?\n\n` +
+                'The imagery cache directory will remain in place, and tiles may be generated again as they are requested. Topographic tiles are not affected.'
+            );
+            if (!confirmed) return;
+
+            const purgeButton = document.getElementById('purge-imagery-cache');
+            purgeButton.disabled = true;
+            setImageryCacheStatus('Purging generated imagery tiles...');
+
+            requestDashboardAction('purge_imagery_cache')
+                .then(data => {
+                    renderImageryCacheStats(data.stats);
+                    const deletedFiles = Number(data.deleted_files || 0).toLocaleString();
+                    setImageryCacheStatus(
+                        `Purge complete: ${deletedFiles} files (${data.deleted_size_formatted || '0 B'}) removed.`,
+                        'success'
+                    );
+                })
+                .catch(error => {
+                    const message = `Purge failed: ${error.message}`;
+                    loadImageryCacheStats().then(() => setImageryCacheStatus(message, 'error'));
+                });
         }
 
         function renderScripts(containerId, scripts) {
@@ -623,9 +854,9 @@ if (isset($_POST['action'])) {
                         </div>
                     </div>
                     <div class="script-actions">
-                        <button class="btn btn-primary" onclick="executeScript('${script.path}', '${script.name}')">Execute</button>
-                        <button class="btn btn-warning" onclick="viewLog('${script.log_path}', '${script.name}')">View Log</button>
-                        <button class="btn btn-danger" onclick="deleteLog('${script.log_path}', '${script.name}')">Delete Log</button>
+                        <button class="btn btn-primary" onclick="executeScript('${script.id}', '${script.name}')">Execute</button>
+                        <button class="btn btn-warning" onclick="viewLog('${script.id}', '${script.name}')">View Log</button>
+                        <button class="btn btn-danger" onclick="deleteLog('${script.id}', '${script.name}')">Delete Log</button>
                     </div>
                 </div>
             `).join('');
@@ -691,8 +922,8 @@ if (isset($_POST['action'])) {
             statusEl.innerHTML = `<span>${statusText[status].split(' ')[0]}</span><span>${statusText[status].substring(2)}</span>`;
         }
 
-        function executeScript(scriptPath, scriptName) {
-            currentScript = {path: scriptPath, name: scriptName};
+        function executeScript(scriptId, scriptName) {
+            currentScript = {id: scriptId, name: scriptName};
             document.getElementById('execute-title').textContent = `Execute: ${scriptName}`;
             
             // Set appropriate default parameters based on script type
@@ -744,7 +975,7 @@ if (isset($_POST['action'])) {
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=execute_script&script=${encodeURIComponent(currentScript.path)}&params=${encodeURIComponent(params)}`
+                body: dashboardBody(`action=execute_script&script_id=${encodeURIComponent(currentScript.id)}&params=${encodeURIComponent(params)}`)
             })
             .then(response => response.json())
             .then(data => {
@@ -764,11 +995,11 @@ if (isset($_POST['action'])) {
             });
         }
 
-        function viewLog(logPath, scriptName) {
+        function viewLog(scriptId, scriptName) {
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=get_log&log_path=${encodeURIComponent(logPath)}`
+                body: dashboardBody(`action=get_log&script_id=${encodeURIComponent(scriptId)}`)
             })
             .then(response => response.json())
             .then(data => {
@@ -779,7 +1010,7 @@ if (isset($_POST['action'])) {
             .catch(error => console.error('Error:', error));
         }
 
-        function deleteLog(logPath, scriptName) {
+        function deleteLog(scriptId, scriptName) {
             if (!confirm(`Are you sure you want to delete the LOG FILE for ${scriptName}?\n\nThis will only delete the log file, not the script itself.`)) {
                 return;
             }
@@ -787,7 +1018,7 @@ if (isset($_POST['action'])) {
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=delete_log&log_path=${encodeURIComponent(logPath)}`
+                body: dashboardBody(`action=delete_log&script_id=${encodeURIComponent(scriptId)}`)
             })
             .then(response => response.json())
             .then(data => {
@@ -805,35 +1036,38 @@ if (isset($_POST['action'])) {
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=debug_paths'
+                body: dashboardBody('action=debug_paths')
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Debug paths:', data);
-                alert('Debug info logged to console. Check browser console (F12).');
+                document.getElementById('log-title').textContent = 'Dashboard path diagnostics';
+                document.getElementById('log-content').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('logModal').style.display = 'block';
             })
             .catch(error => console.error('Error:', error));
         }
 
         function testScripts() {
-            console.log('Testing script loading...');
             fetch('dashboard.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=get_scripts'
+                body: dashboardBody('action=get_scripts')
             })
-            .then(response => {
-                console.log('Test - Response status:', response.status);
-                return response.text();
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || `Request failed with status ${response.status}`);
+                }
+                return data;
             })
-            .then(text => {
-                console.log('Test - Raw response:', text);
-                const data = JSON.parse(text);
-                console.log('Test - Parsed data:', data);
-                console.log('Test - Tropical scripts count:', data.tropical ? data.tropical.length : 'undefined');
-                console.log('Test - County scripts count:', data.county ? data.county.length : 'undefined');
-                console.log('Test - Cache scripts count:', data.cache ? data.cache.length : 'undefined');
-                alert('Test completed. Check console for results.');
+            .then(data => {
+                alert(
+                    'Script inventory loaded successfully.\n\n' +
+                    `Tropical: ${(data.tropical || []).length}\n` +
+                    `County: ${(data.county || []).length}\n` +
+                    `San Diego: ${(data.temp_san_diego || []).length}\n` +
+                    `Cache: ${(data.cache || []).length}`
+                );
             })
             .catch(error => {
                 console.error('Test - Error:', error);
@@ -883,37 +1117,25 @@ function getConfig($key, $default = null) {
 }
 
 function verifyPassword($inputPassword) {
-    $storedPassword = getConfig('DASHBOARD_PASSWORD');
-    
-    if (!$storedPassword) {
-        // Fallback to default for initial setup
-        return $inputPassword === 'weather2025admin';
-    }
-    
-    // Check if stored password is already hashed
-    if (password_get_info($storedPassword)['algo']) {
-        return password_verify($inputPassword, $storedPassword);
-    } else {
-        // Plain text comparison for backward compatibility
-        return $inputPassword === $storedPassword;
-    }
-}
-
-function hashPassword($password) {
-    return password_hash($password, PASSWORD_ARGON2ID);
+    $storedPassword = (string) getConfig('DASHBOARD_PASSWORD', '');
+    return $storedPassword !== ''
+        && (bool) password_get_info($storedPassword)['algo']
+        && password_verify($inputPassword, $storedPassword);
 }
 
 function checkIPRestriction() {
-    $allowedIPs = getConfig('ALLOWED_IPS');
-    if ($allowedIPs) {
-        $allowedIPList = array_map('trim', explode(',', $allowedIPs));
-        $clientIP = getRemoteIP();
-        
-        if ($clientIP !== 'CLI' && !in_array($clientIP, $allowedIPList)) {
-            auditLog("Access denied for IP: $clientIP");
-            http_response_code(403);
-            die('Access denied: IP not allowed');
-        }
+    if (isCLI()) {
+        return;
+    }
+
+    $allowedIPs = trim((string) getConfig('ALLOWED_IPS', ''));
+    $clientIP = getRemoteIP();
+    $allowedIPList = array_values(array_filter(array_map('trim', explode(',', $allowedIPs))));
+
+    if ($allowedIPs === '' || !in_array($clientIP, $allowedIPList, true)) {
+        auditLog("Access denied for IP: $clientIP");
+        http_response_code(403);
+        exit('Access denied');
     }
 }
 
@@ -996,6 +1218,7 @@ function showLoginForm($error = null) {
     <body>
         <form class="login-form" method="post">
             <h1>🌊 Weather Dashboard</h1>
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES) ?>">
             <?php if ($error): ?>
                 <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
                     <?= htmlspecialchars($error) ?>
@@ -1006,9 +1229,6 @@ function showLoginForm($error = null) {
                 <input type="password" id="password" name="password" required>
             </div>
             <button type="submit" class="login-btn">Login</button>
-            <div class="recovery-info">
-                Password recovery: <?= htmlspecialchars(getConfig('ADMIN_EMAIL', 'admin@example.com')) ?>
-            </div>
         </form>
     </body>
     </html>
@@ -1021,33 +1241,53 @@ function auditLog($message) {
     file_put_contents(AUDIT_LOG, $entry, FILE_APPEND | LOCK_EX);
 }
 
-function checkRateLimit() {
-    $maxExecutions = getConfig('MAX_EXECUTIONS_PER_HOUR', 10);
-    $hour = date('H');
-    $rateLimitFile = __DIR__ . "/rate_limit_$hour.json";
-    
-    $data = file_exists($rateLimitFile) ? json_decode(file_get_contents($rateLimitFile), true) : [];
-    $ip = getRemoteIP();
-    
-    if (!isset($data[$ip])) {
-        $data[$ip] = 0;
+function verifyCsrfToken() {
+    $sessionToken = $_SESSION['csrf_token'] ?? '';
+    $submittedToken = $_POST['csrf_token'] ?? '';
+    if (!is_string($sessionToken) || !is_string($submittedToken) || !hash_equals($sessionToken, $submittedToken)) {
+        http_response_code(403);
+        exit('Invalid request');
     }
-    
-    if ($data[$ip] >= $maxExecutions) {
+}
+
+function enforceRateLimit($scope, $limit, $increment) {
+    $limit = max(1, (int) $limit);
+    $bucket = gmdate('YmdH');
+    $rateLimitFile = __DIR__ . '/rate_limit_' . preg_replace('/[^a-z0-9_-]/i', '', $scope) . "_$bucket.json";
+    $data = file_exists($rateLimitFile) ? json_decode((string) file_get_contents($rateLimitFile), true) : [];
+    $data = is_array($data) ? $data : [];
+    $key = hash('sha256', getRemoteIP());
+    $attempts = (int) ($data[$key] ?? 0);
+
+    if ($attempts >= $limit) {
         http_response_code(429);
-        die('Rate limit exceeded. Maximum ' . $maxExecutions . ' executions per hour.');
+        exit('Rate limit exceeded');
     }
-    
+
+    if ($increment) {
+        $data[$key] = $attempts + 1;
+        file_put_contents($rateLimitFile, json_encode($data), LOCK_EX);
+    }
+}
+
+function checkRateLimit() {
     if (isset($_POST['action']) && $_POST['action'] === 'execute_script') {
-        $data[$ip]++;
-        file_put_contents($rateLimitFile, json_encode($data));
+        enforceRateLimit('execution', (int) getConfig('MAX_EXECUTIONS_PER_HOUR', 10), true);
+    } elseif (isset($_POST['action']) && $_POST['action'] === 'purge_imagery_cache') {
+        enforceRateLimit('imagery_purge', (int) getConfig('MAX_CACHE_PURGES_PER_HOUR', 4), true);
     }
+}
+
+function getDashboardScriptId($group, $path) {
+    $normalizedPath = str_replace('\\', '/', (string) $path);
+    return substr(hash('sha256', (string) $group . "\0" . $normalizedPath), 0, 24);
 }
 
 function getScripts() {
     $scripts = [
         'tropical' => [],
         'county' => [],
+        'temp_san_diego' => [],
         'cache' => []
     ];
     
@@ -1069,6 +1309,7 @@ function getScripts() {
         if (file_exists($path)) {
             $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
             $scripts['tropical'][] = [
+                'id' => getDashboardScriptId('tropical', $path),
                 'name' => $name,
                 'path' => $path,
                 'log_path' => $logPath,
@@ -1083,6 +1324,7 @@ function getScripts() {
     if (file_exists($warmTilesPath)) {
         $logPath = LOGS_DIR . '/warm_tiles_log';
         $scripts['tropical'][] = [
+            'id' => getDashboardScriptId('tropical', $warmTilesPath),
             'name' => 'Tile Warmer (All Styles)',
             'path' => $warmTilesPath,
             'log_path' => $logPath,
@@ -1104,6 +1346,7 @@ function getScripts() {
         if (file_exists($path)) {
             $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
             $scripts['cache'][] = [
+                'id' => getDashboardScriptId('cache', $path),
                 'name' => $name,
                 'path' => $path,
                 'log_path' => $logPath,
@@ -1123,6 +1366,7 @@ function getScripts() {
             if (file_exists($path)) {
                 $logPath = BASE_DIR . "/counties/$county/logs/cron_" . str_replace('cache_', '', str_replace('.php', '.log', $script));
                 $scripts['county'][] = [
+                    'id' => getDashboardScriptId('county', $path),
                     'name' => ucfirst($county) . ' ' . ucfirst(str_replace(['cache_', '.php'], ['', ''], $script)),
                     'path' => $path,
                     'log_path' => $logPath,
@@ -1132,20 +1376,137 @@ function getScripts() {
             }
         }
     }
+
+    // Temporary San Diego county scripts
+    $tempSanDiegoCounty = 'san-diego';
+    $tempSanDiegoScripts = ['cache_current.php', 'cache_forecast.php', 'cache_alerts.php', 'cache_afd.php'];
+
+    foreach ($tempSanDiegoScripts as $script) {
+        $path = BASE_DIR . "/counties/$tempSanDiegoCounty/api/$script";
+        if (file_exists($path)) {
+            $logPath = BASE_DIR . "/counties/$tempSanDiegoCounty/logs/cron_" . str_replace('cache_', '', str_replace('.php', '.log', $script));
+            $scripts['temp_san_diego'][] = [
+                'id' => getDashboardScriptId('temp_san_diego', $path),
+                'name' => 'San Diego ' . ucfirst(str_replace(['cache_', '.php'], ['', ''], $script)),
+                'path' => $path,
+                'log_path' => $logPath,
+                'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
+                'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null
+            ];
+        }
+    }
     
     return $scripts;
 }
 
+function getPublicDashboardScripts($scripts) {
+    $publicScripts = [];
+    foreach ($scripts as $groupName => $group) {
+        $publicScripts[$groupName] = array_map(function ($entry) {
+            unset($entry['path'], $entry['log_path']);
+            return $entry;
+        }, $group);
+    }
+    return $publicScripts;
+}
+
+function rotateDashboardLogs($scripts) {
+    $maxBytes = max(1048576, (int) getConfig('MAX_DASHBOARD_LOG_BYTES', 5242880));
+    $retainBytes = max(524288, (int) getConfig('DASHBOARD_LOG_RETAIN_BYTES', 2097152));
+    $retainBytes = min($retainBytes, $maxBytes);
+    $seen = [];
+
+    foreach ($scripts as $group) {
+        foreach ($group as $entry) {
+            $logPath = $entry['log_path'] ?? null;
+            if (!is_string($logPath) || isset($seen[$logPath]) || !is_file($logPath)) {
+                continue;
+            }
+            $seen[$logPath] = true;
+            clearstatcache(true, $logPath);
+            if ((int) @filesize($logPath) <= $maxBytes) {
+                continue;
+            }
+
+            $handle = @fopen($logPath, 'c+');
+            if ($handle === false || !@flock($handle, LOCK_EX | LOCK_NB)) {
+                if (is_resource($handle)) {
+                    fclose($handle);
+                }
+                continue;
+            }
+
+            try {
+                $stat = fstat($handle);
+                $fileSize = (int) ($stat['size'] ?? 0);
+                if ($fileSize <= $maxBytes) {
+                    continue;
+                }
+
+                fseek($handle, -min($retainBytes, $fileSize), SEEK_END);
+                $tail = stream_get_contents($handle);
+                if ($tail === false) {
+                    continue;
+                }
+                if ($fileSize > $retainBytes) {
+                    $firstNewline = strpos($tail, "\n");
+                    if ($firstNewline !== false) {
+                        $tail = substr($tail, $firstNewline + 1);
+                    }
+                }
+
+                rewind($handle);
+                if (ftruncate($handle, 0)) {
+                    fwrite($handle, $tail);
+                    fflush($handle);
+                    auditLog('Rotated oversized dashboard log: ' . basename($logPath));
+                }
+            } finally {
+                flock($handle, LOCK_UN);
+                fclose($handle);
+            }
+        }
+    }
+}
+
+function requireAllowedDashboardPath($scriptId, $field) {
+    if (!is_string($scriptId) || !preg_match('/^[a-f0-9]{24}$/', $scriptId)) {
+        return null;
+    }
+
+    foreach (getScripts() as $group) {
+        foreach ($group as $entry) {
+            $entryId = $entry['id'] ?? '';
+            $path = $entry[$field] ?? null;
+            if (!is_string($entryId) || !hash_equals($entryId, $scriptId) || !is_string($path) || !file_exists($path)) {
+                continue;
+            }
+            $resolved = realpath($path);
+            return $resolved === false ? null : $resolved;
+        }
+    }
+
+    auditLog("Rejected dashboard identifier from " . getRemoteIP());
+    return null;
+}
+
 function handleScriptExecution() {
-    $scriptPath = $_POST['script'] ?? '';
+    $scriptId = $_POST['script_id'] ?? '';
     $params = $_POST['params'] ?? '';
-    
-    if (!file_exists($scriptPath)) {
-        echo json_encode(['error' => 'Script not found']);
+
+    $scriptPath = requireAllowedDashboardPath($scriptId, 'path');
+    if ($scriptPath === null) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Script not allowed']);
+        return;
+    }
+    if (!is_string($params) || strlen($params) > 160 || !preg_match('/^[A-Za-z0-9_.:=\- ]*$/', $params)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid parameters']);
         return;
     }
     
-    auditLog("Script execution: $scriptPath with params: $params from " . getRemoteIP());
+    auditLog("Script execution: " . basename($scriptPath) . " with params: $params from " . getRemoteIP());
     
     // Build command
     $cmd = "/usr/bin/php8.4-cli " . escapeshellarg($scriptPath);
@@ -1161,27 +1522,31 @@ function handleScriptExecution() {
 }
 
 function handleGetLog() {
-    $logPath = $_POST['log_path'] ?? '';
-    
-    if (!file_exists($logPath)) {
+    $scriptId = $_POST['script_id'] ?? '';
+
+    $logPath = requireAllowedDashboardPath($scriptId, 'log_path');
+    if ($logPath === null) {
+        http_response_code(400);
         echo json_encode(['content' => 'Log file not found']);
         return;
     }
-    
-    // Read last 1000 lines to avoid memory issues
-    $content = shell_exec("tail -n 1000 " . escapeshellarg($logPath));
+
+    $lines = file($logPath, FILE_IGNORE_NEW_LINES);
+    $content = $lines === false ? '' : implode("\n", array_slice($lines, -1000));
     echo json_encode(['content' => $content]);
 }
 
 function handleDeleteLog() {
-    $logPath = $_POST['log_path'] ?? '';
-    
-    if (!file_exists($logPath)) {
+    $scriptId = $_POST['script_id'] ?? '';
+
+    $logPath = requireAllowedDashboardPath($scriptId, 'log_path');
+    if ($logPath === null) {
+        http_response_code(400);
         echo json_encode(['error' => 'Log file not found']);
         return;
     }
     
-    auditLog("Log deletion: $logPath from " . getRemoteIP());
+    auditLog("Log deletion: " . basename($logPath) . " from " . getRemoteIP());
     
     if (unlink($logPath)) {
         echo json_encode(['success' => true]);
@@ -1190,7 +1555,200 @@ function handleDeleteLog() {
     }
 }
 
+function getImageryTilesDirectory() {
+    $tilesRoot = realpath(BASE_DIR . '/js/data/tiles');
+    if ($tilesRoot === false || !is_dir($tilesRoot)) {
+        return null;
+    }
+
+    $candidate = $tilesRoot . DIRECTORY_SEPARATOR . 'imagery';
+    if (!is_dir($candidate) || is_link($candidate)) {
+        return null;
+    }
+
+    $resolved = realpath($candidate);
+    if ($resolved === false || dirname($resolved) !== $tilesRoot || basename($resolved) !== 'imagery') {
+        return null;
+    }
+
+    return $resolved;
+}
+
+function getImageryCacheStats() {
+    if (!file_exists(IMAGERY_TILES_DIR)) {
+        return [
+            'exists' => false,
+            'writable' => false,
+            'has_files' => false,
+            'scan_complete' => true,
+            'file_count' => 0,
+            'size_bytes' => 0,
+            'size_formatted' => '0 B'
+        ];
+    }
+
+    $directory = getImageryTilesDirectory();
+    if ($directory === null) {
+        throw new RuntimeException('Imagery tile cache path failed the dashboard safety check.');
+    }
+
+    $fileCount = 0;
+    $sizeBytes = 0;
+    $scanComplete = true;
+    $scanDeadline = microtime(true) + 1.0;
+    $maxScannedFiles = 5000;
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
+
+    foreach ($iterator as $item) {
+        if ($item->isLink() || !$item->isFile()) {
+            continue;
+        }
+        $fileCount++;
+        $sizeBytes += $item->getSize();
+        if ($fileCount >= $maxScannedFiles || microtime(true) >= $scanDeadline) {
+            $scanComplete = false;
+            break;
+        }
+    }
+
+    return [
+        'exists' => true,
+        'writable' => is_writable($directory),
+        'has_files' => $fileCount > 0,
+        'scan_complete' => $scanComplete,
+        'file_count' => $fileCount,
+        'size_bytes' => $sizeBytes,
+        'size_formatted' => formatBytes($sizeBytes)
+    ];
+}
+
+function purgeImageryTileContents($directory) {
+    $authorizedDirectory = getImageryTilesDirectory();
+    $resolvedDirectory = realpath($directory);
+    if ($authorizedDirectory === null || $resolvedDirectory === false || $resolvedDirectory !== $authorizedDirectory) {
+        throw new RuntimeException('Imagery tile cache path failed the purge safety check.');
+    }
+
+    $lockPath = dirname($directory) . DIRECTORY_SEPARATOR . '.imagery-purge.lock';
+    $lockHandle = fopen($lockPath, 'c');
+    if ($lockHandle === false || !flock($lockHandle, LOCK_EX)) {
+        if (is_resource($lockHandle)) {
+            fclose($lockHandle);
+        }
+        throw new RuntimeException('Unable to acquire the imagery cache purge lock.');
+    }
+
+    $deletedFiles = 0;
+    $deletedBytes = 0;
+    $failedItems = 0;
+
+    try {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            $path = $item->getPathname();
+            if ($item->isLink()) {
+                if (!unlink($path)) {
+                    $failedItems++;
+                }
+            } elseif ($item->isFile()) {
+                $fileSize = $item->getSize();
+                if (unlink($path)) {
+                    $deletedFiles++;
+                    $deletedBytes += $fileSize;
+                } else {
+                    $failedItems++;
+                }
+            } elseif ($item->isDir() && !rmdir($path)) {
+                $failedItems++;
+            }
+        }
+    } finally {
+        flock($lockHandle, LOCK_UN);
+        fclose($lockHandle);
+    }
+
+    clearstatcache(true, $directory);
+    return [
+        'deleted_files' => $deletedFiles,
+        'deleted_bytes' => $deletedBytes,
+        'failed_items' => $failedItems
+    ];
+}
+
+function handleGetImageryCacheStats() {
+    try {
+        echo json_encode(getImageryCacheStats());
+    } catch (Throwable $error) {
+        http_response_code(500);
+        auditLog('Imagery cache stats failed from ' . getRemoteIP() . ': ' . $error->getMessage());
+        echo json_encode(['error' => 'Unable to inspect the imagery tile cache.']);
+    }
+}
+
+function handlePurgeImageryCache() {
+    if (!file_exists(IMAGERY_TILES_DIR)) {
+        echo json_encode([
+            'success' => true,
+            'deleted_files' => 0,
+            'deleted_bytes' => 0,
+            'deleted_size_formatted' => '0 B',
+            'stats' => getImageryCacheStats()
+        ]);
+        return;
+    }
+
+    $directory = getImageryTilesDirectory();
+    if ($directory === null || !is_writable($directory)) {
+        http_response_code(500);
+        auditLog('Rejected imagery cache purge from ' . getRemoteIP());
+        echo json_encode(['error' => 'Imagery tile cache is unavailable or not writable.']);
+        return;
+    }
+
+    try {
+        $result = purgeImageryTileContents($directory);
+        $stats = getImageryCacheStats();
+        auditLog(
+            'Imagery cache purge from ' . getRemoteIP() . ': deleted ' .
+            $result['deleted_files'] . ' files (' . $result['deleted_bytes'] .
+            ' bytes), failures ' . $result['failed_items']
+        );
+
+        if ($result['failed_items'] > 0) {
+            http_response_code(500);
+            echo json_encode([
+                'error' => 'The purge was only partially completed. Review file permissions and try again.',
+                'deleted_files' => $result['deleted_files'],
+                'deleted_bytes' => $result['deleted_bytes'],
+                'failed_items' => $result['failed_items'],
+                'stats' => $stats
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'deleted_files' => $result['deleted_files'],
+            'deleted_bytes' => $result['deleted_bytes'],
+            'deleted_size_formatted' => formatBytes($result['deleted_bytes']),
+            'stats' => $stats
+        ]);
+    } catch (Throwable $error) {
+        http_response_code(500);
+        auditLog('Imagery cache purge failed from ' . getRemoteIP() . ': ' . $error->getMessage());
+        echo json_encode(['error' => 'Unable to purge the imagery tile cache.']);
+    }
+}
+
 function handleHealthCheck() {
+    rotateDashboardLogs(getScripts());
     $health = [
         'overall_status' => 'healthy',
         'nhc_status' => checkNHCAvailability(),
@@ -1274,8 +1832,7 @@ function getFailedScriptDetails() {
                 $failures[] = [
                     'script' => ucwords(str_replace(['_', '.log'], [' ', ''], $scriptName)),
                     'error_count' => $errorCount,
-                    'last_error_time' => $lastErrorTime,
-                    'log_file' => $file
+                    'last_error_time' => $lastErrorTime
                 ];
             }
         }
@@ -1313,10 +1870,45 @@ function getFailedScriptDetails() {
                         $failures[] = [
                             'script' => ucfirst($county) . ' ' . ucwords(str_replace('_', ' ', $scriptName)),
                             'error_count' => $errorCount,
-                            'last_error_time' => $lastErrorTime,
-                            'log_file' => $file
+                            'last_error_time' => $lastErrorTime
                         ];
                     }
+                }
+            }
+        }
+    }
+
+    // Check temporary San Diego logs
+    $tempSanDiegoLogDir = BASE_DIR . '/counties/san-diego/logs';
+    if (is_dir($tempSanDiegoLogDir)) {
+        $tempSanDiegoFiles = glob($tempSanDiegoLogDir . '/cron_*.log');
+        foreach ($tempSanDiegoFiles as $file) {
+            if (filemtime($file) > $since24h) {
+                $content = file_get_contents($file);
+                $errorCount = substr_count(strtolower($content), 'error') + substr_count(strtolower($content), 'failed');
+
+                if ($errorCount > 0) {
+                    $scriptName = basename($file, '.log');
+                    $scriptName = str_replace('cron_', '', $scriptName);
+
+                    $lines = explode("\n", $content);
+                    $lastErrorTime = 'Unknown';
+
+                    for ($i = count($lines) - 1; $i >= 0; $i--) {
+                        $line = strtolower($lines[$i]);
+                        if (strpos($line, 'error') !== false || strpos($line, 'failed') !== false) {
+                            if (preg_match('/\[?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]?/', $lines[$i], $matches)) {
+                                $lastErrorTime = $matches[1];
+                            }
+                            break;
+                        }
+                    }
+
+                    $failures[] = [
+                        'script' => 'San Diego ' . ucwords(str_replace('_', ' ', $scriptName)),
+                        'error_count' => $errorCount,
+                        'last_error_time' => $lastErrorTime
+                    ];
                 }
             }
         }
@@ -1415,9 +2007,12 @@ function handleDebugPaths() {
 function handleGetScripts() {
     try {
         $scripts = getScripts();
-        echo json_encode($scripts);
-    } catch (Exception $e) {
-        echo json_encode(['error' => 'Failed to get scripts: ' . $e->getMessage()]);
+        rotateDashboardLogs($scripts);
+        echo json_encode(getPublicDashboardScripts(getScripts()));
+    } catch (Throwable $error) {
+        http_response_code(500);
+        auditLog('Script inventory failed from ' . getRemoteIP() . ': ' . $error->getMessage());
+        echo json_encode(['error' => 'Failed to load the script inventory.']);
     }
 }
 
