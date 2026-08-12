@@ -1,3 +1,9 @@
 <IfModule mod_mime.c>
     AddType application/manifest+json .webmanifest
 </IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.webmanifest$">
+        Header always set Content-Type "application/manifest+json"
+    </FilesMatch>
+</IfModule>
