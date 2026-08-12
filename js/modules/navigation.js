@@ -4,7 +4,7 @@
 // Handles dynamic generation of header navigation and events
 // =============================
 
-import { initAnalytics } from './analytics.js';
+import { initAnalytics } from './analytics.js?v=20260812-ga4';
 
 export const NavigationModule = {
   navData: {
@@ -217,6 +217,7 @@ export const NavigationModule = {
         <a href="${basePath}about.html">Case Study</a>
         <a href="${basePath}privacy.html">Privacy</a>
         <a href="${basePath}accessibility.html">Accessibility</a>
+        <button type="button" class="footer-preferences" data-analytics-preferences>Analytics preferences</button>
       `;
       const disclaimer = footer.querySelector('.disclaimer');
       footer.insertBefore(links, disclaimer || footer.firstChild);

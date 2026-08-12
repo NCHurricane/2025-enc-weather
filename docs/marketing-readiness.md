@@ -13,17 +13,18 @@ Use a verified analytics property to answer specific product questions:
 
 Do not publish outcome claims until the date range, sample size, event definitions, and source are documented. Annotate major weather events and deployments so traffic changes are not misattributed to marketing work.
 
-## Analytics activation checklist
+## Analytics release checklist
 
-1. Create or confirm the production GA4 property and data stream.
-2. Review privacy, consent, retention, and regional requirements.
-3. Update `privacy.html` with the provider and the final choices before collection begins.
-4. Add the verified `G-...` ID to `js/modules/analytics-config.js`.
-5. Confirm that one page view and one delegated `link_click` event arrive in DebugView without duplicate tags.
-6. Define conversions only after the event taxonomy is stable. Recommended candidates are official-source clicks, county-page engagement, tropical-product engagement, and the case-study portfolio CTA.
-7. Apply internal-traffic and developer-traffic filters only after testing them in a non-active state.
+1. The production GA4 property, web stream, and verified measurement ID are configured.
+2. `privacy.html` identifies Google Analytics, the measurement purposes, the consent control, and the retention period.
+3. Basic consent mode blocks the Google tag until the visitor selects **Allow analytics**. Advertising consent, advertising personalization, and Google Signals remain denied.
+4. Update the production Content Security Policy to allow the required Google tag and Analytics collection endpoints.
+5. Confirm that declining on a first visit sends no Analytics request.
+6. Confirm that one page view and one delegated `link_click` event arrive in DebugView after consent, without duplicate tags.
+7. Define key events only after the event taxonomy is stable. Recommended candidates are official-source clicks, county-page engagement, tropical-product engagement, and the case-study portfolio CTA.
+8. Apply internal-traffic and developer-traffic filters only after testing them in a non-active state.
 
-The current source ships with a blank measurement ID, so it sends no request to Google Analytics.
+The current source uses measurement ID `G-8ERHE6K7MK`, but the tag is consent-gated and does not load until the visitor allows analytics.
 
 ## Search launch checklist
 
