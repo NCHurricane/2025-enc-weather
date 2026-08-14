@@ -1,0 +1,275 @@
+.interactive-weather-map-shell {
+  position: relative;
+  width: 100%;
+  min-height: 430px;
+  overflow: hidden;
+  background: #07111b;
+  border-radius: 4px;
+}
+
+.interactive-weather-map {
+  width: 100%;
+  height: 430px;
+  background: #07111b;
+}
+
+.weather-map-fallback {
+  width: 100%;
+  min-height: 430px;
+  background: #000;
+  text-align: center;
+}
+
+.weather-map-fallback img {
+  display: block;
+  width: 100%;
+  max-height: 540px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.weather-map-timestamp {
+  position: absolute;
+  z-index: 700;
+  left: 10px;
+  bottom: 22px;
+  max-width: calc(100% - 20px);
+  padding: 5px 9px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-family: "Fira_Code", monospace;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.weather-map-scrubber {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(3, 24, 39, 0.96);
+  color: var(--color-text-light);
+  font-family: "Fira_Code", monospace;
+  font-size: 0.72rem;
+}
+
+.weather-map-scrubber[hidden] {
+  display: none;
+}
+
+.weather-map-frame-label {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.weather-map-scrubber-play {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+
+.weather-map-scrubber input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--color-accent, #fff200);
+  cursor: pointer;
+}
+
+.weather-map-scrubber input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-accent, #fff200);
+  outline-offset: 3px;
+}
+
+.weather-map-frame-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  white-space: nowrap;
+}
+
+.weather-map-frame-count output {
+  min-width: 3.8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.weather-map-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(3, 24, 39, 0.96);
+  color: var(--color-text-light);
+  font-family: "Fira_Code", monospace;
+}
+
+.weather-map-legend[hidden] {
+  display: none;
+}
+
+.weather-map-legend-title {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.weather-map-legend-content {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.weather-map-legend-image {
+  display: block;
+  max-width: min(100%, 500px);
+  max-height: 86px;
+  padding: 3px;
+  border-radius: 3px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.weather-map-legend-image[hidden] {
+  display: none;
+}
+
+.weather-map-legend-scale {
+  flex: 1 1 280px;
+  max-width: 500px;
+  min-width: 180px;
+}
+
+.weather-map-legend-scale[hidden] {
+  display: none;
+}
+
+.weather-map-legend-scale-bar {
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 2px;
+}
+
+.weather-map-legend-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.weather-map-legend-description {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.weather-map-note {
+  margin: 0;
+  padding: 8px 12px;
+  background: rgba(3, 24, 39, 0.92);
+  color: var(--color-text-light);
+  font-family: "Fira_Code", monospace;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.weather-map-content.radar-content,
+.weather-map-content.satellite-content {
+  min-height: 430px;
+  padding: 0;
+}
+
+.weather-map-content .radar-loading,
+.weather-map-content .radar-error,
+.weather-map-content .satellite-loading,
+.weather-map-content .satellite-error {
+  z-index: 1001;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.interactive-weather-map .leaflet-control-attribution {
+  font-size: 9px;
+}
+
+.interactive-weather-map .leaflet-control-zoom a {
+  color: #111;
+}
+
+@media (max-width: 768px) {
+  .interactive-weather-map-shell,
+  .weather-map-fallback {
+    min-height: 340px;
+  }
+
+  .interactive-weather-map {
+    height: 340px;
+  }
+
+  .weather-map-content.radar-content,
+  .weather-map-content.satellite-content {
+    min-height: 340px;
+  }
+
+  .weather-map-timestamp {
+    font-size: 0.62rem;
+  }
+
+  .weather-map-scrubber {
+    gap: 7px;
+    padding: 7px 9px;
+    font-size: 0.64rem;
+  }
+
+  .weather-map-legend {
+    align-items: flex-start;
+    gap: 7px;
+    padding: 7px 9px;
+  }
+
+  .weather-map-legend-content {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .weather-map-legend-title,
+  .weather-map-legend-description {
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .interactive-weather-map-shell,
+  .weather-map-fallback {
+    min-height: 300px;
+  }
+
+  .interactive-weather-map {
+    height: 300px;
+  }
+
+  .weather-map-content.radar-content,
+  .weather-map-content.satellite-content {
+    min-height: 300px;
+  }
+
+  .weather-map-note {
+    font-size: 0.64rem;
+  }
+}
