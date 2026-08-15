@@ -1,24 +1,33 @@
-const DEFAULT_BASEMAP_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const DEFAULT_BASEMAP_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const DEFAULT_BASEMAP_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 export const WEATHER_BASEMAPS = Object.freeze({
   light: {
+    label: 'Light',
     url: DEFAULT_BASEMAP_URL,
     attribution: DEFAULT_BASEMAP_ATTRIBUTION,
     maxZoom: 19,
   },
   dark: {
+    label: 'Dark + Labels',
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     maxZoom: 20,
     subdomains: 'abcd',
   },
-  imagery: {
-    url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map, USDA',
-    maxZoom: 16,
+  stamen: {
+    label: 'Stamen Terrain',
+    url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  },
+  esri: {
+    label: 'Esri World Imagery',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, DigitalGlobe, Earthstar Geographics',
+    maxZoom: 18,
   },
 });
 
@@ -161,7 +170,10 @@ export class InteractiveWeatherMap {
     overlayOpacity = 0.82,
     ariaLabel = 'Interactive weather map',
     basemaps = WEATHER_BASEMAPS,
-    initialBasemap = 'light',
+    initialBasemap = 'esri',
+    showBasemapControl = false,
+    basemapControlPosition = 'topright',
+    requireCtrlForWheelZoom = true,
     referenceOverlay = null,
     referenceOverlays = null,
     scrubber = null,
@@ -182,6 +194,13 @@ export class InteractiveWeatherMap {
     this.ariaLabel = ariaLabel;
     this.basemaps = basemaps;
     this.activeBasemapId = basemaps[initialBasemap] ? initialBasemap : Object.keys(basemaps)[0];
+    this.showBasemapControl = showBasemapControl;
+    this.requireCtrlForWheelZoom = requireCtrlForWheelZoom;
+    this.basemapControlPosition = ['topleft', 'topright', 'bottomleft', 'bottomright'].includes(
+      basemapControlPosition,
+    )
+      ? basemapControlPosition
+      : 'topright';
     this.referenceOverlays = referenceOverlays || (referenceOverlay ? [referenceOverlay] : []);
     this.scrubber = resolveElement(scrubber);
     this.scrubberOutput = resolveElement(scrubberOutput);
@@ -193,6 +212,8 @@ export class InteractiveWeatherMap {
 
     this.map = null;
     this.basemapLayer = null;
+    this.basemapLayers = new Map();
+    this.basemapLayerControl = null;
     this.referenceLayers = [];
     this.source = null;
     this.frames = [];
@@ -208,6 +229,7 @@ export class InteractiveWeatherMap {
     this.playing = false;
     this.lastCtrlWheelAt = Number.NEGATIVE_INFINITY;
     this.handleCtrlWheel = this.handleCtrlWheel.bind(this);
+    this.handleBasemapChange = this.handleBasemapChange.bind(this);
     this.handleScrubberInput = this.handleScrubberInput.bind(this);
     this.scrubber?.addEventListener('input', this.handleScrubberInput);
     this.syncScrubber(false);
@@ -224,7 +246,7 @@ export class InteractiveWeatherMap {
       zoom: this.zoom,
       minZoom: this.minZoom,
       maxZoom: this.maxZoom,
-      scrollWheelZoom: false,
+      scrollWheelZoom: !this.requireCtrlForWheelZoom,
       fadeAnimation: false,
       preferCanvas: true,
     });
@@ -234,16 +256,20 @@ export class InteractiveWeatherMap {
     this.map.createPane('weatherReferencePane').style.zIndex = '450';
     this.map.getPane('weatherReferencePane').style.pointerEvents = 'none';
 
+    this.createBasemapLayers();
+    if (this.showBasemapControl) this.installBasemapControl();
     this.setBasemap(this.activeBasemapId);
     this.referenceLayers = this.referenceOverlays
       .filter((reference) => reference?.url)
       .map((reference) => this.addReferenceOverlay(reference))
       .filter(Boolean);
 
-    this.container.addEventListener('wheel', this.handleCtrlWheel, {
-      capture: true,
-      passive: false,
-    });
+    if (this.requireCtrlForWheelZoom) {
+      this.container.addEventListener('wheel', this.handleCtrlWheel, {
+        capture: true,
+        passive: false,
+      });
+    }
 
     return this.map;
   }
@@ -259,6 +285,47 @@ export class InteractiveWeatherMap {
     return layer.addTo(this.map);
   }
 
+  createBasemapLayers() {
+    if (!this.map || this.basemapLayers.size) return;
+    for (const [basemapId, config] of Object.entries(this.basemaps)) {
+      const { label: _label, url, ...layerOptions } = config;
+      const layer = window.L.tileLayer(url, {
+        ...layerOptions,
+        pane: 'weatherBasemapPane',
+      });
+      this.basemapLayers.set(basemapId, layer);
+    }
+  }
+
+  installBasemapControl() {
+    if (!this.map || this.basemapLayerControl) return;
+    this.createBasemapLayers();
+
+    const controlLayers = {};
+    for (const [basemapId, layer] of this.basemapLayers) {
+      controlLayers[this.basemaps[basemapId]?.label || basemapId] = layer;
+    }
+
+    this.basemapLayerControl = window.L.control.layers(controlLayers, null, {
+      collapsed: true,
+      position: this.basemapControlPosition,
+    }).addTo(this.map);
+    this.basemapLayerControl
+      .getContainer()
+      ?.querySelector('.leaflet-control-layers-toggle')
+      ?.setAttribute('aria-label', 'Choose a base map');
+    this.map.on('baselayerchange', this.handleBasemapChange);
+  }
+
+  handleBasemapChange(event) {
+    for (const [basemapId, layer] of this.basemapLayers) {
+      if (layer !== event.layer) continue;
+      this.activeBasemapId = basemapId;
+      this.basemapLayer = layer;
+      break;
+    }
+  }
+
   setBasemap(basemapId) {
     const config = this.basemaps[basemapId];
     if (!config) return false;
@@ -266,15 +333,14 @@ export class InteractiveWeatherMap {
     this.activeBasemapId = basemapId;
     if (!this.map) return true;
 
-    const { url, ...layerOptions } = config;
-    const nextLayer = window.L.tileLayer(url, {
-      ...layerOptions,
-      pane: 'weatherBasemapPane',
-    }).addTo(this.map);
+    this.createBasemapLayers();
+    const nextLayer = this.basemapLayers.get(basemapId);
+    if (!nextLayer) return false;
 
-    if (this.basemapLayer && this.map.hasLayer(this.basemapLayer)) {
-      this.map.removeLayer(this.basemapLayer);
+    for (const layer of this.basemapLayers.values()) {
+      if (layer !== nextLayer && this.map.hasLayer(layer)) this.map.removeLayer(layer);
     }
+    if (!this.map.hasLayer(nextLayer)) nextLayer.addTo(this.map);
     this.basemapLayer = nextLayer;
     return true;
   }
@@ -655,7 +721,9 @@ export class InteractiveWeatherMap {
     this.sourceToken += 1;
     this.displayToken += 1;
     this.scrubber?.removeEventListener('input', this.handleScrubberInput);
-    this.container?.removeEventListener('wheel', this.handleCtrlWheel, true);
+    if (this.requireCtrlForWheelZoom) {
+      this.container?.removeEventListener('wheel', this.handleCtrlWheel, true);
+    }
     if (this.map) this.map.remove();
     this.weatherLayerPool.clear();
     this.map = null;

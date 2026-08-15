@@ -248,6 +248,11 @@
     gap: 6px;
   }
 
+  .weather-map-legend-scale {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
   .weather-map-legend-title,
   .weather-map-legend-description {
     font-size: 0.62rem;

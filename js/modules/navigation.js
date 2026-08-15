@@ -57,6 +57,19 @@ export const NavigationModule = {
    */
   generateNavigation(basePath = '') {
     const { logo, menuItems } = this.navData;
+    const hasStructuredWordmark = logo.textBefore || logo.iconClass || logo.textAfter;
+    const structuredWordmark = hasStructuredWordmark
+      ? `<span class="site-wordmark"><span class="site-wordmark-name">${logo.textBefore || ''}</span>${
+          logo.iconClass ? `<i class="${logo.iconClass}" aria-hidden="true"></i>` : ''
+        }<span class="site-wordmark-wx">${logo.textAfter || ''}</span></span>`
+      : '';
+    const logoMarkup = structuredWordmark || (logo.text
+      ? `<span class="site-wordmark">${logo.text}</span>`
+      : `<img src="${basePath}${logo.src}" alt="${logo.alt}" />`);
+    const wordmarkText = hasStructuredWordmark
+      ? `${logo.textBefore || ''}${logo.textAfter || ''}`
+      : logo.text;
+    const logoAriaLabel = logo.ariaLabel || (wordmarkText ? `${wordmarkText} home` : 'Home');
 
     const menuHTML = menuItems.map((item, index) => {
       if (item.hasSubmenu) {
@@ -79,8 +92,8 @@ export const NavigationModule = {
       <a class="skip-link" href="#main-content">Skip to main content</a>
       <header class="header">
         <div class="header-container">
-          <a href="${basePath}index.html" class="logo-link" aria-label="Home">
-            <img src="${basePath}${logo.src}" alt="${logo.alt}" />
+          <a href="${basePath}index.html" class="logo-link" aria-label="${logoAriaLabel}">
+            ${logoMarkup}
           </a>
           <nav class="nav" aria-label="Main navigation">
             <ul class="nav-menu" id="nav-menu">${menuHTML}</ul>

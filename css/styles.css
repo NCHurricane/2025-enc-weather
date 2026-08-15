@@ -371,7 +371,6 @@ button {
     transition: transform 0.3s ease;
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid rgba(255, 255, 255, 0.65);
     background: transparent;
     color: var(--color-text-light);
 }
@@ -527,13 +526,20 @@ button {
 
 .alert-title-chip {
     display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.45);
     color: var(--color-white);
+    font-size: clamp(0.75rem, 2.4vw, 1rem);
     line-height: 1.2;
+    overflow-wrap: anywhere;
+    white-space: normal;
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.35);
     -webkit-backdrop-filter: saturate(120%) brightness(0.85);
     backdrop-filter: saturate(120%) brightness(0.85);

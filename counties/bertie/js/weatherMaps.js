@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../../js/modules/interactiveWeatherMap.js?v=20260813-17';
+} from '../../../js/modules/interactiveWeatherMap.js?v=20260814-21';
 
 const BERTIE_CENTER = [36.0187, -76.9461];
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
@@ -13,6 +13,7 @@ const NOWCOAST_RADAR_LEGEND_URL =
   'https://nowcoast.noaa.gov/geoserver/observations/weather_radar/ows';
 const NWS_REFERENCE_WMS_URL =
   'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
+const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
 
 function buildWmsLegendUrl(wmsUrl, layer, { width, height } = {}) {
   const url = new URL(wmsUrl);
@@ -27,39 +28,208 @@ function buildWmsLegendUrl(wmsUrl, layer, { width, height } = {}) {
   return url.toString();
 }
 
-function buildBoundarySld(layer, width, opacity) {
+function buildBoundarySld(layer, width, opacity, { casing = true } = {}) {
   const stroke = (color, strokeWidth, strokeOpacity) =>
     `<sld:PolygonSymbolizer><sld:Fill><sld:CssParameter name="fill">#ffffff</sld:CssParameter><sld:CssParameter name="fill-opacity">0</sld:CssParameter></sld:Fill><sld:Stroke><sld:CssParameter name="stroke">${color}</sld:CssParameter><sld:CssParameter name="stroke-opacity">${strokeOpacity}</sld:CssParameter><sld:CssParameter name="stroke-width">${strokeWidth}</sld:CssParameter><sld:CssParameter name="stroke-linejoin">round</sld:CssParameter><sld:CssParameter name="stroke-linecap">round</sld:CssParameter></sld:Stroke></sld:PolygonSymbolizer>`;
+  const innerStroke = stroke('#dbdbdb', width * BOUNDARY_RENDER_SCALE, opacity);
+  const strokes = casing
+    ? `${stroke('#494949', (width + 0.1) * BOUNDARY_RENDER_SCALE, Math.min(1, opacity + 0.08))}${innerStroke}`
+    : innerStroke;
 
-  return `<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><sld:NamedLayer><sld:Name>${layer}</sld:Name><sld:NamedStyle><sld:Name /></sld:NamedStyle><sld:UserStyle><sld:Name>weather_boundary</sld:Name><sld:Title>weather_boundary</sld:Title><sld:FeatureTypeStyle><sld:Rule><sld:Name>boundary</sld:Name>${stroke('#494949', width + 0.1, Math.min(1, opacity + 0.08))}${stroke('#dbdbdb', width, opacity)}</sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>`;
+  return `<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><sld:NamedLayer><sld:Name>${layer}</sld:Name><sld:NamedStyle><sld:Name /></sld:NamedStyle><sld:UserStyle><sld:Name>weather_boundary</sld:Name><sld:Title>weather_boundary</sld:Title><sld:FeatureTypeStyle><sld:Rule><sld:Name>boundary</sld:Name>${strokes}</sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>`;
 }
 
-const COUNTY_BOUNDARY_OVERLAY = Object.freeze({
+const BOUNDARY_WMS_OPTIONS = Object.freeze({
   type: 'wms',
   url: NWS_REFERENCE_WMS_URL,
-  layers: '9',
   styles: 'weather_boundary',
-  sld_body: buildBoundarySld('9', 0.3, 0.50),
   format: 'image/png',
   transparent: true,
   version: '1.3.0',
   uppercase: true,
+  detectRetina: true,
   attribution: 'NOAA/NWS reference maps',
 });
+const REGIONAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
+  ...BOUNDARY_WMS_OPTIONS,
+  layers: '9',
+  sld_body: buildBoundarySld('9', 0.85, 0.35, { casing: false }),
+  minZoom: 7,
+  maxZoom: 7,
+});
+const LOCAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
+  ...BOUNDARY_WMS_OPTIONS,
+  layers: '9',
+  sld_body: buildBoundarySld('9', 0.3, 0.50),
+  minZoom: 8,
+});
 const STATE_BOUNDARY_OVERLAY = Object.freeze({
-  ...COUNTY_BOUNDARY_OVERLAY,
+  ...BOUNDARY_WMS_OPTIONS,
   layers: '8',
   sld_body: buildBoundarySld('8', 0.7, 0.50),
 });
 const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
-  COUNTY_BOUNDARY_OVERLAY,
+  REGIONAL_COUNTY_BOUNDARY_OVERLAY,
+  LOCAL_COUNTY_BOUNDARY_OVERLAY,
   STATE_BOUNDARY_OVERLAY,
 ]);
-const SATELLITE_REFERENCE_OVERLAY = Object.freeze({
-  url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-  attribution: 'Esri boundaries and places',
-  maxZoom: 19,
-});
+// Full detail near the Carolinas/Mid-Atlantic, plus major cities across the
+// wider eastern-US views shown by the Radar and Satellite maps.
+const WEATHER_CITY_DATA_URL = new URL(
+  '../data/satellite-city-labels.json?v=20260814-1',
+  import.meta.url,
+);
+let weatherCityDataPromise = null;
+
+function escapeCityLabelHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[character]);
+}
+
+function weatherCityMaxRank(zoom) {
+  if (zoom >= 10) return Number.POSITIVE_INFINITY;
+  if (zoom >= 9) return 30000;
+  if (zoom >= 8) return 12000;
+  if (zoom >= 7) return 2500;
+  return 500;
+}
+
+function isBertieHomeLabel(city) {
+  return Math.hypot(
+    city.latitude - BERTIE_CENTER[0],
+    city.longitude - BERTIE_CENTER[1],
+  ) <= 0.08;
+}
+
+function cityLabelDimensions(city) {
+  const major = isBertieHomeLabel(city) || (Number.isFinite(city.rank) && city.rank <= 1000);
+  return {
+    major,
+    width: Math.max(32, Math.min(190, city.city.length * (major ? 8 : 7) + 12)),
+    height: major ? 20 : 18,
+  };
+}
+
+function thinCityLabelsByCollision(cities, leafletMap) {
+  const occupiedBoxes = [];
+  const accepted = [];
+
+  for (const city of cities) {
+    const point = leafletMap.latLngToContainerPoint([city.latitude, city.longitude]);
+    const { width, height } = cityLabelDimensions(city);
+    const padding = 4;
+    const box = {
+      left: point.x - width / 2 - padding,
+      right: point.x + width / 2 + padding,
+      top: point.y - height / 2 - padding,
+      bottom: point.y + height / 2 + padding,
+    };
+    const overlaps = occupiedBoxes.some((occupied) => !(
+      box.right < occupied.left
+      || box.left > occupied.right
+      || box.bottom < occupied.top
+      || box.top > occupied.bottom
+    ));
+    if (overlaps) continue;
+
+    accepted.push(city);
+    occupiedBoxes.push(box);
+  }
+
+  return accepted;
+}
+
+function loadWeatherCityData() {
+  if (weatherCityDataPromise) return weatherCityDataPromise;
+
+  weatherCityDataPromise = fetch(WEATHER_CITY_DATA_URL)
+    .then((response) => {
+      if (!response.ok) throw new Error(`City label data request failed (${response.status})`);
+      return response.json();
+    })
+    .then((payload) => {
+      if (!Array.isArray(payload)) throw new Error('City label data is not an array');
+
+      return payload
+        .map((city) => ({
+          city: String(city.city || '').trim(),
+          latitude: Number(city.latitude),
+          longitude: Number(city.longitude),
+          rank: Number(city.rank),
+        }))
+        .filter((city) => (
+          city.city
+          && Number.isFinite(city.latitude)
+          && Number.isFinite(city.longitude)
+        ))
+        .sort((a, b) => (
+          (Number.isFinite(a.rank) ? a.rank : Number.MAX_SAFE_INTEGER)
+          - (Number.isFinite(b.rank) ? b.rank : Number.MAX_SAFE_INTEGER)
+        ));
+    });
+
+  return weatherCityDataPromise;
+}
+
+function installWeatherCityLabels(leafletMap) {
+  if (!leafletMap || !window.L) return null;
+
+  const paneName = 'weatherPlaceLabelPane';
+  const pane = leafletMap.getPane(paneName) || leafletMap.createPane(paneName);
+  pane.style.zIndex = '475';
+  pane.style.pointerEvents = 'none';
+
+  const layer = window.L.layerGroup().addTo(leafletMap);
+  const overlay = { data: null, layer, map: leafletMap };
+  const render = () => {
+    if (!overlay.data?.length) return;
+
+    const bounds = overlay.map.getBounds().pad(0.08);
+    const maxRank = weatherCityMaxRank(overlay.map.getZoom());
+    const visibleCities = overlay.data.filter((city) => (
+      city.latitude >= bounds.getSouth()
+      && city.latitude <= bounds.getNorth()
+      && city.longitude >= bounds.getWest()
+      && city.longitude <= bounds.getEast()
+      && (isBertieHomeLabel(city) || !Number.isFinite(city.rank) || city.rank <= maxRank)
+    )).sort((a, b) => Number(isBertieHomeLabel(b)) - Number(isBertieHomeLabel(a)));
+    const cities = thinCityLabelsByCollision(visibleCities, overlay.map);
+
+    overlay.layer.clearLayers();
+    cities.forEach((city) => {
+      const { major, width, height } = cityLabelDimensions(city);
+      const icon = window.L.divIcon({
+        className: `weather-place-label${major ? ' is-major' : ''}`,
+        html: `<span>${escapeCityLabelHtml(city.city)}</span>`,
+        iconSize: [width, height],
+        iconAnchor: [Math.round(width / 2), Math.round(height / 2)],
+      });
+      window.L.marker([city.latitude, city.longitude], {
+        pane: paneName,
+        icon,
+        interactive: false,
+        keyboard: false,
+      }).addTo(overlay.layer);
+    });
+  };
+
+  leafletMap.on('moveend', render);
+  loadWeatherCityData()
+    .then((data) => {
+      overlay.data = data;
+      render();
+    })
+    .catch((error) => {
+      console.warn('[bertie-weather-map] City labels failed:', error);
+    });
+
+  return overlay;
+}
 
 const SATELLITE_LAYERS = {
   GEOCOLOR: {
@@ -67,21 +237,16 @@ const SATELLITE_LAYERS = {
     layer: 'GOES-East_ABI_GeoColor',
     label: 'NASA Worldview GOES-East GeoColor',
     attribution: 'NASA EOSDIS GIBS/Worldview',
-    note:
-      'Drag to pan. Hold Ctrl and scroll to zoom, or use the map controls. We acknowledge imagery provided by NASA GIBS, part of NASA ESDIS.',
     legend: {
       title: 'GeoColor',
-      description:
-        'Daytime uses natural-color imagery. Nighttime uses infrared-enhanced clouds over a dark surface.',
     },
   },
   '02': {
     layer: 'goes_visible_imagery',
     label: 'GOES Visible',
     legend: {
-      title: 'Visible Reflectance',
+      title: 'Visible',
       scale: { min: '0', max: '255', colors: ['#000000', '#ffffff'] },
-      description: 'Darker to brighter shades represent lower to higher reflected sunlight; daytime only.',
     },
   },
   '07': {
@@ -90,7 +255,6 @@ const SATELLITE_LAYERS = {
     legend: {
       title: 'Shortwave IR',
       scale: { min: '0', max: '100', colors: ['#ffffff', '#000000'] },
-      description: 'The 3.9 µm scale highlights fog and low clouds at night as well as hot spots.',
     },
   },
   '13': {
@@ -99,7 +263,6 @@ const SATELLITE_LAYERS = {
     legend: {
       title: 'Longwave IR',
       scale: { min: '0', max: '255', colors: ['#ffffff', '#000000'] },
-      description: 'The 11.2 µm brightness-temperature scale distinguishes warmer surfaces and colder cloud tops.',
     },
   },
   CLEAN_IR: {
@@ -108,8 +271,6 @@ const SATELLITE_LAYERS = {
     label: 'NASA Worldview GOES-East Clean IR',
     attribution: 'NASA EOSDIS GIBS/Worldview',
     fallbackProduct: '13',
-    note:
-      'Drag to pan. Hold Ctrl and scroll to zoom, or use the map controls. We acknowledge imagery provided by NASA GIBS, part of NASA ESDIS.',
     legend: {
       title: 'Clean IR',
       scale: {
@@ -131,7 +292,6 @@ const SATELLITE_LAYERS = {
           '#000000 100%',
         ],
       },
-      description: 'The 10.3 µm brightness-temperature scale emphasizes cloud-top temperature and structure.',
     },
   },
   '08': {
@@ -140,7 +300,6 @@ const SATELLITE_LAYERS = {
     legend: {
       title: 'Water Vapor',
       scale: { min: '0', max: '63', colors: ['#ffffff', '#000000'] },
-      description: 'The 6.2 µm brightness-temperature scale traces upper-level moisture and dry air.',
     },
   },
 };
@@ -255,6 +414,7 @@ class BertieRadarViewer {
     this.fallbackMode = false;
     this.fallbackPlaying = false;
     this.lastAttemptAt = 0;
+    this.cityLabelOverlay = null;
   }
 
   init() {
@@ -287,10 +447,13 @@ class BertieRadarViewer {
       container: this.mapElement,
       center: BERTIE_CENTER,
       zoom: 7,
+      requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.8,
       ariaLabel: 'Interactive radar map centered on Bertie County',
       initialBasemap: this.basemapSelect?.value || 'light',
+      showBasemapControl: !this.basemapSelect,
+      basemapControlPosition: 'topleft',
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
       scrubber: this.scrubber,
       scrubberOutput: this.scrubberOutput,
@@ -305,13 +468,14 @@ class BertieRadarViewer {
       },
       onPlayStateChange: (playing) => setPlayButton(this.playButton, playing, 'radar'),
     });
+    this.cityLabelOverlay = installWeatherCityLabels(this.map.ensureMap());
     return this.map;
   }
 
   updateProductOptions() {
-    const regional = this.stationSelect.value === 'SOUTHEAST';
+    const national = this.stationSelect.value === 'SOUTHEAST';
     const previous = this.productSelect.value;
-    const products = regional
+    const products = national
       ? [
           { value: 'reflectivity', label: 'Reflectivity' },
           { value: 'precip_type', label: 'Precipitation Type' },
@@ -361,7 +525,7 @@ class BertieRadarViewer {
       return {
         wmsUrl: NOWCOAST_RADAR_URL,
         layer: 'conus_base_reflectivity_mosaic',
-        label: 'NOAA regional reflectivity',
+        label: 'NOAA CONUS reflectivity',
         attribution: 'NOAA/NWS nowCOAST',
         legend: {
           title: 'Base Reflectivity',
@@ -370,7 +534,7 @@ class BertieRadarViewer {
             'conus_base_reflectivity_mosaic',
             { width: 272, height: 21 },
           ),
-          description: 'Echo intensity in dBZ; stronger returns can indicate heavier precipitation or hail.',
+          description: 'dBZ.',
         },
       };
     }
@@ -382,21 +546,21 @@ class BertieRadarViewer {
         label: 'reflectivity',
         legendTitle: 'Base Reflectivity',
         legendDescription:
-          'Echo intensity in dBZ; stronger returns can indicate heavier precipitation or hail.',
+          'dBZ',
       },
       velocity: {
         layerSuffix: 'sr_bvel',
         label: 'velocity',
         legendTitle: 'Base Velocity',
         legendDescription:
-          'Radial wind in knots; cool colors indicate motion toward the radar and warm colors indicate motion away.',
+          'kts',
       },
       storm_total: {
         layerSuffix: 'bdsa',
         label: 'storm-total precipitation',
         legendTitle: 'Storm Total',
         legendDescription:
-          'Estimated precipitation accumulation in inches since the current precipitation event began.',
+          'in.',
       },
     }[product];
     const wmsUrl = `https://opengeo.ncep.noaa.gov/geoserver/${stationKey}/ows`;
@@ -421,7 +585,7 @@ class BertieRadarViewer {
     this.fallback.hidden = true;
     this.mapElement.hidden = false;
     hideError(this.error);
-    this.note.textContent = 'Drag to pan. Hold Ctrl and scroll to zoom, or use the map controls.';
+    this.note.textContent = ' ';
     const source = this.sourceConfig();
     setWeatherLegend(this.legendElements, source.legend);
 
@@ -548,6 +712,7 @@ class BertieSatelliteViewer {
     this.fallbackMode = false;
     this.fallbackPlaying = false;
     this.lastAttemptAt = 0;
+    this.cityLabelOverlay = null;
   }
 
   init() {
@@ -572,12 +737,15 @@ class BertieSatelliteViewer {
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
       center: BERTIE_CENTER,
-      zoom: 6,
+      zoom: 7,
+      requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.92,
       ariaLabel: 'Interactive GOES satellite map centered on Bertie County',
       initialBasemap: this.basemapSelect?.value || 'light',
-      referenceOverlays: [...WEATHER_BOUNDARY_OVERLAYS, SATELLITE_REFERENCE_OVERLAY],
+      showBasemapControl: !this.basemapSelect,
+      basemapControlPosition: 'topleft',
+      referenceOverlays: [...WEATHER_BOUNDARY_OVERLAYS],
       scrubber: this.scrubber,
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => setBusy(this.loading, this.error, busy),
@@ -591,6 +759,7 @@ class BertieSatelliteViewer {
       },
       onPlayStateChange: (playing) => setPlayButton(this.playButton, playing, 'satellite'),
     });
+    this.cityLabelOverlay = installWeatherCityLabels(this.map.ensureMap());
     return this.map;
   }
 
@@ -605,7 +774,7 @@ class BertieSatelliteViewer {
     this.mapElement.hidden = false;
     hideError(this.error);
     this.note.textContent =
-      source.note || 'Drag to pan. Hold Ctrl and scroll to zoom, or use the map controls.';
+      source.note || ' ';
     setWeatherLegend(this.legendElements, source.legend);
 
     try {
