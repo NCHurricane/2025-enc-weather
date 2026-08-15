@@ -1,9 +1,12 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+import {
+  COUNTY_ZONE_CHANGE_EVENT,
+  loadCountyContext,
+} from './countyContext.js?v=20260814-1';
 
-const BERTIE_CENTER = [36.0187, -76.9461];
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
 const NASA_GIBS_URL = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi';
@@ -73,12 +76,7 @@ const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
   LOCAL_COUNTY_BOUNDARY_OVERLAY,
   STATE_BOUNDARY_OVERLAY,
 ]);
-// Full detail near the Carolinas/Mid-Atlantic, plus major cities across the
-// wider eastern-US views shown by the Radar and Satellite maps.
-const WEATHER_CITY_DATA_URL = new URL(
-  '../data/satellite-city-labels.json?v=20260814-1',
-  import.meta.url,
-);
+// City labels are an optional page-configured presentation layer.
 let weatherCityDataPromise = null;
 
 function escapeCityLabelHtml(value) {
@@ -99,15 +97,16 @@ function weatherCityMaxRank(zoom) {
   return 500;
 }
 
-function isBertieHomeLabel(city) {
+function isHomeLabel(city, homeCenter) {
+  if (!Array.isArray(homeCenter)) return false;
   return Math.hypot(
-    city.latitude - BERTIE_CENTER[0],
-    city.longitude - BERTIE_CENTER[1],
+    city.latitude - homeCenter[0],
+    city.longitude - homeCenter[1],
   ) <= 0.08;
 }
 
-function cityLabelDimensions(city) {
-  const major = isBertieHomeLabel(city) || (Number.isFinite(city.rank) && city.rank <= 1000);
+function cityLabelDimensions(city, homeCenter) {
+  const major = isHomeLabel(city, homeCenter) || (Number.isFinite(city.rank) && city.rank <= 1000);
   return {
     major,
     width: Math.max(32, Math.min(190, city.city.length * (major ? 8 : 7) + 12)),
@@ -115,13 +114,13 @@ function cityLabelDimensions(city) {
   };
 }
 
-function thinCityLabelsByCollision(cities, leafletMap) {
+function thinCityLabelsByCollision(cities, leafletMap, homeCenter) {
   const occupiedBoxes = [];
   const accepted = [];
 
   for (const city of cities) {
     const point = leafletMap.latLngToContainerPoint([city.latitude, city.longitude]);
-    const { width, height } = cityLabelDimensions(city);
+    const { width, height } = cityLabelDimensions(city, homeCenter);
     const padding = 4;
     const box = {
       left: point.x - width / 2 - padding,
@@ -144,10 +143,10 @@ function thinCityLabelsByCollision(cities, leafletMap) {
   return accepted;
 }
 
-function loadWeatherCityData() {
+function loadWeatherCityData(dataUrl) {
   if (weatherCityDataPromise) return weatherCityDataPromise;
 
-  weatherCityDataPromise = fetch(WEATHER_CITY_DATA_URL)
+  weatherCityDataPromise = fetch(dataUrl)
     .then((response) => {
       if (!response.ok) throw new Error(`City label data request failed (${response.status})`);
       return response.json();
@@ -176,8 +175,8 @@ function loadWeatherCityData() {
   return weatherCityDataPromise;
 }
 
-function installWeatherCityLabels(leafletMap) {
-  if (!leafletMap || !window.L) return null;
+function installWeatherCityLabels(leafletMap, homeCenter, dataUrl) {
+  if (!leafletMap || !window.L || !dataUrl) return null;
 
   const paneName = 'weatherPlaceLabelPane';
   const pane = leafletMap.getPane(paneName) || leafletMap.createPane(paneName);
@@ -185,7 +184,7 @@ function installWeatherCityLabels(leafletMap) {
   pane.style.pointerEvents = 'none';
 
   const layer = window.L.layerGroup().addTo(leafletMap);
-  const overlay = { data: null, layer, map: leafletMap };
+  const overlay = { data: null, layer, map: leafletMap, homeCenter, render: null };
   const render = () => {
     if (!overlay.data?.length) return;
 
@@ -196,13 +195,15 @@ function installWeatherCityLabels(leafletMap) {
       && city.latitude <= bounds.getNorth()
       && city.longitude >= bounds.getWest()
       && city.longitude <= bounds.getEast()
-      && (isBertieHomeLabel(city) || !Number.isFinite(city.rank) || city.rank <= maxRank)
-    )).sort((a, b) => Number(isBertieHomeLabel(b)) - Number(isBertieHomeLabel(a)));
-    const cities = thinCityLabelsByCollision(visibleCities, overlay.map);
+      && (isHomeLabel(city, overlay.homeCenter) || !Number.isFinite(city.rank) || city.rank <= maxRank)
+    )).sort((a, b) => (
+      Number(isHomeLabel(b, overlay.homeCenter)) - Number(isHomeLabel(a, overlay.homeCenter))
+    ));
+    const cities = thinCityLabelsByCollision(visibleCities, overlay.map, overlay.homeCenter);
 
     overlay.layer.clearLayers();
     cities.forEach((city) => {
-      const { major, width, height } = cityLabelDimensions(city);
+      const { major, width, height } = cityLabelDimensions(city, overlay.homeCenter);
       const icon = window.L.divIcon({
         className: `weather-place-label${major ? ' is-major' : ''}`,
         html: `<span>${escapeCityLabelHtml(city.city)}</span>`,
@@ -217,18 +218,35 @@ function installWeatherCityLabels(leafletMap) {
       }).addTo(overlay.layer);
     });
   };
+  overlay.render = render;
 
   leafletMap.on('moveend', render);
-  loadWeatherCityData()
+  loadWeatherCityData(dataUrl)
     .then((data) => {
       overlay.data = data;
       render();
     })
     .catch((error) => {
-      console.warn('[bertie-weather-map] City labels failed:', error);
+      console.warn('[county-weather-map] City labels failed:', error);
     });
 
   return overlay;
+}
+
+function pageMapConfig() {
+  const root = document.querySelector('[data-county-weather-center]') || document.body;
+  return {
+    satelliteName: root.dataset.satelliteName || 'GOES19',
+    satelliteSector: root.dataset.satelliteSector || 'eus',
+    satelliteRegion: root.dataset.satelliteRegion || 'Eastern US',
+    satellitePlatform: root.dataset.satellitePlatform || 'East',
+    cityLabelsUrl: root.dataset.cityLabelsUrl || '',
+    regionalPrecipType: root.dataset.radarRegionalPrecipType === 'true',
+  };
+}
+
+function isRegionalRadarStation(station) {
+  return station === 'SOUTHEAST' || station === 'PACSOUTHWEST';
 }
 
 const SATELLITE_LAYERS = {
@@ -387,7 +405,7 @@ function preloadImage(image, url, alt) {
   });
 }
 
-class BertieRadarViewer {
+class CountyRadarViewer {
   constructor() {
     this.toggle = document.getElementById('radar-toggle');
     this.stationSelect = document.getElementById('radar-station-select');
@@ -415,11 +433,19 @@ class BertieRadarViewer {
     this.fallbackPlaying = false;
     this.lastAttemptAt = 0;
     this.cityLabelOverlay = null;
+    this.context = null;
+    this.mapConfig = pageMapConfig();
+    this.localProducts = [];
+    this.handleZoneChange = this.handleZoneChange.bind(this);
   }
 
   init() {
     if (!this.toggle || !this.stationSelect || !this.productSelect || !this.playButton) return false;
 
+    this.localProducts = Array.from(this.productSelect.options, (option) => ({
+      value: option.value,
+      label: option.textContent,
+    }));
     this.stationSelect.addEventListener('change', () => {
       this.updateProductOptions();
       if (this.toggle.checked) this.loadSource();
@@ -432,6 +458,7 @@ class BertieRadarViewer {
       this.map?.setBasemap(this.basemapSelect.value);
     });
     this.toggle.addEventListener('change', () => this.handleVisibility());
+    document.addEventListener(COUNTY_ZONE_CHANGE_EVENT, this.handleZoneChange);
 
     this.updateProductOptions();
     setPlayButton(this.playButton, false, 'radar');
@@ -445,12 +472,12 @@ class BertieRadarViewer {
 
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
-      center: BERTIE_CENTER,
+      center: this.context.center,
       zoom: 7,
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.8,
-      ariaLabel: 'Interactive radar map centered on Bertie County',
+      ariaLabel: `Interactive radar map centered on ${this.context.countyName} County`,
       initialBasemap: this.basemapSelect?.value || 'light',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
@@ -468,23 +495,49 @@ class BertieRadarViewer {
       },
       onPlayStateChange: (playing) => setPlayButton(this.playButton, playing, 'radar'),
     });
-    this.cityLabelOverlay = installWeatherCityLabels(this.map.ensureMap());
+    this.cityLabelOverlay = installWeatherCityLabels(
+      this.map.ensureMap(),
+      this.context.center,
+      this.mapConfig.cityLabelsUrl,
+    );
     return this.map;
   }
 
+  async ensureContext() {
+    if (!this.context) this.context = await loadCountyContext();
+    return this.context;
+  }
+
+  async handleZoneChange() {
+    try {
+      this.context = await loadCountyContext();
+      this.mapElement.setAttribute(
+        'aria-label',
+        `Interactive radar map centered on ${this.context.countyName} County`,
+      );
+      if (this.map) {
+        this.map.ensureMap().setView(this.context.center, 7, { animate: false });
+        if (this.cityLabelOverlay) {
+          this.cityLabelOverlay.homeCenter = this.context.center;
+          this.cityLabelOverlay.render?.();
+        }
+      }
+    } catch (error) {
+      console.error('[county-weather-map] Radar zone refresh failed:', error);
+    }
+  }
+
   updateProductOptions() {
-    const national = this.stationSelect.value === 'SOUTHEAST';
+    const national = isRegionalRadarStation(this.stationSelect.value);
     const previous = this.productSelect.value;
     const products = national
       ? [
           { value: 'reflectivity', label: 'Reflectivity' },
-          { value: 'precip_type', label: 'Precipitation Type' },
+          ...(this.mapConfig.regionalPrecipType
+            ? [{ value: 'precip_type', label: 'Precipitation Type' }]
+            : []),
         ]
-      : [
-          { value: 'reflectivity', label: 'Reflectivity' },
-          { value: 'velocity', label: 'Velocity' },
-          { value: 'storm_total', label: 'Storm Total' },
-        ];
+      : this.localProducts;
 
     this.productSelect.replaceChildren(
       ...products.map(({ value, label }) => {
@@ -503,7 +556,7 @@ class BertieRadarViewer {
     const station = this.stationSelect.value;
     const product = this.productSelect.value;
 
-    if (station === 'SOUTHEAST') {
+    if (isRegionalRadarStation(station)) {
       if (product === 'precip_type') {
         const layer = 'conus_pcpn_typ';
         return {
@@ -579,6 +632,7 @@ class BertieRadarViewer {
   }
 
   async loadSource() {
+    await this.ensureContext();
     this.lastAttemptAt = Date.now();
     this.fallbackMode = false;
     this.fallbackPlaying = false;
@@ -592,7 +646,7 @@ class BertieRadarViewer {
     try {
       await this.ensureMap().setSource(source);
     } catch (error) {
-      console.warn('[bertie-weather-map] Radar WMS failed:', error);
+      console.warn('[county-weather-map] Radar WMS failed:', error);
     }
   }
 
@@ -602,7 +656,7 @@ class BertieRadarViewer {
     const suffix = this.fallbackPlaying ? 'loop' : '0';
     const baseUrl = 'https://radar.weather.gov/ridge/standard/';
 
-    if (station === 'SOUTHEAST') return `${baseUrl}SOUTHEAST_${suffix}.gif`;
+    if (isRegionalRadarStation(station)) return `${baseUrl}${station}_${suffix}.gif`;
     if (product === 'velocity') return `${baseUrl}base_velocity/${station}_${suffix}.gif`;
     return `${baseUrl}${station}_${suffix}.gif`;
   }
@@ -683,7 +737,7 @@ class BertieRadarViewer {
   }
 }
 
-class BertieSatelliteViewer {
+class CountySatelliteViewer {
   constructor() {
     this.toggle = document.getElementById('satellite-toggle');
     this.productSelect = document.getElementById('satellite-product-select');
@@ -713,6 +767,9 @@ class BertieSatelliteViewer {
     this.fallbackPlaying = false;
     this.lastAttemptAt = 0;
     this.cityLabelOverlay = null;
+    this.context = null;
+    this.mapConfig = pageMapConfig();
+    this.handleZoneChange = this.handleZoneChange.bind(this);
   }
 
   init() {
@@ -726,6 +783,7 @@ class BertieSatelliteViewer {
       this.map?.setBasemap(this.basemapSelect.value);
     });
     this.toggle.addEventListener('change', () => this.handleVisibility());
+    document.addEventListener(COUNTY_ZONE_CHANGE_EVENT, this.handleZoneChange);
     setPlayButton(this.playButton, false, 'satellite');
     if (this.toggle.checked) this.handleVisibility();
     return true;
@@ -736,12 +794,12 @@ class BertieSatelliteViewer {
 
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
-      center: BERTIE_CENTER,
+      center: this.context.center,
       zoom: 7,
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.92,
-      ariaLabel: 'Interactive GOES satellite map centered on Bertie County',
+      ariaLabel: `Interactive satellite map centered on ${this.context.countyName} County`,
       initialBasemap: this.basemapSelect?.value || 'light',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
@@ -759,14 +817,65 @@ class BertieSatelliteViewer {
       },
       onPlayStateChange: (playing) => setPlayButton(this.playButton, playing, 'satellite'),
     });
-    this.cityLabelOverlay = installWeatherCityLabels(this.map.ensureMap());
+    this.cityLabelOverlay = installWeatherCityLabels(
+      this.map.ensureMap(),
+      this.context.center,
+      this.mapConfig.cityLabelsUrl,
+    );
     return this.map;
   }
 
+  async ensureContext() {
+    if (!this.context) this.context = await loadCountyContext();
+    return this.context;
+  }
+
+  sourceConfig(product) {
+    const base = SATELLITE_LAYERS[product];
+    if (!base) return null;
+    if (this.mapConfig.satellitePlatform !== 'West') return base;
+
+    if (product === 'GEOCOLOR') {
+      return {
+        ...base,
+        layer: 'GOES-West_ABI_GeoColor',
+        label: 'NASA Worldview GOES-West GeoColor',
+      };
+    }
+    if (product === 'CLEAN_IR') {
+      return {
+        ...base,
+        layer: 'GOES-West_ABI_Band13_Clean_Infrared',
+        label: 'NASA Worldview GOES-West Clean IR',
+      };
+    }
+    return base;
+  }
+
+  async handleZoneChange() {
+    try {
+      this.context = await loadCountyContext();
+      this.mapElement.setAttribute(
+        'aria-label',
+        `Interactive satellite map centered on ${this.context.countyName} County`,
+      );
+      if (this.map) {
+        this.map.ensureMap().setView(this.context.center, 7, { animate: false });
+        if (this.cityLabelOverlay) {
+          this.cityLabelOverlay.homeCenter = this.context.center;
+          this.cityLabelOverlay.render?.();
+        }
+      }
+    } catch (error) {
+      console.error('[county-weather-map] Satellite zone refresh failed:', error);
+    }
+  }
+
   async loadSource() {
+    await this.ensureContext();
     this.lastAttemptAt = Date.now();
     const product = this.productSelect.value;
-    const source = SATELLITE_LAYERS[product];
+    const source = this.sourceConfig(product);
     this.fallbackPlaying = false;
 
     this.fallbackMode = false;
@@ -785,16 +894,17 @@ class BertieSatelliteViewer {
         attribution: source.attribution || 'NOAA/NESDIS nowCOAST',
       });
     } catch (error) {
-      console.warn('[bertie-weather-map] Satellite WMS failed:', error);
+      console.warn('[county-weather-map] Satellite WMS failed:', error);
     }
   }
 
   fallbackUrl() {
     const product = this.productSelect.value;
-    const fallbackProduct = SATELLITE_LAYERS[product]?.fallbackProduct || product;
-    const baseUrl = `https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/eus/${fallbackProduct}/`;
+    const fallbackProduct = this.sourceConfig(product)?.fallbackProduct || product;
+    const { satelliteName, satelliteSector } = this.mapConfig;
+    const baseUrl = `https://cdn.star.nesdis.noaa.gov/${satelliteName}/ABI/SECTOR/${satelliteSector}/${fallbackProduct}/`;
     return this.fallbackPlaying
-      ? `${baseUrl}GOES19-EUS-${fallbackProduct}-1000x1000.gif`
+      ? `${baseUrl}${satelliteName}-${satelliteSector.toUpperCase()}-${fallbackProduct}-1000x1000.gif`
       : `${baseUrl}2000x2000.jpg`;
   }
 
@@ -813,7 +923,7 @@ class BertieSatelliteViewer {
       await preloadImage(
         this.fallbackImage,
         this.fallbackUrl(),
-        `GOES-19 ${productLabel} ${this.fallbackPlaying ? 'animated loop' : 'latest image'}`,
+        `${this.mapConfig.satelliteName} ${productLabel} ${this.fallbackPlaying ? 'animated loop' : 'latest image'} - ${this.mapConfig.satelliteRegion}`,
       );
       hideError(this.error);
       this.timestamp.textContent = `NOAA STAR image · ${
@@ -876,9 +986,9 @@ class BertieSatelliteViewer {
   }
 }
 
-function initBertieWeatherMaps() {
-  const radar = new BertieRadarViewer();
-  const satellite = new BertieSatelliteViewer();
+function initCountyWeatherMaps() {
+  const radar = new CountyRadarViewer();
+  const satellite = new CountySatelliteViewer();
   radar.init();
   satellite.init();
 
@@ -895,7 +1005,7 @@ function initBertieWeatherMaps() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initBertieWeatherMaps, { once: true });
+  document.addEventListener('DOMContentLoaded', initCountyWeatherMaps, { once: true });
 } else {
-  initBertieWeatherMaps();
+  initCountyWeatherMaps();
 }

@@ -1,9 +1,12 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+import {
+  COUNTY_ZONE_CHANGE_EVENT,
+  loadCountyContext,
+} from './countyContext.js?v=20260814-1';
 
-const BERTIE_CENTER = [36.0187, -76.9461];
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const MOBILE_STATION_DETAILS_QUERY = window.matchMedia('(max-width: 600px)');
@@ -259,7 +262,7 @@ function buildPopup(station, cachedStation, ageMinutes, { inline = false, onClos
   return popup;
 }
 
-class BertieTemperatureViewer {
+class CountyTemperatureViewer {
   constructor() {
     this.mapElement = document.getElementById('temperature-map');
     this.stationCount = document.getElementById('temperature-station-count');
@@ -279,7 +282,10 @@ class BertieTemperatureViewer {
     this.selectedMarker = null;
     this.loadingPromise = null;
     this.lastLoadedAt = 0;
+    this.context = null;
+    this.active = false;
     this.handleStationDetailsModeChange = this.handleStationDetailsModeChange.bind(this);
+    this.handleZoneChange = this.handleZoneChange.bind(this);
   }
 
   init() {
@@ -292,6 +298,7 @@ class BertieTemperatureViewer {
       'change',
       this.handleStationDetailsModeChange,
     );
+    document.addEventListener(COUNTY_ZONE_CHANGE_EVENT, this.handleZoneChange);
     this.activateField('temperature');
     return true;
   }
@@ -389,7 +396,8 @@ class BertieTemperatureViewer {
       (button) => button.dataset.conditionField === field,
     );
     if (activeButton) this.conditionPanel?.setAttribute('aria-labelledby', activeButton.id);
-    this.mapElement.setAttribute('aria-label', `Current ${config.mapLabel} near Bertie County`);
+    const countyName = this.context?.countyName || 'the county';
+    this.mapElement.setAttribute('aria-label', `Current ${config.mapLabel} near ${countyName} County`);
 
     if (this.stationConfig && this.currentData) this.renderStations();
   }
@@ -399,10 +407,10 @@ class BertieTemperatureViewer {
 
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
-      center: BERTIE_CENTER,
+      center: this.context.center,
       zoom: 10,
       requireCtrlForWheelZoom: false,
-      ariaLabel: `Current ${CONDITION_FIELDS[this.activeField].mapLabel} near Bertie County`,
+      ariaLabel: `Current ${CONDITION_FIELDS[this.activeField].mapLabel} near ${this.context.countyName} County`,
       initialBasemap: 'light',
       showBasemapControl: true,
       basemapControlPosition: 'topleft',
@@ -413,6 +421,8 @@ class BertieTemperatureViewer {
   }
 
   async activate() {
+    this.active = true;
+    if (!this.context) this.context = await loadCountyContext();
     this.ensureMap().setVisible(true);
     if (!this.lastLoadedAt || Date.now() - this.lastLoadedAt >= REFRESH_INTERVAL_MS) {
       await this.loadStations();
@@ -420,7 +430,25 @@ class BertieTemperatureViewer {
   }
 
   deactivate() {
+    this.active = false;
     this.map?.setVisible(false);
+  }
+
+  async handleZoneChange() {
+    try {
+      this.context = await loadCountyContext();
+      this.stationConfig = null;
+      this.currentData = null;
+      this.hasFitBounds = false;
+      this.lastLoadedAt = 0;
+      this.hideStationDetails();
+      if (this.map) {
+        this.map.ensureMap().setView(this.context.center, 10, { animate: false });
+      }
+      if (this.active) await this.loadStations();
+    } catch (error) {
+      console.error('[county-weather-center] Zone refresh failed:', error);
+    }
   }
 
   async loadStations() {
@@ -434,7 +462,7 @@ class BertieTemperatureViewer {
       await this.loadingPromise;
       this.lastLoadedAt = Date.now();
     } catch (error) {
-      console.error('[bertie-weather-center] Temperature observations failed:', error);
+      console.error('[county-weather-center] Temperature observations failed:', error);
       this.error.hidden = false;
       if (this.stationCount) this.stationCount.textContent = 'Station data unavailable';
     } finally {
@@ -445,19 +473,14 @@ class BertieTemperatureViewer {
 
   async fetchAndRenderStations() {
     const cacheKey = Math.floor(Date.now() / REFRESH_INTERVAL_MS);
-    const [configResponse, currentResponse] = await Promise.all([
-      fetch(`./data/config.json?v=${cacheKey}`, { cache: 'no-store' }),
-      fetch(`./data/current.json?v=${cacheKey}`, { cache: 'no-store' }),
-    ]);
-
-    if (!configResponse.ok) throw new Error(`Config request failed (${configResponse.status})`);
+    this.context = await loadCountyContext();
+    const currentResponse = await fetch(
+      `${this.context.dataPath('current.json')}?v=${cacheKey}`,
+      { cache: 'no-store' },
+    );
     if (!currentResponse.ok) throw new Error(`Current observations request failed (${currentResponse.status})`);
-
-    const [config, current] = await Promise.all([
-      configResponse.json(),
-      currentResponse.json(),
-    ]);
-    const stations = Array.isArray(config.stations) ? config.stations : [];
+    const current = await currentResponse.json();
+    const stations = Array.isArray(this.context.stations) ? this.context.stations : [];
     if (!stations.length) throw new Error('No temperature stations are configured');
 
     this.stationConfig = stations;
@@ -522,7 +545,10 @@ class BertieTemperatureViewer {
       this.stationCount.textContent = `${reportingCount} station${reportingCount === 1 ? '' : 's'} reporting`;
     }
     this.statusDot?.classList.toggle('is-empty', reportingCount === 0);
-    this.mapElement.setAttribute('aria-label', `Current ${fieldConfig.mapLabel} near Bertie County`);
+    this.mapElement.setAttribute(
+      'aria-label',
+      `Current ${fieldConfig.mapLabel} near ${this.context.countyName} County`,
+    );
     if (fitBounds) {
       this.map.ensureMap().fitBounds(bounds, { padding: [42, 42], maxZoom: 10 });
       this.hasFitBounds = true;
@@ -537,7 +563,7 @@ class BertieTemperatureViewer {
   }
 }
 
-class BertieForecastTabs {
+class CountyForecastTabs {
   constructor() {
     this.buttons = Array.from(document.querySelectorAll('[data-forecast-tab]'));
     this.panels = Array.from(document.querySelectorAll('[data-forecast-panel]'));
@@ -630,7 +656,7 @@ class BertieForecastTabs {
   }
 }
 
-class BertieWeatherCenter {
+class CountyWeatherCenter {
   constructor(temperatureViewer) {
     this.temperatureViewer = temperatureViewer;
     this.buttons = Array.from(document.querySelectorAll('[data-weather-tab]'));
@@ -697,15 +723,16 @@ class BertieWeatherCenter {
   }
 }
 
-function initBertieWeatherCenter() {
-  const temperatureViewer = new BertieTemperatureViewer();
+function initCountyWeatherCenter() {
+  const temperatureViewer = new CountyTemperatureViewer();
   if (!temperatureViewer.init()) return;
-  new BertieForecastTabs().init();
-  new BertieWeatherCenter(temperatureViewer).init();
+  new CountyForecastTabs().init();
+  new CountyWeatherCenter(temperatureViewer).init();
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initBertieWeatherCenter, { once: true });
+  document.addEventListener('DOMContentLoaded', initCountyWeatherCenter, { once: true });
 } else {
-  initBertieWeatherCenter();
+  initCountyWeatherCenter();
 }
+

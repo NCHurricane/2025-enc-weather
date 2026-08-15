@@ -42,7 +42,8 @@
 
       <!-- CHANGE VERSION: -->
     <link rel="stylesheet" href="../../css/styles.css?v=20260812-ga4" />
-      <link rel="stylesheet" href="../css/county.css?v=9.29.25" />
+      <link rel="stylesheet" href="../css/county.css?v=20260814-2" />
+      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260814-21" />
 
       <style>
          .current-container {
@@ -86,223 +87,355 @@
       <!-- Navigation will be dynamically generated here -->
       <header class="header"></header>
 
-      <main class="container">
-         <!-- CHANGE THE PLACE NAME -->
-         <h1 class="main-title">Martin County</h1>
+      <main class="container" id="main-content" data-county-weather-center data-city-labels-url="../bertie/data/satellite-city-labels.json?v=20260814-1" data-satellite-name="GOES19" data-satellite-sector="eus" data-satellite-region="Eastern US" data-satellite-platform="East" data-radar-regional-precip-type="false">
+         <header class="weather-center-heading">
+            <h1 class="main-title">Martin County</h1>
+         </header>
 
-         <!-- Current Weather Section -->
-         <section class="current-container" id="weather-background" aria-labelledby="current-weather-heading">
-            <div class="weather-card">
-               <div class="weather-desc">
-                  <div class="weather-temp" id="current-temp"></div>
-                  <div class="desc" id="current-desc"></div>
-                  <div class="details">
-                     <p id="current-dewpoint"></p>
-                     <p id="current-humidity"></p>
-                     <p id="current-wind"></p>
-                     <p id="current-wind-gust"></p>
-                     <p id="current-heat-index"></p>
-                     <p id="current-wind-chill"></p>
-                     <p id="current-pressure"></p>
-                     <p id="current-visibility"></p>
-                     <br />
-                     <p id="current-location"></p>
-                     <p id="current-obs-time"></p>
-                  </div>
-               </div>
-            </div>
-         </section>
-
-         <!-- Current Alerts Section -->
-         <section class="alert-container" aria-labelledby="alerts-heading">
+         <section class="alert-container weather-center-alerts" aria-label="Current alerts">
             <div id="alerts"></div>
          </section>
 
-         <!-- Nearby Observations Section -->
-         <section class="other-container section-title" aria-labelledby="other-heading">
-            <div>
-               <i class="fa-solid fa-location-dot fa-xl fontawesome-icon"></i>Nearby
-               Observations
-            </div>
-            <div id="other-stations"></div>
-         </section>
+         <div class="weather-center-layout">
+            <section class="weather-center-map-card" aria-label="Martin County Weather Center">
+               <div class="weather-center-tabs" role="tablist" aria-label="Weather Center section">
+                  <button id="weather-tab-temp" class="weather-center-tab is-active" type="button" role="tab"
+                     aria-selected="true" aria-controls="weather-panel-temp" data-weather-tab="temp">
+                     <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
+                     <span>Conditions</span>
+                  </button>
+                  <button id="weather-tab-radar" class="weather-center-tab" type="button" role="tab"
+                     aria-selected="false" aria-controls="weather-panel-radar" data-weather-tab="radar"
+                     tabindex="-1">
+                     <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+                     <span>Radar</span>
+                  </button>
+                  <button id="weather-tab-satellite" class="weather-center-tab" type="button" role="tab"
+                     aria-selected="false" aria-controls="weather-panel-satellite" data-weather-tab="satellite"
+                     tabindex="-1">
+                     <i class="fa-solid fa-satellite" aria-hidden="true"></i>
+                     <span>Satellite</span>
+                  </button>
+                  <button id="weather-tab-forecast" class="weather-center-tab" type="button" role="tab"
+                     aria-selected="false" aria-controls="weather-panel-forecast" data-weather-tab="forecast"
+                     tabindex="-1">
+                     <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                     <span>Forecast</span>
+                  </button>
+               </div>
 
-         <!-- 5-Day Forecast Section -->
-         <section class="forecast-container section-title" aria-labelledby="forecast-heading">
-            <div>
-               <i class="fa-solid fa-temperature-full fa-xl fontawesome-icon"></i>CURRENT
-               FORECAST
-            </div>
-            <div id="forecast" role="region" aria-live="polite"></div>
-         </section>
+               <div id="weather-panel-temp" class="weather-center-panel" role="tabpanel"
+                  aria-labelledby="weather-tab-temp" data-weather-panel="temp">
+                  <div class="weather-center-condition-tabs" role="tablist" aria-label="Observed condition">
+                     <button id="condition-tab-temperature" class="weather-center-condition-tab is-active"
+                        type="button" role="tab" aria-selected="true" aria-controls="condition-panel-display"
+                        aria-label="Temperature" data-condition-field="temperature"
+                        data-short-label="Temp">Temp</button>
+                     <button id="condition-tab-dewpoint" class="weather-center-condition-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="condition-panel-display"
+                        aria-label="Dew Point" data-condition-field="dewpoint" data-short-label="Dew Point"
+                        tabindex="-1">Dew P</button>
+                     <button id="condition-tab-humidity" class="weather-center-condition-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="condition-panel-display"
+                        aria-label="Humidity" data-condition-field="humidity" data-short-label="Humidity"
+                        tabindex="-1">Humid</button>
+                     <button id="condition-tab-wind" class="weather-center-condition-tab" type="button" role="tab"
+                        aria-selected="false" aria-controls="condition-panel-display" aria-label="Wind"
+                        data-condition-field="wind" data-short-label="Wind" tabindex="-1">Wind</button>
+                     <button id="condition-tab-gusts" class="weather-center-condition-tab" type="button" role="tab"
+                        aria-selected="false" aria-controls="condition-panel-display" aria-label="Gusts"
+                        data-condition-field="gusts" data-short-label="Gust" tabindex="-1">Gusts</button>
+                     <button id="condition-tab-pressure" class="weather-center-condition-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="condition-panel-display"
+                        aria-label="Pressure" data-condition-field="pressure" data-short-label="Pressure"
+                        tabindex="-1">Press</button>
+                     <button id="condition-tab-visibility" class="weather-center-condition-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="condition-panel-display"
+                        aria-label="Visibility" data-condition-field="visibility" data-short-label="Visibility"
+                        tabindex="-1">Vis</button>
+                  </div>
 
-         <!-- Detailed Forecast Section -->
-         <section class="detailed-container" aria-labelledby="detailed-heading">
-            <input type="checkbox" id="detailed-toggle" class="detailed-toggle" />
-            <label for="detailed-toggle" class="detailed-title" id="detailed-heading">
-               <i class="fa-solid fa-calendar fa-xl fontawesome-icon" aria-hidden="true"></i>
-               Detailed Forecast
-            </label>
-            <div class="detailed-tabs">
-               <div id="detailed-forecast" role="region" aria-live="polite"></div>
-            </div>
-         </section>
+                  <div id="condition-panel-display" class="weather-center-condition-panel" role="tabpanel"
+                     aria-labelledby="condition-tab-temperature">
+                     <div class="temperature-controls">
+                        <span class="weather-center-toolbar-label">
+                           <i class="fa-solid fa-list" aria-hidden="true"></i>
+                           Surface observations
+                        </span>
+                        <span class="weather-center-toolbar-status">
+                           <span class="weather-center-status-dot" aria-hidden="true"></span>
+                           <span id="temperature-station-count">Loading stations...</span>
+                        </span>
+                     </div>
+                     <div class="temperature-content weather-map-content">
+                        <div id="temperature-loading" class="temperature-status" role="status">
+                           <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                           <span>Loading current station observations...</span>
+                        </div>
+                        <div id="temperature-error" class="temperature-status temperature-error" role="alert" hidden>
+                           <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
+                           <span>Current station observations are unavailable.</span>
+                        </div>
+                        <div class="interactive-weather-map-shell">
+                           <div id="temperature-map" class="interactive-weather-map" role="region"
+                              aria-label="Current temperatures near Martin County"></div>
+                           <div id="temperature-timestamp" class="weather-map-timestamp"></div>
+                        </div>
+                        <aside id="temperature-station-details" class="temperature-station-details"
+                           role="dialog" aria-modal="false" aria-label="Selected station details"
+                           aria-live="polite" hidden></aside>
+                        <p class="weather-map-note">
+                           Select a station marker for details. Scroll to zoom, or use the map controls.
+                        </p>
+                     </div>
+                  </div>
+               </div>
 
-         <!-- Radar Imagery Section -->
-         <section class="radar-container" aria-labelledby="radar-heading">
-            <input type="checkbox" id="radar-toggle" class="radar-toggle" />
-            <label for="radar-toggle" class="radar-title" id="radar-heading">
-               <i class="fa-solid fa-satellite-dish fa-xl fontawesome-icon" aria-hidden="true"></i>
-               Radar Imagery
-            </label>
-            <div class="radar-tabs">
-               <div class="radar-controls">
-                  <div class="radar-select-container">
-                     <label for="radar-station-select" class="radar-label">Station:</label>
-                     <select id="radar-station-select" class="radar-select">
+               <!-- The existing checkboxes remain the visibility contract for weatherMaps.js. -->
+               <section id="weather-panel-radar" class="radar-container weather-center-panel" role="tabpanel"
+                  aria-labelledby="weather-tab-radar" data-weather-panel="radar" hidden>
+                  <input type="checkbox" id="radar-toggle" class="radar-toggle" />
+                  <label for="radar-toggle" class="radar-title weather-center-source-title" id="radar-heading">
+                     Radar Imagery
+                  </label>
+                  <div class="radar-tabs">
+                     <div class="radar-controls">
+                        <div class="radar-select-container">
+                           <select id="radar-station-select" class="radar-select" aria-label="Radar station">
                         <option value="KMHX" selected>KMHX (Newport, NC)</option>
                         <option value="KRAX">KRAX (Raleigh, NC)</option>
                         <option value="KLTX">KLTX (Wilmington, NC)</option>
                         <option value="SOUTHEAST">Regional (Southeast)</option>
                      </select>
-                  </div>
-                  <div class="radar-select-container">
-                     <label for="radar-product-select" class="radar-label">Product:</label>
-                     <select id="radar-product-select" class="radar-select">
+                        </div>
+                        <div class="radar-select-container">
+                           <select id="radar-product-select" class="radar-select" aria-label="Radar product">
                         <option value="reflectivity" selected>Reflectivity</option>
                         <option value="velocity">Velocity</option>
                      </select>
-                     <button id="radar-play-pause" class="radar-button" type="button"
-                        aria-label="Play radar animation" aria-pressed="false">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                        </div>
+                     </div>
+                     <div class="radar-content weather-map-content">
+                        <div id="radar-loading" class="radar-loading" style="display: none">
+                           <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                           <span>Loading interactive radar...</span>
+                           <small>Retrieving the latest NOAA map frames.</small>
+                        </div>
+                        <div id="radar-error" class="radar-error" style="display: none">
+                           <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
+                           <span>Unable to load radar imagery</span>
+                           <small>This could be due to a connection issue or server maintenance.
+                              Please try a different station or product.</small>
+                        </div>
+                        <div class="interactive-weather-map-shell">
+                           <div id="radar-map" class="interactive-weather-map" role="region"
+                              aria-label="Interactive radar map centered on Martin County"></div>
+                           <div id="radar-fallback" class="weather-map-fallback" hidden>
+                              <img id="radar-image" alt="NWS radar image fallback" decoding="async" />
+                           </div>
+                           <div id="radar-timestamp" class="weather-map-timestamp"></div>
+                        </div>
+                        <div id="radar-scrubber" class="weather-map-scrubber" hidden>
+                           <button id="radar-play-pause" class="radar-button weather-map-scrubber-play" type="button"
+                              aria-label="Play radar animation" aria-pressed="false">
+                              <i class="fa-solid fa-play" aria-hidden="true"></i>
+                           </button>
+                           <input id="radar-frame-scrubber" type="range" min="0" max="0" value="0" step="1"
+                              aria-label="Radar animation frame" disabled />
+                           <div class="weather-map-frame-count">
+                              <span class="weather-map-frame-label">Frame</span>
+                              <output id="radar-frame-indicator" for="radar-frame-scrubber">0 / 0</output>
+                           </div>
+                        </div>
+                        <aside id="radar-legend" class="weather-map-legend" aria-label="Radar product legend" hidden>
+                           <span id="radar-legend-title" class="weather-map-legend-title"></span>
+                           <div class="weather-map-legend-content">
+                              <img id="radar-legend-image" class="weather-map-legend-image" alt="" decoding="async" hidden />
+                              <p id="radar-legend-description" class="weather-map-legend-description"></p>
+                           </div>
+                        </aside>
+                        <p id="radar-map-note" class="weather-map-note">
+                           Open this section to load the latest NOAA radar map.
+                        </p>
+                     </div>
                   </div>
-               </div>
-               <div class="radar-content">
-                  <div id="radar-loading" class="radar-loading" style="display: none">
-                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-                     <span>Loading radar imagery...</span>
-                     <small>This may take a moment depending on your connection speed.</small>
-                  </div>
-                  <div id="radar-error" class="radar-error" style="display: none">
-                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
-                     <span>Unable to load radar imagery</span>
-                     <small>This could be due to a connection issue or server maintenance.
-                        Please try a different station or product.</small>
-                  </div>
-                  <div id="radar-image-container" class="radar-image-container">
-                     <img id="radar-image" class="radar-image" alt="NWS Radar" />
-                  </div>
-               </div>
-            </div>
-         </section>
+               </section>
 
-         <!-- Satellite Imagery Section -->
-         <section class="satellite-container" aria-labelledby="satellite-heading">
-            <input type="checkbox" id="satellite-toggle" class="satellite-toggle" />
-            <label for="satellite-toggle" class="satellite-title" id="satellite-heading">
-               <i class="fa-solid fa-satellite fa-xl fontawesome-icon" aria-hidden="true"></i>
-               Satellite Imagery
-            </label>
-            <div class="satellite-tabs">
-               <div class="satellite-controls">
-                  <div class="satellite-select-container">
-                     <label for="satellite-product-select" class="satellite-label">Product:</label>
-                     <select id="satellite-product-select" class="satellite-select">
+               <section id="weather-panel-satellite" class="satellite-container weather-center-panel" role="tabpanel"
+                  aria-labelledby="weather-tab-satellite" data-weather-panel="satellite" hidden>
+                  <input type="checkbox" id="satellite-toggle" class="satellite-toggle" />
+                  <label for="satellite-toggle" class="satellite-title weather-center-source-title"
+                     id="satellite-heading">Satellite Imagery</label>
+                  <div class="satellite-tabs">
+                     <div class="satellite-controls">
+                        <div class="satellite-select-container">
+                           <select id="satellite-product-select" class="satellite-select" aria-label="Satellite product">
                         <option value="GEOCOLOR" selected>GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
                         <option value="13">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
-                     <button id="satellite-play-pause" class="satellite-button" type="button"
-                        aria-label="Play satellite animation" aria-pressed="false">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
-                     </button>
+                        </div>
+                     </div>
+                     <div class="satellite-content weather-map-content">
+                        <div id="satellite-loading" class="satellite-loading" style="display: none">
+                           <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                           <span>Loading interactive satellite...</span>
+                           <small>Retrieving the latest satellite map frames.</small>
+                        </div>
+                        <div id="satellite-error" class="satellite-error" style="display: none">
+                           <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
+                           <span>Unable to load satellite imagery</span>
+                           <small>This could be due to a connection issue or provider maintenance.
+                              Please try a different product.</small>
+                        </div>
+                        <div class="interactive-weather-map-shell">
+                           <div id="satellite-map" class="interactive-weather-map" role="region"
+                              aria-label="Interactive GOES satellite map centered on Martin County"></div>
+                           <div id="satellite-fallback" class="weather-map-fallback" hidden>
+                              <img id="satellite-image" alt="GOES-19 satellite image fallback" decoding="async" />
+                           </div>
+                           <div id="satellite-timestamp" class="weather-map-timestamp"></div>
+                        </div>
+                        <div id="satellite-scrubber" class="weather-map-scrubber" hidden>
+                           <button id="satellite-play-pause" class="satellite-button weather-map-scrubber-play" type="button"
+                              aria-label="Play satellite animation" aria-pressed="false">
+                              <i class="fa-solid fa-play" aria-hidden="true"></i>
+                           </button>
+                           <input id="satellite-frame-scrubber" type="range" min="0" max="0" value="0" step="1"
+                              aria-label="Satellite animation frame" disabled />
+                           <div class="weather-map-frame-count">
+                              <span class="weather-map-frame-label">Frame</span>
+                              <output id="satellite-frame-indicator" for="satellite-frame-scrubber">0 / 0</output>
+                           </div>
+                        </div>
+                        <aside id="satellite-legend" class="weather-map-legend" aria-label="Satellite product legend" hidden>
+                           <span id="satellite-legend-title" class="weather-map-legend-title"></span>
+                           <div class="weather-map-legend-content">
+                              <img id="satellite-legend-image" class="weather-map-legend-image" alt="" decoding="async" hidden />
+                              <div id="satellite-legend-scale" class="weather-map-legend-scale" role="img" hidden>
+                                 <div id="satellite-legend-scale-bar" class="weather-map-legend-scale-bar"></div>
+                                 <div class="weather-map-legend-scale-labels" aria-hidden="true">
+                                    <span id="satellite-legend-scale-min"></span>
+                                    <span id="satellite-legend-scale-max"></span>
+                                 </div>
+                              </div>
+                              <p id="satellite-legend-description" class="weather-map-legend-description"></p>
+                           </div>
+                        </aside>
+                        <p id="satellite-map-note" class="weather-map-note">
+                           Open this section to load the latest NOAA satellite map.
+                        </p>
+                     </div>
                   </div>
-               </div>
-               <div class="satellite-content">
-                  <div id="satellite-loading" class="satellite-loading" style="display: none">
-                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-                     <span>Loading satellite imagery...</span>
-                     <small>This may take a moment depending on your connection speed.</small>
-                  </div>
-                  <div id="satellite-error" class="satellite-error" style="display: none">
-                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
-                     <span>Unable to load satellite imagery</span>
-                     <small>This could be due to a connection issue or NOAA server maintenance.
-                        Please try a different product.</small>
-                  </div>
-                  <div id="satellite-image-container" class="satellite-image-container">
-                     <img id="satellite-image" class="satellite-image satellite-image-cropped"
-                        alt="GOES-19 Satellite" />
-                     <div id="satellite-timestamp" class="satellite-timestamp"></div>
-                  </div>
-               </div>
-            </div>
-         </section>
+               </section>
 
-         <!-- Forecast Meteograms Section -->
-         <section class="meteogram-container" aria-labelledby="meteogram-heading">
-            <input type="checkbox" id="meteogram-toggle" class="meteogram-toggle" />
-            <label for="meteogram-toggle" class="meteogram-title" id="meteogram-heading">
-               <i class="fa-solid fa-chart-line fa-xl fontawesome-icon" aria-hidden="true"></i>
-               Forecast Meteograms
-            </label>
-            <div class="meteogram-tabs">
-               <input type="radio" name="meteogramTime" id="meteogram-now" checked />
-               <input type="radio" name="meteogramTime" id="meteogram-24" />
-               <input type="radio" name="meteogramTime" id="meteogram-48" />
-               <input type="radio" name="meteogramTime" id="meteogram-72" />
-               <input type="radio" name="meteogramTime" id="meteogram-96" />
-
-               <div class="meteogram-tab-labels" role="tablist">
-                  <label for="meteogram-now" class="meteogram-tab" role="tab" aria-selected="true">24H</label>
-                  <label for="meteogram-24" class="meteogram-tab" role="tab">48H</label>
-                  <label for="meteogram-48" class="meteogram-tab" role="tab">72H</label>
-                  <label for="meteogram-72" class="meteogram-tab" role="tab">96H</label>
-                  <label for="meteogram-96" class="meteogram-tab" role="tab">120H</label>
-               </div>
-
-               <div class="meteogram-tab-content">
-                  <div class="meteogram-param-container">
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-temperature" class="meteogram-param-checkbox" checked />
-                        <label for="param-temperature">Temp</label>
-                     </div>
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-dewpoint" class="meteogram-param-checkbox" />
-                        <label for="param-dewpoint">DP</label>
-                     </div>
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-humidity" class="meteogram-param-checkbox" />
-                        <label for="param-humidity">Hum</label>
-                     </div>
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-wind" class="meteogram-param-checkbox" />
-                        <label for="param-wind">Wind</label>
-                     </div>
-                     <div class="meteogram-param-item">
-                        <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
-                        <label for="param-precipitation">Precip</label>
-                     </div>
+               <section id="weather-panel-forecast" class="weather-center-panel weather-center-forecast"
+                  role="tabpanel" aria-labelledby="weather-tab-forecast" data-weather-panel="forecast" hidden>
+                  <div class="weather-center-forecast-tabs" role="tablist" aria-label="Forecast section">
+                     <button id="forecast-tab-seven-day" class="weather-center-forecast-tab is-active" type="button"
+                        role="tab" aria-selected="true" aria-controls="forecast-panel-seven-day"
+                        data-forecast-tab="seven-day">7-Day</button>
+                     <button id="forecast-tab-detailed" class="weather-center-forecast-tab" type="button" role="tab"
+                        aria-selected="false" aria-controls="forecast-panel-detailed" data-forecast-tab="detailed"
+                        tabindex="-1">Detailed</button>
+                     <button id="forecast-tab-meteogram" class="weather-center-forecast-tab" type="button" role="tab"
+                        aria-selected="false" aria-controls="forecast-panel-meteogram" data-forecast-tab="meteogram"
+                        tabindex="-1">Meteogram</button>
+                     <button id="forecast-tab-discussion" class="weather-center-forecast-tab" type="button" role="tab"
+                        aria-selected="false" aria-controls="forecast-panel-discussion" data-forecast-tab="discussion"
+                        tabindex="-1">Discussion</button>
                   </div>
-                  <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
-                     <canvas id="meteogramChart"></canvas>
-                  </div>
-               </div>
-            </div>
-         </section>
 
-         <!-- Area Forecast Discussion (AFD) Section -->
-         <section class="afd-container" aria-labelledby="afd-heading">
-            <input type="checkbox" id="afd-toggle" class="afd-toggle" />
-            <label for="afd-toggle" class="afd-title" id="afd-heading">
-               <i class="fa-solid fa-file-lines fa-xl fontawesome-icon" aria-hidden="true"></i>
-               Area Forecast Discussion
-            </label>
-            <div class="afd-content" id="afd-content"></div>
-         </section>
+                  <div class="weather-center-forecast-content">
+                     <section id="forecast-panel-seven-day"
+                        class="forecast-container section-title weather-center-forecast-panel" role="tabpanel"
+                        aria-labelledby="forecast-tab-seven-day" data-forecast-panel="seven-day">
+                        <div id="forecast-heading" class="weather-center-forecast-source-title">
+                           <i class="fa-solid fa-temperature-full fa-xl fontawesome-icon" aria-hidden="true"></i>
+                           Current Forecast
+                        </div>
+                        <div id="forecast" role="region" aria-live="polite"></div>
+                     </section>
+
+                     <section id="forecast-panel-detailed" class="detailed-container weather-center-forecast-panel"
+                        role="tabpanel" aria-labelledby="forecast-tab-detailed" data-forecast-panel="detailed" hidden>
+                        <input type="checkbox" id="detailed-toggle" class="detailed-toggle" />
+                        <label for="detailed-toggle" class="detailed-title" id="detailed-heading">
+                           <i class="fa-solid fa-calendar fa-xl fontawesome-icon" aria-hidden="true"></i>
+                           Detailed Forecast
+                        </label>
+                        <div class="detailed-tabs">
+                           <div id="detailed-forecast" role="region" aria-live="polite"></div>
+                        </div>
+                     </section>
+
+                     <section id="forecast-panel-meteogram" class="meteogram-container weather-center-forecast-panel"
+                        role="tabpanel" aria-labelledby="forecast-tab-meteogram" data-forecast-panel="meteogram" hidden>
+                        <input type="checkbox" id="meteogram-toggle" class="meteogram-toggle" />
+                        <label for="meteogram-toggle" class="meteogram-title" id="meteogram-heading">
+                           <i class="fa-solid fa-chart-line fa-xl fontawesome-icon" aria-hidden="true"></i>
+                           Forecast Meteograms
+                        </label>
+                        <div class="meteogram-tabs">
+                           <input type="radio" name="meteogramTime" id="meteogram-now" checked />
+                           <input type="radio" name="meteogramTime" id="meteogram-24" />
+                           <input type="radio" name="meteogramTime" id="meteogram-48" />
+                           <input type="radio" name="meteogramTime" id="meteogram-72" />
+                           <input type="radio" name="meteogramTime" id="meteogram-96" />
+
+                           <div class="meteogram-tab-labels" role="tablist">
+                              <label for="meteogram-now" class="meteogram-tab" role="tab" aria-selected="true">24H</label>
+                              <label for="meteogram-24" class="meteogram-tab" role="tab">48H</label>
+                              <label for="meteogram-48" class="meteogram-tab" role="tab">72H</label>
+                              <label for="meteogram-72" class="meteogram-tab" role="tab">96H</label>
+                              <label for="meteogram-96" class="meteogram-tab" role="tab">120H</label>
+                           </div>
+
+                           <div class="meteogram-tab-content">
+                              <div class="meteogram-param-container">
+                                 <div class="meteogram-param-item">
+                                    <input type="checkbox" id="param-temperature" class="meteogram-param-checkbox" checked />
+                                    <label for="param-temperature">Temp</label>
+                                 </div>
+                                 <div class="meteogram-param-item">
+                                    <input type="checkbox" id="param-dewpoint" class="meteogram-param-checkbox" />
+                                    <label for="param-dewpoint">DP</label>
+                                 </div>
+                                 <div class="meteogram-param-item">
+                                    <input type="checkbox" id="param-humidity" class="meteogram-param-checkbox" />
+                                    <label for="param-humidity">Hum</label>
+                                 </div>
+                                 <div class="meteogram-param-item">
+                                    <input type="checkbox" id="param-wind" class="meteogram-param-checkbox" />
+                                    <label for="param-wind">Wind</label>
+                                 </div>
+                                 <div class="meteogram-param-item">
+                                    <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
+                                    <label for="param-precipitation">Precip</label>
+                                 </div>
+                              </div>
+                              <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
+                                 <canvas id="meteogramChart"></canvas>
+                              </div>
+                           </div>
+                        </div>
+                     </section>
+
+                     <section id="forecast-panel-discussion" class="afd-container weather-center-forecast-panel"
+                        role="tabpanel" aria-labelledby="forecast-tab-discussion" data-forecast-panel="discussion" hidden>
+                        <input type="checkbox" id="afd-toggle" class="afd-toggle" />
+                        <label for="afd-toggle" class="afd-title" id="afd-heading">
+                           <i class="fa-solid fa-file-lines fa-xl fontawesome-icon" aria-hidden="true"></i>
+                           Area Forecast Discussion
+                        </label>
+                        <div class="afd-content" id="afd-content"></div>
+                     </section>
+                  </div>
+               </section>
+            </section>
+         </div>
       </main>
 
       <!-- Footer -->
@@ -352,15 +485,21 @@
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
       <script src="js/countyApp.js" type="module"></script>
-      <script src="../js/radar.js" type="module"></script>
-      <script src="../js/satellite.js" type="module"></script>
+      <script src="../js/weatherMaps.js?v=20260814-1" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260814-1" type="module"></script>
 
       <script type="module">
-        import { NavigationModule } from '../../js/modules/navigation.js?v=20260812-ga4';
+      import { NavigationModule } from '../../js/modules/navigation.js?v=20260814-2';
 
-         document.addEventListener('DOMContentLoaded', () => {
-            NavigationModule.init('../../');
-         });
+      document.addEventListener('DOMContentLoaded', () => {
+        NavigationModule.navData.logo = {
+          textBefore: 'ChuckCopeland',
+          iconClass: 'fa-solid fa-bolt-lightning',
+          textAfter: 'WX',
+          ariaLabel: 'ChuckCopelandWx home',
+        };
+        NavigationModule.init('../../');
+      });
       </script>
 
       <!-- Back to Top Button -->

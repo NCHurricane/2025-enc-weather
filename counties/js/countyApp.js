@@ -11,6 +11,8 @@
 // }
 // ========================
 
+import { closeCountyAlertDialog, renderCountyAlerts } from './countyAlerts.js';
+
 // Alert Colors and Priorities
 const warningColors = {
   'Tsunami Warning': '#FD6347',
@@ -633,6 +635,7 @@ async function renderDetailedForecast() {
 }
 
 async function renderAlerts() {
+  closeCountyAlertDialog();
   try {
     const a = await (API.getAlerts ? API.getAlerts() : Promise.resolve(null));
     if (!a || a.status !== 'ok') {
@@ -656,40 +659,13 @@ async function renderAlerts() {
       return;
     }
 
-    const sortedAlerts = list.sort((a, b) => {
-      const eventA = a.event || a.type || a.headline || 'Unknown';
-      const eventB = b.event || b.type || b.headline || 'Unknown';
-      const priorityA = warningPriorities[eventA] || 999;
-      const priorityB = warningPriorities[eventB] || 999;
-      return priorityA - priorityB;
+    const sortedAlerts = renderCountyAlerts({
+      container: document.querySelector(SEL.alerts.container),
+      alerts: list,
+      warningColors,
+      warningPriorities,
+      formatTime: fmtTimeLocal,
     });
-
-    const alertsHTML = sortedAlerts
-      .map((alert, index) => {
-        const eventName = alert.event || alert.type || alert.headline || 'Alert';
-        const description = alert.description || alert.summary || '';
-        const alertColor = warningColors[eventName] || '#dc3545';
-        const priority = warningPriorities[eventName] || 999;
-        const borderWidth = priority <= 10 ? '4px' : priority <= 50 ? '2px' : '1px';
-        const expiresInline = alert.expires
-          ? `<br /> until ${fmtTimeLocal(alert.expires)}`
-          : '';
-
-        return `
-        <div class="alert" style="background-color: ${alertColor}; border: ${borderWidth} solid ${alertColor}; border-radius: var(--border-radius); margin: 3px 0;">
-          <input type="checkbox" id="alert-${index}" class="alert-toggle">
-          <label for="alert-${index}" class="alert-title">
-            <span class="alert-title-chip">${eventName}${expiresInline}</span>
-          </label>
-          <div class="alert-details">
-            <p>${description}</p>
-          </div>
-        </div>
-      `;
-      })
-      .join('');
-
-    setHTML(SEL.alerts.container, alertsHTML);
 
     console.log(
       'Alerts sorted by priority:',
