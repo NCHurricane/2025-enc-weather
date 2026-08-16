@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-1';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
@@ -15,6 +15,8 @@ const STATION_MARKER_SIZES = Object.freeze({
   regular: Object.freeze({ iconSize: [76, 48], iconAnchor: [38, 54] }),
   compact: Object.freeze({ iconSize: [96, 40], iconAnchor: [48, 40] }),
 });
+const MIN_VISIBLE_MARKER_WIDTH = 24;
+const MIN_VISIBLE_MARKER_HEIGHT = 12;
 const MOBILE_STATION_DETAILS_QUERY = window.matchMedia('(max-width: 600px)');
 let statewideStationCatalogPromise = null;
 const NWS_REFERENCE_WMS_URL =
@@ -80,7 +82,7 @@ function statewideStationSpacing(zoom) {
   if (zoom >= 12) return 0;
   if (zoom >= 11) return 70;
   if (zoom >= 10) return 96;
-  if (zoom >= 9) return 120;
+  if (zoom >= 9) return 110;
   if (zoom >= 8) return 150;
   return 180;
 }
@@ -466,7 +468,7 @@ class CountyTemperatureViewer {
       zoom: initialMapZoom(),
       requireCtrlForWheelZoom: false,
       ariaLabel: `Current ${CONDITION_FIELDS[this.activeField].mapLabel} near ${this.context.countyName} County`,
-      initialBasemap: 'light',
+      initialBasemap: 'esri',
       showBasemapControl: true,
       basemapControlPosition: 'topleft',
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
@@ -512,20 +514,29 @@ class CountyTemperatureViewer {
     }
   }
 
-  stationIntersectsBufferedViewport(record, leafletMap) {
+  stationIsVisible(record, leafletMap) {
     const point = leafletMap.latLngToContainerPoint([record.lat, record.lon]);
     const viewportSize = leafletMap.getSize();
     const [width, height] = record.iconSize;
     const [anchorX, anchorY] = record.iconAnchor;
+    const left = point.x - anchorX;
+    const right = left + width;
+    const top = point.y - anchorY;
+    const bottom = top + height;
+    const visibleWidth = Math.max(0, Math.min(right, viewportSize.x) - Math.max(left, 0));
+    const visibleHeight = Math.max(0, Math.min(bottom, viewportSize.y) - Math.max(top, 0));
 
-    return point.x >= -(width - anchorX)
-      && point.x <= viewportSize.x + anchorX
-      && point.y >= -(height - anchorY)
-      && point.y <= viewportSize.y + anchorY;
+    if (!MOBILE_STATION_DETAILS_QUERY.matches) {
+      return visibleWidth > 0 && visibleHeight > 0;
+    }
+
+    return visibleWidth >= MIN_VISIBLE_MARKER_WIDTH
+      && visibleHeight >= MIN_VISIBLE_MARKER_HEIGHT;
   }
 
   thinStationRecords(records, leafletMap) {
-    if (this.coverageMode !== 'statewide' || records.length <= 30) return records;
+    if (this.coverageMode !== 'statewide') return records;
+    if (!MOBILE_STATION_DETAILS_QUERY.matches && records.length <= 30) return records;
 
     const spacing = statewideStationSpacing(leafletMap.getZoom());
     if (!spacing) return records;
@@ -601,7 +612,7 @@ class CountyTemperatureViewer {
     const eligibleRecords = [];
 
     for (const record of this.stationRecords.values()) {
-      if (this.stationIntersectsBufferedViewport(record, leafletMap)) eligibleRecords.push(record);
+      if (this.stationIsVisible(record, leafletMap)) eligibleRecords.push(record);
     }
     const displayedRecords = this.thinStationRecords(eligibleRecords, leafletMap);
     const displayedStationIds = new Set(displayedRecords.map((record) => record.station.id));

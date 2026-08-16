@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260814-21';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-1';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
@@ -323,7 +323,7 @@ class CountyRadarViewer {
       maxFrames: 12,
       overlayOpacity: 0.8,
       ariaLabel: `Interactive radar map centered on ${this.context.countyName} County`,
-      initialBasemap: this.basemapSelect?.value || 'light',
+      initialBasemap: this.basemapSelect?.value || 'esri',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
@@ -645,7 +645,7 @@ class CountySatelliteViewer {
       maxFrames: 12,
       overlayOpacity: 0.92,
       ariaLabel: `Interactive satellite map centered on ${this.context.countyName} County`,
-      initialBasemap: this.basemapSelect?.value || 'light',
+      initialBasemap: this.basemapSelect?.value || 'esri',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
       referenceOverlays: [...WEATHER_BOUNDARY_OVERLAYS],

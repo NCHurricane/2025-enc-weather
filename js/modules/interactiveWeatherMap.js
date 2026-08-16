@@ -1,27 +1,29 @@
-const DEFAULT_BASEMAP_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const DEFAULT_BASEMAP_URL =
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
 const DEFAULT_BASEMAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 export const WEATHER_BASEMAPS = Object.freeze({
   light: {
     label: 'Light',
     url: DEFAULT_BASEMAP_URL,
     attribution: DEFAULT_BASEMAP_ATTRIBUTION,
-    maxZoom: 19,
+    maxZoom: 20,
+    subdomains: 'abcd',
   },
   dark: {
-    label: 'Dark + Labels',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    label: 'Dark',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     maxZoom: 20,
     subdomains: 'abcd',
   },
-  stamen: {
-    label: 'Stamen Terrain',
-    url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 18,
+  usgs: {
+    label: 'USGS US Imagery',
+    url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'USGS The National Map, USDA',
+    maxZoom: 16,
   },
   esri: {
     label: 'Esri World Imagery',
