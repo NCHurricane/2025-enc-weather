@@ -190,11 +190,12 @@ Each county has four independent caching scripts in `counties/{county}/api/`:
     - Outputs: `data/current.json` (single-zone) or `data/{zone}/current.json` (multi-zone)
 
 The NC conditions map additionally uses `counties/api/cache_nc_conditions.php`.
-It makes one statewide Synoptic request, filters observations through
-`counties/nc-weather-stations.json`, and writes
-`counties/data/nc-current.json`. County and zone configs still determine the
-initial map center and remain the automatic fallback if either shared file is
-unavailable. Non-NC pages continue using only their local config and cache.
+It reads station IDs from `counties/nc-weather-stations.json`, requests the five
+latest observations for each station from the NWS API, and writes
+`counties/data/nc-current.json`. Requests use bounded concurrency and require no
+API token. County and zone configs still determine the initial map center and
+remain the automatic fallback if either shared file is unavailable. Non-NC
+pages continue using only their local config and cache.
 
 3. **`cache_forecast.php`**:
 
@@ -356,7 +357,7 @@ County scripts run at different intervals based on how frequently the data chang
 24 * * * * php /path/to/counties/pitt/api/cache_current.php >> /path/to/logs/cron_current.log 2>&1
 # ... (continue for all counties)
 
-# Shared NC conditions map (SYNOPTIC_API_TOKEN must be in the cron environment)
+# Shared NC conditions map
 5,35 * * * * php /path/to/counties/api/cache_nc_conditions.php >> /path/to/logs/cron_nc_conditions.log 2>&1
 
 # County Forecasts (every 2 hours at :15-:22)
@@ -638,7 +639,7 @@ php counties/bertie/api/cache_forecast.php
 php counties/bertie/api/cache_afd.php
 
 # Shared NC conditions map
-SYNOPTIC_API_TOKEN=your_public_token php counties/api/cache_nc_conditions.php
+php counties/api/cache_nc_conditions.php
 
 # Repeat for: pitt, beaufort, martin, dare, hyde, washington, tyrrell
 

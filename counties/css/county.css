@@ -2130,7 +2130,7 @@ main.container {
 .temperature-marker-value {
   display: inline-block;
   min-width: 50px;
-  padding: 6px 9px;
+  padding: 5px 8px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 7px;
   background: rgba(7, 27, 45, 0.86);
@@ -2168,27 +2168,6 @@ main.container {
   letter-spacing: 0.025em;
   line-height: 1;
   text-transform: uppercase;
-}
-
-.temperature-marker-location {
-  display: block;
-  max-width: 112px;
-  margin-top: 4px;
-  overflow: hidden;
-  color: var(--color-accent);
-  font-size: clamp(0.6rem, 0.58vw, 0.65rem);
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  line-height: 1.05;
-  text-overflow: ellipsis;
-  text-shadow: none;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-.temperature-marker-value.is-compact .temperature-marker-location {
-  margin-top: 3px;
-  font-size: 0.58em;
 }
 
 .temperature-marker-value.is-selected {

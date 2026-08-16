@@ -6,8 +6,9 @@ error_reporting(E_ALL);
 /**
  * Build the shared North Carolina conditions cache used by county maps.
  *
- * The Synoptic token must be supplied by the server environment as
- * SYNOPTIC_API_TOKEN. This script is intended to run from cron every 30 minutes.
+ * Station IDs come from nc-weather-stations.json. Live observations come from
+ * the NWS API using the same five-observation workflow as county cache scripts.
+ * This script is intended to run from cron every 30 minutes.
  */
 
 $countiesRoot = dirname(__DIR__);
@@ -18,8 +19,11 @@ $lockPath = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
   . DIRECTORY_SEPARATOR
   . 'nchurricane-nc-conditions.lock';
 
-const SYNOPTIC_LATEST_URL = 'https://api.synopticdata.com/v2/stations/latest';
-const MIN_REPORTING_STATIONS = 100;
+const NWS_OBSERVATIONS_BASE_URL = 'https://api.weather.gov/stations';
+const NWS_USER_AGENT = 'NCHurricane.com conditions cache (https://www.nchurricane.com)';
+const MAX_CONCURRENT_REQUESTS = 8;
+const MAX_REQUEST_ATTEMPTS = 2;
+const MIN_EXPECTED_STATIONS = 100;
 
 function fail(string $message): void {
   throw new RuntimeException($message);
@@ -34,92 +38,146 @@ function read_json_file(string $path): array {
   return $decoded;
 }
 
-function http_get_json(string $url): array {
-  $ch = curl_init($url);
-  if ($ch === false) fail('Unable to initialize Synoptic request');
-
-  curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_CONNECTTIMEOUT => 10,
-    CURLOPT_TIMEOUT => 60,
-    CURLOPT_USERAGENT => 'NCHurricaneNCConditions/1.0',
-    CURLOPT_HTTPHEADER => ['Accept: application/json'],
-  ]);
-
-  $body = curl_exec($ch);
-  $curlError = curl_error($ch);
-  $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  curl_close($ch);
-
-  if ($body === false) fail("Synoptic request failed: {$curlError}");
-  if ($status < 200 || $status >= 300) fail("Synoptic request returned HTTP {$status}");
-
-  $decoded = json_decode($body, true);
-  if (!is_array($decoded)) fail('Synoptic response was not valid JSON');
-  return $decoded;
+function station_observations_url(string $stationId): string {
+  return NWS_OBSERVATIONS_BASE_URL
+    . '/'
+    . rawurlencode($stationId)
+    . '/observations?limit=5';
 }
 
-function observation_for(array $observations, string $variable): ?array {
-  $pattern = '/^' . preg_quote($variable, '/') . '_value_[0-9]+d?$/';
-  $best = null;
-  $bestTime = PHP_INT_MIN;
+function create_nws_handle(string $stationId) {
+  $handle = curl_init(station_observations_url($stationId));
+  if ($handle === false) fail("Unable to initialize NWS request for {$stationId}");
 
-  foreach ($observations as $key => $observation) {
-    if (!is_string($key) || preg_match($pattern, $key) !== 1 || !is_array($observation)) {
-      continue;
+  curl_setopt_array($handle, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 8,
+    CURLOPT_TIMEOUT => 20,
+    CURLOPT_USERAGENT => NWS_USER_AGENT,
+    CURLOPT_HTTPHEADER => ['Accept: application/geo+json, application/json;q=0.9'],
+    CURLOPT_ENCODING => '',
+  ]);
+  return $handle;
+}
+
+function execute_nws_batch(array $stationIds): array {
+  $multiHandle = curl_multi_init();
+  if ($multiHandle === false) fail('Unable to initialize NWS request batch');
+
+  $handles = [];
+  foreach ($stationIds as $stationId) {
+    $handle = create_nws_handle($stationId);
+    curl_multi_add_handle($multiHandle, $handle);
+    $handles[$stationId] = $handle;
+  }
+
+  do {
+    $multiStatus = curl_multi_exec($multiHandle, $active);
+  } while ($multiStatus === CURLM_CALL_MULTI_PERFORM);
+
+  while ($active && $multiStatus === CURLM_OK) {
+    if (curl_multi_select($multiHandle, 1.0) === -1) usleep(10000);
+    do {
+      $multiStatus = curl_multi_exec($multiHandle, $active);
+    } while ($multiStatus === CURLM_CALL_MULTI_PERFORM);
+  }
+
+  $results = [];
+  foreach ($handles as $stationId => $handle) {
+    $body = curl_multi_getcontent($handle);
+    $curlError = curl_errno($handle);
+    $status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
+    $payload = null;
+    if ($curlError === CURLE_OK && $status >= 200 && $status < 300 && $body !== '') {
+      $decoded = json_decode($body, true);
+      if (is_array($decoded)) $payload = $decoded;
     }
 
-    $value = $observation['value'] ?? null;
-    if (!is_numeric($value)) continue;
-
-    $dateTime = $observation['date_time'] ?? null;
-    $timestamp = is_string($dateTime) ? strtotime($dateTime) : false;
-    $sortableTime = $timestamp === false ? PHP_INT_MIN + 1 : $timestamp;
-    if ($best !== null && $sortableTime <= $bestTime) continue;
-
-    $best = [
-      'value' => (float) $value,
-      'date_time' => is_string($dateTime) ? $dateTime : null,
+    $results[$stationId] = [
+      'payload' => $payload,
+      'retryable' => $payload === null && (
+        $curlError !== CURLE_OK
+        || $status === 0
+        || $status === 429
+        || $status >= 500
+      ),
+      'status' => $status,
     ];
-    $bestTime = $sortableTime;
+    curl_multi_remove_handle($multiHandle, $handle);
+    curl_close($handle);
+  }
+  curl_multi_close($multiHandle);
+  return $results;
+}
+
+function fetch_nws_observations(array $stationIds): array {
+  $responses = [];
+  $pending = array_values($stationIds);
+  $retriedCount = 0;
+
+  for ($attempt = 1; $attempt <= MAX_REQUEST_ATTEMPTS && $pending; $attempt++) {
+    $retry = [];
+    foreach (array_chunk($pending, MAX_CONCURRENT_REQUESTS) as $batch) {
+      foreach (execute_nws_batch($batch) as $stationId => $result) {
+        if (is_array($result['payload'])) {
+          $responses[$stationId] = $result['payload'];
+        } elseif ($result['retryable'] && $attempt < MAX_REQUEST_ATTEMPTS) {
+          $retry[] = $stationId;
+        } else {
+          $responses[$stationId] = null;
+        }
+      }
+      usleep(50000);
+    }
+
+    $pending = array_values(array_unique($retry));
+    if ($pending) {
+      $retriedCount += count($pending);
+      sleep($attempt);
+    }
   }
 
-  return $best;
+  return [
+    'responses' => $responses,
+    'retriedCount' => $retriedCount,
+  ];
 }
 
-function rounded_value(?array $observation, int $precision = 0): ?float {
-  if ($observation === null) return null;
-  return round((float) $observation['value'], $precision);
+function convert_temperature($value, $unitCode) {
+  if ($value === null) return null;
+  if ($unitCode === 'wmoUnit:degC') return round(((float) $value * 9 / 5) + 32);
+  return round((float) $value);
 }
 
-function newest_observation_time(array $observations): ?string {
-  $newestIso = null;
-  $newestTime = PHP_INT_MIN;
-
-  foreach ($observations as $observation) {
-    $dateTime = $observation['date_time'] ?? null;
-    if (!is_string($dateTime)) continue;
-    $timestamp = strtotime($dateTime);
-    if ($timestamp === false || $timestamp <= $newestTime) continue;
-    $newestIso = $dateTime;
-    $newestTime = $timestamp;
-  }
-
-  return $newestIso;
+function convert_wind_speed($value, $unitCode) {
+  if ($value === null) return null;
+  if ($unitCode === 'wmoUnit:km_h-1') return round((float) $value * 0.621371);
+  if ($unitCode === 'wmoUnit:m_s-1') return round((float) $value * 2.236936);
+  return round((float) $value);
 }
 
-function degrees_to_compass(?array $observation): ?string {
-  if ($observation === null) return null;
+function convert_pressure($value, $unitCode) {
+  if ($value === null) return null;
+  if ($unitCode === 'wmoUnit:Pa') return round((float) $value / 100, 1);
+  return round((float) $value, 1);
+}
+
+function convert_visibility($value, $unitCode) {
+  if ($value === null) return null;
+  if ($unitCode === 'wmoUnit:m') return round((float) $value / 1609.344, 1);
+  return round((float) $value, 1);
+}
+
+function degrees_to_compass(float $degrees): string {
   $directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-  $degrees = fmod((float) $observation['value'], 360.0);
-  if ($degrees < 0) $degrees += 360.0;
-  $index = ((int) round($degrees / 22.5)) % 16;
-  return $directions[$index];
+  $normalized = fmod($degrees, 360.0);
+  if ($normalized < 0) $normalized += 360.0;
+  return $directions[((int) round($normalized / 22.5)) % 16];
 }
 
 function empty_station_entry(array $station): array {
-  $id = (string) $station['id'];
+  $id = strtoupper((string) $station['id']);
   return [
     'id' => $id,
     'name' => (string) ($station['name'] ?? $station['friendlyName'] ?? $id),
@@ -145,52 +203,85 @@ function empty_station_entry(array $station): array {
   ];
 }
 
-function populate_station_entry(array $entry, array $station): array {
-  $observations = is_array($station['OBSERVATIONS'] ?? null)
-    ? $station['OBSERVATIONS']
-    : [];
-  $values = [
-    'temperature' => observation_for($observations, 'air_temp'),
-    'dewpoint' => observation_for($observations, 'dew_point_temperature'),
-    'humidity' => observation_for($observations, 'relative_humidity'),
-    'pressure' => observation_for($observations, 'sea_level_pressure'),
-    'windSpeed' => observation_for($observations, 'wind_speed'),
-    'windDirection' => observation_for($observations, 'wind_direction'),
-    'windGust' => observation_for($observations, 'wind_gust'),
-    'visibility' => observation_for($observations, 'visibility'),
-    'heatIndex' => observation_for($observations, 'heat_index'),
-    'windChill' => observation_for($observations, 'wind_chill'),
-  ];
+function select_observation_properties(?array $response): ?array {
+  if ($response === null) return null;
 
-  $observedAt = newest_observation_time(array_values(array_filter($values)));
-  $ageMinutes = $observedAt === null
-    ? null
-    : (int) max(0, round((time() - (int) strtotime($observedAt)) / 60));
+  if (isset($response['features']) && is_array($response['features'])) {
+    foreach ($response['features'] as $observation) {
+      $properties = $observation['properties'] ?? null;
+      if (!is_array($properties)) continue;
+      if (($properties['temperature']['value'] ?? null) !== null) return $properties;
+    }
+  } elseif (isset($response['properties']) && is_array($response['properties'])) {
+    return $response['properties'];
+  }
 
+  return null;
+}
+
+function populate_station_entry(array $entry, array $properties): array {
+  $observedAt = isset($properties['timestamp']) && is_string($properties['timestamp'])
+    ? $properties['timestamp']
+    : null;
+  $observedTimestamp = $observedAt === null ? false : strtotime($observedAt);
   $entry['observation'] = [
     'timestamp' => $observedAt,
-    'age_minutes' => $ageMinutes,
-  ];
-  $entry['data'] = [
-    'temperature' => rounded_value($values['temperature']),
-    'dewpoint' => rounded_value($values['dewpoint']),
-    'humidity' => rounded_value($values['humidity']),
-    'pressure' => rounded_value($values['pressure'], 1),
-    'windSpeed' => rounded_value($values['windSpeed']),
-    'windDirection' => degrees_to_compass($values['windDirection']),
-    'windGust' => rounded_value($values['windGust']),
-    'visibility' => rounded_value($values['visibility'], 1),
-    'conditions' => null,
-    'heatIndex' => rounded_value($values['heatIndex']),
-    'windChill' => rounded_value($values['windChill']),
-    'feelsLike' => null,
-    'icon' => null,
+    'age_minutes' => $observedTimestamp === false
+      ? null
+      : (int) max(0, round((time() - $observedTimestamp) / 60)),
   ];
 
-  $temperature = $entry['data']['temperature'];
-  $humidity = $entry['data']['humidity'];
-  $heatIndex = $entry['data']['heatIndex'];
-  $windChill = $entry['data']['windChill'];
+  $temperature = convert_temperature(
+    $properties['temperature']['value'] ?? null,
+    $properties['temperature']['unitCode'] ?? null
+  );
+  $humidity = ($properties['relativeHumidity']['value'] ?? null) === null
+    ? null
+    : round((float) $properties['relativeHumidity']['value']);
+  $heatIndex = convert_temperature(
+    $properties['heatIndex']['value'] ?? null,
+    $properties['heatIndex']['unitCode'] ?? null
+  );
+  $windChill = convert_temperature(
+    $properties['windChill']['value'] ?? null,
+    $properties['windChill']['unitCode'] ?? null
+  );
+  $windDirection = $properties['windDirection']['value'] ?? null;
+  $icon = $properties['icon'] ?? null;
+
+  $entry['data'] = [
+    'temperature' => $temperature,
+    'dewpoint' => convert_temperature(
+      $properties['dewpoint']['value'] ?? null,
+      $properties['dewpoint']['unitCode'] ?? null
+    ),
+    'humidity' => $humidity,
+    'pressure' => convert_pressure(
+      $properties['barometricPressure']['value'] ?? null,
+      $properties['barometricPressure']['unitCode'] ?? null
+    ),
+    'windSpeed' => convert_wind_speed(
+      $properties['windSpeed']['value'] ?? null,
+      $properties['windSpeed']['unitCode'] ?? null
+    ),
+    'windDirection' => $windDirection === null
+      ? null
+      : degrees_to_compass((float) $windDirection),
+    'windGust' => convert_wind_speed(
+      $properties['windGust']['value'] ?? null,
+      $properties['windGust']['unitCode'] ?? null
+    ),
+    'visibility' => convert_visibility(
+      $properties['visibility']['value'] ?? null,
+      $properties['visibility']['unitCode'] ?? null
+    ),
+    'conditions' => $properties['textDescription'] ?? null,
+    'heatIndex' => $heatIndex,
+    'windChill' => $windChill,
+    'feelsLike' => null,
+    'icon' => is_string($icon) ? str_replace('size=medium', 'size=large', $icon) : null,
+  ];
+
   $showHeatIndex = $heatIndex !== null
     && $temperature !== null
     && $temperature >= 80
@@ -199,7 +290,6 @@ function populate_station_entry(array $entry, array $station): array {
     && $windChill !== null
     && $temperature !== null
     && $temperature <= 50;
-
   if ($showHeatIndex) {
     $entry['data']['feelsLike'] = ['type' => 'heatIndex', 'value' => $heatIndex];
   } elseif ($showWindChill) {
@@ -248,9 +338,6 @@ if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
 }
 
 try {
-  $token = trim((string) getenv('SYNOPTIC_API_TOKEN'));
-  if ($token === '') fail('SYNOPTIC_API_TOKEN is not configured');
-
   $catalog = read_json_file($catalogPath);
   $entries = [];
   foreach ($catalog as $station) {
@@ -259,59 +346,37 @@ try {
     if (isset($entries[$id])) fail("Duplicate station ID in catalog: {$id}");
     $entries[$id] = empty_station_entry($station);
   }
-  if (count($entries) < MIN_REPORTING_STATIONS) fail('NC station catalog is unexpectedly small');
+  if (count($entries) < MIN_EXPECTED_STATIONS) fail('NC station catalog is unexpectedly small');
 
-  $query = http_build_query([
-    'token' => $token,
-    'country' => 'US',
-    'state' => 'NC',
-    'status' => 'active',
-    'vars' => implode(',', [
-      'air_temp',
-      'dew_point_temperature',
-      'relative_humidity',
-      'wind_speed',
-      'wind_direction',
-      'wind_gust',
-      'sea_level_pressure',
-      'visibility',
-      'heat_index',
-      'wind_chill',
-    ]),
-    'within' => 120,
-    'showemptyvars' => 1,
-    'showemptystations' => 1,
-    'units' => 'english,temp|F,speed|mph,pres|mb',
-  ], '', '&', PHP_QUERY_RFC3986);
-  $response = http_get_json(SYNOPTIC_LATEST_URL . '?' . $query);
-
-  $responseCode = (int) ($response['SUMMARY']['RESPONSE_CODE'] ?? 0);
-  if ($responseCode !== 1) {
-    $message = (string) ($response['SUMMARY']['RESPONSE_MESSAGE'] ?? 'unknown response');
-    fail("Synoptic response was not successful: {$message}");
+  $fetch = fetch_nws_observations(array_keys($entries));
+  foreach ($fetch['responses'] as $stationId => $response) {
+    $properties = select_observation_properties($response);
+    if ($properties === null) continue;
+    $entries[$stationId] = populate_station_entry($entries[$stationId], $properties);
   }
 
-  foreach (($response['STATION'] ?? []) as $station) {
-    if (!is_array($station)) continue;
-    $id = strtoupper((string) ($station['STID'] ?? ''));
-    if ($id === '' || !isset($entries[$id])) continue;
-    $entries[$id] = populate_station_entry($entries[$id], $station);
-  }
-
+  $successfulResponseCount = count(array_filter($fetch['responses'], 'is_array'));
   $reportingCount = count(array_filter($entries, 'has_map_observation'));
-  if ($reportingCount < MIN_REPORTING_STATIONS) {
-    fail("Only {$reportingCount} catalog stations returned map observations");
+  if ($successfulResponseCount < MIN_EXPECTED_STATIONS || $reportingCount < MIN_EXPECTED_STATIONS) {
+    fail(
+      "NWS response was unexpectedly small: {$successfulResponseCount} available, "
+      . "{$reportingCount} reporting"
+    );
   }
 
   $result = [
     'generated' => gmdate('c'),
-    'source' => 'Synoptic Data',
+    'source' => 'National Weather Service API',
     'coverage' => 'statewide',
+    'requestedStationCount' => count($entries),
+    'availableStationCount' => $successfulResponseCount,
     'reportingStationCount' => $reportingCount,
     'stations' => $entries,
   ];
   atomic_write_json($outputPath, $result);
-  echo 'OK: wrote ' . count($entries) . " stations ({$reportingCount} reporting)\n";
+  echo 'OK: wrote ' . count($entries)
+    . " stations ({$successfulResponseCount} available, {$reportingCount} reporting, "
+    . $fetch['retriedCount'] . " retries)\n";
 } catch (Throwable $error) {
   error_log('[cache_nc_conditions] ' . $error->getMessage());
   fwrite(STDERR, 'ERROR: ' . $error->getMessage() . "\n");

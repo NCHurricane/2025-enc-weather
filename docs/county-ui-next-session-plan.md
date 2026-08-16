@@ -2,24 +2,24 @@
 
 Updated: 2026-08-15
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: the county UI migration is committed at `9b5fbf1`; alert Phases 1–2, viewport-aware station-marker Phase 3, full migration regression Phase 4, and source-preservation closeout Phase 5 are complete. Phase 6 checkpoint review is next; do not stage or commit without explicit user authorization.
+Status: the combined county UI, viewport-marker, and statewide North Carolina conditions work is committed at `69c365a`. Post-commit fallback/local-source regression is complete. A live statewide-cache success smoke remains pending because `counties/data/nc-current.json` is not present in the local environment.
 
 ## Resume order
 
 1. Read the user-supplied `AGENTS.md` instructions in the session prompt. There is currently no tracked `AGENTS.md` at the repository root.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
-4. Confirm the migration checkpoint is still `9b5fbf1 Updates to the UI for the county pages. New tile-based radar and satellite maps, new county alerts, and a new county context module. Also includes a new county.css file to replace the old county_old.css file.` on `main`.
-5. Preserve the entire current dirty tree. Local browser review refreshed generated county weather JSON after the commit; do not reset, discard, stage, commit, or deploy those files without fresh user authorization.
-6. Resume at Phase 6 checkpoint review. Phases 1–5 are complete. Review the exact authorized file list and diff with the user before any staging or commit.
+4. Confirm the combined checkpoint is still `69c365a More updates to the county UI. Minor tweaks to the markers. Created a main json for NC places.` on `main`.
+5. Preserve the current tree. After `69c365a`, the only intended follow-up changes from this validation session are the catalog trailing-space cleanup and this handoff update.
+6. Resume with a live statewide-cache success smoke when a generated `counties/data/nc-current.json` is available. Do not expose or commit `SYNOPTIC_API_TOKEN`, and do not deploy unless separately requested.
 
 ## Current checkpoint
 
-The all-county UI migration and this handoff were committed on `main` at `9b5fbf1`, based on the user-owned Bertie prototype at `cc5fd3d`.
+The original all-county UI migration was committed at `9b5fbf1`, based on the user-owned Bertie prototype at `cc5fd3d`.
 
-Local owner/controlled-browser review subsequently refreshed generated weather data. A separate concurrent edit also changed four Bertie station coordinates in `counties/bertie/data/config.json`. During the Phase 4 closeout, the untracked `counties/nc-weather-stations.json` also appeared; it is a 632-entry station array and was not created by the closeout commands. Preserve all of those files as unrelated work and keep them out of a future marker/UI commit unless the user separately authorizes them.
+The user subsequently committed the combined marker and statewide-conditions checkpoint at `69c365a`. That commit intentionally includes the 632-entry `counties/nc-weather-stations.json`, `counties/api/cache_nc_conditions.php`, shared-source routing, the new mobile zoom-9 policy, the ten `weatherCenter.js?v=20260816-1` page references, the previously refreshed county JSON, and the Bertie coordinate edits.
 
-The authorized Phase 3 working-tree slice is `counties/js/weatherCenter.js`, the ten county/prototype HTML cache-version references, and this handoff. The generated county JSON remains outside that slice.
+Post-commit validation found one trailing space in the station catalog and removed it without changing JSON semantics. This handoff update records the combined checkpoint and current validation boundary. Neither follow-up is committed yet.
 
 ## Completed this session
 
@@ -63,7 +63,7 @@ The authorized Phase 3 working-tree slice is `counties/js/weatherCenter.js`, the
 
 ## Non-negotiable preservation rules
 
-This remains a UI-only migration. Do not alter:
+The list below records the preservation boundary used through the marker-only closeout at `9b5fbf1`. The user-authorized `69c365a` checkpoint superseded the JSON/API and single-`current.json` restrictions specifically for the new North Carolina statewide conditions path. Do not use the historical boundary to undo that committed work. Outside that committed exception, do not alter:
 
 - JSON or generated weather data.
 - API/cache scripts.
@@ -127,6 +127,18 @@ Do not fix source/data defects as part of a UI closeout. Record and route them s
 - No county/zone state had horizontal page overflow. No browser errors were captured.
 - Ten existing meteogram warnings, `No data for timeframe: 0`, were captured while the affected meteogram canvases still rendered. They occurred in the shared East implementation and San Diego's local implementation and were left unchanged as current data/runtime findings.
 
+### Post-commit combined validation at `69c365a`
+
+- The committed tree was clean and matched `origin/main` before this follow-up. The commit contains the combined marker, statewide-source, catalog/cache, county JSON, coordinate, documentation, and cache-key work.
+- JavaScript syntax passed for the shared context, weather-center, weather-map, alert, and county-app modules. PHP syntax passed for `counties/api/cache_nc_conditions.php`.
+- The station catalog contains 632 unique, nonblank IDs and 632 valid North Carolina coordinates. `git show --check` found one trailing space in the final catalog URL entry; the post-commit follow-up removes that whitespace without changing data semantics.
+- The generated `counties/data/nc-current.json` is absent locally. All eleven North Carolina county/zone states therefore emitted the expected statewide-cache 404 warning and completed the explicit `local-fallback` path without exposing an error state. San Diego remained on its intended local source.
+- A 30-state matrix covered all 15 required county/zone states at `1280x900` and `390x844`. Desktop opened at zoom 10; mobile opened at the new zoom 9. Every state retained the expected source mode and active zone, live marker counts matched both visible counts and rendered marker elements, and no page overflowed.
+- Bertie's fallback path passed all seven condition fields and station details. Live radar and satellite each loaded 12 frames with legends and playback, and all four Forecast subtabs plus the meteogram rendered.
+- Rapid San Diego Coastal -> Mountains -> Valleys switching finished with Valleys-only local data at zoom 9. Rapid Dare Mainland -> Hatteras -> Northern switching finished with Northern-only local-fallback data at zoom 9. Mobile station details also passed.
+- No browser errors were captured. The only warnings were the expected missing-statewide-cache 404 fallbacks.
+- Remaining validation gap: generate `counties/data/nc-current.json` in an environment with `SYNOPTIC_API_TOKEN`, then verify `data-coverage-mode="statewide"`, statewide reporting/live counts, refresh behavior, and safe fallback after a controlled cache failure. Do not expose the token or commit the generated cache.
+
 ## Known findings intentionally not fixed
 
 1. San Diego emitted the existing warning `[current] No cached data for station KETC`. This is a data/cache finding, not part of the UI migration.
@@ -147,7 +159,7 @@ A disposable HTML/config fixture exercised the exported standard single-zone ini
 
 ## Added requirement: viewport-aware station markers
 
-This is a separate follow-up from the completed UI migration. Do not implement it as an incidental closeout edit.
+This section is the historical marker-only design record from before `69c365a`. The combined checkpoint retains the viewport-marker mechanics but supersedes the single-county observation-source decision and uses mobile zoom 9.
 
 - Preserve the complete configured station inventory, its order, links, observation data, and station-detail behavior. Viewport filtering must control marker materialization only; it must not delete or rewrite station configuration.
 - Use a buffered viewport rather than the exact visible bounds. A station remains eligible while its marker is partly visible, including when roughly half of the marker is outside the map. Derive the pixel padding from the existing marker dimensions (`112x50` or `112x62`) instead of relying only on a latitude/longitude percentage.
@@ -157,14 +169,14 @@ This is a separate follow-up from the completed UI migration. Do not implement i
 - Do not use clustering as a substitute unless separately approved; the requested behavior is viewport-aware availability of individual station markers.
 - Distinguish marker rendering from observation-data transfer. The current controller fetches one `current.json` before rendering, so viewport-aware marker creation alone will reduce Leaflet/DOM work but will not make that JSON request smaller. True viewport-scoped network loading would require separate source/data architecture and must not be introduced during the UI-only closeout.
 
-Current lifecycle inventory completed on 2026-08-15:
+Historical pre-Phase 3 lifecycle inventory completed on 2026-08-15:
 
 - `counties/js/weatherCenter.js` fetches one active county/zone `current.json`, clears the full Leaflet marker layer, and recreates every marker with an available value whenever the field or data changes.
 - The initial render calls `fitBounds` with every configured station coordinate. That works for today's inventories of 3–10 stations but would incorrectly widen the opening view if the list becomes statewide.
 - The existing count reports only stations with an available value; it does not expose the number of live Leaflet markers.
 - The existing zone-change path reloads the active zone's context and observations and resets the map to the zone center, but viewport reconciliation must also remove the old zone's markers immediately and reject stale asynchronous work.
 
-Owner policy decisions confirmed on 2026-08-15:
+Owner policy decisions confirmed for the marker-only phase on 2026-08-15; items 1 and 3 were later superseded for the combined `69c365a` checkpoint:
 
 1. “Load” means deferred Leaflet marker creation only. The existing single `current.json` request remains authoritative; viewport-scoped observation transfer is a separate future data/source phase.
 2. The reporting label shows both counts: `N visible · M reporting`.
@@ -241,14 +253,14 @@ Completed in Chrome on 2026-08-15 across all 15 required county/zone states at d
 3. Recheck Conditions, Radar, Satellite, every Forecast subtab, station details, alerts, map controls, playback, scrubbers, legends, meteograms, and responsive layout. **Complete.**
 4. Run live-provider checks separately and report any provider/network limitations without changing source selection or fallback behavior. **Complete.**
 
-### Phase 5: source-preservation closeout — complete
+### Phase 5: marker-only source-preservation closeout — complete before `69c365a`
 
-Completed on 2026-08-15.
+Completed on 2026-08-15 for the marker-only boundary. The later user-authorized `69c365a` commit intentionally superseded the single-`current.json` and no-API/data portions of this evidence for North Carolina conditions.
 
 - The pre-migration and committed page inventories have identical ordered values for all nine counties' radar-station, radar-product, and satellite-product selectors.
 - No API or committed county config file changed between `cc5fd3d` and `9b5fbf1`. The NOAA standard-radar and STAR fallback URL patterns remain in the shared controller, with GOES-19/Eastern US retained for the East pages and GOES-18/Western US retained for San Diego.
 - The marker working-tree slice changes only marker lifecycle/rendering plus the ten `weatherCenter.js` cache-version references. It retains the single active county/zone `current.json` request and introduces no source, JSON, data, API, cache-script, or generated-file diff.
-- Current unrelated data inventory: Bertie `alerts.json`, `current.json`, `discussion.json`, `forecast.json`, and `hourly.json`; Dare, Hyde, Martin, Pitt, Tyrrell, and Washington `discussion.json`; the four-coordinate user edit in Bertie `config.json`; and the untracked 632-entry `counties/nc-weather-stations.json`. Preserve and exclude all of these from a marker/UI commit.
+- The county JSON, Bertie coordinate edit, statewide station catalog, and shared cache implementation that were previously outside the marker-only slice were subsequently included by the user in `69c365a`.
 - No references remain to `county_old.css`, Bertie's superseded weather-center/map controllers, or the old `weatherCenter.js?v=20260814-1` cache key.
 - Syntax checks passed for the shared county controllers, the shared interactive-map module, both meteogram implementations, and the alert/context/map modules. `git diff --check` passed with expected LF-to-CRLF warnings only.
 
@@ -258,9 +270,10 @@ Completed on 2026-08-15.
 4. Run JavaScript syntax checks and `git diff --check`. **Complete.**
 5. Record tests, controlled-browser checks, owner checks, and external-provider checks as separate categories. **Complete.**
 
-### Phase 6: checkpoint review and commit
+### Phase 6: combined checkpoint review and commit — complete
 
-1. Review the exact final file list and diff with the user.
-2. Stage only the authorized viewport-marker implementation and this handoff if the user approves. Exclude runtime-generated county JSON.
-3. Commit only after explicit authorization.
-4. Do not deploy or push unless separately requested.
+1. The user committed the combined working tree as `69c365a` and pushed it to `origin/main`. **Complete.**
+2. Post-commit static, fallback/local-source, responsive, zone, marker, and focused cross-feature regression is recorded above. **Complete.**
+3. Live statewide-cache success remains pending because the generated cache is absent locally. **Pending external environment/cache availability.**
+4. The catalog whitespace cleanup and this handoff update are a small uncommitted follow-up. Review and commit them only after explicit authorization.
+5. Do not deploy unless separately requested.

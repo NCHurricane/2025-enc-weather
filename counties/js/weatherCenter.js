@@ -6,13 +6,14 @@ import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
 } from './countyContext.js?v=20260816-1';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
 
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 const NC_STATION_CATALOG_VERSION = '20260816-1';
 const STATION_MARKER_SIZES = Object.freeze({
-  regular: Object.freeze({ iconSize: [112, 62], iconAnchor: [56, 31] }),
-  compact: Object.freeze({ iconSize: [112, 50], iconAnchor: [56, 25] }),
+  regular: Object.freeze({ iconSize: [76, 48], iconAnchor: [38, 54] }),
+  compact: Object.freeze({ iconSize: [96, 40], iconAnchor: [48, 40] }),
 });
 const MOBILE_STATION_DETAILS_QUERY = window.matchMedia('(max-width: 600px)');
 let statewideStationCatalogPromise = null;
@@ -75,6 +76,15 @@ function initialMapZoom() {
   return MOBILE_STATION_DETAILS_QUERY.matches ? 9 : 10;
 }
 
+function statewideStationSpacing(zoom) {
+  if (zoom >= 12) return 0;
+  if (zoom >= 11) return 70;
+  if (zoom >= 10) return 96;
+  if (zoom >= 9) return 120;
+  if (zoom >= 8) return 150;
+  return 180;
+}
+
 function versionedUrl(url, version) {
   const requestedUrl = new URL(url, window.location.href);
   requestedUrl.searchParams.set('v', String(version));
@@ -106,15 +116,6 @@ function loadStatewideStationCatalog(url) {
       });
   }
   return statewideStationCatalogPromise;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
 }
 
 const CONDITION_FIELDS = Object.freeze({
@@ -321,6 +322,7 @@ class CountyTemperatureViewer {
     this.currentData = null;
     this.map = null;
     this.markerLayer = null;
+    this.cityLabelOverlay = null;
     this.stationRecords = new Map();
     this.stationMarkers = new Map();
     this.selectedMarker = null;
@@ -332,6 +334,8 @@ class CountyTemperatureViewer {
     this.refreshTimer = 0;
     this.context = null;
     this.coverageMode = 'local';
+    const weatherCenterRoot = document.querySelector('[data-county-weather-center]') || document.body;
+    this.cityLabelsUrl = weatherCenterRoot.dataset.cityLabelsUrl || '';
     this.active = false;
     this.handleStationDetailsModeChange = this.handleStationDetailsModeChange.bind(this);
     this.handleZoneChange = this.handleZoneChange.bind(this);
@@ -468,6 +472,11 @@ class CountyTemperatureViewer {
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
     });
     const leafletMap = this.map.ensureMap();
+    this.cityLabelOverlay = installWeatherCityLabels(
+      leafletMap,
+      this.context.center,
+      this.cityLabelsUrl,
+    );
     this.markerLayer = window.L.layerGroup().addTo(leafletMap);
     leafletMap.on('moveend zoomend', this.handleMapSettled);
     return this.map;
@@ -495,8 +504,11 @@ class CountyTemperatureViewer {
     this.markerLayer?.clearLayers();
     this.stationMarkers.clear();
     if (this.mapElement) {
+      this.mapElement.dataset.eligibleStationCount = '0';
       this.mapElement.dataset.visibleStationCount = '0';
       this.mapElement.dataset.liveMarkerCount = '0';
+      this.mapElement.dataset.stationThinningActive = 'false';
+      this.mapElement.dataset.stationSpacingPixels = '0';
     }
   }
 
@@ -510,6 +522,42 @@ class CountyTemperatureViewer {
       && point.x <= viewportSize.x + anchorX
       && point.y >= -(height - anchorY)
       && point.y <= viewportSize.y + anchorY;
+  }
+
+  thinStationRecords(records, leafletMap) {
+    if (this.coverageMode !== 'statewide' || records.length <= 30) return records;
+
+    const spacing = statewideStationSpacing(leafletMap.getZoom());
+    if (!spacing) return records;
+
+    const viewportCenter = leafletMap.getSize().divideBy(2);
+    const candidates = records.map((record) => {
+      const point = leafletMap.latLngToContainerPoint([record.lat, record.lon]);
+      return {
+        record,
+        point,
+        distanceFromCenter: point.distanceTo(viewportCenter),
+      };
+    }).sort((left, right) => (
+      Number(left.record.stale) - Number(right.record.stale)
+      || left.distanceFromCenter - right.distanceFromCenter
+      || left.record.station.id.localeCompare(right.record.station.id)
+    ));
+    const accepted = [];
+
+    for (const candidate of candidates) {
+      const [width, height] = candidate.record.iconSize;
+      const overlaps = accepted.some((placed) => {
+        const [placedWidth, placedHeight] = placed.record.iconSize;
+        const minimumX = Math.max(spacing, (width + placedWidth) / 2 + 8);
+        const minimumY = Math.max(spacing * 0.68, (height + placedHeight) / 2 + 6);
+        return Math.abs(candidate.point.x - placed.point.x) < minimumX
+          && Math.abs(candidate.point.y - placed.point.y) < minimumY;
+      });
+      if (!overlaps) accepted.push(candidate);
+    }
+
+    return accepted.map((candidate) => candidate.record);
   }
 
   createStationMarker(record) {
@@ -526,11 +574,10 @@ class CountyTemperatureViewer {
       stateClass,
       sizeClass,
       stationName,
-      locationName,
     } = record;
     const icon = window.L.divIcon({
       className: 'temperature-marker-icon',
-      html: `<span class="temperature-marker-value${stateClass}${sizeClass}"><span class="temperature-marker-reading">${metric.html}</span><small class="temperature-marker-location">${escapeHtml(locationName)}</small></span>`,
+      html: `<span class="temperature-marker-value${stateClass}${sizeClass}"><span class="temperature-marker-reading">${metric.html}</span></span>`,
       iconSize,
       iconAnchor,
     });
@@ -551,15 +598,19 @@ class CountyTemperatureViewer {
   reconcileStationMarkers() {
     if (!this.map || !this.markerLayer) return;
     const leafletMap = this.map.ensureMap();
-    let visibleCount = 0;
+    const eligibleRecords = [];
+
+    for (const record of this.stationRecords.values()) {
+      if (this.stationIntersectsBufferedViewport(record, leafletMap)) eligibleRecords.push(record);
+    }
+    const displayedRecords = this.thinStationRecords(eligibleRecords, leafletMap);
+    const displayedStationIds = new Set(displayedRecords.map((record) => record.station.id));
 
     for (const [stationId, record] of this.stationRecords) {
-      const eligible = this.stationIntersectsBufferedViewport(record, leafletMap);
-      if (eligible) visibleCount += 1;
       const marker = this.stationMarkers.get(stationId);
       const retainSelected = marker === this.selectedMarker && !this.stationDetails?.hidden;
 
-      if (eligible || retainSelected) {
+      if (displayedStationIds.has(stationId) || retainSelected) {
         if (!marker) this.createStationMarker(record);
       } else if (marker) {
         this.markerLayer.removeLayer(marker);
@@ -568,15 +619,23 @@ class CountyTemperatureViewer {
     }
 
     const reportingCount = this.stationRecords.size;
+    const visibleCount = displayedRecords.length;
     if (this.stationCount) {
       this.stationCount.textContent = this.coverageMode === 'local-fallback'
         ? `Local coverage · ${reportingCount} reporting`
         : `${visibleCount} visible · ${reportingCount} reporting`;
     }
     this.mapElement.dataset.coverageMode = this.coverageMode;
+    this.mapElement.dataset.eligibleStationCount = String(eligibleRecords.length);
     this.mapElement.dataset.visibleStationCount = String(visibleCount);
     this.mapElement.dataset.reportingStationCount = String(reportingCount);
     this.mapElement.dataset.liveMarkerCount = String(this.stationMarkers.size);
+    this.mapElement.dataset.stationThinningActive = String(
+      visibleCount < eligibleRecords.length,
+    );
+    this.mapElement.dataset.stationSpacingPixels = String(
+      this.coverageMode === 'statewide' ? statewideStationSpacing(leafletMap.getZoom()) : 0,
+    );
     const center = leafletMap.getCenter();
     this.mapElement.dataset.mapCenter = `${center.lat.toFixed(5)},${center.lng.toFixed(5)}`;
     this.mapElement.dataset.mapZoom = String(leafletMap.getZoom());
@@ -619,6 +678,10 @@ class CountyTemperatureViewer {
       this.context = await loadCountyContext();
       if (this.map) {
         this.map.ensureMap().setView(this.context.center, initialMapZoom(), { animate: false });
+        if (this.cityLabelOverlay) {
+          this.cityLabelOverlay.homeCenter = this.context.center;
+          this.cityLabelOverlay.render?.();
+        }
         this.hasInitializedView = true;
       }
       if (this.active) await this.loadStations({ replace: true });
@@ -740,7 +803,6 @@ class CountyTemperatureViewer {
       const stateClass = stale ? ' is-stale' : '';
       const sizeClass = metric.compact ? ' is-compact' : '';
       const stationName = station.friendlyName || station.name || station.id;
-      const locationName = station.locationName || station.friendlyName || station.name || station.id;
       const markerSize = metric.compact
         ? STATION_MARKER_SIZES.compact
         : STATION_MARKER_SIZES.regular;
@@ -752,10 +814,10 @@ class CountyTemperatureViewer {
         lat,
         lon,
         metric,
+        stale,
         stateClass,
         sizeClass,
         stationName,
-        locationName,
         iconSize: markerSize.iconSize,
         iconAnchor: markerSize.iconAnchor,
       });

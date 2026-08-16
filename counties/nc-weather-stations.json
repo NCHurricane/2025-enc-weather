@@ -6947,7 +6947,7 @@
         "locationName": "Rural Strawberry Altostratus",
         "county": "Alamance",
         "countyFips": "37001",
-        "url": "https://www.weather.gov/wrh/timeseries?site=WXM9835", 
+        "url": "https://www.weather.gov/wrh/timeseries?site=WXM9835",
         "lat": 36.0928,
         "lon": -79.28036
     }
