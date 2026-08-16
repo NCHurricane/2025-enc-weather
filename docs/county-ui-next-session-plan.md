@@ -1,53 +1,25 @@
 # County UI Migration: Next-Session Plan
 
-Updated: 2026-08-14  
+Updated: 2026-08-15
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: implementation is complete in the working tree; final owner acceptance, full closeout regression, and an authorized commit remain pending.
+Status: the county UI migration is committed at `9b5fbf1`; alert Phases 1–2, viewport-aware station-marker Phase 3, full migration regression Phase 4, and source-preservation closeout Phase 5 are complete. Phase 6 checkpoint review is next; do not stage or commit without explicit user authorization.
 
 ## Resume order
 
 1. Read the user-supplied `AGENTS.md` instructions in the session prompt. There is currently no tracked `AGENTS.md` at the repository root.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
-4. Confirm the base checkpoint is still `cc5fd3d Update to the county pages' UI and workflow for modernization` on `main`.
-5. Preserve the entire current dirty tree. Do not reset, discard, stage, commit, or deploy anything without fresh user authorization.
-6. Start with owner visual review of the final alert modal before making another design change.
+4. Confirm the migration checkpoint is still `9b5fbf1 Updates to the UI for the county pages. New tile-based radar and satellite maps, new county alerts, and a new county context module. Also includes a new county.css file to replace the old county_old.css file.` on `main`.
+5. Preserve the entire current dirty tree. Local browser review refreshed generated county weather JSON after the commit; do not reset, discard, stage, commit, or deploy those files without fresh user authorization.
+6. Resume at Phase 6 checkpoint review. Phases 1–5 are complete. Review the exact authorized file list and diff with the user before any staging or commit.
 
 ## Current checkpoint
 
-The all-county UI migration is uncommitted and unstaged. It is based on the user-owned Bertie prototype committed at `cc5fd3d`.
+The all-county UI migration and this handoff were committed on `main` at `9b5fbf1`, based on the user-owned Bertie prototype at `cc5fd3d`.
 
-Modified tracked files:
+Local owner/controlled-browser review subsequently refreshed generated weather data. A separate concurrent edit also changed four Bertie station coordinates in `counties/bertie/data/config.json`. During the Phase 4 closeout, the untracked `counties/nc-weather-stations.json` also appeared; it is a 632-entry station array and was not created by the closeout commands. Preserve all of those files as unrelated work and keep them out of a future marker/UI commit unless the user separately authorizes them.
 
-- `counties/beaufort/index.html`
-- `counties/bertie/index.html`
-- `counties/bertie/index_test.html`
-- `counties/dare/index.html`
-- `counties/hyde/index.html`
-- `counties/js/countyApp.js`
-- `counties/js/countyApp.multizone.js`
-- `counties/martin/index.html`
-- `counties/pitt/index.html`
-- `counties/san-diego/index.html`
-- `counties/tyrrell/index.html`
-- `counties/washington/index.html`
-
-Deleted superseded files:
-
-- `counties/css/county_old.css`
-- `counties/bertie/css/weather-center.css`
-- `counties/bertie/js/weatherCenter.js`
-- `counties/bertie/js/weatherMaps.js`
-
-New untracked implementation files:
-
-- `counties/css/county.css`
-- `counties/js/countyAlerts.js`
-- `counties/js/countyContext.js`
-- `counties/js/weatherCenter.js`
-- `counties/js/weatherMaps.js`
-
-This handoff file is also new and untracked.
+The authorized Phase 3 working-tree slice is `counties/js/weatherCenter.js`, the ten county/prototype HTML cache-version references, and this handoff. The generated county JSON remains outside that slice.
 
 ## Completed this session
 
@@ -111,7 +83,7 @@ Do not fix source/data defects as part of a UI closeout. Record and route them s
 
 - JavaScript syntax checks passed for the shared county modules, including `countyAlerts.js`, `countyApp.js`, and `countyApp.multizone.js`.
 - `git diff --check` passed. Git reported only expected LF-to-CRLF working-copy warnings.
-- No JSON, data, API, cache, or generated-file changes were present.
+- No JSON, data, API, cache, or generated-file changes were present at the committed `9b5fbf1` migration checkpoint. The current working tree now contains separately owned generated weather JSON plus the four-coordinate Bertie config edit inventoried below; none was introduced by the marker implementation.
 - No remaining HTML/CSS/JS references to `county_old.css` or the superseded Bertie-only weather-center/map files were found.
 - All ten county/prototype navigation bootstraps were verified to contain the approved wordmark configuration and current navigation-module version.
 
@@ -137,28 +109,41 @@ Do not fix source/data defects as part of a UI closeout. Record and route them s
 - The user reported that the migrated site was working before the wordmark correction.
 - The user accepted the compact alert element and then preferred the centered modal over the initial bottom-sheet/right-drawer placement.
 - The user preferred the modal at 95% width and without horizontal alert-selector scrolling.
-- The latest selected-alert metadata and shared-bulletin explanation still need the user's final visual acceptance in the next session.
+- The user accepted the final selected-alert metadata and shared-bulletin treatment on 2026-08-15.
 
 ### External-provider checks
 
-- Local page behavior and available map controls were exercised.
-- Live third-party radar/satellite provider availability, latency, throttling, and production CORS behavior were not independently validated as a separate provider test in this closeout.
+- App-integrated live checks loaded 12-frame interactive radar and satellite products throughout the 30-state desktop/mobile regression. Radar remained interactive in every state. Satellite remained interactive in 29 states; Bertie desktop timed out once and correctly switched to the existing NOAA STAR latest-image fallback, then loaded interactively during the mobile pass.
+- Direct standalone Chrome navigation to both NOAA NowCOAST GetCapabilities endpoints was blocked at the browser client layer with `ERR_BLOCKED_BY_CLIENT`. This is a direct-probe limitation, not evidence that the provider was unavailable, because the app-integrated NowCOAST tiles and frames loaded successfully.
+- Provider availability remains time-dependent. The closeout did not change source selection, fallback ordering, or CORS behavior.
+
+### Phase 4 controlled-browser regression on 2026-08-15
+
+- Chrome exercised 15 county/zone states at `1280x900` and `390x844`: all six single-zone counties, all three Dare zones, both Hyde zones, and all four San Diego zones.
+- Every state exercised all seven Conditions fields, viewport-marker counts, station details, temperature-map zoom and basemap controls, Radar, Satellite, playback, pause, scrubbers, legends, all four Forecast subtabs, and the meteogram.
+- Every temperature map opened at zoom 10. Zoom controls produced `10 -> 11 -> 10`, and every condition's live-marker count matched both its visible count and rendered marker DOM count.
+- Every interactive radar/satellite success exposed 12 frames, accepted play/pause and scrubber input, and rendered its product legend. The Bertie desktop satellite fallback remained usable after its provider timeout.
+- Pitt's current single Heat Advisory opened and closed through the standard alert dialog on mobile. Other checked states reported no current active alert; the prior disposable alert fixture remains the authoritative coverage for multi-alert and `View all` behavior.
+- No county/zone state had horizontal page overflow. No browser errors were captured.
+- Ten existing meteogram warnings, `No data for timeframe: 0`, were captured while the affected meteogram canvases still rendered. They occurred in the shared East implementation and San Diego's local implementation and were left unchanged as current data/runtime findings.
 
 ## Known findings intentionally not fixed
 
 1. San Diego emitted the existing warning `[current] No cached data for station KETC`. This is a data/cache finding, not part of the UI migration.
 2. Dare Northern OBX, Dare Hatteras, and Hyde Ocracoke multi-alert files contain one identical combined NWS description for every active alert in the file. Their instructions are also duplicated. The UI now explains this accurately; do not split or rewrite the source bulletin.
 3. In cached Dare Northern OBX data, some `headline` dates do not agree with the displayed `expires` field (for example, a headline can mention October 15 while `expires` produces October 14 at 8:30 AM). This was not researched or corrected because data/source work was explicitly out of scope.
+4. The Phase 4 sweep captured `No data for timeframe: 0` warnings from both meteogram implementations while their canvases remained visible. This was not changed during the UI/source-preservation closeout.
 
-## Validation gaps to close next session
+## Alert validation gaps closed on 2026-08-15
 
-1. No single-zone county currently has active local alert data, so the active-alert modal was not browser-exercised through the standard single-zone builder. The standard builder calls the same shared alert renderer and its no-alert path passed, but active-state runtime coverage remains desirable.
-2. No current local alert file contains more than three alerts, so the page-level `View all` control for four or more alerts was not browser-tested.
-3. Every current multi-alert sample uses a shared combined bulletin, so switching between genuinely different alert descriptions could not be tested against current repository data.
-4. Backdrop dismissal was implemented but was not isolated as a separate final browser assertion after the last metadata change.
-5. Third-party provider behavior remains a separate external validation category.
+A disposable HTML/config fixture exercised the exported standard single-zone initializer without editing production/generated county JSON. The fixture was removed after validation.
 
-Use temporary/non-production test fixtures or naturally available current alerts to close alert-count and distinct-bulletin coverage. Do not edit generated county JSON merely to manufacture a test case.
+1. One active alert rendered and opened through `countyApp.js`'s standard single-zone `initializePage` path.
+2. Five alerts rendered three page-level chips plus the `View all 5` control; the modal exposed all five selectors.
+3. All five alerts used genuinely different descriptions. Each selector updated its own title, severity, urgency, affected area, and bulletin, with exactly one panel visible and no shared-bulletin notice.
+4. The five-alert mobile selector grid had no horizontal overflow. Its intended vertical scrolling retained access to the complete selector set.
+5. Backdrop dismissal closed the modal and restored page scrolling. No browser warnings or errors were captured.
+6. Third-party provider behavior remains a separate external validation category.
 
 ## Added requirement: viewport-aware station markers
 
@@ -172,12 +157,19 @@ This is a separate follow-up from the completed UI migration. Do not implement i
 - Do not use clustering as a substitute unless separately approved; the requested behavior is viewport-aware availability of individual station markers.
 - Distinguish marker rendering from observation-data transfer. The current controller fetches one `current.json` before rendering, so viewport-aware marker creation alone will reduce Leaflet/DOM work but will not make that JSON request smaller. True viewport-scoped network loading would require separate source/data architecture and must not be introduced during the UI-only closeout.
 
-Research and owner decisions still needed:
+Current lifecycle inventory completed on 2026-08-15:
 
-1. Confirm whether “load” means deferred Leaflet marker creation only or also a future viewport-scoped observation request. Treat the latter as a separate non-UI phase with its own source-preservation ledger.
-2. Decide whether the reporting label should describe the buffered visible set, the full loaded inventory, or both (for example, `12 visible · 84 reporting statewide`).
-3. Define the initial county/zone view independently of a future statewide station inventory so an expanded list cannot force an unintended statewide `fitBounds`.
-4. Decide how an open station-detail panel behaves if its marker leaves the buffer during a pan or zoom; preserving the selected marker until the panel closes is the preferred continuity behavior to evaluate.
+- `counties/js/weatherCenter.js` fetches one active county/zone `current.json`, clears the full Leaflet marker layer, and recreates every marker with an available value whenever the field or data changes.
+- The initial render calls `fitBounds` with every configured station coordinate. That works for today's inventories of 3–10 stations but would incorrectly widen the opening view if the list becomes statewide.
+- The existing count reports only stations with an available value; it does not expose the number of live Leaflet markers.
+- The existing zone-change path reloads the active zone's context and observations and resets the map to the zone center, but viewport reconciliation must also remove the old zone's markers immediately and reject stale asynchronous work.
+
+Owner policy decisions confirmed on 2026-08-15:
+
+1. “Load” means deferred Leaflet marker creation only. The existing single `current.json` request remains authoritative; viewport-scoped observation transfer is a separate future data/source phase.
+2. The reporting label shows both counts: `N visible · M reporting`.
+3. The initial county/zone view uses the configured center at zoom 10 and no longer fits to the station inventory.
+4. A selected marker remains mounted with its open detail panel while it is outside the buffered viewport. It becomes eligible for retirement after the detail panel closes.
 
 ## Alternatives discussed but intentionally not retained
 
@@ -193,48 +185,82 @@ These are not unfinished requirements. Revisit only if the user asks:
 
 ## Next-session execution plan
 
-### Phase 1: owner acceptance of the final alert treatment
+### Phase 1: owner acceptance of the final alert treatment — complete
+
+Accepted by the user on 2026-08-15 with no additional visual refinement.
 
 1. Hard-refresh Dare Northern OBX and review the centered modal at mobile and desktop widths.
 2. Select all three alert choices and confirm the title, color, metadata, and shared-bulletin explanation are clear.
 3. Review Hyde Ocracoke's two-alert modal.
 4. Make only narrowly approved visual refinements.
 
-### Phase 2: close the remaining alert validation gaps
+### Phase 2: close the remaining alert validation gaps — complete
+
+Completed on 2026-08-15 with a disposable, non-production fixture that was removed after testing.
 
 1. Exercise an active alert through the standard single-zone builder without modifying production/generated JSON.
 2. Exercise four-or-more-alert behavior and the `View all` control with a temporary test harness or naturally available data.
 3. Exercise two alerts with genuinely different bulletin descriptions.
 4. Explicitly test backdrop dismissal after the final design is accepted.
 
-### Phase 3: viewport-aware station-marker pilot
+### Phase 3: viewport-aware station-marker pilot — complete
 
-1. Inventory the current station-loading and marker lifecycle without altering config or generated observation files.
-2. Add buffered, pixel-aware marker eligibility to the shared conditions-map controller while preserving the existing data loader.
-3. Keep the selected station marker/detail presentation stable while the map moves, according to the owner-approved continuity rule.
-4. Pilot one single-zone county and San Diego, including every San Diego zone, before applying the shared behavior to the remaining counties.
-5. Test pan and zoom boundaries at mobile, tablet, and desktop widths, including markers that are approximately half outside each edge of the map.
-6. Test a temporary/non-production statewide-size station list for bounded marker creation at county zoom and progressive marker appearance as the user zooms out. Do not modify production/generated JSON to create the fixture.
-7. Measure both total configured stations and live Leaflet marker count so the validation report proves that off-screen markers are deferred.
+Completed on 2026-08-15.
 
-### Phase 4: full migration regression
+- The shared conditions-map controller now reconciles an ordered station-record inventory against the settled Leaflet viewport after pan or zoom.
+- Eligibility uses each marker's existing `112x50` or `112x62` size and anchor, retaining markers while any portion remains visible rather than using a latitude/longitude percentage.
+- Marker creation/removal is incremental and keyed by station ID, preventing duplicate markers and handlers.
+- The selected marker remains mounted while details are open; closing details re-runs eligibility.
+- Zone changes immediately clear the prior marker set and use a generation boundary so stale asynchronous observation work cannot publish into the new zone.
+- The existing observation request and full configured station inventory remain unchanged.
+- All ten county/prototype HTML references use `weatherCenter.js?v=20260815-3`.
 
-1. Re-run all nine counties at desktop and mobile widths.
-2. Exercise every zone in Dare, Hyde, and San Diego.
-3. Recheck Conditions, Radar, Satellite, every Forecast subtab, station details, alerts, map controls, playback, scrubbers, legends, meteograms, and responsive layout.
-4. Run live-provider checks separately and report any provider/network limitations without changing source selection or fallback behavior.
+Validation evidence:
 
-### Phase 5: source-preservation closeout
+- Bertie retained all 10 reporting stations but reduced live markers from 10 to 2 at the tighter zoom used in the pilot. An off-screen selected marker and its detail panel remained stable.
+- San Diego Coastal, Valleys, Mountains, and Deserts each reset to their configured center at zoom 10 with only the active zone's marker set. Rapid Coastal → Mountains → Valleys switching ended with a Valleys-only set.
+- A disposable 144-station fixture materialized 3, 12, 56, and 144 markers at desktop zoom levels 10, 9, 8, and 7. It materialized 1 marker at mobile zoom 10 and 3 at tablet zoom 10.
+- Mobile keyboard panning retained markers roughly half outside the left, right, top, and bottom map edges. Tablet and desktop pan/zoom reconciliation also passed.
+- A final desktop and mobile sweep covered all single-zone counties plus every Dare, Hyde, and San Diego zone. Every state opened at zoom 10, live Leaflet counts matched rendered marker elements, no page overflow occurred, and no browser warnings/errors were captured.
+- Temporary fixture files were removed after validation.
 
-1. Compare all weather/source references against the pre-migration state.
-2. Confirm no JSON/data/API/cache/generated diffs.
-3. Confirm no superseded CSS/JS references remain.
-4. Run JavaScript syntax checks and `git diff --check`.
-5. Record tests, controlled-browser checks, owner checks, and external-provider checks as separate categories.
+1. Inventory the current station-loading and marker lifecycle without altering config or generated observation files. **Complete.**
+2. Add buffered, pixel-aware marker eligibility to the shared conditions-map controller while preserving the existing data loader. **Complete.**
+3. Keep the selected station marker/detail presentation stable while the map moves, according to the owner-approved continuity rule. **Complete.**
+4. Pilot one single-zone county and San Diego, including every San Diego zone, before applying the shared behavior to the remaining counties. **Complete.**
+5. Test pan and zoom boundaries at mobile, tablet, and desktop widths, including markers that are approximately half outside each edge of the map. **Complete.**
+6. Test a temporary/non-production statewide-size station list for bounded marker creation at county zoom and progressive marker appearance as the user zooms out. Do not modify production/generated JSON to create the fixture. **Complete.**
+7. Measure both total configured stations and live Leaflet marker count so the validation report proves that off-screen markers are deferred. **Complete.**
+
+### Phase 4: full migration regression — complete
+
+Completed in Chrome on 2026-08-15 across all 15 required county/zone states at desktop and mobile widths. The detailed evidence and provider limitation are recorded above.
+
+1. Re-run all nine counties at desktop and mobile widths. **Complete.**
+2. Exercise every zone in Dare, Hyde, and San Diego. **Complete.**
+3. Recheck Conditions, Radar, Satellite, every Forecast subtab, station details, alerts, map controls, playback, scrubbers, legends, meteograms, and responsive layout. **Complete.**
+4. Run live-provider checks separately and report any provider/network limitations without changing source selection or fallback behavior. **Complete.**
+
+### Phase 5: source-preservation closeout — complete
+
+Completed on 2026-08-15.
+
+- The pre-migration and committed page inventories have identical ordered values for all nine counties' radar-station, radar-product, and satellite-product selectors.
+- No API or committed county config file changed between `cc5fd3d` and `9b5fbf1`. The NOAA standard-radar and STAR fallback URL patterns remain in the shared controller, with GOES-19/Eastern US retained for the East pages and GOES-18/Western US retained for San Diego.
+- The marker working-tree slice changes only marker lifecycle/rendering plus the ten `weatherCenter.js` cache-version references. It retains the single active county/zone `current.json` request and introduces no source, JSON, data, API, cache-script, or generated-file diff.
+- Current unrelated data inventory: Bertie `alerts.json`, `current.json`, `discussion.json`, `forecast.json`, and `hourly.json`; Dare, Hyde, Martin, Pitt, Tyrrell, and Washington `discussion.json`; the four-coordinate user edit in Bertie `config.json`; and the untracked 632-entry `counties/nc-weather-stations.json`. Preserve and exclude all of these from a marker/UI commit.
+- No references remain to `county_old.css`, Bertie's superseded weather-center/map controllers, or the old `weatherCenter.js?v=20260814-1` cache key.
+- Syntax checks passed for the shared county controllers, the shared interactive-map module, both meteogram implementations, and the alert/context/map modules. `git diff --check` passed with expected LF-to-CRLF warnings only.
+
+1. Compare all weather/source references against the pre-migration state. **Complete.**
+2. Confirm the marker implementation introduced no JSON/data/API/cache/generated diffs; inventory unrelated runtime-generated changes separately. **Complete.**
+3. Confirm no superseded CSS/JS references remain. **Complete.**
+4. Run JavaScript syntax checks and `git diff --check`. **Complete.**
+5. Record tests, controlled-browser checks, owner checks, and external-provider checks as separate categories. **Complete.**
 
 ### Phase 6: checkpoint review and commit
 
 1. Review the exact final file list and diff with the user.
-2. Stage only the authorized county migration, alert UI, and this handoff if the user approves.
+2. Stage only the authorized viewport-marker implementation and this handoff if the user approves. Exclude runtime-generated county JSON.
 3. Commit only after explicit authorization.
 4. Do not deploy or push unless separately requested.

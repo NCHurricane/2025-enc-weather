@@ -5,11 +5,17 @@ import {
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
-} from './countyContext.js?v=20260814-1';
+} from './countyContext.js?v=20260816-1';
 
 const STATION_MAX_AGE_MINUTES = 120;
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+const NC_STATION_CATALOG_VERSION = '20260816-1';
+const STATION_MARKER_SIZES = Object.freeze({
+  regular: Object.freeze({ iconSize: [112, 62], iconAnchor: [56, 31] }),
+  compact: Object.freeze({ iconSize: [112, 50], iconAnchor: [56, 25] }),
+});
 const MOBILE_STATION_DETAILS_QUERY = window.matchMedia('(max-width: 600px)');
+let statewideStationCatalogPromise = null;
 const NWS_REFERENCE_WMS_URL =
   'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
 const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
@@ -63,6 +69,43 @@ function finiteNumber(value) {
   if (value === null || value === undefined || value === '') return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function initialMapZoom() {
+  return MOBILE_STATION_DETAILS_QUERY.matches ? 9 : 10;
+}
+
+function versionedUrl(url, version) {
+  const requestedUrl = new URL(url, window.location.href);
+  requestedUrl.searchParams.set('v', String(version));
+  return requestedUrl.href;
+}
+
+async function fetchJson(url, label, { cache = 'no-store' } = {}) {
+  const response = await fetch(url, { cache });
+  if (!response.ok) throw new Error(`${label} request failed (${response.status})`);
+  return response.json();
+}
+
+function loadStatewideStationCatalog(url) {
+  if (!statewideStationCatalogPromise) {
+    statewideStationCatalogPromise = fetchJson(
+      versionedUrl(url, NC_STATION_CATALOG_VERSION),
+      'NC station catalog',
+      { cache: 'default' },
+    )
+      .then((stations) => {
+        if (!Array.isArray(stations) || !stations.length) {
+          throw new Error('NC station catalog is empty or invalid');
+        }
+        return stations;
+      })
+      .catch((error) => {
+        statewideStationCatalogPromise = null;
+        throw error;
+      });
+  }
+  return statewideStationCatalogPromise;
 }
 
 function escapeHtml(value) {
@@ -276,16 +319,23 @@ class CountyTemperatureViewer {
     this.activeField = 'temperature';
     this.stationConfig = null;
     this.currentData = null;
-    this.hasFitBounds = false;
     this.map = null;
     this.markerLayer = null;
+    this.stationRecords = new Map();
+    this.stationMarkers = new Map();
     this.selectedMarker = null;
+    this.markerReconcileFrame = 0;
+    this.stationLoadGeneration = 0;
+    this.hasInitializedView = false;
     this.loadingPromise = null;
     this.lastLoadedAt = 0;
+    this.refreshTimer = 0;
     this.context = null;
+    this.coverageMode = 'local';
     this.active = false;
     this.handleStationDetailsModeChange = this.handleStationDetailsModeChange.bind(this);
     this.handleZoneChange = this.handleZoneChange.bind(this);
+    this.handleMapSettled = this.handleMapSettled.bind(this);
   }
 
   init() {
@@ -323,7 +373,7 @@ class CountyTemperatureViewer {
     this.selectedMarker?.setZIndexOffset(1000);
   }
 
-  hideStationDetails({ restoreFocus = false } = {}) {
+  hideStationDetails({ restoreFocus = false, reconcile = true } = {}) {
     const selectedMarker = this.selectedMarker;
     if (this.stationDetails) {
       this.stationDetails.hidden = true;
@@ -332,6 +382,7 @@ class CountyTemperatureViewer {
     }
     this.setSelectedMarker(null);
     if (restoreFocus) selectedMarker?.getElement()?.focus();
+    if (selectedMarker && reconcile) this.scheduleStationMarkerReconcile();
   }
 
   showStationDetails(station, cachedStation, ageMinutes) {
@@ -408,7 +459,7 @@ class CountyTemperatureViewer {
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
       center: this.context.center,
-      zoom: 10,
+      zoom: initialMapZoom(),
       requireCtrlForWheelZoom: false,
       ariaLabel: `Current ${CONDITION_FIELDS[this.activeField].mapLabel} near ${this.context.countyName} County`,
       initialBasemap: 'light',
@@ -416,14 +467,129 @@ class CountyTemperatureViewer {
       basemapControlPosition: 'topleft',
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
     });
-    this.markerLayer = window.L.layerGroup().addTo(this.map.ensureMap());
+    const leafletMap = this.map.ensureMap();
+    this.markerLayer = window.L.layerGroup().addTo(leafletMap);
+    leafletMap.on('moveend zoomend', this.handleMapSettled);
     return this.map;
+  }
+
+  handleMapSettled() {
+    this.scheduleStationMarkerReconcile();
+  }
+
+  cancelStationMarkerReconcile() {
+    if (!this.markerReconcileFrame) return;
+    window.cancelAnimationFrame(this.markerReconcileFrame);
+    this.markerReconcileFrame = 0;
+  }
+
+  scheduleStationMarkerReconcile() {
+    this.cancelStationMarkerReconcile();
+    this.markerReconcileFrame = window.requestAnimationFrame(() => {
+      this.markerReconcileFrame = 0;
+      this.reconcileStationMarkers();
+    });
+  }
+
+  clearStationMarkers() {
+    this.markerLayer?.clearLayers();
+    this.stationMarkers.clear();
+    if (this.mapElement) {
+      this.mapElement.dataset.visibleStationCount = '0';
+      this.mapElement.dataset.liveMarkerCount = '0';
+    }
+  }
+
+  stationIntersectsBufferedViewport(record, leafletMap) {
+    const point = leafletMap.latLngToContainerPoint([record.lat, record.lon]);
+    const viewportSize = leafletMap.getSize();
+    const [width, height] = record.iconSize;
+    const [anchorX, anchorY] = record.iconAnchor;
+
+    return point.x >= -(width - anchorX)
+      && point.x <= viewportSize.x + anchorX
+      && point.y >= -(height - anchorY)
+      && point.y <= viewportSize.y + anchorY;
+  }
+
+  createStationMarker(record) {
+    const {
+      station,
+      cachedStation,
+      ageMinutes,
+      fieldConfig,
+      iconSize,
+      iconAnchor,
+      lat,
+      lon,
+      metric,
+      stateClass,
+      sizeClass,
+      stationName,
+      locationName,
+    } = record;
+    const icon = window.L.divIcon({
+      className: 'temperature-marker-icon',
+      html: `<span class="temperature-marker-value${stateClass}${sizeClass}"><span class="temperature-marker-reading">${metric.html}</span><small class="temperature-marker-location">${escapeHtml(locationName)}</small></span>`,
+      iconSize,
+      iconAnchor,
+    });
+    const marker = window.L.marker([lat, lon], {
+      icon,
+      keyboard: true,
+      riseOnHover: true,
+      title: `${stationName}: ${metric.spoken}`,
+      alt: `${stationName} ${fieldConfig.label.toLowerCase()} observation`,
+    }).addTo(this.markerLayer);
+    marker.on('click', () => {
+      this.handleStationClick(marker, station, cachedStation, ageMinutes);
+    });
+    this.stationMarkers.set(station.id, marker);
+    return marker;
+  }
+
+  reconcileStationMarkers() {
+    if (!this.map || !this.markerLayer) return;
+    const leafletMap = this.map.ensureMap();
+    let visibleCount = 0;
+
+    for (const [stationId, record] of this.stationRecords) {
+      const eligible = this.stationIntersectsBufferedViewport(record, leafletMap);
+      if (eligible) visibleCount += 1;
+      const marker = this.stationMarkers.get(stationId);
+      const retainSelected = marker === this.selectedMarker && !this.stationDetails?.hidden;
+
+      if (eligible || retainSelected) {
+        if (!marker) this.createStationMarker(record);
+      } else if (marker) {
+        this.markerLayer.removeLayer(marker);
+        this.stationMarkers.delete(stationId);
+      }
+    }
+
+    const reportingCount = this.stationRecords.size;
+    if (this.stationCount) {
+      this.stationCount.textContent = this.coverageMode === 'local-fallback'
+        ? `Local coverage · ${reportingCount} reporting`
+        : `${visibleCount} visible · ${reportingCount} reporting`;
+    }
+    this.mapElement.dataset.coverageMode = this.coverageMode;
+    this.mapElement.dataset.visibleStationCount = String(visibleCount);
+    this.mapElement.dataset.reportingStationCount = String(reportingCount);
+    this.mapElement.dataset.liveMarkerCount = String(this.stationMarkers.size);
+    const center = leafletMap.getCenter();
+    this.mapElement.dataset.mapCenter = `${center.lat.toFixed(5)},${center.lng.toFixed(5)}`;
+    this.mapElement.dataset.mapZoom = String(leafletMap.getZoom());
   }
 
   async activate() {
     this.active = true;
     if (!this.context) this.context = await loadCountyContext();
     this.ensureMap().setVisible(true);
+    window.clearInterval(this.refreshTimer);
+    this.refreshTimer = window.setInterval(() => {
+      if (this.active) this.loadStations({ replace: true });
+    }, REFRESH_INTERVAL_MS);
     if (!this.lastLoadedAt || Date.now() - this.lastLoadedAt >= REFRESH_INTERVAL_MS) {
       await this.loadStations();
     }
@@ -431,74 +597,129 @@ class CountyTemperatureViewer {
 
   deactivate() {
     this.active = false;
+    window.clearInterval(this.refreshTimer);
+    this.refreshTimer = 0;
     this.map?.setVisible(false);
   }
 
   async handleZoneChange() {
+    this.stationLoadGeneration += 1;
+    this.stationConfig = null;
+    this.currentData = null;
+    this.stationRecords.clear();
+    this.hasInitializedView = false;
+    this.lastLoadedAt = 0;
+    this.coverageMode = 'local';
+    this.cancelStationMarkerReconcile();
+    this.hideStationDetails({ reconcile: false });
+    this.clearStationMarkers();
+    if (this.stationCount) this.stationCount.textContent = 'Loading stations...';
+
     try {
       this.context = await loadCountyContext();
-      this.stationConfig = null;
-      this.currentData = null;
-      this.hasFitBounds = false;
-      this.lastLoadedAt = 0;
-      this.hideStationDetails();
       if (this.map) {
-        this.map.ensureMap().setView(this.context.center, 10, { animate: false });
+        this.map.ensureMap().setView(this.context.center, initialMapZoom(), { animate: false });
+        this.hasInitializedView = true;
       }
-      if (this.active) await this.loadStations();
+      if (this.active) await this.loadStations({ replace: true });
     } catch (error) {
       console.error('[county-weather-center] Zone refresh failed:', error);
     }
   }
 
-  async loadStations() {
-    if (this.loadingPromise) return this.loadingPromise;
+  async loadStations({ replace = false } = {}) {
+    if (this.loadingPromise && !replace) return this.loadingPromise;
 
+    const generation = ++this.stationLoadGeneration;
     this.loading.hidden = false;
     this.error.hidden = true;
-    this.loadingPromise = this.fetchAndRenderStations();
+    const loadPromise = this.fetchAndRenderStations(generation);
+    this.loadingPromise = loadPromise;
 
     try {
-      await this.loadingPromise;
-      this.lastLoadedAt = Date.now();
+      await loadPromise;
+      if (generation === this.stationLoadGeneration) this.lastLoadedAt = Date.now();
     } catch (error) {
-      console.error('[county-weather-center] Temperature observations failed:', error);
-      this.error.hidden = false;
-      if (this.stationCount) this.stationCount.textContent = 'Station data unavailable';
+      if (generation === this.stationLoadGeneration) {
+        console.error('[county-weather-center] Temperature observations failed:', error);
+        this.error.hidden = false;
+        if (this.stationCount) this.stationCount.textContent = 'Station data unavailable';
+      }
     } finally {
-      this.loading.hidden = true;
-      this.loadingPromise = null;
+      if (this.loadingPromise === loadPromise) {
+        this.loading.hidden = true;
+        this.loadingPromise = null;
+      }
     }
   }
 
-  async fetchAndRenderStations() {
+  async fetchAndRenderStations(generation) {
     const cacheKey = Math.floor(Date.now() / REFRESH_INTERVAL_MS);
-    this.context = await loadCountyContext();
-    const currentResponse = await fetch(
-      `${this.context.dataPath('current.json')}?v=${cacheKey}`,
-      { cache: 'no-store' },
-    );
-    if (!currentResponse.ok) throw new Error(`Current observations request failed (${currentResponse.status})`);
-    const current = await currentResponse.json();
-    const stations = Array.isArray(this.context.stations) ? this.context.stations : [];
-    if (!stations.length) throw new Error('No temperature stations are configured');
+    const context = await loadCountyContext();
+    let stations;
+    let current;
+    let coverageMode = 'local';
 
+    if (context.conditionsSource?.mode === 'statewide') {
+      try {
+        [stations, current] = await Promise.all([
+          loadStatewideStationCatalog(context.conditionsSource.stationsUrl),
+          fetchJson(
+            versionedUrl(context.conditionsSource.currentUrl, cacheKey),
+            'Statewide current observations',
+          ),
+        ]);
+        if (!current?.stations || typeof current.stations !== 'object' || Array.isArray(current.stations)) {
+          throw new Error('Statewide current observations are invalid');
+        }
+        coverageMode = 'statewide';
+      } catch (error) {
+        console.warn(
+          '[county-weather-center] Statewide observations unavailable; using local coverage:',
+          error,
+        );
+        stations = Array.isArray(context.stations) ? context.stations : [];
+        current = await fetchJson(
+          versionedUrl(context.dataPath('current.json'), cacheKey),
+          'Local current observations',
+        );
+        coverageMode = 'local-fallback';
+      }
+    } else {
+      stations = Array.isArray(context.stations) ? context.stations : [];
+      current = await fetchJson(
+        versionedUrl(context.dataPath('current.json'), cacheKey),
+        'Current observations',
+      );
+    }
+
+    if (generation !== this.stationLoadGeneration) return;
+    if (!Array.isArray(stations) || !stations.length) {
+      throw new Error('No temperature stations are configured');
+    }
+    if (!current?.stations || typeof current.stations !== 'object' || Array.isArray(current.stations)) {
+      throw new Error('Current observations are invalid');
+    }
+
+    this.context = context;
     this.stationConfig = stations;
     this.currentData = current;
-    this.renderStations({ fitBounds: !this.hasFitBounds });
+    this.coverageMode = coverageMode;
+    this.renderStations();
   }
 
-  renderStations({ fitBounds = false } = {}) {
+  renderStations() {
     if (!this.stationConfig || !this.currentData) return;
 
     this.ensureMap();
-    this.hideStationDetails();
-    this.markerLayer.clearLayers();
+    this.cancelStationMarkerReconcile();
+    this.hideStationDetails({ reconcile: false });
+    this.clearStationMarkers();
+    this.stationRecords = new Map();
 
-    const bounds = [];
     const observationTimes = [];
     let freshCount = 0;
-    let reportingCount = 0;
+    let validStationCount = 0;
     const fieldConfig = CONDITION_FIELDS[this.activeField];
 
     for (const station of this.stationConfig) {
@@ -513,53 +734,54 @@ class CountyTemperatureViewer {
       const metric = markerMetric(this.activeField, cachedStation?.data);
       if (!stale && cachedStation) freshCount += 1;
       if (observedAt && Number.isFinite(Date.parse(observedAt))) observationTimes.push(observedAt);
-      bounds.push([lat, lon]);
+      validStationCount += 1;
       if (!metric.available) continue;
-      reportingCount += 1;
 
       const stateClass = stale ? ' is-stale' : '';
       const sizeClass = metric.compact ? ' is-compact' : '';
       const stationName = station.friendlyName || station.name || station.id;
       const locationName = station.locationName || station.friendlyName || station.name || station.id;
-      const icon = window.L.divIcon({
-        className: 'temperature-marker-icon',
-        html: `<span class="temperature-marker-value${stateClass}${sizeClass}"><span class="temperature-marker-reading">${metric.html}</span><small class="temperature-marker-location">${escapeHtml(locationName)}</small></span>`,
-        iconSize: metric.compact ? [112, 50] : [112, 62],
-        iconAnchor: metric.compact ? [56, 25] : [56, 31],
-      });
-
-      const marker = window.L.marker([lat, lon], {
-        icon,
-        keyboard: true,
-        riseOnHover: true,
-        title: `${stationName}: ${metric.spoken}`,
-        alt: `${stationName} ${fieldConfig.label.toLowerCase()} observation`,
-      }).addTo(this.markerLayer);
-      marker.on('click', () => {
-        this.handleStationClick(marker, station, cachedStation, ageMinutes);
+      const markerSize = metric.compact
+        ? STATION_MARKER_SIZES.compact
+        : STATION_MARKER_SIZES.regular;
+      this.stationRecords.set(station.id, {
+        station,
+        cachedStation,
+        ageMinutes,
+        fieldConfig,
+        lat,
+        lon,
+        metric,
+        stateClass,
+        sizeClass,
+        stationName,
+        locationName,
+        iconSize: markerSize.iconSize,
+        iconAnchor: markerSize.iconAnchor,
       });
     }
 
-    if (!bounds.length) throw new Error('No configured stations have valid coordinates');
-    if (this.stationCount) {
-      this.stationCount.textContent = `${reportingCount} station${reportingCount === 1 ? '' : 's'} reporting`;
-    }
+    if (!validStationCount) throw new Error('No configured stations have valid coordinates');
+    const reportingCount = this.stationRecords.size;
     this.statusDot?.classList.toggle('is-empty', reportingCount === 0);
+    this.mapElement.dataset.configuredStationCount = String(this.stationConfig.length);
+    this.mapElement.dataset.reportingStationCount = String(reportingCount);
     this.mapElement.setAttribute(
       'aria-label',
       `Current ${fieldConfig.mapLabel} near ${this.context.countyName} County`,
     );
-    if (fitBounds) {
-      this.map.ensureMap().fitBounds(bounds, { padding: [42, 42], maxZoom: 10 });
-      this.hasFitBounds = true;
+    if (!this.hasInitializedView) {
+      this.map.ensureMap().setView(this.context.center, initialMapZoom(), { animate: false });
+      this.hasInitializedView = true;
     }
 
     const newestObservation = observationTimes.sort(
       (left, right) => Date.parse(right) - Date.parse(left),
     )[0];
     this.timestamp.textContent = newestObservation
-      ? `${freshCount} of ${bounds.length} sites fresh · Latest ${formatWeatherTime(newestObservation)}`
-      : `${bounds.length} configured sites · Observation times unavailable`;
+      ? `${freshCount} of ${validStationCount} sites fresh · Latest ${formatWeatherTime(newestObservation)}`
+      : `${validStationCount} configured sites · Observation times unavailable`;
+    this.reconcileStationMarkers();
   }
 }
 
@@ -735,4 +957,3 @@ if (document.readyState === 'loading') {
 } else {
   initCountyWeatherCenter();
 }
-

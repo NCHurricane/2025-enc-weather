@@ -1,4 +1,6 @@
 const CONFIG_URL = './data/config.json';
+const NC_STATION_CATALOG_URL = new URL('../nc-weather-stations.json', import.meta.url).href;
+const NC_CURRENT_CONDITIONS_URL = new URL('../data/nc-current.json', import.meta.url).href;
 
 let configPromise = null;
 
@@ -39,6 +41,11 @@ export async function loadCountyContext({ refreshConfig = false } = {}) {
   const lon = finiteCoordinate(location?.lon);
   if (lat === null || lon === null) throw new Error('County map center is not configured');
 
+  const dataPath = (fileName) => (
+    zoneId ? `./data/${zoneId}/${fileName}` : `./data/${fileName}`
+  );
+  const isNorthCarolina = String(config.county?.state || '').toUpperCase() === 'NC';
+
   return {
     config,
     countyName: String(config.county?.name || 'County'),
@@ -46,8 +53,19 @@ export async function loadCountyContext({ refreshConfig = false } = {}) {
     zone: zoneId ? config.zones?.[zoneId] : null,
     center: [lat, lon],
     stations: zoneId ? (config.zones?.[zoneId]?.stations || []) : (config.stations || []),
+    conditionsSource: isNorthCarolina
+      ? {
+          mode: 'statewide',
+          stationsUrl: NC_STATION_CATALOG_URL,
+          currentUrl: NC_CURRENT_CONDITIONS_URL,
+        }
+      : {
+          mode: 'local',
+          stationsUrl: null,
+          currentUrl: dataPath('current.json'),
+        },
     dataPath(fileName) {
-      return zoneId ? `./data/${zoneId}/${fileName}` : `./data/${fileName}`;
+      return dataPath(fileName);
     },
   };
 }

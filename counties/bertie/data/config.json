@@ -26,7 +26,7 @@
             "locationName": "Edenton",
             "url": "https://www.weather.gov/wrh/timeseries?site=KEDE",
             "lat": 36.02778,
-            "lon": -76.56722
+            "lon": -76.59722
         },
         {
             "id": "WNRN7",
@@ -35,7 +35,7 @@
             "locationName": "Windsor",
             "url": "https://www.weather.gov/wrh/timeseries?site=WNRN7",
             "lat": 35.99389,
-            "lon": -76.9425
+            "lon": -76.9625
         },
         {
             "id": "GCRN7",
@@ -44,7 +44,7 @@
             "locationName": "Greens Cross",
             "url": "https://www.weather.gov/wrh/timeseries?site=GCRN7",
             "lat": 36.01766,
-            "lon": -76.89126
+            "lon": -76.849
         },
         {
             "id": "KASJ",
@@ -106,8 +106,8 @@
             "friendlyName": "Tarboro",
             "locationName": "Tarboro",
             "url": "https://www.weather.gov/wrh/timeseries?site=KETC",
-            "lat": 36.02217,
-            "lon": -76.47633
+            "lat": 35.93730,
+            "lon": -77.54648
         }
     ]
 }
