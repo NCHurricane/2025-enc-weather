@@ -83,11 +83,11 @@ function initialMapZoom() {
 
 function statewideStationSpacing(zoom) {
   if (zoom >= 12) return 0;
-  if (zoom >= 11) return 70;
-  if (zoom >= 10) return 96;
-  if (zoom >= 9) return 110;
-  if (zoom >= 8) return 150;
-  return 180;
+  if (zoom >= 11) return 25;
+  if (zoom >= 10) return 50;
+  if (zoom >= 9) return 75;
+  if (zoom >= 8) return 100;
+  return 120;
 }
 
 function versionedUrl(url, version) {
