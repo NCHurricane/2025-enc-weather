@@ -1,6 +1,5 @@
 const CONFIG_URL = './data/config.json';
-const NC_STATION_CATALOG_URL = new URL('../nc-weather-stations.json', import.meta.url).href;
-const NC_CURRENT_CONDITIONS_URL = new URL('../data/nc-current.json', import.meta.url).href;
+const SHARED_CONDITIONS_STATES = new Set(['NC', 'FL', 'CA']);
 
 let configPromise = null;
 
@@ -44,7 +43,9 @@ export async function loadCountyContext({ refreshConfig = false } = {}) {
   const dataPath = (fileName) => (
     zoneId ? `./data/${zoneId}/${fileName}` : `./data/${fileName}`
   );
-  const isNorthCarolina = String(config.county?.state || '').toUpperCase() === 'NC';
+  const state = String(config.county?.state || '').trim().toUpperCase();
+  const stateSlug = state.toLowerCase();
+  const hasStatewideConditions = SHARED_CONDITIONS_STATES.has(state);
 
   return {
     config,
@@ -53,14 +54,16 @@ export async function loadCountyContext({ refreshConfig = false } = {}) {
     zone: zoneId ? config.zones?.[zoneId] : null,
     center: [lat, lon],
     stations: zoneId ? (config.zones?.[zoneId]?.stations || []) : (config.stations || []),
-    conditionsSource: isNorthCarolina
+    conditionsSource: hasStatewideConditions
       ? {
           mode: 'statewide',
-          stationsUrl: NC_STATION_CATALOG_URL,
-          currentUrl: NC_CURRENT_CONDITIONS_URL,
+          state,
+          stationsUrl: new URL(`../${stateSlug}-weather-stations.json`, import.meta.url).href,
+          currentUrl: new URL(`../data/${stateSlug}-current.json`, import.meta.url).href,
         }
       : {
           mode: 'local',
+          state,
           stationsUrl: null,
           currentUrl: dataPath('current.json'),
         },

@@ -1,16 +1,16 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260816-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-2';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
-} from './countyContext.js?v=20260816-1';
+} from './countyContext.js?v=20260816-2';
 import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
 
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
-const NC_STATION_CATALOG_VERSION = '20260816-1';
+const STATE_STATION_CATALOG_VERSION = '20260816-2';
 const STATION_MARKER_SIZES = Object.freeze({
   regular: Object.freeze({ iconSize: [76, 48], iconAnchor: [38, 54] }),
   compact: Object.freeze({ iconSize: [96, 40], iconAnchor: [48, 40] }),
@@ -18,7 +18,10 @@ const STATION_MARKER_SIZES = Object.freeze({
 const MIN_VISIBLE_MARKER_WIDTH = 24;
 const MIN_VISIBLE_MARKER_HEIGHT = 12;
 const MOBILE_STATION_DETAILS_QUERY = window.matchMedia('(max-width: 600px)');
-let statewideStationCatalogPromise = null;
+const TABLET_PORTRAIT_MAP_QUERY = window.matchMedia(
+  '(min-width: 601px) and (max-width: 1024px) and (orientation: portrait)',
+);
+const statewideStationCatalogPromises = new Map();
 const NWS_REFERENCE_WMS_URL =
   'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
 const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
@@ -75,7 +78,7 @@ function finiteNumber(value) {
 }
 
 function initialMapZoom() {
-  return MOBILE_STATION_DETAILS_QUERY.matches ? 9 : 10;
+  return MOBILE_STATION_DETAILS_QUERY.matches || TABLET_PORTRAIT_MAP_QUERY.matches ? 9 : 10;
 }
 
 function statewideStationSpacing(zoom) {
@@ -99,25 +102,26 @@ async function fetchJson(url, label, { cache = 'no-store' } = {}) {
   return response.json();
 }
 
-function loadStatewideStationCatalog(url) {
-  if (!statewideStationCatalogPromise) {
-    statewideStationCatalogPromise = fetchJson(
-      versionedUrl(url, NC_STATION_CATALOG_VERSION),
-      'NC station catalog',
+function loadStatewideStationCatalog(url, state = 'Statewide') {
+  if (!statewideStationCatalogPromises.has(url)) {
+    const promise = fetchJson(
+      versionedUrl(url, STATE_STATION_CATALOG_VERSION),
+      `${state} station catalog`,
       { cache: 'default' },
     )
       .then((stations) => {
         if (!Array.isArray(stations) || !stations.length) {
-          throw new Error('NC station catalog is empty or invalid');
+          throw new Error(`${state} station catalog is empty or invalid`);
         }
         return stations;
       })
       .catch((error) => {
-        statewideStationCatalogPromise = null;
+        statewideStationCatalogPromises.delete(url);
         throw error;
       });
+    statewideStationCatalogPromises.set(url, promise);
   }
-  return statewideStationCatalogPromise;
+  return statewideStationCatalogPromises.get(url);
 }
 
 const CONDITION_FIELDS = Object.freeze({
@@ -737,7 +741,10 @@ class CountyTemperatureViewer {
     if (context.conditionsSource?.mode === 'statewide') {
       try {
         [stations, current] = await Promise.all([
-          loadStatewideStationCatalog(context.conditionsSource.stationsUrl),
+          loadStatewideStationCatalog(
+            context.conditionsSource.stationsUrl,
+            context.conditionsSource.state,
+          ),
           fetchJson(
             versionedUrl(context.conditionsSource.currentUrl, cacheKey),
             'Statewide current observations',

@@ -6,8 +6,8 @@ counties/*/data/hourly.json
 counties/*/data/afd.json
 counties/*/data/*/
 
-# Shared generated North Carolina conditions cache
-counties/data/nc-current.json
+# Shared generated statewide conditions caches
+counties/data/*-current.json
 
 # Keep config files (they're not cache)
 !counties/*/data/config.json

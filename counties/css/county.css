@@ -2596,7 +2596,7 @@ main.container {
 .weather-center-forecast-panel .afd-text {
   margin: 0;
   color: #dce7ef;
-  font: inherit;
+  font: clamp(0.72rem, 0.8vw, 0.78rem) "Fira Code", Arial, sans-serif;
   line-height: 1.55;
   white-space: pre-wrap;
 }
@@ -2949,6 +2949,10 @@ main.container {
 
   .temperature-station-details:not([hidden]) + .weather-map-note {
     display: none;
+  }
+
+  .weather-center-forecast-panel .afd-text {
+  font: clamp(0.72rem, 0.8vw, 0.78rem) "Fira Code", Arial, sans-serif;
   }
 }
 

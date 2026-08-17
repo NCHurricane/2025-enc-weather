@@ -1,11 +1,11 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260816-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-2';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadCountyContext,
-} from './countyContext.js?v=20260816-1';
+} from './countyContext.js?v=20260816-2';
 import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
 
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
@@ -18,6 +18,15 @@ const NOWCOAST_RADAR_LEGEND_URL =
 const NWS_REFERENCE_WMS_URL =
   'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
 const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
+const MOBILE_MAP_QUERY = window.matchMedia('(max-width: 600px)');
+const TABLET_PORTRAIT_MAP_QUERY = window.matchMedia(
+  '(min-width: 601px) and (max-width: 1024px) and (orientation: portrait)',
+);
+
+function initialWeatherMapZoom() {
+  if (MOBILE_MAP_QUERY.matches) return 7;
+  return TABLET_PORTRAIT_MAP_QUERY.matches ? 10 : 9;
+}
 
 function buildWmsLegendUrl(wmsUrl, layer, { width, height } = {}) {
   const url = new URL(wmsUrl);
@@ -318,7 +327,7 @@ class CountyRadarViewer {
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
       center: this.context.center,
-      zoom: 7,
+      zoom: initialWeatherMapZoom(),
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.8,
@@ -361,7 +370,9 @@ class CountyRadarViewer {
         `Interactive radar map centered on ${this.context.countyName} County`,
       );
       if (this.map) {
-        this.map.ensureMap().setView(this.context.center, 7, { animate: false });
+        this.map.ensureMap().setView(this.context.center, initialWeatherMapZoom(), {
+          animate: false,
+        });
         if (this.cityLabelOverlay) {
           this.cityLabelOverlay.homeCenter = this.context.center;
           this.cityLabelOverlay.render?.();
@@ -640,7 +651,7 @@ class CountySatelliteViewer {
     this.map = new InteractiveWeatherMap({
       container: this.mapElement,
       center: this.context.center,
-      zoom: 7,
+      zoom: initialWeatherMapZoom(),
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.92,
@@ -705,7 +716,9 @@ class CountySatelliteViewer {
         `Interactive satellite map centered on ${this.context.countyName} County`,
       );
       if (this.map) {
-        this.map.ensureMap().setView(this.context.center, 7, { animate: false });
+        this.map.ensureMap().setView(this.context.center, initialWeatherMapZoom(), {
+          animate: false,
+        });
         if (this.cityLabelOverlay) {
           this.cityLabelOverlay.homeCenter = this.context.center;
           this.cityLabelOverlay.render?.();

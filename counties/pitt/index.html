@@ -43,7 +43,7 @@
       <!-- CHANGE VERSION: -->
     <link rel="stylesheet" href="../../css/styles.css?v=20260812-ga4" />
       <link rel="stylesheet" href="../css/county.css?v=20260816-2" />
-      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260816-1" />
+      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260816-2" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -234,6 +234,7 @@
                            <select id="radar-product-select" class="radar-select" aria-label="Radar product">
                         <option value="reflectivity" selected>Reflectivity</option>
                         <option value="velocity">Velocity</option>
+                              <option value="storm_total">Storm Total</option>
                      </select>
                         </div>
                      </div>
@@ -295,7 +296,8 @@
                         <option value="GEOCOLOR" selected>GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
-                        <option value="13">Clean IR</option>
+                        <option value="13">Longwave IR</option>
+                        <option value="CLEAN_IR">Clean IR</option>
                         <option value="08">Water Vapor</option>
                      </select>
                         </div>
@@ -507,8 +509,8 @@
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
       <script src="js/countyApp.js" type="module"></script>
-      <script src="../js/weatherMaps.js?v=20260816-4" type="module"></script>
-      <script src="../js/weatherCenter.js?v=20260816-6" type="module"></script>
+      <script src="../js/weatherMaps.js?v=20260816-7" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260816-9" type="module"></script>
 
       <!-- Back to Top Button -->
       <script>

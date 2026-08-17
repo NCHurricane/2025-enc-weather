@@ -531,40 +531,586 @@ if (isset($_POST['action'])) {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 2026 authenticated operations console */
+        :root {
+            color-scheme: dark;
+            --page: #07111f;
+            --page-soft: #0b192b;
+            --panel: rgba(13, 29, 48, 0.94);
+            --panel-raised: #10243a;
+            --panel-soft: #132a43;
+            --line: rgba(148, 174, 204, 0.18);
+            --line-strong: rgba(148, 174, 204, 0.3);
+            --text: #f3f7fb;
+            --muted: #9eb0c4;
+            --blue: #43a7ff;
+            --blue-strong: #168ce8;
+            --green: #5fd6a0;
+            --amber: #f6c968;
+            --red: #ff7d82;
+            --shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        body {
+            position: relative;
+            padding: 28px;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 12% 0%, rgba(21, 122, 203, 0.22), transparent 32rem),
+                radial-gradient(circle at 88% 6%, rgba(32, 166, 145, 0.13), transparent 28rem),
+                linear-gradient(160deg, var(--page) 0%, #081522 48%, #06101c 100%);
+        }
+
+        body::before {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            content: '';
+            opacity: 0.28;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+        }
+
+        .dashboard-container {
+            max-width: 1540px;
+        }
+
+        .header {
+            gap: 28px;
+            padding: 24px 26px;
+            margin-bottom: 16px;
+            color: var(--text);
+            background: linear-gradient(135deg, rgba(17, 42, 68, 0.98), rgba(9, 25, 43, 0.98));
+            border: 1px solid var(--line-strong);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            display: grid;
+            flex: 0 0 52px;
+            width: 52px;
+            height: 52px;
+            place-items: center;
+            color: #06111d;
+            background: linear-gradient(145deg, #6fc3ff, #53ddb4);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(64, 173, 237, 0.24);
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+
+        .eyebrow,
+        .section-kicker {
+            margin: 0 0 5px;
+            color: #74c6ff;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--text);
+            font-size: clamp(22px, 3vw, 32px);
+            line-height: 1.1;
+            letter-spacing: -0.035em;
+        }
+
+        .header-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .header-controls {
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            min-height: 38px;
+            padding: 8px 13px;
+            color: var(--text);
+            background: rgba(95, 214, 160, 0.1);
+            border: 1px solid rgba(95, 214, 160, 0.35);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .status-indicator::before {
+            width: 8px;
+            height: 8px;
+            content: '';
+            background: currentColor;
+            border-radius: 50%;
+            box-shadow: 0 0 0 5px rgba(95, 214, 160, 0.09);
+        }
+
+        .status-indicator.status-healthy { color: var(--green); background: rgba(95, 214, 160, 0.1); }
+        .status-indicator.status-warning { color: var(--amber); background: rgba(246, 201, 104, 0.1); border-color: rgba(246, 201, 104, 0.35); }
+        .status-indicator.status-error { color: var(--red); background: rgba(255, 125, 130, 0.1); border-color: rgba(255, 125, 130, 0.35); }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .overview-stat {
+            min-height: 104px;
+            padding: 18px 20px;
+            background: rgba(12, 29, 48, 0.88);
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.16);
+        }
+
+        .overview-label,
+        .overview-note {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .overview-value {
+            display: block;
+            margin: 7px 0 5px;
+            color: var(--text);
+            font-size: 25px;
+            font-weight: 850;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .overview-value.healthy { color: var(--green); }
+        .overview-value.attention { color: var(--amber); }
+
+        .dashboard-grid {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            grid-column: span 6;
+            min-width: 0;
+            padding: 22px;
+            color: var(--text);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            box-shadow: 0 15px 44px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(15px);
+        }
+
+        .card.card-wide { grid-column: 1 / -1; }
+
+        .card-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 17px;
+        }
+
+        details.card > summary.card-heading {
+            margin-bottom: 0;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+
+        details.card > summary.card-heading::-webkit-details-marker {
+            display: none;
+        }
+
+        details.card > summary.card-heading > div {
+            margin-right: auto;
+        }
+
+        details.card > summary.card-heading::after {
+            flex: 0 0 auto;
+            width: 9px;
+            height: 9px;
+            margin: 4px 3px 0 0;
+            content: '';
+            border-right: 2px solid #9ed4fb;
+            border-bottom: 2px solid #9ed4fb;
+            transform: rotate(45deg);
+            transition: transform 0.18s ease, margin-top 0.18s ease;
+        }
+
+        details.card:not([open]) > summary.card-heading::after {
+            margin-top: 7px;
+            transform: rotate(-45deg);
+        }
+
+        details.card[open] > summary.card-heading {
+            margin-bottom: 17px;
+        }
+
+        details.card > summary.card-heading:focus-visible {
+            outline: 2px solid var(--blue);
+            outline-offset: 6px;
+            border-radius: 8px;
+        }
+
+        .card h2,
+        .modal-content h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: 18px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-count {
+            min-width: 32px;
+            padding: 5px 9px;
+            color: #9ed4fb;
+            background: rgba(67, 167, 255, 0.1);
+            border: 1px solid rgba(67, 167, 255, 0.2);
+            border-radius: 999px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .county-filter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 11px 13px;
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.025);
+            border-color: var(--line);
+            border-radius: 10px;
+        }
+
+        .county-filter label { color: var(--muted); }
+
+        .county-filter select,
+        #script-params {
+            color: var(--text);
+            background: #0b1b2d;
+            border: 1px solid var(--line-strong);
+            border-radius: 8px;
+        }
+
+        .county-filter select:focus,
+        #script-params:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(67, 167, 255, 0.12);
+        }
+
+        .script-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .script-list--two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .script-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            margin: 0;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--green);
+            border-radius: 11px;
+        }
+
+        .script-item.is-stale { border-left-color: var(--amber); }
+        .script-item.is-never { border-left-color: var(--muted); }
+        .script-info { min-width: 0; margin: 0; }
+
+        .script-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .script-name {
+            min-width: 0;
+            margin: 0;
+            overflow: hidden;
+            color: var(--text);
+            font-size: 14px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .freshness-pill {
+            flex: 0 0 auto;
+            padding: 3px 7px;
+            color: var(--green);
+            background: rgba(95, 214, 160, 0.09);
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .freshness-pill.stale { color: var(--amber); background: rgba(246, 201, 104, 0.09); }
+        .freshness-pill.never { color: var(--muted); background: rgba(158, 176, 196, 0.09); }
+
+        .script-description {
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .script-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            color: #8398ae;
+            font-size: 11px;
+        }
+
+        .script-meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+        .script-actions {
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .btn {
+            min-height: 34px;
+            padding: 7px 11px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.055);
+            border: 1px solid var(--line-strong);
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 750;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .btn:hover { transform: translateY(-1px); border-color: rgba(148, 174, 204, 0.5); }
+        .btn-primary { color: #06111d; background: var(--blue); border-color: var(--blue); }
+        .btn-primary:hover { background: #71bcf8; }
+        .btn-success { color: #07150f; background: var(--green); border-color: var(--green); }
+        .btn-success:hover { background: #83e3ba; }
+        .btn-warning { color: var(--text); background: rgba(246, 201, 104, 0.1); border-color: rgba(246, 201, 104, 0.35); }
+        .btn-warning:hover { background: rgba(246, 201, 104, 0.17); }
+        .btn-danger { color: #ffb0b3; background: rgba(255, 125, 130, 0.09); border-color: rgba(255, 125, 130, 0.3); }
+        .btn-danger:hover { color: #ffe3e4; background: rgba(255, 125, 130, 0.16); }
+        .btn:disabled { transform: none; }
+
+        .cache-stat {
+            background: rgba(255, 255, 255, 0.025);
+            border-color: var(--line);
+            border-radius: 11px;
+        }
+
+        .cache-stat strong { color: var(--text); }
+        .cache-stat span,
+        .cache-note,
+        .cache-action-status { color: var(--muted); }
+        .cache-action-status.success { color: var(--green); }
+        .cache-action-status.error { color: var(--red); }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .health-stat {
+            padding: 13px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        .health-stat span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
+        .health-stat strong { font-size: 15px; }
+        .health-good { color: var(--green); }
+        .health-warn { color: var(--amber); }
+        .health-error { color: var(--red); }
+        .failure-details { margin-top: 12px; color: var(--muted); font-size: 12px; }
+        .failure-details summary { cursor: pointer; color: var(--amber); font-weight: 750; }
+        .failure-details ul { margin: 10px 0 0; padding-left: 20px; }
+
+        .modal {
+            padding: 24px;
+            background: rgba(2, 8, 15, 0.78);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 4vh auto;
+            padding: 24px;
+            color: var(--text);
+            background: #0d2035;
+            border: 1px solid var(--line-strong);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            float: none;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .close:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+        .log-viewer,
+        .execution-output { margin-top: 18px; background: #050c14; border: 1px solid var(--line); border-radius: 10px; }
+        #execute-form { display: flex; align-items: flex-end; gap: 9px; margin-top: 18px; }
+        #execute-form label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+        #script-params { flex: 1; min-width: 0; padding: 9px 11px; }
+
+        .loading,
+        .empty-state {
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .empty-state { padding: 24px; border: 1px dashed var(--line); border-radius: 10px; }
+        .empty-state.error { color: var(--red); }
+        .spinner { border-color: rgba(255, 255, 255, 0.1); border-top-color: var(--blue); }
+
+        @media (max-width: 1100px) {
+            .script-list--two { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 860px) {
+            body { padding: 16px; }
+            .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .card { grid-column: 1 / -1; }
+            .header { align-items: flex-start; }
+            .header-controls { justify-content: flex-start; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .header { padding: 18px; }
+            .brand-mark { flex-basis: 44px; width: 44px; height: 44px; border-radius: 12px; }
+            .overview-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .overview-stat { min-height: 92px; padding: 15px; }
+            .overview-value { font-size: 21px; }
+            .card { padding: 17px; }
+            .script-item { grid-template-columns: 1fr; }
+            .script-actions { justify-content: flex-start; }
+            .county-filter { align-items: stretch; flex-direction: column; }
+            .county-filter select { width: 100%; }
+            .modal { padding: 10px; }
+            .modal-content { width: 100%; padding: 20px; }
+            #execute-form { align-items: stretch; flex-direction: column; }
+            #execute-form .btn,
+            #script-params { width: 100%; }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <div class="header">
-            <h1>🌊 Weather System Dashboard</h1>
-            <div class="header-controls">
-                <div id="system-status" class="status-indicator status-healthy">
-                    <span>🟢</span><span>System Healthy</span>
+        <header class="header">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">WX</div>
+                <div>
+                    <p class="eyebrow">NCHurricane operations</p>
+                    <h1>Weather System Dashboard</h1>
+                    <p class="header-subtitle">Cache health, automation cadence, and controlled maintenance</p>
                 </div>
-                <button class="btn btn-warning" onclick="debugPaths()">Debug</button>
-                <button class="btn btn-success" onclick="testScripts()">Test Scripts</button>
+            </div>
+            <div class="header-controls">
+                <div id="system-status" class="status-indicator status-healthy">System healthy</div>
+                <button class="btn btn-warning" type="button" onclick="debugPaths()">Path diagnostics</button>
+                <button class="btn btn-success" type="button" onclick="testScripts()">Verify inventory</button>
                 <form method="post" class="logout-form">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES) ?>">
                     <button class="btn btn-danger" type="submit" name="logout" value="1">Logout</button>
                 </form>
             </div>
-        </div>
+        </header>
+
+        <section class="overview-grid" aria-label="Automation overview">
+            <article class="overview-stat">
+                <span class="overview-label">Automation inventory</span>
+                <strong id="automation-count" class="overview-value">—</strong>
+                <span class="overview-note">Scheduled PHP jobs</span>
+            </article>
+            <article class="overview-stat">
+                <span class="overview-label">On schedule</span>
+                <strong id="automation-healthy" class="overview-value healthy">—</strong>
+                <span class="overview-note">Within freshness window</span>
+            </article>
+            <article class="overview-stat">
+                <span class="overview-label">Needs review</span>
+                <strong id="automation-attention" class="overview-value attention">—</strong>
+                <span class="overview-note">Stale or missing run evidence</span>
+            </article>
+            <article class="overview-stat">
+                <span class="overview-label">Last dashboard refresh</span>
+                <strong id="last-refresh" class="overview-value">—</strong>
+                <span class="overview-note">Automatic refresh every 5 minutes</span>
+            </article>
+        </section>
 
         <div class="dashboard-grid">
             <!-- Tropical Systems -->
-            <div class="card">
-                <h2>🌀 Tropical Systems</h2>
-                <div id="tropical-scripts" class="loading">
+            <details class="card card-wide" data-section-id="tropical" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">Storm pipeline</p>
+                        <h2>Tropical Systems</h2>
+                    </div>
+                    <span id="tropical-count" class="section-count">—</span>
+                </summary>
+                <div id="tropical-scripts" class="loading script-list">
                     <div class="spinner"></div>
                     <p>Loading scripts...</p>
                 </div>
-            </div>
+            </details>
 
             <!-- County Weather -->
-            <div class="card">
-                <h2>🏘️ County Weather</h2>
+            <details class="card card-wide" data-section-id="north-carolina" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">North Carolina</p>
+                        <h2>County Weather</h2>
+                    </div>
+                    <span id="county-count" class="section-count">—</span>
+                </summary>
                 <div class="county-filter">
-                    <label for="county-select">Filter by County:</label>
+                    <label for="county-select">Filter automation inventory</label>
                     <select id="county-select" onchange="filterCountyScripts()">
                         <option value="">All Counties</option>
                         <option value="beaufort">Beaufort</option>
@@ -577,33 +1123,50 @@ if (isset($_POST['action'])) {
                         <option value="washington">Washington</option>
                     </select>
                 </div>
-                <div id="county-scripts" class="loading">
+                <div id="county-scripts" class="loading script-list script-list--two">
                     <div class="spinner"></div>
                     <p>Loading scripts...</p>
                 </div>
-            </div>
+            </details>
 
-            <!-- Temporary San Diego Weather -->
-            <div class="card">
-                <h2>🌴 Temporary San Diego Weather</h2>
-                <div id="temp-san-diego-scripts" class="loading">
+            <!-- San Diego Weather -->
+            <details class="card" data-section-id="san-diego" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">California</p>
+                        <h2>San Diego County</h2>
+                    </div>
+                    <span id="san-diego-count" class="section-count">—</span>
+                </summary>
+                <div id="temp-san-diego-scripts" class="loading script-list">
                     <div class="spinner"></div>
                     <p>Loading scripts...</p>
                 </div>
-            </div>
+            </details>
 
             <!-- Cache Management -->
-            <div class="card">
-                <h2>🗄️ Cache Management</h2>
-                <div id="cache-scripts" class="loading">
+            <details class="card" data-section-id="cache-management" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">Shared data</p>
+                        <h2>Cache Management</h2>
+                    </div>
+                    <span id="cache-count" class="section-count">—</span>
+                </summary>
+                <div id="cache-scripts" class="loading script-list">
                     <div class="spinner"></div>
                     <p>Loading scripts...</p>
                 </div>
-            </div>
+            </details>
 
             <!-- Generated Imagery Tile Cache -->
-            <div class="card">
-                <h2>🧹 Imagery Tile Cache</h2>
+            <details class="card" data-section-id="imagery-cache" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">Storage</p>
+                        <h2>Imagery Tile Cache</h2>
+                    </div>
+                </summary>
                 <p class="cache-note">Review and purge generated imagery basemap tiles. This action does not affect topographic tiles, source data, or application code.</p>
                 <div class="cache-summary" aria-live="polite">
                     <div class="cache-stat">
@@ -620,31 +1183,36 @@ if (isset($_POST['action'])) {
                     <button id="purge-imagery-cache" class="btn btn-danger" type="button" onclick="purgeImageryCache()" disabled>Purge Imagery Tiles</button>
                 </div>
                 <div id="imagery-cache-status" class="cache-action-status" role="status"></div>
-            </div>
+            </details>
 
             <!-- System Health -->
-            <div class="card">
-                <h2>🔍 System Health</h2>
+            <details class="card" data-section-id="system-health" open>
+                <summary class="card-heading">
+                    <div>
+                        <p class="section-kicker">Runtime</p>
+                        <h2>System Health</h2>
+                    </div>
+                </summary>
                 <div id="health-info" class="loading">
                     <div class="spinner"></div>
                     <p>Loading health info...</p>
                 </div>
-            </div>
+            </details>
         </div>
     </div>
 
     <!-- Modals -->
-    <div id="logModal" class="modal">
+    <div id="logModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="log-title">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <button class="close" type="button" aria-label="Close log viewer">&times;</button>
             <h2 id="log-title">Log Viewer</h2>
             <div id="log-content" class="log-viewer"></div>
         </div>
     </div>
 
-    <div id="executeModal" class="modal">
+    <div id="executeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="execute-title">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <button class="close" type="button" aria-label="Close script runner">&times;</button>
             <h2 id="execute-title">Execute Script</h2>
             <div id="execute-form">
                 <label for="script-params">Parameters:</label>
@@ -674,6 +1242,7 @@ if (isset($_POST['action'])) {
             
             // Setup modal handlers
             setupModals();
+            setupScriptActions();
             
             // Auto-refresh every 5 minutes
             setInterval(() => {
@@ -721,14 +1290,14 @@ if (isset($_POST['action'])) {
                 filterCountyScripts();
                 renderScripts('temp-san-diego-scripts', data.temp_san_diego || []);
                 renderScripts('cache-scripts', data.cache || []);
+                updateAutomationSummary(data);
             })
             .catch(error => {
                 console.error('Fetch error:', error);
-                // Show error message in UI
-                document.getElementById('tropical-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
-                document.getElementById('county-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
-                document.getElementById('temp-san-diego-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
-                document.getElementById('cache-scripts').innerHTML = '<div style="color: red;">Error loading scripts: ' + error.message + '</div>';
+                showLoadError('tropical-scripts', error.message);
+                showLoadError('county-scripts', error.message);
+                showLoadError('temp-san-diego-scripts', error.message);
+                showLoadError('cache-scripts', error.message);
             });
         }
 
@@ -781,6 +1350,57 @@ if (isset($_POST['action'])) {
             } else if (!stats.writable) {
                 setImageryCacheStatus('The imagery tile cache is not writable by the dashboard process.', 'error');
             }
+        }
+
+        function setupScriptActions() {
+            document.addEventListener('click', event => {
+                const button = event.target.closest('[data-script-action]');
+                if (!button || button.disabled) return;
+
+                const scriptId = button.dataset.scriptId || '';
+                const scriptName = button.dataset.scriptName || '';
+                const action = button.dataset.scriptAction;
+
+                if (action === 'execute') executeScript(scriptId, scriptName);
+                if (action === 'log') viewLog(scriptId, scriptName);
+                if (action === 'delete-log') deleteLog(scriptId, scriptName);
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showLoadError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const error = document.createElement('div');
+            error.className = 'empty-state error';
+            error.textContent = `Unable to load: ${message}`;
+            container.appendChild(error);
+        }
+
+        function updateAutomationSummary(data) {
+            const groups = ['tropical', 'county', 'temp_san_diego', 'cache'];
+            const scripts = groups.flatMap(group => data[group] || []);
+            const healthy = scripts.filter(script => script.freshness === 'healthy').length;
+
+            document.getElementById('automation-count').textContent = scripts.length.toLocaleString();
+            document.getElementById('automation-healthy').textContent = healthy.toLocaleString();
+            document.getElementById('automation-attention').textContent = (scripts.length - healthy).toLocaleString();
+            document.getElementById('last-refresh').textContent = new Intl.DateTimeFormat([], {
+                hour: 'numeric',
+                minute: '2-digit'
+            }).format(new Date());
+
+            document.getElementById('tropical-count').textContent = (data.tropical || []).length;
+            document.getElementById('san-diego-count').textContent = (data.temp_san_diego || []).length;
+            document.getElementById('cache-count').textContent = (data.cache || []).length;
         }
 
         function loadImageryCacheStats() {
@@ -840,25 +1460,36 @@ if (isset($_POST['action'])) {
         function renderScripts(containerId, scripts) {
             const container = document.getElementById(containerId);
             if (!scripts || scripts.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">No scripts found</div>';
+                container.innerHTML = '<div class="empty-state">No scripts found</div>';
                 return;
             }
-            
+
+            const freshnessLabels = {
+                healthy: 'On schedule',
+                stale: 'Stale',
+                never: 'No run data'
+            };
+
             container.innerHTML = scripts.map(script => `
-                <div class="script-item">
+                <article class="script-item is-${escapeHtml(script.freshness || 'never')}">
                     <div class="script-info">
-                        <div class="script-name">${script.name}</div>
-                        <div class="script-status">
-                            Last run: ${script.last_run || 'Never'} | 
-                            Log size: ${script.log_size || 'No log'}
+                        <div class="script-title-row">
+                            <div class="script-name" title="${escapeHtml(script.name)}">${escapeHtml(script.name)}</div>
+                            <span class="freshness-pill ${escapeHtml(script.freshness || 'never')}">${escapeHtml(freshnessLabels[script.freshness] || 'Unknown')}</span>
+                        </div>
+                        <div class="script-description">${escapeHtml(script.description || '')}</div>
+                        <div class="script-meta">
+                            <span>Schedule: ${escapeHtml(script.schedule || 'Manual')}</span>
+                            <span>Last: ${escapeHtml(script.last_run || 'No run evidence')}</span>
+                            <span>Log: ${escapeHtml(script.log_size || 'None')}</span>
                         </div>
                     </div>
                     <div class="script-actions">
-                        <button class="btn btn-primary" onclick="executeScript('${script.id}', '${script.name}')">Execute</button>
-                        <button class="btn btn-warning" onclick="viewLog('${script.id}', '${script.name}')">View Log</button>
-                        <button class="btn btn-danger" onclick="deleteLog('${script.id}', '${script.name}')">Delete Log</button>
+                        <button class="btn btn-primary" type="button" data-script-action="execute" data-script-id="${escapeHtml(script.id)}" data-script-name="${escapeHtml(script.name)}">Run</button>
+                        <button class="btn btn-warning" type="button" data-script-action="log" data-script-id="${escapeHtml(script.id)}" data-script-name="${escapeHtml(script.name)}" ${script.has_log ? '' : 'disabled'}>Log</button>
+                        <button class="btn btn-danger" type="button" data-script-action="delete-log" data-script-id="${escapeHtml(script.id)}" data-script-name="${escapeHtml(script.name)}" ${script.has_log ? '' : 'disabled'}>Clear</button>
                     </div>
-                </div>
+                </article>
             `).join('');
         }
 
@@ -874,17 +1505,20 @@ if (isset($_POST['action'])) {
             }
             
             renderScripts('county-scripts', filteredScripts);
+            document.getElementById('county-count').textContent = selectedCounty
+                ? `${filteredScripts.length}/${allCountyScripts.length}`
+                : allCountyScripts.length;
         }
 
         function renderHealthInfo(health) {
             let failedScriptsHtml = '';
             if (health.failed_script_details && health.failed_script_details.length > 0) {
                 failedScriptsHtml = `
-                    <details style="margin-top: 10px;">
+                    <details class="failure-details">
                         <summary>Failed Scripts Details (${health.failed_script_details.length})</summary>
-                        <ul style="margin: 10px 0; padding-left: 20px;">
+                        <ul>
                             ${health.failed_script_details.map(script => 
-                                `<li><strong>${script.script}</strong>: ${script.error_count} errors, last: ${script.last_error_time}</li>`
+                                `<li><strong>${escapeHtml(script.script)}</strong>: ${Number(script.error_count) || 0} errors, last: ${escapeHtml(script.last_error_time)}</li>`
                             ).join('')}
                         </ul>
                     </details>
@@ -892,18 +1526,23 @@ if (isset($_POST['action'])) {
             }
             
             return `
-                <div style="margin-bottom: 15px;">
-                    <strong>NHC Status:</strong> <span style="color: ${health.nhc_status === 'healthy' ? 'green' : 'red'};">${health.nhc_status.toUpperCase()}</span>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>Old Logs:</strong> ${health.old_logs} files older than 7 days
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>Failed Scripts (24h):</strong> 
-                    <span style="color: ${health.failed_scripts > 5 ? 'red' : health.failed_scripts > 0 ? 'orange' : 'green'};">${health.failed_scripts}</span>
-                </div>
-                <div>
-                    <strong>Overall Status:</strong> <span style="color: ${health.overall_status === 'healthy' ? 'green' : health.overall_status === 'warning' ? 'orange' : 'red'};">${health.overall_status.toUpperCase()}</span>
+                <div class="health-grid">
+                    <div class="health-stat">
+                        <span>NHC endpoint</span>
+                        <strong class="${health.nhc_status === 'healthy' ? 'health-good' : 'health-error'}">${escapeHtml(health.nhc_status.toUpperCase())}</strong>
+                    </div>
+                    <div class="health-stat">
+                        <span>Logs older than 7 days</span>
+                        <strong class="${health.old_logs > 10 ? 'health-warn' : 'health-good'}">${Number(health.old_logs) || 0}</strong>
+                    </div>
+                    <div class="health-stat">
+                        <span>Scripts with errors · 24h</span>
+                        <strong class="${health.failed_scripts > 5 ? 'health-error' : health.failed_scripts > 0 ? 'health-warn' : 'health-good'}">${Number(health.failed_scripts) || 0}</strong>
+                    </div>
+                    <div class="health-stat">
+                        <span>Overall state</span>
+                        <strong class="${health.overall_status === 'healthy' ? 'health-good' : health.overall_status === 'warning' ? 'health-warn' : 'health-error'}">${escapeHtml(health.overall_status.toUpperCase())}</strong>
+                    </div>
                 </div>
                 ${failedScriptsHtml}
             `;
@@ -914,12 +1553,12 @@ if (isset($_POST['action'])) {
             statusEl.className = `status-indicator status-${status}`;
             
             const statusText = {
-                'healthy': '🟢 System Healthy',
-                'warning': '🟡 System Warning',
-                'error': '🔴 System Error'
+                'healthy': 'System healthy',
+                'warning': 'System warning',
+                'error': 'System error'
             };
-            
-            statusEl.innerHTML = `<span>${statusText[status].split(' ')[0]}</span><span>${statusText[status].substring(2)}</span>`;
+
+            statusEl.textContent = statusText[status] || 'System status unavailable';
         }
 
         function executeScript(scriptId, scriptName) {
@@ -1283,6 +1922,36 @@ function getDashboardScriptId($group, $path) {
     return substr(hash('sha256', (string) $group . "\0" . $normalizedPath), 0, 24);
 }
 
+function buildDashboardScriptEntry($group, $name, $path, $logPath, $schedule, $description, $staleAfterSeconds, $statusPath = null, $extraParams = null) {
+    $statusPath = $statusPath ?: $logPath;
+    $lastRunTimestamp = is_file($statusPath) ? (int) filemtime($statusPath) : null;
+    $ageSeconds = $lastRunTimestamp === null ? null : max(0, time() - $lastRunTimestamp);
+    $freshness = $lastRunTimestamp === null
+        ? 'never'
+        : ($ageSeconds > $staleAfterSeconds ? 'stale' : 'healthy');
+
+    $entry = [
+        'id' => getDashboardScriptId($group, $path),
+        'name' => $name,
+        'path' => $path,
+        'log_path' => $logPath,
+        'schedule' => $schedule,
+        'description' => $description,
+        'freshness' => $freshness,
+        'last_run' => $lastRunTimestamp === null ? null : date('M j, H:i', $lastRunTimestamp),
+        'last_run_epoch' => $lastRunTimestamp,
+        'age_seconds' => $ageSeconds,
+        'log_size' => is_file($logPath) ? formatBytes(filesize($logPath)) : null,
+        'has_log' => is_file($logPath),
+    ];
+
+    if ($extraParams !== null) {
+        $entry['extra_params'] = $extraParams;
+    }
+
+    return $entry;
+}
+
 function getScripts() {
     $scripts = [
         'tropical' => [],
@@ -1293,29 +1962,30 @@ function getScripts() {
     
     // Tropical scripts
     $tropicalScripts = [
-        'advisory_writer.php' => 'Advisory Writer (AT)',
-        'advisory_writer_ep.php' => 'Advisory Writer (EP)',
-        'tcv_writer.php' => 'TCV Writer (AT)',
-        'tcv_writer_ep.php' => 'TCV Writer (EP)',
-        'cxml_writer.php' => 'CXML Writer (AT)',
-        'cxml_writer_ep.php' => 'CXML Writer (EP)',
-        'mtcswa_fetcher.php' => 'MTCSWA Fetcher (AT/EP)',
-        'nhc_graphics_cache.php' => 'NHC Graphics Cache (AT)',
-        'nhc_graphics_cache_ep.php' => 'NHC Graphics Cache (EP)'
+        'advisory_writer.php' => ['Advisory Writer (AT)', 'Hourly · :05 +20s', 'Atlantic advisory XML', 5400],
+        'advisory_writer_ep.php' => ['Advisory Writer (EP)', 'Hourly · :05 +25s', 'Eastern Pacific advisory XML', 5400],
+        'tcv_writer.php' => ['TCV Writer (AT)', 'Hourly · :05 +30s', 'Atlantic watch and warning zones', 5400],
+        'tcv_writer_ep.php' => ['TCV Writer (EP)', 'Hourly · :05 +35s', 'Eastern Pacific watch and warning zones', 5400],
+        'cxml_writer.php' => ['CXML Writer (AT)', 'Hourly · :05 +40s', 'Atlantic compact storm data', 5400],
+        'cxml_writer_ep.php' => ['CXML Writer (EP)', 'Hourly · :05 +45s', 'Eastern Pacific compact storm data', 5400],
+        'mtcswa_fetcher.php' => ['MTCSWA Fetcher (AT/EP)', 'Every 3 hours · :40', 'Satellite-derived surface wind analysis', 14400],
+        'nhc_graphics_cache.php' => ['NHC Graphics Cache (AT)', 'Hourly · :07', 'Atlantic NHC graphics', 5400],
+        'nhc_graphics_cache_ep.php' => ['NHC Graphics Cache (EP)', 'Hourly · :07 +30s', 'Eastern Pacific NHC graphics', 5400],
     ];
 
-    foreach ($tropicalScripts as $file => $name) {
+    foreach ($tropicalScripts as $file => $metadata) {
         $path = BASE_DIR . "/active/api/$file";
         if (file_exists($path)) {
             $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
-            $scripts['tropical'][] = [
-                'id' => getDashboardScriptId('tropical', $path),
-                'name' => $name,
-                'path' => $path,
-                'log_path' => $logPath,
-                'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
-                'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null
-            ];
+            $scripts['tropical'][] = buildDashboardScriptEntry(
+                'tropical',
+                $metadata[0],
+                $path,
+                $logPath,
+                $metadata[1],
+                $metadata[2],
+                $metadata[3]
+            );
         }
     }
 
@@ -1323,76 +1993,119 @@ function getScripts() {
     $warmTilesPath = BASE_DIR . '/active/api/warm_tiles.php';
     if (file_exists($warmTilesPath)) {
         $logPath = LOGS_DIR . '/warm_tiles_log';
-        $scripts['tropical'][] = [
-            'id' => getDashboardScriptId('tropical', $warmTilesPath),
-            'name' => 'Tile Warmer (All Styles)',
-            'path' => $warmTilesPath,
-            'log_path' => $logPath,
-            'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
-            'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null,
-            'extra_params' => '--purge=1 (optional, to force overwrite)'
-        ];
+        $scripts['tropical'][] = buildDashboardScriptEntry(
+            'tropical',
+            'Tile Warmer (All Styles)',
+            $warmTilesPath,
+            $logPath,
+            'Hourly · :10',
+            'Preloads tropical watch and warning basemap tiles',
+            5400,
+            null,
+            '--purge=1 (optional, to force overwrite)'
+        );
     }
     
     // Cache scripts
     $cacheScripts = [
-        'text_products_cache.php' => 'Text Products Cache',
-        'tropical_data.php' => 'Tropical Data Cache',
-        'cache_tropical.php' => 'Tropical Coordination Guard'
+        'text_products_cache.php' => ['Text Products Cache', 'Hourly · :05 +10s', 'NHC advisories and discussions', 5400],
+        'tropical_data.php' => ['Tropical Data Cache', 'Hourly · :05 +5s', 'Current NHC storm inventory', 5400],
+        'cache_tropical.php' => ['Tropical Coordination Guard', 'Hourly · :08', 'Verifies the tropical cache is fresh', 5400],
     ];
 
-    foreach ($cacheScripts as $file => $name) {
+    foreach ($cacheScripts as $file => $metadata) {
         $path = BASE_DIR . "/active/api/$file";
         if (file_exists($path)) {
             $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
-            $scripts['cache'][] = [
-                'id' => getDashboardScriptId('cache', $path),
-                'name' => $name,
-                'path' => $path,
-                'log_path' => $logPath,
-                'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
-                'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null
-            ];
+            $statusPath = $file === 'cache_tropical.php'
+                ? BASE_DIR . '/active/cache/nhc_current_storms.json'
+                : $logPath;
+            $scripts['cache'][] = buildDashboardScriptEntry(
+                'cache',
+                $metadata[0],
+                $path,
+                $logPath,
+                $metadata[1],
+                $metadata[2],
+                $metadata[3],
+                $statusPath
+            );
         }
+    }
+
+    $sharedConditionsPath = BASE_DIR . '/counties/api/cache_nc_conditions.php';
+    if (file_exists($sharedConditionsPath)) {
+        $sharedConditionsLog = BASE_DIR . '/counties/bertie/logs/cron_nc_conditions.log';
+        $scripts['cache'][] = buildDashboardScriptEntry(
+            'cache',
+            'Shared NC Conditions Map',
+            $sharedConditionsPath,
+            $sharedConditionsLog,
+            'Every 30 minutes · :05/:35',
+            'Statewide surface observations used by county maps',
+            3000
+        );
     }
     
     // County scripts
     $counties = ['bertie', 'pitt', 'beaufort', 'martin', 'dare', 'hyde', 'washington', 'tyrrell'];
-    $countyScripts = ['cache_current.php', 'cache_forecast.php', 'cache_alerts.php', 'cache_afd.php'];
+    $countyScripts = [
+        'cache_current.php' => ['Current Summary + Map Fallback', 'Hourly', 'Feeds the county summary and backs up statewide observations', 5400],
+        'cache_forecast.php' => ['Forecast', 'Every 2 hours', 'NWS zone forecast cache', 10800],
+        'cache_alerts.php' => ['Alerts', 'Every minute', 'Active NWS alerts', 300],
+        'cache_afd.php' => ['Forecast Discussion', 'Hourly', 'NWS area forecast discussion', 7200],
+    ];
+    $countySchedule = [
+        'bertie' => ['cache_current.php' => ':23', 'cache_forecast.php' => ':15', 'cache_alerts.php' => '+0s', 'cache_afd.php' => ':00'],
+        'pitt' => ['cache_current.php' => ':24', 'cache_forecast.php' => ':16', 'cache_alerts.php' => '+7s', 'cache_afd.php' => ':01'],
+        'beaufort' => ['cache_current.php' => ':25', 'cache_forecast.php' => ':17', 'cache_alerts.php' => '+14s', 'cache_afd.php' => ':02'],
+        'martin' => ['cache_current.php' => ':26', 'cache_forecast.php' => ':18', 'cache_alerts.php' => '+21s', 'cache_afd.php' => ':03'],
+        'dare' => ['cache_current.php' => ':27', 'cache_forecast.php' => ':19', 'cache_alerts.php' => '+28s', 'cache_afd.php' => ':04'],
+        'hyde' => ['cache_current.php' => ':28', 'cache_forecast.php' => ':20', 'cache_alerts.php' => '+35s', 'cache_afd.php' => ':11'],
+        'washington' => ['cache_current.php' => ':29', 'cache_forecast.php' => ':21', 'cache_alerts.php' => '+42s', 'cache_afd.php' => ':12'],
+        'tyrrell' => ['cache_current.php' => ':30', 'cache_forecast.php' => ':22', 'cache_alerts.php' => '+49s', 'cache_afd.php' => ':13'],
+    ];
     
     foreach ($counties as $county) {
-        foreach ($countyScripts as $script) {
+        foreach ($countyScripts as $script => $metadata) {
             $path = BASE_DIR . "/counties/$county/api/$script";
             if (file_exists($path)) {
                 $logPath = BASE_DIR . "/counties/$county/logs/cron_" . str_replace('cache_', '', str_replace('.php', '.log', $script));
-                $scripts['county'][] = [
-                    'id' => getDashboardScriptId('county', $path),
-                    'name' => ucfirst($county) . ' ' . ucfirst(str_replace(['cache_', '.php'], ['', ''], $script)),
-                    'path' => $path,
-                    'log_path' => $logPath,
-                    'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
-                    'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null
-                ];
+                $scripts['county'][] = buildDashboardScriptEntry(
+                    'county',
+                    ucfirst($county) . ' · ' . $metadata[0],
+                    $path,
+                    $logPath,
+                    $metadata[1] . ' · ' . $countySchedule[$county][$script],
+                    $metadata[2],
+                    $metadata[3]
+                );
             }
         }
     }
 
     // Temporary San Diego county scripts
     $tempSanDiegoCounty = 'san-diego';
-    $tempSanDiegoScripts = ['cache_current.php', 'cache_forecast.php', 'cache_alerts.php', 'cache_afd.php'];
+    $tempSanDiegoScripts = [
+        'cache_current.php' => ['Current Summary + Map Fallback', 'Hourly · :54', 'Feeds the county summary and backs up statewide observations', 5400],
+        'cache_forecast.php' => ['Forecast', 'Every 2 hours · :31', 'NWS zone forecast cache', 10800],
+        'cache_alerts.php' => ['Alerts', 'Every minute · +56s', 'Active NWS alerts', 300],
+        'cache_afd.php' => ['Forecast Discussion', 'Hourly · :14', 'NWS area forecast discussion', 7200],
+    ];
 
-    foreach ($tempSanDiegoScripts as $script) {
+    foreach ($tempSanDiegoScripts as $script => $metadata) {
         $path = BASE_DIR . "/counties/$tempSanDiegoCounty/api/$script";
         if (file_exists($path)) {
             $logPath = BASE_DIR . "/counties/$tempSanDiegoCounty/logs/cron_" . str_replace('cache_', '', str_replace('.php', '.log', $script));
-            $scripts['temp_san_diego'][] = [
-                'id' => getDashboardScriptId('temp_san_diego', $path),
-                'name' => 'San Diego ' . ucfirst(str_replace(['cache_', '.php'], ['', ''], $script)),
-                'path' => $path,
-                'log_path' => $logPath,
-                'last_run' => file_exists($logPath) ? date('M j, H:i', filemtime($logPath)) : null,
-                'log_size' => file_exists($logPath) ? formatBytes(filesize($logPath)) : null
-            ];
+            $scripts['temp_san_diego'][] = buildDashboardScriptEntry(
+                'temp_san_diego',
+                'San Diego · ' . $metadata[0],
+                $path,
+                $logPath,
+                $metadata[1],
+                $metadata[2],
+                $metadata[3]
+            );
         }
     }
     

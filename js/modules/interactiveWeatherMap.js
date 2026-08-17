@@ -213,6 +213,7 @@ export class InteractiveWeatherMap {
     this.onPlayStateChange = onPlayStateChange;
 
     this.map = null;
+    this.zoomIndicator = null;
     this.basemapLayer = null;
     this.basemapLayers = new Map();
     this.basemapLayerControl = null;
@@ -230,6 +231,7 @@ export class InteractiveWeatherMap {
     this.scrubRequestToken = 0;
     this.playing = false;
     this.lastCtrlWheelAt = Number.NEGATIVE_INFINITY;
+    this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
     this.handleCtrlWheel = this.handleCtrlWheel.bind(this);
     this.handleBasemapChange = this.handleBasemapChange.bind(this);
     this.handleScrubberInput = this.handleScrubberInput.bind(this);
@@ -252,6 +254,7 @@ export class InteractiveWeatherMap {
       fadeAnimation: false,
       preferCanvas: true,
     });
+    this.installZoomIndicator();
 
     this.map.createPane('weatherBasemapPane').style.zIndex = '200';
     this.map.createPane('weatherDataPane').style.zIndex = '300';
@@ -274,6 +277,30 @@ export class InteractiveWeatherMap {
     }
 
     return this.map;
+  }
+
+  installZoomIndicator() {
+    const zoomContainer = this.map?.zoomControl?.getContainer?.();
+    if (!zoomContainer || this.zoomIndicator) return;
+
+    zoomContainer.classList.add('weather-map-zoom-indicator-enabled');
+    this.zoomIndicator = window.L.DomUtil.create(
+      'div',
+      'weather-map-zoom-indicator',
+      zoomContainer,
+    );
+    this.zoomIndicator.setAttribute('role', 'status');
+    this.zoomIndicator.setAttribute('aria-live', 'polite');
+    this.map.on('zoom zoomend resize', this.updateZoomIndicator);
+    this.updateZoomIndicator();
+  }
+
+  updateZoomIndicator() {
+    if (!this.zoomIndicator || !this.map) return;
+
+    const zoom = Number(this.map.getZoom()) || 0;
+    this.zoomIndicator.textContent = `z ${Math.round(zoom)}`;
+    this.zoomIndicator.title = `Zoom ${zoom.toFixed(2)}`;
   }
 
   addReferenceOverlay(reference) {
@@ -726,8 +753,10 @@ export class InteractiveWeatherMap {
     if (this.requireCtrlForWheelZoom) {
       this.container?.removeEventListener('wheel', this.handleCtrlWheel, true);
     }
+    this.map?.off('zoom zoomend resize', this.updateZoomIndicator);
     if (this.map) this.map.remove();
     this.weatherLayerPool.clear();
+    this.zoomIndicator = null;
     this.map = null;
   }
 }
