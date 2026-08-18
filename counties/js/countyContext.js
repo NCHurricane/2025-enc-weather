@@ -8,6 +8,46 @@ function finiteCoordinate(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+function regionalContext() {
+  const root = document.querySelector('[data-weather-context="regional"]');
+  if (!root) return null;
+
+  const lat = finiteCoordinate(root.dataset.mapCenterLat);
+  const lon = finiteCoordinate(root.dataset.mapCenterLon);
+  if (lat === null || lon === null) throw new Error('Regional map center is not configured');
+
+  const stationsUrl = root.dataset.conditionsStationsUrl;
+  const currentUrl = root.dataset.conditionsCurrentUrl;
+  if (!stationsUrl || !currentUrl) throw new Error('Regional conditions sources are not configured');
+
+  const fallbackCurrentUrls = String(root.dataset.conditionsFallbackUrls || '')
+    .split('|')
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .map((url) => new URL(url, window.location.href).href);
+
+  return {
+    config: null,
+    countyName: root.dataset.weatherRegionName || 'Eastern North Carolina',
+    regionLabel: root.dataset.weatherRegionName || 'Eastern North Carolina',
+    zoneId: null,
+    zone: null,
+    center: [lat, lon],
+    stations: [],
+    isRegional: true,
+    conditionsSource: {
+      mode: 'statewide',
+      state: String(root.dataset.conditionsState || 'NC').trim().toUpperCase(),
+      stationsUrl: new URL(stationsUrl, window.location.href).href,
+      currentUrl: new URL(currentUrl, window.location.href).href,
+      fallbackCurrentUrls,
+    },
+    dataPath(fileName) {
+      return new URL(fileName, window.location.href).href;
+    },
+  };
+}
+
 function requestedZoneId(config) {
   if (!config.county?.multiZone) return null;
 
@@ -71,6 +111,10 @@ export async function loadCountyContext({ refreshConfig = false } = {}) {
       return dataPath(fileName);
     },
   };
+}
+
+export async function loadWeatherPageContext(options = {}) {
+  return regionalContext() || loadCountyContext(options);
 }
 
 export const COUNTY_ZONE_CHANGE_EVENT = 'county:zonechange';

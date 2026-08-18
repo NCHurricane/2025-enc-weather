@@ -1,11 +1,12 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260816-2';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-5';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
-  loadCountyContext,
-} from './countyContext.js?v=20260816-2';
+  loadWeatherPageContext,
+} from './countyContext.js?v=20260816-home1';
+import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260816-1';
 import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
 
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
@@ -15,17 +16,24 @@ const NCEP_CONUS_PRECIP_TYPE_URL =
   'https://opengeo.ncep.noaa.gov/geoserver/conus/conus_pcpn_typ/ows';
 const NOWCOAST_RADAR_LEGEND_URL =
   'https://nowcoast.noaa.gov/geoserver/observations/weather_radar/ows';
-const NWS_REFERENCE_WMS_URL =
-  'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
-const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
 const MOBILE_MAP_QUERY = window.matchMedia('(max-width: 600px)');
 const TABLET_PORTRAIT_MAP_QUERY = window.matchMedia(
   '(min-width: 601px) and (max-width: 1024px) and (orientation: portrait)',
 );
 
 function initialWeatherMapZoom() {
+  const root = document.querySelector('[data-county-weather-center]');
+  const configuredZoom = MOBILE_MAP_QUERY.matches
+    ? root?.dataset.mapZoomMobile
+    : root?.dataset.mapZoomDesktop;
+  const parsedZoom = Number(configuredZoom);
+  if (Number.isFinite(parsedZoom) && configuredZoom !== '') return parsedZoom;
   if (MOBILE_MAP_QUERY.matches) return 7;
   return TABLET_PORTRAIT_MAP_QUERY.matches ? 10 : 9;
+}
+
+function contextAreaLabel(context) {
+  return context?.regionLabel || `${context?.countyName || 'the county'} County`;
 }
 
 function buildWmsLegendUrl(wmsUrl, layer, { width, height } = {}) {
@@ -40,52 +48,6 @@ function buildWmsLegendUrl(wmsUrl, layer, { width, height } = {}) {
   if (height) url.searchParams.set('height', String(height));
   return url.toString();
 }
-
-function buildBoundarySld(layer, width, opacity, { casing = true } = {}) {
-  const stroke = (color, strokeWidth, strokeOpacity) =>
-    `<sld:PolygonSymbolizer><sld:Fill><sld:CssParameter name="fill">#ffffff</sld:CssParameter><sld:CssParameter name="fill-opacity">0</sld:CssParameter></sld:Fill><sld:Stroke><sld:CssParameter name="stroke">${color}</sld:CssParameter><sld:CssParameter name="stroke-opacity">${strokeOpacity}</sld:CssParameter><sld:CssParameter name="stroke-width">${strokeWidth}</sld:CssParameter><sld:CssParameter name="stroke-linejoin">round</sld:CssParameter><sld:CssParameter name="stroke-linecap">round</sld:CssParameter></sld:Stroke></sld:PolygonSymbolizer>`;
-  const innerStroke = stroke('#dbdbdb', width * BOUNDARY_RENDER_SCALE, opacity);
-  const strokes = casing
-    ? `${stroke('#494949', (width + 0.1) * BOUNDARY_RENDER_SCALE, Math.min(1, opacity + 0.08))}${innerStroke}`
-    : innerStroke;
-
-  return `<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><sld:NamedLayer><sld:Name>${layer}</sld:Name><sld:NamedStyle><sld:Name /></sld:NamedStyle><sld:UserStyle><sld:Name>weather_boundary</sld:Name><sld:Title>weather_boundary</sld:Title><sld:FeatureTypeStyle><sld:Rule><sld:Name>boundary</sld:Name>${strokes}</sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>`;
-}
-
-const BOUNDARY_WMS_OPTIONS = Object.freeze({
-  type: 'wms',
-  url: NWS_REFERENCE_WMS_URL,
-  styles: 'weather_boundary',
-  format: 'image/png',
-  transparent: true,
-  version: '1.3.0',
-  uppercase: true,
-  detectRetina: true,
-  attribution: 'NOAA/NWS reference maps',
-});
-const REGIONAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
-  ...BOUNDARY_WMS_OPTIONS,
-  layers: '9',
-  sld_body: buildBoundarySld('9', 0.85, 0.35, { casing: false }),
-  minZoom: 7,
-  maxZoom: 7,
-});
-const LOCAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
-  ...BOUNDARY_WMS_OPTIONS,
-  layers: '9',
-  sld_body: buildBoundarySld('9', 0.3, 0.50),
-  minZoom: 8,
-});
-const STATE_BOUNDARY_OVERLAY = Object.freeze({
-  ...BOUNDARY_WMS_OPTIONS,
-  layers: '8',
-  sld_body: buildBoundarySld('8', 0.7, 0.50),
-});
-const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
-  REGIONAL_COUNTY_BOUNDARY_OVERLAY,
-  LOCAL_COUNTY_BOUNDARY_OVERLAY,
-  STATE_BOUNDARY_OVERLAY,
-]);
 
 function pageMapConfig() {
   const root = document.querySelector('[data-county-weather-center]') || document.body;
@@ -331,7 +293,7 @@ class CountyRadarViewer {
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.8,
-      ariaLabel: `Interactive radar map centered on ${this.context.countyName} County`,
+      ariaLabel: `Interactive radar map centered on ${contextAreaLabel(this.context)}`,
       initialBasemap: this.basemapSelect?.value || 'esri',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
@@ -358,16 +320,16 @@ class CountyRadarViewer {
   }
 
   async ensureContext() {
-    if (!this.context) this.context = await loadCountyContext();
+    if (!this.context) this.context = await loadWeatherPageContext();
     return this.context;
   }
 
   async handleZoneChange() {
     try {
-      this.context = await loadCountyContext();
+      this.context = await loadWeatherPageContext();
       this.mapElement.setAttribute(
         'aria-label',
-        `Interactive radar map centered on ${this.context.countyName} County`,
+        `Interactive radar map centered on ${contextAreaLabel(this.context)}`,
       );
       if (this.map) {
         this.map.ensureMap().setView(this.context.center, initialWeatherMapZoom(), {
@@ -655,7 +617,7 @@ class CountySatelliteViewer {
       requireCtrlForWheelZoom: false,
       maxFrames: 12,
       overlayOpacity: 0.92,
-      ariaLabel: `Interactive satellite map centered on ${this.context.countyName} County`,
+      ariaLabel: `Interactive satellite map centered on ${contextAreaLabel(this.context)}`,
       initialBasemap: this.basemapSelect?.value || 'esri',
       showBasemapControl: !this.basemapSelect,
       basemapControlPosition: 'topleft',
@@ -682,7 +644,7 @@ class CountySatelliteViewer {
   }
 
   async ensureContext() {
-    if (!this.context) this.context = await loadCountyContext();
+    if (!this.context) this.context = await loadWeatherPageContext();
     return this.context;
   }
 
@@ -710,10 +672,10 @@ class CountySatelliteViewer {
 
   async handleZoneChange() {
     try {
-      this.context = await loadCountyContext();
+      this.context = await loadWeatherPageContext();
       this.mapElement.setAttribute(
         'aria-label',
-        `Interactive satellite map centered on ${this.context.countyName} County`,
+        `Interactive satellite map centered on ${contextAreaLabel(this.context)}`,
       );
       if (this.map) {
         this.map.ensureMap().setView(this.context.center, initialWeatherMapZoom(), {

@@ -1,0 +1,263 @@
+.home-weather-center {
+  --weather-center-content-height: clamp(500px, calc(100svh - 330px), 700px);
+}
+
+.home-weather-center .weather-center-tabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-weather-center .weather-center-heading {
+  margin-bottom: 18px;
+}
+
+.home-weather-center .weather-center-heading p {
+  margin: 8px auto 0;
+  color: #c7d7e3;
+  font-size: clamp(0.86rem, 1.4vw, 1rem);
+}
+
+.home-weather-center .temperature-content,
+.home-weather-center .weather-center-map-card .radar-content,
+.home-weather-center .weather-center-map-card .satellite-content {
+  min-height: var(--weather-center-content-height);
+}
+
+.home-map-key {
+  width: min(290px, calc(100vw - 76px));
+  margin: 0 10px 10px 0 !important;
+  border: 1px solid rgba(180, 205, 223, 0.58);
+  border-radius: 10px;
+  background: rgba(7, 27, 46, 0.96);
+  color: #edf6fb;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38);
+  font-family: var(--font-primary);
+  overflow: hidden;
+}
+
+.home-map-key-alert:focus-visible {
+  outline: 2px solid #fff200;
+  outline-offset: -3px;
+}
+
+.home-map-key-panel {
+  display: block;
+  padding: 11px;
+}
+
+.home-map-key-heading {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.home-map-key-alerts {
+  display: grid;
+  gap: 4px;
+}
+
+.home-map-key-alert {
+  display: grid;
+  min-height: 34px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #edf6fb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  text-align: left;
+}
+
+.home-map-key-alert:hover {
+  border-color: rgba(255, 242, 0, 0.7);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.home-map-key-alert small {
+  color: #b9cad6;
+  white-space: nowrap;
+}
+
+.home-map-key-swatch,
+.home-county-popup-alert-swatch {
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.44);
+}
+
+.home-map-key-clear,
+.home-map-key-warning {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.home-map-key-clear i {
+  color: #7fe0aa;
+}
+
+.home-map-key-warning {
+  margin-top: 8px;
+  color: #ffd4a8;
+}
+
+.home-map-key-county {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(180, 205, 223, 0.23);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.home-map-key-county > span {
+  width: 30px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 2px solid #edf6fb;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px #06111c;
+}
+
+.home-county-tooltip {
+  border: 1px solid rgba(255, 242, 0, 0.76) !important;
+  background: #071b2e !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.home-county-tooltip::before {
+  border-top-color: #071b2e !important;
+}
+
+.home-county-leaflet-popup .leaflet-popup-content-wrapper,
+.home-county-leaflet-popup .leaflet-popup-tip {
+  background: #071b2e;
+  color: #edf6fb;
+}
+
+.home-county-leaflet-popup .leaflet-popup-content-wrapper {
+  border: 1px solid rgba(180, 205, 223, 0.54);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+}
+
+.home-county-leaflet-popup .leaflet-popup-content {
+  width: min(255px, 65vw) !important;
+  margin: 15px;
+  font-family: var(--font-primary);
+}
+
+.home-county-popup-eyebrow {
+  margin: 0 0 3px;
+  color: #fff200;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.home-county-popup h3 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+}
+
+.home-county-popup-alerts {
+  padding: 8px;
+  border-left: 3px solid #fff200;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.7rem;
+}
+
+.home-county-popup-alerts ul {
+  display: grid;
+  gap: 5px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-county-popup-alerts li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.home-county-popup-clear {
+  margin: 0;
+  color: #b9d8c4;
+  font-size: 0.72rem;
+}
+
+.home-county-popup-link {
+  display: inline-flex;
+  min-height: 38px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fff200;
+  color: #071b2e !important;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.home-county-popup-link:hover,
+.home-county-popup-link:focus-visible {
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .home-weather-center {
+    --weather-center-content-height: 430px;
+  }
+
+  .home-weather-center .weather-center-heading p {
+    max-width: 34rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-weather-center {
+    --weather-center-content-height: 350px;
+  }
+
+  .home-map-key.is-below-map {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 !important;
+    float: none;
+    clear: none;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .home-map-key.is-below-map .home-map-key-panel {
+    max-height: none;
+    overflow-y: auto;
+  }
+}

@@ -32,7 +32,8 @@
             content="This page isn't available. Visit the homepage for current weather updates." />
         <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
-    <link rel="stylesheet" href="./css/styles.css?v=20260812-ga4" />
+        <link rel="stylesheet" href="./css/styles.css?v=20260816-home1" />
+        <link rel="stylesheet" href="./css/info.css?v=20260817-1" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
 
@@ -62,17 +63,21 @@
         </script>
     </head>
 
-    <body>
+    <body class="info-page">
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
-        <main class="container">
-            <h1 class="main-title">4<i class="fa-solid fa-hurricane"></i>4</h1>
+        <main class="info-main" id="main-content">
+            <header class="info-page-heading">
+                <p class="eyebrow">Page not found</p>
+                <h1>404</h1>
+                <p>The forecast you requested is not available at this address.</p>
+            </header>
 
             <!-- Single panel, same “section container” look as other pages -->
             <section class="notfound-container" aria-labelledby="notfound-title">
                 <div id="notfound-title" class="notfound-title">
-                    <i class="fa-solid fa-signs-post" style="color: yellow"></i>&nbsp;&nbsp;This page
+                    <i class="fa-solid fa-signs-post" aria-hidden="true"></i>This page
                     has moved or does not exist
                 </div>
 
@@ -81,8 +86,8 @@
                         We could not find the forecast you requested.<br />Use the navigation above or return to the homepage.
                     </p>
                     <img src="./images/evac.webp" alt="Evacuation sign illustration" class="evac-illustration" />
-                    <figcaption class="notfound-caption muted" style="text-align: center; margin-top: 6px">
-                        <a href="/">Return to NCHurricane.com</a>
+                    <figcaption class="notfound-caption">
+                        <a class="notfound-action" href="/"><i class="fa-solid fa-house" aria-hidden="true"></i>Return to the homepage</a>
                     </figcaption>
                 </figure>
             </section>
@@ -132,9 +137,15 @@
         </footer>
 
         <script type="module">
-            import { NavigationModule } from './js/modules/navigation.js?v=20260812-ga4';
+            import { NavigationModule } from './js/modules/navigation.js?v=20260816-home1';
 
             document.addEventListener('DOMContentLoaded', () => {
+                NavigationModule.navData.logo = {
+                    textBefore: 'ChuckCopeland',
+                    iconClass: 'fa-solid fa-bolt-lightning',
+                    textAfter: 'WX',
+                    ariaLabel: 'ChuckCopelandWx home',
+                };
                 NavigationModule.init('./');
             });
         </script>

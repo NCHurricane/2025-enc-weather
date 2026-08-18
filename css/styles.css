@@ -262,6 +262,97 @@ button {
     max-width: 350px;
 }
 
+.header-container .logo-link {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+}
+
+.header-container .site-wordmark {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-active);
+    font-size: clamp(1.55rem, 2.1vw, 2rem);
+    font-weight: 600;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.header-container .site-wordmark-name,
+.header-container .site-wordmark-wx {
+    display: inline-block;
+}
+
+.header-container .site-wordmark-name {
+    color: var(--color-danger);
+}
+
+.header-container .site-wordmark-wx {
+    margin-left: -0.25rem;
+    color: var(--color-primary);
+}
+
+.header-container .site-wordmark .fa-bolt-lightning,
+.header-container .site-wordmark .fa-hurricane {
+    margin: 0 0.28em;
+    color: var(--color-accent);
+    font-size: 0.72em;
+    line-height: 1;
+    transform-origin: center;
+}
+
+.header-container .site-wordmark .fa-bolt-lightning {
+    animation: brand-bolt-flash 5.4s ease-in-out infinite;
+}
+
+.header-container .site-wordmark .fa-hurricane {
+    animation: brand-hurricane-spin 5.4s ease-in-out infinite;
+}
+
+@keyframes brand-bolt-flash {
+    0%,
+    4%,
+    9%,
+    100% {
+        color: var(--color-accent);
+        filter: none;
+        opacity: 0.88;
+        transform: scale(1);
+    }
+
+    2%,
+    7% {
+        color: #fff;
+        filter: drop-shadow(0 0 5px rgba(255, 242, 0, 0.95));
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+
+@keyframes brand-hurricane-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    9%,
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-container .site-wordmark .fa-bolt-lightning,
+    .header-container .site-wordmark .fa-hurricane {
+        animation: none;
+        opacity: 1;
+    }
+}
+
 .nav-menu {
     list-style: none;
     display: flex;

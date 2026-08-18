@@ -1,7 +1,8 @@
 const DEFAULT_BASEMAP_URL =
   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
 const DEFAULT_BASEMAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>, ChuckCopelandWX';
+const referenceGeoJsonPromises = new Map();
 
 export const WEATHER_BASEMAPS = Object.freeze({
   light: {
@@ -15,26 +16,52 @@ export const WEATHER_BASEMAPS = Object.freeze({
     label: 'Dark',
     url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>, ChuckCopelandWX',
     maxZoom: 20,
     subdomains: 'abcd',
   },
   usgs: {
     label: 'USGS US Imagery',
     url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map, USDA',
+    attribution: 'USGS The National Map, USDA, ChuckCopelandWX',
     maxZoom: 16,
   },
   esri: {
     label: 'Esri World Imagery',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri, DigitalGlobe, Earthstar Geographics',
+    attribution: '&copy; Esri, DigitalGlobe, Earthstar Geographics, ChuckCopelandWX',
     maxZoom: 18,
   },
 });
 
 function resolveElement(value) {
   return typeof value === 'string' ? document.getElementById(value) : value;
+}
+
+function loadReferenceGeoJson(url) {
+  if (!referenceGeoJsonPromises.has(url)) {
+    const promise = fetch(url, { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Boundary GeoJSON request failed (${response.status})`);
+        return response.json();
+      })
+      .catch((error) => {
+        referenceGeoJsonPromises.delete(url);
+        throw error;
+      });
+    referenceGeoJsonPromises.set(url, promise);
+  }
+  return referenceGeoJsonPromises.get(url);
+}
+
+function referenceStyleAtZoom(zoom, style, zoomStyles) {
+  const zoomStyle = zoomStyles.find((candidate) => {
+    return (
+      (candidate.minZoom === undefined || zoom >= candidate.minZoom) &&
+      (candidate.maxZoom === undefined || zoom <= candidate.maxZoom)
+    );
+  });
+  return zoomStyle?.style || style || {};
 }
 
 function waitForPaint() {
@@ -309,9 +336,65 @@ export class InteractiveWeatherMap {
       ...referenceOptions,
       pane: 'weatherReferencePane',
     };
+    if (type === 'geojson') return this.addGeoJsonReferenceOverlay(url, options);
     const layer =
       type === 'wms' ? window.L.tileLayer.wms(url, options) : window.L.tileLayer(url, options);
     return layer.addTo(this.map);
+  }
+
+  addGeoJsonReferenceOverlay(url, options) {
+    const {
+      minZoom,
+      maxZoom,
+      rendererFilter,
+      style = {},
+      zoomStyles = [],
+      attribution,
+      ...geoJsonOptions
+    } = options;
+    const renderer = window.L.canvas({
+      pane: 'weatherReferencePane',
+      padding: 0.5,
+    });
+    const layer = window.L.geoJSON(null, {
+      ...geoJsonOptions,
+      pane: 'weatherReferencePane',
+      renderer,
+      interactive: false,
+      style: referenceStyleAtZoom(this.map.getZoom(), style, zoomStyles),
+    });
+    if (attribution) layer.getAttribution = () => attribution;
+
+    const syncLayer = () => {
+      if (!this.map) return;
+      const zoom = this.map.getZoom();
+      const visible =
+        (minZoom === undefined || zoom >= minZoom) &&
+        (maxZoom === undefined || zoom <= maxZoom);
+
+      if (visible && !this.map.hasLayer(layer)) layer.addTo(this.map);
+      if (!visible && this.map.hasLayer(layer)) this.map.removeLayer(layer);
+      layer.setStyle(referenceStyleAtZoom(zoom, style, zoomStyles));
+
+      const rendererContainer = renderer.getContainer?.() || renderer._container;
+      if (rendererContainer) {
+        rendererContainer.style.display = visible ? '' : 'none';
+        if (rendererFilter) rendererContainer.style.filter = rendererFilter;
+      }
+    };
+
+    this.map.on('zoomend', syncLayer);
+    syncLayer();
+    loadReferenceGeoJson(url)
+      .then((geoJson) => {
+        if (!this.map) return;
+        layer.addData(geoJson);
+        syncLayer();
+      })
+      .catch((error) => {
+        console.warn('[interactive-weather-map] Boundary GeoJSON failed:', error);
+      });
+    return layer;
   }
 
   createBasemapLayers() {

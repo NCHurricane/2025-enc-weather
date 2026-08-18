@@ -1,11 +1,12 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260816-2';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260816-5';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
-  loadCountyContext,
-} from './countyContext.js?v=20260816-2';
+  loadWeatherPageContext,
+} from './countyContext.js?v=20260816-home1';
+import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260816-1';
 import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
 
 const STATION_MAX_AGE_MINUTES = 120;
@@ -22,54 +23,6 @@ const TABLET_PORTRAIT_MAP_QUERY = window.matchMedia(
   '(min-width: 601px) and (max-width: 1024px) and (orientation: portrait)',
 );
 const statewideStationCatalogPromises = new Map();
-const NWS_REFERENCE_WMS_URL =
-  'https://mapservices.weather.noaa.gov/static/services/nws_reference_maps/nws_reference_map/MapServer/WMSServer';
-const BOUNDARY_RENDER_SCALE = window.L?.Browser?.retina ? 2 : 1;
-
-function buildBoundarySld(layer, width, opacity, { casing = true } = {}) {
-  const stroke = (color, strokeWidth, strokeOpacity) =>
-    `<sld:PolygonSymbolizer><sld:Fill><sld:CssParameter name="fill">#ffffff</sld:CssParameter><sld:CssParameter name="fill-opacity">0</sld:CssParameter></sld:Fill><sld:Stroke><sld:CssParameter name="stroke">${color}</sld:CssParameter><sld:CssParameter name="stroke-opacity">${strokeOpacity}</sld:CssParameter><sld:CssParameter name="stroke-width">${strokeWidth}</sld:CssParameter><sld:CssParameter name="stroke-linejoin">round</sld:CssParameter><sld:CssParameter name="stroke-linecap">round</sld:CssParameter></sld:Stroke></sld:PolygonSymbolizer>`;
-  const innerStroke = stroke('#dbdbdb', width * BOUNDARY_RENDER_SCALE, opacity);
-  const strokes = casing
-    ? `${stroke('#494949', (width + 0.1) * BOUNDARY_RENDER_SCALE, Math.min(1, opacity + 0.08))}${innerStroke}`
-    : innerStroke;
-
-  return `<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><sld:NamedLayer><sld:Name>${layer}</sld:Name><sld:NamedStyle><sld:Name /></sld:NamedStyle><sld:UserStyle><sld:Name>weather_boundary</sld:Name><sld:Title>weather_boundary</sld:Title><sld:FeatureTypeStyle><sld:Rule><sld:Name>boundary</sld:Name>${strokes}</sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>`;
-}
-
-const BOUNDARY_WMS_OPTIONS = Object.freeze({
-  type: 'wms',
-  url: NWS_REFERENCE_WMS_URL,
-  styles: 'weather_boundary',
-  format: 'image/png',
-  transparent: true,
-  version: '1.3.0',
-  uppercase: true,
-  detectRetina: true,
-  attribution: 'NOAA/NWS reference maps',
-});
-const REGIONAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
-  ...BOUNDARY_WMS_OPTIONS,
-  layers: '9',
-  sld_body: buildBoundarySld('9', 0.85, 0.35, { casing: false }),
-  minZoom: 7,
-  maxZoom: 7,
-});
-const LOCAL_COUNTY_BOUNDARY_OVERLAY = Object.freeze({
-  ...BOUNDARY_WMS_OPTIONS,
-  layers: '9',
-  sld_body: buildBoundarySld('9', 0.3, 0.5),
-  minZoom: 8,
-});
-const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
-  REGIONAL_COUNTY_BOUNDARY_OVERLAY,
-  LOCAL_COUNTY_BOUNDARY_OVERLAY,
-  Object.freeze({
-    ...BOUNDARY_WMS_OPTIONS,
-    layers: '8',
-    sld_body: buildBoundarySld('8', 0.7, 0.5),
-  }),
-]);
 
 function finiteNumber(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -78,7 +31,22 @@ function finiteNumber(value) {
 }
 
 function initialMapZoom() {
+  const root = document.querySelector('[data-county-weather-center]');
+  const configuredZoom = MOBILE_STATION_DETAILS_QUERY.matches
+    ? root?.dataset.mapZoomMobile
+    : root?.dataset.mapZoomDesktop;
+  const parsedZoom = finiteNumber(configuredZoom);
+  if (parsedZoom !== null) return parsedZoom;
   return MOBILE_STATION_DETAILS_QUERY.matches || TABLET_PORTRAIT_MAP_QUERY.matches ? 9 : 10;
+}
+
+function contextAreaLabel(context) {
+  return context?.regionLabel || `${context?.countyName || 'the county'} County`;
+}
+
+function currentConditionsAriaLabel(context, mapLabel) {
+  const preposition = context?.isRegional ? 'across' : 'near';
+  return `Current ${mapLabel} ${preposition} ${contextAreaLabel(context)}`;
 }
 
 function statewideStationSpacing(zoom) {
@@ -100,6 +68,30 @@ async function fetchJson(url, label, { cache = 'no-store' } = {}) {
   const response = await fetch(url, { cache });
   if (!response.ok) throw new Error(`${label} request failed (${response.status})`);
   return response.json();
+}
+
+async function loadFallbackCurrentObservations(urls, cacheKey) {
+  const results = await Promise.allSettled(
+    urls.map((url) => fetchJson(versionedUrl(url, cacheKey), 'Fallback current observations')),
+  );
+  const fulfilled = results
+    .filter((result) => result.status === 'fulfilled')
+    .map((result) => result.value);
+  const stations = Object.assign(
+    {},
+    ...fulfilled.map((current) => (
+      current?.stations && typeof current.stations === 'object' ? current.stations : {}
+    )),
+  );
+  if (!Object.keys(stations).length) {
+    throw new Error('Regional fallback observations are unavailable');
+  }
+
+  const generated = fulfilled
+    .map((current) => current?.generated)
+    .filter((value) => Number.isFinite(Date.parse(value)))
+    .sort((left, right) => Date.parse(right) - Date.parse(left))[0] || null;
+  return { generated, stations };
 }
 
 function loadStatewideStationCatalog(url, state = 'Statewide') {
@@ -160,7 +152,7 @@ function markerMetric(field, data = {}) {
     return {
       available: true,
       compact: false,
-      html: `${Math.round(value)}%`,
+      html: `${Math.round(value)}<span class="temperature-marker-percent"> %</span>`,
       spoken: `Relative humidity ${Math.round(value)} percent`,
     };
   }
@@ -177,7 +169,11 @@ function markerMetric(field, data = {}) {
     return {
       available: true,
       compact: true,
-      html: `${direction}<small class="temperature-marker-unit">${Math.round(speed)} mph</small>`,
+      html: `
+        <span class="temperature-marker-direction">${direction}</span>
+        <br />
+        <span class="temperature-marker-speed">${Math.round(speed)} MPH</span>
+      `,
       spoken: `Wind ${direction === '--' ? '' : `${direction} at `}${Math.round(speed)} miles per hour`,
     };
   }
@@ -319,6 +315,7 @@ class CountyTemperatureViewer {
     this.statusDot = document.querySelector('.weather-center-status-dot');
     this.conditionPanel = document.getElementById('condition-panel-display');
     this.stationDetails = document.getElementById('temperature-station-details');
+    this.mapShell = this.mapElement?.closest('.interactive-weather-map-shell');
     this.conditionButtons = Array.from(document.querySelectorAll('[data-condition-field]'));
     this.loading = document.getElementById('temperature-loading');
     this.error = document.getElementById('temperature-error');
@@ -340,6 +337,7 @@ class CountyTemperatureViewer {
     this.refreshTimer = 0;
     this.context = null;
     this.coverageMode = 'local';
+    this.mapReadyDispatched = false;
     const weatherCenterRoot = document.querySelector('[data-county-weather-center]') || document.body;
     this.cityLabelsUrl = weatherCenterRoot.dataset.cityLabelsUrl || '';
     this.active = false;
@@ -350,6 +348,7 @@ class CountyTemperatureViewer {
 
   init() {
     if (!this.mapElement) return false;
+    this.syncStationDetailsPlacement();
     this.conditionButtons.forEach((button, index) => {
       button.addEventListener('click', () => this.activateField(button.dataset.conditionField));
       button.addEventListener('keydown', (event) => this.handleFieldKeydown(event, index));
@@ -365,6 +364,22 @@ class CountyTemperatureViewer {
 
   handleStationDetailsModeChange() {
     this.hideStationDetails();
+    this.syncStationDetailsPlacement();
+  }
+
+  syncStationDetailsPlacement() {
+    if (!this.stationDetails || !this.mapShell) return;
+
+    if (MOBILE_STATION_DETAILS_QUERY.matches) {
+      if (this.stationDetails.parentElement === this.mapShell) {
+        this.mapShell.after(this.stationDetails);
+      }
+      return;
+    }
+
+    if (this.stationDetails.parentElement !== this.mapShell) {
+      this.mapShell.append(this.stationDetails);
+    }
   }
 
   setSelectedMarker(marker) {
@@ -457,8 +472,10 @@ class CountyTemperatureViewer {
       (button) => button.dataset.conditionField === field,
     );
     if (activeButton) this.conditionPanel?.setAttribute('aria-labelledby', activeButton.id);
-    const countyName = this.context?.countyName || 'the county';
-    this.mapElement.setAttribute('aria-label', `Current ${config.mapLabel} near ${countyName} County`);
+    this.mapElement.setAttribute(
+      'aria-label',
+      currentConditionsAriaLabel(this.context, config.mapLabel),
+    );
 
     if (this.stationConfig && this.currentData) this.renderStations();
   }
@@ -471,7 +488,7 @@ class CountyTemperatureViewer {
       center: this.context.center,
       zoom: initialMapZoom(),
       requireCtrlForWheelZoom: false,
-      ariaLabel: `Current ${CONDITION_FIELDS[this.activeField].mapLabel} near ${this.context.countyName} County`,
+      ariaLabel: currentConditionsAriaLabel(this.context, CONDITION_FIELDS[this.activeField].mapLabel),
       initialBasemap: 'esri',
       showBasemapControl: true,
       basemapControlPosition: 'topleft',
@@ -485,6 +502,12 @@ class CountyTemperatureViewer {
     );
     this.markerLayer = window.L.layerGroup().addTo(leafletMap);
     leafletMap.on('moveend zoomend', this.handleMapSettled);
+    if (!this.mapReadyDispatched) {
+      this.mapReadyDispatched = true;
+      document.dispatchEvent(new CustomEvent('weather:conditions-map-ready', {
+        detail: { map: leafletMap, context: this.context, viewer: this },
+      }));
+    }
     return this.map;
   }
 
@@ -539,7 +562,7 @@ class CountyTemperatureViewer {
   }
 
   thinStationRecords(records, leafletMap) {
-    if (this.coverageMode !== 'statewide') return records;
+    if (!['statewide', 'regional-fallback'].includes(this.coverageMode)) return records;
     if (!MOBILE_STATION_DETAILS_QUERY.matches && records.length <= 30) return records;
 
     const spacing = statewideStationSpacing(leafletMap.getZoom());
@@ -638,7 +661,9 @@ class CountyTemperatureViewer {
     if (this.stationCount) {
       this.stationCount.textContent = this.coverageMode === 'local-fallback'
         ? `Local coverage · ${reportingCount} reporting`
-        : `${visibleCount} visible · ${reportingCount} reporting`;
+        : this.coverageMode === 'regional-fallback'
+          ? `${visibleCount} visible · ${reportingCount} regional fallback`
+          : `${visibleCount} visible · ${reportingCount} reporting`;
     }
     this.mapElement.dataset.coverageMode = this.coverageMode;
     this.mapElement.dataset.eligibleStationCount = String(eligibleRecords.length);
@@ -649,7 +674,9 @@ class CountyTemperatureViewer {
       visibleCount < eligibleRecords.length,
     );
     this.mapElement.dataset.stationSpacingPixels = String(
-      this.coverageMode === 'statewide' ? statewideStationSpacing(leafletMap.getZoom()) : 0,
+      ['statewide', 'regional-fallback'].includes(this.coverageMode)
+        ? statewideStationSpacing(leafletMap.getZoom())
+        : 0,
     );
     const center = leafletMap.getCenter();
     this.mapElement.dataset.mapCenter = `${center.lat.toFixed(5)},${center.lng.toFixed(5)}`;
@@ -658,7 +685,7 @@ class CountyTemperatureViewer {
 
   async activate() {
     this.active = true;
-    if (!this.context) this.context = await loadCountyContext();
+    if (!this.context) this.context = await loadWeatherPageContext();
     this.ensureMap().setVisible(true);
     window.clearInterval(this.refreshTimer);
     this.refreshTimer = window.setInterval(() => {
@@ -690,7 +717,7 @@ class CountyTemperatureViewer {
     if (this.stationCount) this.stationCount.textContent = 'Loading stations...';
 
     try {
-      this.context = await loadCountyContext();
+      this.context = await loadWeatherPageContext();
       if (this.map) {
         this.map.ensureMap().setView(this.context.center, initialMapZoom(), { animate: false });
         if (this.cityLabelOverlay) {
@@ -733,7 +760,7 @@ class CountyTemperatureViewer {
 
   async fetchAndRenderStations(generation) {
     const cacheKey = Math.floor(Date.now() / REFRESH_INTERVAL_MS);
-    const context = await loadCountyContext();
+    const context = await loadWeatherPageContext();
     let stations;
     let current;
     let coverageMode = 'local';
@@ -755,16 +782,33 @@ class CountyTemperatureViewer {
         }
         coverageMode = 'statewide';
       } catch (error) {
-        console.warn(
-          '[county-weather-center] Statewide observations unavailable; using local coverage:',
-          error,
-        );
-        stations = Array.isArray(context.stations) ? context.stations : [];
-        current = await fetchJson(
-          versionedUrl(context.dataPath('current.json'), cacheKey),
-          'Local current observations',
-        );
-        coverageMode = 'local-fallback';
+        const fallbackUrls = context.conditionsSource.fallbackCurrentUrls || [];
+        if (fallbackUrls.length) {
+          console.warn(
+            '[county-weather-center] Statewide observations unavailable; using regional fallback coverage:',
+            error,
+          );
+          [stations, current] = await Promise.all([
+            loadStatewideStationCatalog(
+              context.conditionsSource.stationsUrl,
+              context.conditionsSource.state,
+            ),
+            loadFallbackCurrentObservations(fallbackUrls, cacheKey),
+          ]);
+          stations = stations.filter((station) => current.stations?.[station.id]);
+          coverageMode = 'regional-fallback';
+        } else {
+          console.warn(
+            '[county-weather-center] Statewide observations unavailable; using local coverage:',
+            error,
+          );
+          stations = Array.isArray(context.stations) ? context.stations : [];
+          current = await fetchJson(
+            versionedUrl(context.dataPath('current.json'), cacheKey),
+            'Local current observations',
+          );
+          coverageMode = 'local-fallback';
+        }
       }
     } else {
       stations = Array.isArray(context.stations) ? context.stations : [];
@@ -848,7 +892,7 @@ class CountyTemperatureViewer {
     this.mapElement.dataset.reportingStationCount = String(reportingCount);
     this.mapElement.setAttribute(
       'aria-label',
-      `Current ${fieldConfig.mapLabel} near ${this.context.countyName} County`,
+      currentConditionsAriaLabel(this.context, fieldConfig.mapLabel),
     );
     if (!this.hasInitializedView) {
       this.map.ensureMap().setView(this.context.center, initialMapZoom(), { animate: false });

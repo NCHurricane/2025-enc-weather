@@ -25,8 +25,8 @@
     <meta name="twitter:description" content="How Chuck Copeland designed, built, and operates a real-time local weather platform around audience needs and trusted public data." />
     <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="./css/styles.css?v=20260812-ga4" />
-    <link rel="stylesheet" href="./css/info.css" />
+    <link rel="stylesheet" href="./css/styles.css?v=20260816-home1" />
+    <link rel="stylesheet" href="./css/info.css?v=20260817-1" />
     <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
     <script type="application/ld+json">
     {
@@ -40,9 +40,9 @@
     }
     </script>
 </head>
-<body>
+<body class="info-page">
     <header class="header"></header>
-    <main class="info-main">
+    <main class="info-main" id="main-content">
         <section class="case-study-hero" aria-labelledby="case-study-title">
             <p class="eyebrow">Web marketing + product case study</p>
             <h1 id="case-study-title">Turning public weather data into a useful local brand</h1>
@@ -111,6 +111,15 @@
         </section>
     </main>
     <footer class="footer"><div class="footer-content"><p class="disclaimer">NCHurricane.com is for informational purposes only. Use official NWS and NHC guidance for life-safety decisions.</p><p class="copyright">Copyright ©2003–2026 NCHurricane.<br />Designed and developed by <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>.</p></div></footer>
-    <script type="module">import { NavigationModule } from './js/modules/navigation.js?v=20260812-ga4'; NavigationModule.init('./');</script>
+    <script type="module">
+        import { NavigationModule } from './js/modules/navigation.js?v=20260816-home1';
+        NavigationModule.navData.logo = {
+            textBefore: 'ChuckCopeland',
+            iconClass: 'fa-solid fa-bolt-lightning',
+            textAfter: 'WX',
+            ariaLabel: 'ChuckCopelandWx home',
+        };
+        NavigationModule.init('./');
+    </script>
 </body>
 </html>

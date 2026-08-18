@@ -25,16 +25,19 @@
     <meta name="twitter:description" content="Privacy information for NCHurricane.com." />
     <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="./css/styles.css?v=20260812-ga4" />
-    <link rel="stylesheet" href="./css/info.css" />
+    <link rel="stylesheet" href="./css/styles.css?v=20260816-home1" />
+    <link rel="stylesheet" href="./css/info.css?v=20260817-1" />
     <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="info-page">
     <header class="header"></header>
-    <main class="info-main">
-        <article class="info-panel">
+    <main class="info-main" id="main-content">
+        <header class="info-page-heading">
             <p class="eyebrow">Site information</p>
             <h1>Privacy</h1>
+            <p>What the site processes, which services it uses, and the choices available to visitors.</p>
+        </header>
+        <article class="info-panel">
             <p class="info-updated">Last updated August 12, 2026</p>
             <h2>Information this site processes</h2>
             <p>NCHurricane.com does not ask visitors to create accounts, submit payment information, or provide personal profiles. Like most web servers, the hosting environment may retain limited technical logs such as IP address, browser type, requested URL, timestamp, and response status for reliability and security.</p>
@@ -53,6 +56,15 @@
         </article>
     </main>
     <footer class="footer"><div class="footer-content"><p class="disclaimer">NCHurricane.com is for informational purposes only. Use official NWS and NHC guidance for life-safety decisions.</p><p class="copyright">Copyright ©2003–2026 NCHurricane.<br />Designed and developed by <a href="https://chuckcopeland.com" target="_blank">ChuckCopeland.com</a>.</p></div></footer>
-    <script type="module">import { NavigationModule } from './js/modules/navigation.js?v=20260812-ga4'; NavigationModule.init('./');</script>
+    <script type="module">
+        import { NavigationModule } from './js/modules/navigation.js?v=20260816-home1';
+        NavigationModule.navData.logo = {
+            textBefore: 'ChuckCopeland',
+            iconClass: 'fa-solid fa-bolt-lightning',
+            textAfter: 'WX',
+            ariaLabel: 'ChuckCopelandWx home',
+        };
+        NavigationModule.init('./');
+    </script>
 </body>
 </html>
