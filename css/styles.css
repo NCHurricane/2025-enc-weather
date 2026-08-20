@@ -29,6 +29,7 @@
     /* Spacing */
     --margin-section: 10px 0 20px 0;
     --padding-section: 15px 15px 15px 10px;
+    --site-main-width: min(95%, clamp(1100px, 85vw, 1700px));
 
     /* Border radius */
     --border-radius: 8px;
@@ -209,7 +210,7 @@ button {
     margin: auto;
     max-width: 2000px;
     padding-top: clamp(100px, 5vw, 3em);
-    width: 95%;
+    width: var(--site-main-width);
 }
 
 .main-title {
@@ -307,11 +308,12 @@ button {
 }
 
 .header-container .site-wordmark .fa-bolt-lightning {
-    animation: brand-bolt-flash 5.4s ease-in-out infinite;
+    animation: brand-bolt-flash 3.4s ease-in-out infinite;
 }
 
 .header-container .site-wordmark .fa-hurricane {
-    animation: brand-hurricane-spin 5.4s ease-in-out infinite;
+    animation: brand-hurricane-spin 3.4s ease-in-out infinite;
+    animation-direction: reverse;
 }
 
 @keyframes brand-bolt-flash {

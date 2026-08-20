@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Next-Session Plan
 
-Updated: 2026-08-18  
+Updated: 2026-08-19
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: planning and handoff only. No tropical-page implementation was performed while writing this document. Do not commit, deploy, or overwrite user-owned working-tree changes without explicit authorization.
+Status: Phases 0, 1, and 2 are complete locally. Phase 3's unified tropical overview is implemented locally and passes static, automated, parser, and HTTP checks; owner desktop/mobile smoke testing is pending. Evidence is documented in [`tropical-map-phase-0-source-contracts.md`](tropical-map-phase-0-source-contracts.md), [`tropical-map-phase-1-normalized-packages.md`](tropical-map-phase-1-normalized-packages.md), [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md), and [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Phase 4 compatibility routes and navigation have not begun and require approval after Phase 3 acceptance. Do not commit, deploy, or overwrite user-owned working-tree changes without explicit authorization.
 
 ## Objective
 
@@ -386,6 +386,7 @@ Do not reproduce the full active-page advisory in the overview popup.
 
 - Desktop: compact map overlay in a corner that does not cover important activity.
 - Mobile: move the legend below the map using the same responsive pattern already approved on the homepage.
+- Treat the isolated harness's mobile legend as provisional. Reassess its placement and density with the real unified-page content during Phase 3; do not assume the harness arrangement is the final site treatment.
 - Include entries only for products present in the selected basin, plus a legitimate no-activity message.
 - Keep a visible timestamp/status row outside the map.
 
@@ -503,11 +504,11 @@ Do not remove any of these in the first implementation step.
 
 ### Satellite policy
 
-Keep the current floater satellite as a separate card initially.
+Owner revision approved on 2026-08-19: Satellite is now one of the four panels in the unified weather-center card and uses the same `InteractiveWeatherMap` Leaflet/WMS implementation as the homepage. A later owner correction reserves storm/floater targeting for `/active`; the unified overview always uses basin presets and basin-sector NOAA STAR fallback.
 
-Do not make satellite a Leaflet layer until the following are proven:
+The interactive satellite panel must retain the following gates:
 
-- Correct geographic extent.
+- On the unified overview, correct geographic extent comes only from the selected basin preset. Optional floater metadata and latest-storm targeting belong only on `/active`.
 - Projection compatibility.
 - Frame timestamps.
 - Animation lifecycle and cancellation.
@@ -539,21 +540,23 @@ This removes the need to edit `nhc_current_storms.json` for archive review.
 
 ## Styling implementation strategy
 
-Prefer a shared tropical shell plus page-specific styles:
+Use the established site weather-center shell plus page-specific styles:
 
 ```text
-css/tropical-shell.css
+counties/css/county.css
+css/interactive-weather-map.css
 css/tropical.css
 active/css/active.css
 active/css/storm-graphics.css
 ```
 
-- `tropical-shell.css`: body, header, tropical wordmark, headings, generic cards, tabs, buttons, states, map shell, legend, footer, responsive foundations.
-- `tropical.css`: overview-page layout and supporting content.
+- `county.css`: existing site shell, basin-selector pattern, alert chips, weather-center card, and top/subtab presentation.
+- `interactive-weather-map.css`: shared Leaflet map, fallback, timestamp, scrubber, legend, and note presentation.
+- `tropical.css`: tropical-only overview, support-content, and responsive overrides.
 - `active.css`: storm summary, detailed map layout, active-page generated interfaces.
 - `storm-graphics.css`: keep only graphics-specific tab/media rules; align visual tokens with the shell.
 
-Avoid copying county CSS wholesale. Reuse its design tokens and patterns without importing weather-center selectors that do not belong on tropical pages.
+Import the existing county/home weather-center selectors instead of copying them. Keep tropical overrides narrowly scoped under the tropical page.
 
 ## Failure and empty-state policy
 
@@ -629,6 +632,8 @@ Exit criterion: all three overview packages validate and can be rendered indepen
 
 ### Phase 2: shared Leaflet engine
 
+Implementation status: complete locally; automated checks and the isolated desktop/mobile owner smoke pass. See [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md). Phase 3 was subsequently approved and implemented on the canonical overview page.
+
 1. Implement basin view presets and common basemap ownership.
 2. Implement outlook, active-storm, track, and cone groups.
 3. Implement common popup and legend builders.
@@ -640,13 +645,16 @@ Exit criterion: a minimal test harness switches all three basins without recreat
 
 ### Phase 3: unified tropical overview
 
-1. Migrate `tropical.html` to the new tropical shell and branding.
+Implementation status: core map behavior passed owner desktop/mobile smoke. The approved site-shell/four-panel/interactive-satellite revision is implemented locally; static, automated, parser, fixture-publication, and local HTTP checks pass, with a second owner smoke pending. See [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Do not begin Phase 4 before owner acceptance and explicit approval.
+
+1. Migrate `tropical.html` to the existing site weather-center shell and branding.
 2. Add accessible basin tabs and URL state.
 3. Mount the shared Leaflet overview map.
 4. Add active-system summary links.
-5. Preserve and restyle basin-specific text, satellite, surface-analysis, and official-graphics output.
-6. Add Central Pacific supporting states without borrowing incorrect basin content.
-7. Validate Back/Forward, refresh, deep links, and invalid basin normalization.
+5. Present basin selection as the card's first tab row and Overview, Satellite, Graphics, and Text Products as its second row; use the Leaflet layers control for satellite basemap selection.
+6. Present Current Systems with the county alert-chip styling.
+7. Add Central Pacific supporting states without borrowing incorrect basin content.
+8. Validate Back/Forward, refresh, deep links, and invalid basin normalization.
 
 Exit criterion: Atlantic, Eastern Pacific, and Central Pacific work from one canonical page at desktop and mobile widths.
 
@@ -767,7 +775,7 @@ Active page:
 ## Non-negotiable preservation rules
 
 - Preserve current tropical text products until the unified replacements are verified.
-- Preserve existing satellite behavior until a separately validated map-overlay replacement exists.
+- Preserve NOAA STAR static/animated satellite images as the failure fallback for the interactive WMS map.
 - Preserve English/Español/Français storm-graphics behavior and product tabs.
 - Preserve local archived storm files.
 - Never substitute one storm's data for another storm ID.
@@ -786,12 +794,13 @@ tropical.html
 tropical_at.html
 tropical_ep.html
 active/index.html
-css/tropical-shell.css                 (new)
 css/tropical.css
+css/tropical-map-engine.css            (new)
 active/css/active.css
 active/css/storm-graphics.css
 js/modules/tropicalMapEngine.js        (new)
 js/modules/tropicalOverview.js         (new)
+js/modules/tropicalSatelliteMap.js     (new)
 active/js/activeStormMap.js            (new)
 active/js/storm.js
 active/api/tropical_map_cache.php      (new or replacement name)
@@ -820,8 +829,8 @@ The target architecture is:
 3. A shared Leaflet engine with separate overview and storm-detail modes.
 4. Overview map: active storms, simplified track/cone, and NHC outlook areas only.
 5. Active storm map: current/past/forecast positions, cone, warnings, surge warnings, selectable wind radii, and later optional arrival-time layers.
-6. Tropical-only NCHurric[Font Awesome hurricane]ne wordmark using the approved 5.4-second spin timing and reduced-motion handling.
-7. County/home dark UI language without importing unrelated county weather-center selectors.
+6. Standard site ChuckCopeland[Font Awesome bolt]WX navigation branding.
+7. County/home dark weather-center language, reusing the existing site selectors with tropical-only overrides.
 
 Begin with Phase 0 only unless I authorize implementation beyond it:
 
@@ -834,4 +843,3 @@ Begin with Phase 0 only unless I authorize implementation beyond it:
 
 Keep static checks, parser/runtime tests, controlled-browser checks, owner smoke tests, and live external-source checks as separate validation categories. Do not infer one from another.
 ```
-

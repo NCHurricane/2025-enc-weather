@@ -505,7 +505,9 @@ County scripts run at different intervals based on how frequently the data chang
 ### Server Requirements
 
 -   **PHP**: 8.4 or higher (tested with 8.4-CLI)
-    -   Required extensions: `curl`, `json`, `simplexml`, `dom`
+    -   Required extensions: `curl`, `json`, `simplexml`, `dom`, `libxml`, `phar`, `zlib`
+    -   Tropical KMZ normalization uses `PharData`; `ZipArchive` is not required
+    -   PHP cURL must have a trusted CA bundle configured; source TLS verification is mandatory
     -   No database extensions needed (no MySQL/SQLite/PostgreSQL)
 -   **Web Server**: Any server capable of serving static files
     -   Apache, Nginx, or PHP built-in server all work
@@ -737,7 +739,7 @@ For quick testing without setting up cron jobs:
 
     ```bash
     php -v  # Verify PHP 8.4+
-    php -m  # Verify curl, json, simplexml, dom extensions
+    php -m  # Verify curl, json, simplexml, dom, libxml, phar, zlib extensions
     ```
 
 2. **Upload Files**:

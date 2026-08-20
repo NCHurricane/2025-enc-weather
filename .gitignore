@@ -24,6 +24,7 @@ js/data/tiles/
 
 # Tropical Cache Files
 active/cache/*.json
+active/cache/tropical-map/
 
 # BUT: Keep example tropical cache for documentation
 !active/cache/nhc_current_storms.json
@@ -55,6 +56,9 @@ counties/*/logs/
 *.swp
 *~
 
+#Documentation
+docs/*
+
 # OS Files
 .DS_Store
 Thumbs.db
@@ -79,6 +83,7 @@ images/county/*.webp
 # Test output files
 test/output/
 test/*.json
+test/*
 
 # Environment files with secrets
 test/.env

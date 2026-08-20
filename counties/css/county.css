@@ -1677,7 +1677,7 @@ body {
 
 main.container {
   box-sizing: border-box;
-  width: calc(100% - clamp(32px, 5vw, 96px));
+  width: var(--site-main-width);
   max-width: none;
   min-height: 100vh;
   min-height: calc(100svh + 1px);

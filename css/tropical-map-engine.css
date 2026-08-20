@@ -1,0 +1,184 @@
+.tropical-map-status {
+  margin: 0;
+  color: #dbeafe;
+  line-height: 1.5;
+}
+
+.tropical-map-status[data-state='loading'] {
+  color: #fde68a;
+}
+
+.tropical-map-status[data-state='stale'],
+.tropical-map-status[data-state='unavailable'] {
+  color: #fdba74;
+}
+
+.tropical-map-legend {
+  box-sizing: border-box;
+  width: auto;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 0.65rem;
+  background: rgba(7, 18, 36, 0.94);
+  box-shadow: 0 0.55rem 1.4rem rgba(0, 0, 0, 0.28);
+  color: #f8fafc;
+  font: 500 0.58rem/1.35 var(--font-heading), "Montserrat", sans-serif;
+}
+
+.tropical-map-legend.is-compact {
+  width: min(12.5rem, calc(100vw - 5rem));
+  padding: 0.55rem 0.65rem;
+  font-size: 0.72rem;
+}
+
+.tropical-map-legend__title {
+  margin: 0 0 0.45rem;
+  color: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.tropical-map-legend ul {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tropical-map-legend li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+.tropical-map-legend__swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: #38bdf8;
+}
+
+.tropical-map-legend__swatch.is-cone {
+  border-radius: 0.15rem;
+  background: rgba(203, 213, 225, 0.7);
+}
+
+.tropical-map-legend__swatch.is-track {
+  height: 0;
+  border: 0;
+  border-top: 0.2rem dashed #f8fafc;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tropical-map-legend__swatch.is-low {
+  background: #facc15;
+}
+
+.tropical-map-legend__swatch.is-medium {
+  background: #f59e0b;
+}
+
+.tropical-map-legend__swatch.is-high {
+  background: #e53935;
+}
+
+.tropical-leaflet-popup .leaflet-popup-content-wrapper,
+.tropical-leaflet-popup .leaflet-popup-tip {
+  background: #071b2e;
+  color: #edf6fb;
+}
+
+.tropical-leaflet-popup .leaflet-popup-content-wrapper {
+  border: 1px solid rgba(180, 205, 223, 0.54);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.65rem 1.75rem rgba(0, 0, 0, 0.42);
+}
+
+.tropical-leaflet-popup .leaflet-popup-content {
+  width: min(17.5rem, calc(100vw - 5rem)) !important;
+  margin: 1rem 1.1rem 1.1rem;
+  font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+}
+
+.tropical-leaflet-popup .leaflet-popup-close-button {
+  top: 0.45rem;
+  right: 0.45rem;
+  width: auto;
+  /* height: 1.85rem; */
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  color: #c7d7e3;
+  font: 1.45rem/1.65rem var(--font-primary, "Roboto", Arial, sans-serif);
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.tropical-leaflet-popup .leaflet-popup-close-button:hover {
+  border-color: rgba(180, 205, 223, 0.42);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff200;
+}
+
+.tropical-leaflet-popup .leaflet-popup-close-button:focus-visible {
+  outline: 0.18rem solid #fff200;
+  outline-offset: 0.12rem;
+}
+
+.tropical-popup {
+  color: #edf6fb;
+  font: 500 0.7rem/1.45 var(--font-heading, "Montserrat", sans-serif);
+}
+
+.tropical-popup h3 {
+  margin: 0 2rem 0.45rem 0;
+  color: #ffffff;
+  font-family: var(--font-heading, "Montserrat", Arial, sans-serif);
+  font-size: clamp(0.88rem, 1.2vw, 1.05rem);
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.tropical-popup p,
+.tropical-popup ul {
+  margin: 0.35rem 0;
+}
+
+.tropical-popup ul {
+  padding-left: 1.2rem;
+  font-size: clamp(0.68rem, 1vw, 0.78rem);
+  color: var(--color-accent);
+}
+
+.tropical-popup__time {
+  color: #b9c9d6;
+  font-size: 0.78rem;
+}
+
+.tropical-popup a {
+  color: var(--color-text-light);
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  /* text-decoration-thickness: 0.09rem; */
+  text-underline-offset: 0.16rem;
+}
+
+.tropical-popup a:hover {
+  color: #ffffff;
+}
+
+.tropical-popup a:focus-visible {
+  outline: 0.18rem solid #fff200;
+  outline-offset: 0.14rem;
+}
+
+@media (max-width: 680px) {
+  .tropical-map-legend ul {
+    grid-template-columns: 1fr;
+  }
+}

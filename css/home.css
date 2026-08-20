@@ -14,6 +14,8 @@
   margin: 8px auto 0;
   color: #c7d7e3;
   font-size: clamp(0.86rem, 1.4vw, 1rem);
+  font-family: var(--font-heading);
+  font-weight: 600;
 }
 
 .home-weather-center .temperature-content,

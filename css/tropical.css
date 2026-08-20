@@ -1,912 +1,360 @@
-/*=================================================================*/
-/*                        TROPICAL PAGE STYLES                    */
-/*=================================================================*/
-
-/*-----------------------------------------------------------------*/
-/* CSS CUSTOM PROPERTIES                                          */
-/*-----------------------------------------------------------------*/
-:root {
-    /* Colors */
-    --color-surface: #f8f9fa;
-    --color-border: #dee2e6;
-    --color-primary-light: #e3f2fd;
-    --color-primary-dark: #0056b3;
-    --color-secondary: #2c5530;
-    --color-secondary-light: #3a6b3f;
-    --color-text-muted: #6c757d;
+.tropical-weather-center .weather-center-map-card {
+  --weather-center-content-height: clamp(480px, calc(100svh - 350px), 500px);
 }
 
-body {
-    background-image: url('../images/isabel_bg.webp');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center top;
-    background-repeat: no-repeat;
-    max-width: 100vw;
-    overflow-x: hidden;
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
-/*-----------------------------------------------------------------*/
-/* CONTAINER STYLES                                               */
-/*-----------------------------------------------------------------*/
-.tropical-graphics-container,
-.tropical-text-container,
-.tropical-satellite-container {
-    background-color: var(--color-primary);
-    border-radius: var(--border-radius);
-    color: var(--color-text-light);
-    margin: var(--margin-section);
-    padding: var(--padding-section);
-    box-shadow: var(--shadow-standard);
+.tropical-weather-center .weather-center-heading {
+  margin-bottom: 10px;
 }
 
-.tropical-graphics-tabs {
-    background: linear-gradient(
-        180deg,
-        var(--color-gradient-start) 20%,
-        var(--color-gradient-end) 100%
-    );
-    border-radius: var(--border-radius);
-    padding: var(--padding-section);
-    margin: 15px 0 0 0;
+.tropical-basin-tabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.tropical-text-tabs {
-    background: linear-gradient(
-        180deg,
-        var(--color-gradient-start) 20%,
-        var(--color-gradient-end) 100%
-    );
-    border-radius: var(--border-radius);
-    padding: var(--padding-section);
-    margin: 15px 0 0 0;
+.tropical-basin-tabs .weather-center-tab {
+  min-height: 68px;
+  font-size: clamp(0.9rem, 1.2vw, 1.08rem);
 }
 
-/*-----------------------------------------------------------------*/
-/* COLLAPSIBLE SECTION TITLES                                     */
-/*-----------------------------------------------------------------*/
-
-/* Section titles */
-.tropical-graphics-title,
-.tropical-text-title,
-.tropical-satellite-title {
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    display: block;
+.tropical-section-tabs {
+  border-bottom-color: rgba(177, 201, 220, 0.28);
+  background: #102a43;
 }
 
-/* Hidden toggle inputs */
-.tropical-graphics-toggle,
-.tropical-text-toggle,
-.tropical-satellite-toggle {
-    display: none;
+.tropical-section-tabs .weather-center-tab {
+  min-height: 50px;
 }
 
-/* Plus/minus icons */
-.tropical-graphics-title::after,
-.tropical-text-title::after,
-.tropical-satellite-title::after {
-    font-family: 'Font Awesome 6 Free';
-    content: '\f067'; /* Plus icon */
-    font-weight: 900;
-    margin-left: 8px;
-    float: right;
-    transition: transform 0.3s ease;
+.tropical-basin-tabs .weather-center-tab span,
+.tropical-section-tabs .weather-center-tab span {
+  white-space: normal;
 }
 
-/* When expanded, show minus icon */
-.tropical-graphics-toggle:checked + .tropical-graphics-title::after,
-.tropical-text-toggle:checked + .tropical-text-title::after,
-.tropical-satellite-toggle:checked + .tropical-satellite-title::after {
-    content: '\f068'; /* Minus icon */
-    transform: rotate(180deg);
+.tropical-current-systems {
+  margin-top: 2px;
 }
 
-/* Tab containers - hidden by default */
-.tropical-graphics-tabs,
-.tropical-text-tabs,
-.tropical-satellite-tabs {
-    display: none;
+#active-systems-summary,
+.tropical-system-grid {
+  min-width: 0;
 }
 
-/* Show tab containers when toggle is checked */
-.tropical-graphics-toggle:checked + .tropical-graphics-title + .tropical-graphics-tabs,
-.tropical-text-toggle:checked + .tropical-text-title + .tropical-text-tabs,
-.tropical-satellite-toggle:checked + .tropical-satellite-title + .tropical-satellite-tabs {
-    display: block;
+.tropical-system-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
 }
 
-.tropical-satellite-tabs {
-    background: linear-gradient(
-        180deg,
-        var(--color-gradient-start) 20%,
-        var(--color-gradient-end) 100%
-    );
-    border-radius: var(--border-radius);
-    padding: var(--padding-section);
-    margin: 15px 0 0 0;
+.tropical-current-systems .county-alert-chip {
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
 }
 
-/*-----------------------------------------------------------------*/
-/* TAB NAVIGATION                                                  */
-/*-----------------------------------------------------------------*/
-/* Tab labels container */
-.tropical-graphics-tab-labels {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 2px solid var(--color-primary, #007acc);
-    margin: 0;
-    padding: 0;
-    border-radius: 8px 8px 0 0;
+.tropical-current-systems .county-alert-chip-copy {
+  flex: 1 1 auto;
 }
 
-.tropical-text-tab-labels {
-    display: flex;
-    flex-wrap: wrap;
-    background-color: var(--color-background); /* Changed from var(--color-surface) */
-    border-bottom: 2px solid var(--color-primary, #007acc);
-    margin: 0;
-    padding: 0;
-    border-radius: 8px 8px 0 0;
+.tropical-current-systems .county-alert-chip-copy strong,
+.tropical-current-systems .county-alert-chip-copy span {
+  white-space: normal;
 }
 
-/* Individual tab buttons */
-.tropical-graphics-tab {
-    flex: 1;
-    min-width: 120px;
-    background-color: var(--color-background);
-    color: var(--color-text, #333);
-    cursor: pointer;
-    font-family: var(--font-primary);
-    font-size: 0.9em;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.2s ease;
-    position: relative;
-    font-weight: 600;
-    text-transform: uppercase;
+.tropical-panel-toolbar {
+  justify-content: space-between;
 }
 
-.tropical-text-tab {
-    flex: 1;
-    min-width: 120px;
-    background-color: var(--color-background); /* Changed from var(--color-surface) */
-    color: var(--color-text, #333);
-    cursor: pointer;
-    font-family: var(--font-primary);
-    font-size: 0.9em;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-    font-weight: 600;
-    text-transform: uppercase;
+.tropical-panel-toolbar .weather-center-toolbar-label {
+  min-width: 50%;
+
+  font-family: "Montserrat", Arial, sans-serif;
 }
 
-.tropical-text-tab {
-    animation: fadeIn 0.3s ease-in-out;
+.tropical-source-link,
+.tropical-action {
+  display: inline-flex;
+  min-height: auto;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border: 1px solid rgba(164, 190, 211, 0.62);
+  border-radius: 8px;
+  background: #173750;
+  color: #f5f9fc;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.5rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-decoration: none;
 }
 
-.tropical-text-tab[hidden] {
-    display: none;
+.tropical-source-link:hover,
+.tropical-source-link:focus-visible,
+.tropical-action:hover,
+.tropical-action:focus-visible {
+  border-color: #fff200;
+  background: #1c405d;
+  color: #fff;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+.tropical-source-link:focus-visible,
+.tropical-action:focus-visible {
+  outline: 2px solid #fff200;
+  outline-offset: 2px;
 }
 
-.tropical-graphics-tab:last-child {
-    border-right: none;
-    border-radius: 0 8px 0 0;
+.tropical-map-content,
+.tropical-satellite-content {
+  position: relative;
+  overflow: hidden;
+  background: #07111b;
 }
 
-.tropical-graphics-tab:first-child {
-    border-radius: 8px 0 0 0;
+.tropical-map-content .interactive-weather-map-shell,
+.tropical-satellite-content .interactive-weather-map-shell,
+.tropical-satellite-content .weather-map-fallback {
+  min-height: var(--weather-center-content-height);
 }
 
-.tropical-graphics-tab:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text, #333);
+#tropical-map,
+#tropical-satellite-map {
+  height: var(--weather-center-content-height);
 }
 
-.tropical-graphics-tab:focus {
-    outline: 2px solid var(--color-accent, #ff6b35);
-    outline-offset: -2px;
-    z-index: 1;
+#tropical-map-timestamp,
+#tropical-satellite-timestamp {
+  top: 10px;
+  right: 10px;
+  bottom: auto;
+  left: auto;
 }
 
-/* Hidden radio inputs for tab functionality */
-input[name='graphicsTab'],
-input[name='textTab'] {
-    display: none;
+.tropical-map-status {
+  border-top: 1px solid rgba(177, 201, 220, 0.22);
+  text-align: left;
 }
 
-/*-----------------------------------------------------------------*/
-/* TAB CONTENT VISIBILITY                                         */
-/*-----------------------------------------------------------------*/
-/* Show active tab content */
-#graphics-two-day:checked ~ .tropical-graphics-tab-content #two-day-panel,
-#graphics-seven-day:checked ~ .tropical-graphics-tab-content #seven-day-panel,
-#graphics-surface:checked ~ .tropical-graphics-tab-content #surface-panel,
-#text-two:checked ~ .tropical-text-tab-content #two-text-panel,
-#text-two-spanish:checked ~ .tropical-text-tab-content #two-spanish-panel,
-#text-discussion:checked ~ .tropical-text-tab-content #discussion-panel,
-#text-summary:checked ~ .tropical-text-tab-content #summary-panel {
-    display: block;
+.tropical-mobile-legend {
+  display: none;
 }
 
-/* Active graphics tab styling - Fixed selectors */
-#graphics-two-day:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-two-day'],
-#graphics-seven-day:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-seven-day'],
-#graphics-surface:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-surface'] {
-    background-color: var(--color-primary, #007acc);
-    color: var(--color-text-light, #ffffff);
-    font-weight: bold;
+.tropical-product-tabs .tropical-product-tab {
+  flex: 1 0 8rem;
 }
 
-/* Active graphics tab accent bar - Fixed selectors */
-#graphics-two-day:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-two-day']::after,
-#graphics-seven-day:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-seven-day']::after,
-#graphics-surface:checked
-    ~ .tropical-graphics-tab-content
-    .tropical-graphics-tab-labels
-    label[for='graphics-surface']::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--color-accent, #ff6b35);
+.tropical-product-panel {
+  display: grid;
+  min-height: var(--weather-center-content-height);
+  box-sizing: border-box;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  background: #07111b;
 }
 
-/* Active text tab styling */
-#text-two:checked ~ .tropical-text-tab-labels label[for='text-two'],
-#text-two-spanish:checked ~ .tropical-text-tab-labels label[for='text-two-spanish'],
-#text-discussion:checked ~ .tropical-text-tab-labels label[for='text-discussion'],
-#text-summary:checked ~ .tropical-text-tab-labels label[for='text-summary'] {
-    background-color: var(--color-primary, #007acc);
-    color: var(--color-text-light, #ffffff);
-    font-weight: bold;
+.tropical-product-panel h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
 }
 
-/*-----------------------------------------------------------------*/
-/* PANEL CONTENT                                                   */
-/*-----------------------------------------------------------------*/
-/* Panel base styles */
-.tropical-graphics-panel {
-    display: none;
-    border-radius: 0 0 8px 8px;
-    padding: 1em clamp(0.3em, 1vw, 1.3em) clamp(0.3em, 1vw, 1.3em) clamp(0.3em, 1vw, 1.3em);
-    border-top: none;
-    color: var(--color-text);
-    overflow-x: hidden;
-    max-width: 100%;
+.official-graphic {
+  display: grid;
+  min-width: 0;
+  min-height: calc(var(--weather-center-content-height) - 78px);
+  place-items: center;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(164, 190, 211, 0.36);
+  border-radius: 9px;
+  background: #020817;
 }
 
-.tropical-text-panel {
-    display: none;
-
-    border-radius: 0 0 8px 8px;
-    padding: 20px;
-    min-height: 400px;
-
-    border-top: none;
-    color: var(--color-text);
-    overflow-x: hidden;
-    max-width: 100%;
+.official-graphic img {
+  display: block;
+  width: 100%;
+  max-height: calc(var(--weather-center-content-height) - 90px);
+  object-fit: contain;
 }
 
-.tropical-graphics-panel h3,
-.tropical-text-panel h3 {
-    margin-top: 0;
-    color: var(--color-primary);
-    font-size: 1.2rem;
-}
-
-/*-----------------------------------------------------------------*/
-/* GRAPHICS CONTENT                                                */
-/*-----------------------------------------------------------------*/
-.tropical-image-container {
-    position: relative;
-    width: 100%;
-    text-align: center;
-}
-
-.tropical-image-container img {
-    width: 40%;
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
-
-.tropical-satellite-timestamp,
-.image-timestamp {
-    position: relative;
-    text-align: center;
-    font-weight: bold;
-    background-color: rgba(238, 238, 238, 0.7);
-    color: rgb(0, 0, 0);
-    padding: 5px 10px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-}
-
-/*-----------------------------------------------------------------*/
-/* TEXT CONTENT                                                    */
-/*-----------------------------------------------------------------*/
-
-/* Text content container */
 .tropical-text-content {
-    background-color: var(--color-text-light);
-    color: var(--color-text, #333);
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    line-height: 1.4;
-    margin: 0;
-    max-height: 500px;
-    overflow-y: auto;
-    padding: 15px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+  width: 100%;
+  max-height: calc(var(--weather-center-content-height) - 104px);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid rgba(164, 190, 211, 0.36);
+  border-radius: 9px;
+  background: #020817;
+  color: #dbeafe;
+  font: 500 0.84rem/1.55 "Fira Code", Consolas, monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
-.tropical-text-content h3 {
-    font-family: var(--font-primary);
-    color: var(--color-primary, #007acc);
-    margin: 0 0 15px 0;
-    font-size: 1.1em;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 8px;
+.weather-center-map-card .tropical-satellite-controls {
+  gap: 10px 14px;
 }
 
-.tropical-text-content pre {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    margin: 0;
-    white-space: pre-wrap;
+.tropical-satellite-controls label {
+  color: #cbdbe6;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 650;
 }
 
-/* Scrollbar styling */
-.tropical-text-content::-webkit-scrollbar {
-    width: 8px;
+.weather-center-map-card .tropical-satellite-controls .satellite-select {
+  min-width: 170px;
 }
 
-.tropical-text-content::-webkit-scrollbar-track {
-    background: var(--color-surface);
-    border-radius: 4px;
+.tropical-satellite-content .satellite-loading,
+.tropical-satellite-content .satellite-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(7, 17, 27, 0.86);
+  color: #fff;
+  font-family: "Fira Code", monospace;
+  text-align: center;
 }
 
-.tropical-text-content::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 4px;
+.tropical-satellite-content .satellite-error {
+  color: #ffb6bd;
 }
 
-.tropical-text-content::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary, #007acc);
+.tropical-satellite-content .satellite-loading[hidden],
+.tropical-satellite-content .satellite-error[hidden],
+.tropical-satellite-content .weather-map-fallback[hidden] {
+  display: none;
 }
 
-/* Text tab container */
-.tropical-text-tab-labels {
-    display: flex;
-    flex-wrap: wrap;
-    background-color: var(--color-background); /* Changed from var(--color-surface) */
-    border-bottom: 2px solid var(--color-primary, #007acc);
-    margin: 0;
-    padding: 0;
-    border-radius: 8px 8px 0 0;
+.tropical-satellite-content .weather-map-fallback img {
+  height: var(--weather-center-content-height);
+  max-height: var(--weather-center-content-height);
 }
 
-/* Individual text tab styling */
-.tropical-text-tab {
-    flex: 1;
-    min-width: 120px;
-    background-color: var(--color-background); /* Changed from var(--color-surface) */
-    border: none;
-    border-right: 1px solid var(--color-border);
-    color: var(--color-text, #333);
-    cursor: pointer;
-    font-family: var(--font-primary);
-    font-size: 0.9em;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.2s ease;
-    position: relative;
-    font-weight: 600;
+.tropical-satellite-link {
+  margin: 10px 12px;
 }
 
-.tropical-text-tab:last-child {
-    border-right: none;
-    border-radius: 0 8px 0 0;
+.tropical-satellite-content .weather-map-note {
+  border-top: 1px solid rgba(177, 201, 220, 0.22);
 }
 
-.tropical-text-tab:first-child {
-    border-radius: 8px 0 0 0;
-}
-
-.tropical-text-tab:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text, #333);
-}
-
-.tropical-text-tab:focus {
-    outline: 2px solid var(--color-accent, #ff6b35);
-    outline-offset: -2px;
-    z-index: 1;
-}
-
-/* Active text tab states */
-#text-two:checked ~ .tropical-text-tab-labels label[for='text-two'],
-#text-two-spanish:checked ~ .tropical-text-tab-labels label[for='text-two-spanish'],
-#text-discussion:checked ~ .tropical-text-tab-labels label[for='text-discussion'],
-#text-summary:checked ~ .tropical-text-tab-labels label[for='text-summary'] {
-    background-color: var(--color-primary, #007acc);
-    color: var(--color-text-light, #ffffff);
-    font-weight: bold;
-}
-
-/* Active tab accent bar */
-#text-two:checked ~ .tropical-text-tab-labels label[for='text-two']::after,
-#text-two-spanish:checked ~ .tropical-text-tab-labels label[for='text-two-spanish']::after,
-#text-discussion:checked ~ .tropical-text-tab-labels label[for='text-discussion']::after,
-#text-summary:checked ~ .tropical-text-tab-labels label[for='text-summary']::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--color-accent, #ff6b35);
-}
-
-/* Spanish tab special styling */
-label[for='text-two-spanish'] {
-    background-color: var(--color-background); /* Changed from var(--color-text-light) */
-    color: var(--color-text);
-}
-
-label[for='text-two-spanish']:hover {
-    background-color: var(--color-accent);
-}
-
-#text-two-spanish:checked ~ .tropical-text-tab-labels label[for='text-two-spanish'] {
-    background-color: var(--color-primary);
-}
-
-/* Text panel base styling */
-.tropical-text-panel {
-    border-radius: 0 0 8px 8px;
-    padding: 20px;
-    min-height: 400px;
-}
-
-/* Text header and meta information */
-.text-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.text-header h4 {
-    margin: 0;
-    color: var(--color-primary, #007acc);
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-.text-meta {
-    text-align: right;
-    font-size: 0.9em;
-    color: var(--color-text-muted);
-}
-
-.text-meta .product-time {
-    display: block;
-    margin-bottom: 4px;
-}
-
-.text-meta .product-number {
-    display: block;
-    font-weight: bold;
-    color: var(--color-primary, #007acc);
-}
-
-.nhc-link-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--color-primary, #007acc);
-    color: var(--color-text-light, #ffffff);
-    padding: 10px 20px;
-    border-radius: var(--border-radius, 8px);
-    text-decoration: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: clamp(0.6rem, 2.5vw, 0.8rem);
-    transition: all 0.2s ease;
-    border: 1px solid var(--color-primary, #007acc);
-    font-family: var(--font-active);
-    margin-top: 0.5em;
-}
-
-.nhc-link-btn:hover {
-    background-color: var(--color-accent);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    color: var(--color-text, #333);
-    text-decoration: none;
-}
-
-/* Timestamp styling */
-.tropical-text-timestamp {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 8px 12px;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.9em;
-    color: var(--color-text, #333);
-}
-
-.tropical-text-timestamp::before {
-    content: '📅';
-    margin-right: 8px;
-}
-
-/*-----------------------------------------------------------------*/
-/* ERROR STATES                                                    */
-/*-----------------------------------------------------------------*/
-.error {
-    padding: 20px;
-    text-align: center;
-    color: #d9534f;
-    display: none;
-}
-
-.error i {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    display: block;
-}
-
-/*-----------------------------------------------------------------*/
-/* SATELLITE SECTION                                               */
-/*-----------------------------------------------------------------*/
-#tropical-satellite-image-container {
-    /* Removed fixed aspect-ratio to prevent excess space */
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#tropical-satellite-image {
-    height: auto;
-    object-fit: contain;
-    border-radius: 5px;
-    /* Width will be set dynamically by JavaScript */
-}
-
-/* Sector-specific image widths */
-#tropical-satellite-image.sector-taw,
-#tropical-satellite-image.sector-tpw,
-#tropical-satellite-image.sector-na,
-#tropical-satellite-image.sector-np {
-    width: 65%;
-    max-width: 100%;
-}
-
-#tropical-satellite-image.sector-eus,
-#tropical-satellite-image.sector-wus,
-#tropical-satellite-image.sector-car,
-#tropical-satellite-image.sector-mex,
-#tropical-satellite-image.sector-ga,
-#tropical-satellite-image.sector-hi {
-    width: 40%;
-    max-width: 100%;
-}
-
-/* Satellite controls */
-.tropical-satellite-controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 5px;
-    align-items: center;
-}
-
-.tropical-satellite-select-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-light);
-    gap: 15px;
-    width: 100%;
-    padding: 15px 0 10px;
-}
-
-.tropical-satellite-select {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-family: 'Roboto', Arial, sans-serif;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    background-color: white;
-}
-
-.tropical-satellite-label {
-    text-transform: uppercase;
-    font-weight: 800;
-}
-
-.tropical-satellite-button {
-    padding: 5px 15px;
-    border-radius: 5px;
-    background-color: var(--color-primary);
-    color: var(--color-text-light);
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.tropical-satellite-button:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text);
-}
-
-/* Satellite sector selection */
-.tropical-satellite-sector-container {
-    width: 100%;
-}
-
-/* Hide radio inputs for sector selection */
-input[name='satellite-sector'] {
-    display: none;
-}
-
-/* Sector tab labels container */
-.tropical-satellite-sector-labels {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0;
-}
-
-/* Individual sector tab buttons */
-.tropical-satellite-sector-tab {
-    flex: 1;
-    min-width: 100px;
-    background-color: var(--color-background);
-    color: var(--color-text, #333);
-    cursor: pointer;
-    font-family: var(--font-primary);
-    font-size: 0.8em;
-    padding: 8px 6px;
-    text-align: center;
-    transition: all 0.2s ease;
-    border: none;
-    border-radius: 0;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.tropical-satellite-sector-tab:first-child {
-    border-radius: 8px 0 0 0;
-}
-
-.tropical-satellite-sector-tab:last-child {
-    border-radius: 0 8px 0 0;
-}
-
-.tropical-satellite-sector-tab:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text, #333);
-}
-
-.tropical-satellite-sector-tab:focus {
-    outline: 2px solid var(--color-accent, #ff6b35);
-    outline-offset: -2px;
-    z-index: 1;
-}
-
-#tropical-satellite-product-select {
-    font-size: 0.8rem;
-}
-
-.tropical-satellite-label {
-    font-size: 0.9rem;
-}
-
-/* Active sector tab styling */
-#sector-taw:checked ~ .tropical-satellite-sector-labels label[for='sector-taw'],
-#sector-tpw:checked ~ .tropical-satellite-sector-labels label[for='sector-tpw'],
-#sector-na:checked ~ .tropical-satellite-sector-labels label[for='sector-na'],
-#sector-np:checked ~ .tropical-satellite-sector-labels label[for='sector-np'],
-#sector-eus:checked ~ .tropical-satellite-sector-labels label[for='sector-eus'],
-#sector-wus:checked ~ .tropical-satellite-sector-labels label[for='sector-wus'],
-#sector-car:checked ~ .tropical-satellite-sector-labels label[for='sector-car'],
-#sector-mex:checked ~ .tropical-satellite-sector-labels label[for='sector-mex'],
-#sector-ga:checked ~ .tropical-satellite-sector-labels label[for='sector-ga'],
-#sector-hi:checked ~ .tropical-satellite-sector-labels label[for='sector-hi'] {
-    background-color: var(--color-primary, #007acc);
-    color: var(--color-text-light, #ffffff);
-    font-weight: bold;
-}
-
-/* Active sector tab accent bar */
-#sector-taw:checked ~ .tropical-satellite-sector-labels label[for='sector-taw']::after,
-#sector-tpw:checked ~ .tropical-satellite-sector-labels label[for='sector-tpw']::after,
-#sector-na:checked ~ .tropical-satellite-sector-labels label[for='sector-na']::after,
-#sector-np:checked ~ .tropical-satellite-sector-labels label[for='sector-np']::after,
-#sector-eus:checked ~ .tropical-satellite-sector-labels label[for='sector-eus']::after,
-#sector-wus:checked ~ .tropical-satellite-sector-labels label[for='sector-wus']::after,
-#sector-car:checked ~ .tropical-satellite-sector-labels label[for='sector-car']::after,
-#sector-mex:checked ~ .tropical-satellite-sector-labels label[for='sector-mex']::after,
-#sector-ga:checked ~ .tropical-satellite-sector-labels label[for='sector-ga']::after,
-#sector-hi:checked ~ .tropical-satellite-sector-labels label[for='sector-hi']::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background-color: var(--color-accent, #ff6b35);
-    border-radius: 0 0 4px 4px;
-}
-
-.tropical-satellite-sector-tab {
-    position: relative;
-}
-
-/*-----------------------------------------------------------------*/
-/* RESPONSIVE DESIGN                                               */
-/*-----------------------------------------------------------------*/
-@media (max-width: 1280px) {
-    .tropical-image-container img {
-        width: 70%;
-    }
-}
-@media (max-width: 960px) {
-    .tropical-image-container img {
-        width: 90%;
-    }
-    #tropical-satellite-image.sector-taw,
-    #tropical-satellite-image.sector-tpw,
-    #tropical-satellite-image.sector-na,
-    #tropical-satellite-image.sector-np {
-        width: 80%;
-        max-width: 100%;
-    }
-    #tropical-satellite-image.sector-eus,
-    #tropical-satellite-image.sector-wus,
-    #tropical-satellite-image.sector-car,
-    #tropical-satellite-image.sector-mex,
-    #tropical-satellite-image.sector-ga,
-    #tropical-satellite-image.sector-hi {
-        width: 70%;
-        max-width: 100%;
-    }
+.tropical-satellite-content .weather-map-legend-content {
+  flex: 1 1 auto;
 }
 
 @media (max-width: 768px) {
-    .tropical-image-container img {
-        width: 100%;
-    }
-    #tropical-satellite-image.sector-taw,
-    #tropical-satellite-image.sector-tpw,
-    #tropical-satellite-image.sector-na,
-    #tropical-satellite-image.sector-np {
-        width: 80%;
-        max-width: 100%;
-    }
-    #tropical-satellite-image.sector-eus,
-    #tropical-satellite-image.sector-wus,
-    #tropical-satellite-image.sector-car,
-    #tropical-satellite-image.sector-mex,
-    #tropical-satellite-image.sector-ga,
-    #tropical-satellite-image.sector-hi {
-        width: 70%;
-        max-width: 100%;
-    }
-    .tropical-graphics-tab,
-    .tropical-text-tab {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-    }
+  .tropical-weather-center .weather-center-map-card {
+    --weather-center-content-height: 380px;
+  }
 
-    .tropical-satellite-sector-tab {
-        font-size: 0.7em;
-        padding: 6px 4px;
-        min-width: 80px;
-    }
+  .tropical-product-tabs {
+    display: flex;
+  }
+
+  .tropical-product-tabs .tropical-product-tab {
+    flex: 1 1 0;
+  }
+
+  .weather-center-map-card .tropical-satellite-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .weather-center-map-card .tropical-satellite-controls .satellite-select-container,
+  .weather-center-map-card .tropical-satellite-controls .satellite-select {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
-@media (max-width: 600px) {
-    .active-systems-container {
-        flex-direction: column;
-    }
+@media (max-width: 680px) {
+  .tropical-system-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .tropical-satellite-title,
-    .tropical-text-title,
-    .tropical-graphics-title,
-    .no-active-systems {
-        font-size: 0.8rem;
-    }
+  .leaflet-control.tropical-map-legend {
+    display: none;
+  }
 
-    .tropical-graphics-tab,
-    .tropical-text-tab {
-        text-align: center;
-    }
+  .tropical-mobile-legend {
+    display: grid;
+    gap: 7px;
+    padding: 9px 12px;
+    border-top: 1px solid rgba(177, 201, 220, 0.22);
+    background: #081d31;
+    color: #d7e2ea;
+    font: 0.68rem/1.4 "Fira Code", monospace;
+  }
 
-    .tropical-text-content pre {
-        font-size: 0.8rem;
-    }
+  .tropical-mobile-legend p,
+  .tropical-mobile-legend ul {
+    margin: 0;
+  }
 
-    .tropical-graphics-panel h3,
-    .tropical-text-panel h3 {
-        font-size: 0.9rem;
-        font-weight: 900;
-    }
+  .tropical-mobile-legend ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 9px;
+    padding: 0;
+    list-style: none;
+  }
 
-    .tropical-satellite-label,
-    .tropical-satellite-select,
-    .tropical-satellite-button {
-        font-size: 0.6rem;
-    }
+  .tropical-mobile-legend li {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+  }
 
-    .tropical-satellite-timestamp,
-    .tropical-text-timestamp,
-    .image-timestamp {
-        font-size: 0.6rem;
-    }
+  .tropical-product-panel {
+    padding: 12px;
+  }
 
-    .tropical-satellite-sector-tab {
-        font-size: 0.6em;
-        padding: 4px 2px;
-        min-width: 60px;
-    }
+  .official-graphic {
+    min-height: calc(var(--weather-center-content-height) - 58px);
+  }
 
-    .tropical-satellite-sector-labels {
-        gap: 2px;
-    }
+  .weather-center-map-card .tropical-satellite-controls {
+    grid-template-columns: 1fr;
+  }
+}
 
-    #tropical-satellite-image.sector-taw,
-    #tropical-satellite-image.sector-tpw,
-    #tropical-satellite-image.sector-na,
-    #tropical-satellite-image.sector-np,
-    #tropical-satellite-image.sector-eus,
-    #tropical-satellite-image.sector-wus,
-    #tropical-satellite-image.sector-car,
-    #tropical-satellite-image.sector-mex,
-    #tropical-satellite-image.sector-ga,
-    #tropical-satellite-image.sector-hi {
-        width: 100%;
-    }
+@media (max-width: 480px) {
+  .tropical-weather-center .weather-center-map-card {
+    --weather-center-content-height: 330px;
+  }
+
+  .tropical-basin-tabs .weather-center-tab {
+    min-height: 54px;
+    padding: 7px 4px;
+    font-size: 0.68rem;
+  }
+
+  .tropical-section-tabs .weather-center-tab {
+    min-height: 48px;
+    font-size: 0.66rem;
+  }
+
+  .tropical-source-link {
+    width: auto;
+  }
 }
