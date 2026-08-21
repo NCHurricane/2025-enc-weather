@@ -17,6 +17,61 @@
   margin-bottom: 10px;
 }
 
+.tropical-compatibility {
+  display: flex;
+  max-width: 760px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding-bottom: clamp(40px, 8vw, 90px);
+}
+
+.tropical-compatibility .weather-center-heading {
+  text-align: center;
+}
+
+.tropical-compatibility-card {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tropical-compatibility-message {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(28px, 5vw, 54px);
+  background: #081d31;
+  text-align: center;
+}
+
+.tropical-compatibility-message > .fa-hurricane {
+  color: #fff200;
+  font-size: clamp(2.2rem, 7vw, 4rem);
+}
+
+.tropical-compatibility-message h2,
+.tropical-compatibility-message p {
+  margin: 0;
+}
+
+.tropical-compatibility-message h2 {
+  color: #f5f9fc;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: clamp(1.15rem, 2.6vw, 1.65rem);
+}
+
+.tropical-compatibility-message p {
+  max-width: 38rem;
+  color: #cbdbe6;
+  line-height: 1.65;
+}
+
+.tropical-compatibility .tropical-action {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 0.86rem;
+}
+
 .tropical-basin-tabs {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

@@ -1,16 +1,16 @@
 # County UI Migration: Next-Session Plan
 
-Updated: 2026-08-20
+Updated: 2026-08-21
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: the current county UI, marker-thinning, city-label, and token-free NWS statewide-conditions checkpoint is committed and pushed at `6d14cb2`. The current Tropical follow-up also adds uncommitted shared city-favorites support to the county/homepage label loader; its seeded records are Tropical-only, so county/homepage output is unchanged until an editorial record uses those scopes. Do not commit or deploy without explicit user authorization.
+Status: the current county UI, marker-thinning, token-free NWS statewide conditions, and shared city-favorites support are committed and pushed through `9e3ecb6`. The owner confirmed the favorites scheme and homepage workflow are working correctly, including Greenville with `tropical` and `homepage` scope. No current record uses `county`, so county output remains unchanged. There is no pending county implementation phase; do not commit or deploy without explicit user authorization.
 
 ## Resume order
 
 1. Read the user-supplied `AGENTS.md` instructions in the session prompt. There is currently no tracked `AGENTS.md` at the repository root.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
-4. Confirm the current checkpoint is still `6d14cb2 Update to the last commit message to reflect the changes made to the weatherCenter.js file. The iconAnchor for the regular station marker size has been updated from [38, 48] to [38, 54] to better align with the visual representation of the marker on the map.` on `main` and matches `origin/main`.
-5. Preserve the current tree. The only intended post-checkpoint change from this validation session is this handoff update.
+4. Confirm the current shared checkpoint is still `9e3ecb6 Continuing with the UI update. Also added a new world-cities json with favorite cities.` on `main` and matches `origin/main`.
+5. Preserve the current tree. The only intended post-checkpoint changes are the next-session handoff updates.
 6. There is no pending implementation phase in this plan. Continue only from the user's next explicit requirement. Treat `counties/data/nc-current.json` as generated runtime data, do not commit it, and do not deploy unless separately requested.
 
 ## Current checkpoint
@@ -21,7 +21,7 @@ The user subsequently committed the combined marker and statewide-conditions che
 
 The current checkpoint is `6d14cb2`. It replaces the statewide cache's original provider-specific implementation with direct NWS observation requests requiring no API token, retains atomic cache publication and safe local fallback, adds shared collision-thinned city labels to Conditions/Radar/Satellite, adds statewide station thinning, and changes the regular marker geometry to `76x48` with anchor `[38,54]`. The catalog whitespace cleanup and all implementation work through that checkpoint are committed and pushed. The generated cache is ignored runtime output and is not part of the commit.
 
-The uncommitted 2026-08-20 follow-up keeps editorial city priorities in `js/data/map-city-favorites.json` instead of modifying `us-cities-all.json` or `satellite-city-labels.json`. Records scoped to `county` or `homepage` bypass their normal rank threshold at `minZoom` and take collision priority while retaining configured home-location priority.
+Commit `9e3ecb6` adds the shared 2026-08-20 editorial city-priority workflow in `js/data/map-city-favorites.json` instead of modifying `us-cities-all.json` or `satellite-city-labels.json`. Records scoped to `county` or `homepage` bypass their normal rank threshold at `minZoom` and take collision priority while retaining configured home-location priority. Greenville currently uses `tropical` and `homepage`; no record currently uses `county`. The owner confirmed this scheme and the homepage integration are working correctly.
 
 ## Completed this session
 

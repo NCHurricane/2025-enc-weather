@@ -8,6 +8,16 @@
     </FilesMatch>
 </IfModule>
 
+## TROPICAL COMPATIBILITY ROUTES ##
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^(www\.)?nchurricane\.com$ [NC]
+RewriteRule ^tropical_at(?:\.html)?$ https://nchurricane.com/tropical?basin=atl [L,R=301,NE]
+RewriteCond %{HTTP_HOST} ^(www\.)?nchurricane\.com$ [NC]
+RewriteRule ^tropical_ep(?:\.html)?$ https://nchurricane.com/tropical?basin=epac [L,R=301,NE]
+</IfModule>
+## TROPICAL COMPATIBILITY ROUTES ##
+
 ## FORCE HTTPS & CANONICAL HOST REDIRECT ##
 <IfModule mod_rewrite.c>
 RewriteEngine On

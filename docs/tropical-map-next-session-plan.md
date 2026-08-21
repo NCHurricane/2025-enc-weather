@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Next-Session Plan
 
-Updated: 2026-08-20
+Updated: 2026-08-21
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phases 0, 1, and 2 are complete, and the Phase 3 baseline is committed at `45ff1fb`. The final Phase 3 follow-up adds shared, collision-managed 20,000-city labels plus a separate scoped editorial-favorites file to Overview and Satellite and is implemented and validated locally; owner desktop/mobile smoke testing is pending. Evidence is documented in [`tropical-map-phase-0-source-contracts.md`](tropical-map-phase-0-source-contracts.md), [`tropical-map-phase-1-normalized-packages.md`](tropical-map-phase-1-normalized-packages.md), [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md), and [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Phase 4 compatibility routes and navigation have not begun and require approval after Phase 3 acceptance. Do not commit, deploy, or overwrite user-owned working-tree changes without explicit authorization.
+Status: Phases 0 through 3 are complete and committed through `9e3ecb6`, which matches `origin/main`. The owner confirmed that the shared city labels, scoped favorites, and homepage integration are working correctly, including the committed Greenville favorite scoped to `tropical` and `homepage`; retain the full Phase 3 checklist as a pre-deployment regression rather than reopening implementation. Evidence is documented in [`tropical-map-phase-0-source-contracts.md`](tropical-map-phase-0-source-contracts.md), [`tropical-map-phase-1-normalized-packages.md`](tropical-map-phase-1-normalized-packages.md), [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md), and [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Phase 4 compatibility routes and navigation are the next-session target and have not begun. Do not commit or deploy without explicit authorization.
 
 ## Objective
 
@@ -24,10 +24,10 @@ Before editing in the next session:
 2. Read this document completely.
 3. Run `git status --short` and `git log -5 --oneline`.
 4. Preserve every unrelated change in the dirty tree.
-5. Treat `active/cache/nhc_current_storms.json` as user-owned temporary test state. The user temporarily added `AL052025` so the archived Erin page could pass the current active-storm gate. Do not discard, rewrite, stage, or commit that change unless the user explicitly directs it.
+5. Treat `active/cache/nhc_current_storms.json` as retained test/fixture state. The former AL052025 archive-review adjustment is no longer an uncommitted change; do not remove or rewrite it opportunistically.
 6. Do not stage, commit, push, deploy, or modify production data unless explicitly requested.
 
-At handoff time, the repository also contains uncommitted homepage, informational-page, county-page, shared-style, weather-map, boundary, and generated-data work. Tropical implementation must not absorb or reformat those unrelated changes.
+Immediately before this handoff-only update, `main` was clean and matched `origin/main` at `9e3ecb6`. The only intended new working-tree changes are the Tropical and county handoff documents updated for the next session.
 
 ## Pages and route strategy
 
@@ -645,7 +645,7 @@ Exit criterion: a minimal test harness switches all three basins without recreat
 
 ### Phase 3: unified tropical overview
 
-Implementation status: the baseline is committed at `45ff1fb`. The approved 20,000-city label and scoped-favorites follow-up is implemented locally; static, automated, parser, data-generation, and local HTTP checks pass, with owner desktop/mobile smoke pending. See [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Do not begin Phase 4 before owner acceptance and explicit approval.
+Implementation status: complete and committed through `9e3ecb6`. Static, automated, parser, data-generation, and local HTTP checks pass. The owner confirmed the city labels, scoped favorites, and homepage workflow are working correctly; retain the complete desktop/mobile checklist for pre-deployment regression. See [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md).
 
 1. Migrate `tropical.html` to the existing site weather-center shell and branding.
 2. Add accessible basin tabs and URL state.
@@ -658,11 +658,13 @@ Implementation status: the baseline is committed at `45ff1fb`. The approved 20,0
 9. Match Satellite centers, zooms, responsive adjustments, and extents to Overview.
 10. Add one shared local Natural Earth world-border overlay to Overview and Satellite.
 11. Add shared, collision-managed world-city labels from a deterministic 20,000-record derivative of the owner-provided SimpleMaps free Basic dataset, including date-line normalization and visible CC BY 4.0 attribution.
-12. Keep editorial city priorities in the separate shared `js/data/map-city-favorites.json`; seed Honolulu, Hamilton (Bermuda), and Nassau for Tropical at zoom 4, and support future `county` and `homepage` scopes without editing source datasets.
+12. Keep editorial city priorities in the separate shared `js/data/map-city-favorites.json`; Honolulu, Hamilton (Bermuda), and Nassau are Tropical favorites at zoom 4, while the owner-added Greenville record demonstrates combined `tropical` and `homepage` scope. Support future `county` scope without editing source datasets.
 
 Exit criterion: Atlantic, Eastern Pacific, and Central Pacific work from one canonical page at desktop and mobile widths.
 
 ### Phase 4: compatibility routes and navigation
+
+Next-session status: not started. This is the next authorized implementation slice; do not begin Phase 5 during the same slice.
 
 1. Verify overview parity against both old basin pages.
 2. Update navigation to the unified tropical route.
@@ -816,7 +818,7 @@ Other files may be required for navigation, sitemap, canonical routing, fixtures
 ## Ready-to-paste next-session prompt
 
 ```text
-Continue the NCHurricane tropical-map migration in:
+Continue the NCHurricane tropical-map migration from the completed Phase 3 checkpoint in:
 
 K:\Web Design\NCHurricane 2025
 
@@ -824,26 +826,30 @@ Start by reading the user-supplied AGENTS.md instructions and then read this fil
 
 docs/tropical-map-next-session-plan.md
 
-Next, run `git status --short` and `git log -5 --oneline`. Preserve every unrelated working-tree change. In particular, `active/cache/nhc_current_storms.json` contains a user-owned temporary AL052025 edit for archive review; do not overwrite, revert, stage, or commit it. Do not commit, push, or deploy unless I explicitly request it.
+Next, run `git status --short --branch` and `git log -5 --oneline`. The implementation checkpoint is `9e3ecb6` on `main`, synchronized with `origin/main` before the handoff documents were updated. Preserve every unrelated working-tree change. Treat `active/cache/nhc_current_storms.json` as retained test/fixture state and do not rewrite it opportunistically. Do not commit, push, or deploy unless I explicitly request it.
 
-The target architecture is:
+Phases 0 through 3 are complete. Do not redo their source research, parser work, shared engine, unified page, satellite alignment, world borders, or city-label/favorites implementation. The owner confirmed the shared city labels, scoped favorites, and homepage integration are working correctly.
+
+Begin Phase 4 only: compatibility routes and navigation.
+
+1. Verify current unified-page parity against `tropical_at.html` and `tropical_ep.html` before modifying either compatibility entry.
+2. Inventory every navigation, sitemap, canonical, metadata, and internal-link reference to the legacy basin pages and the unified Tropical route.
+3. Update normal site navigation and internal links to the canonical unified Tropical page.
+4. Convert `tropical_at.html` and `tropical_ep.html` into minimal accessible compatibility entries that preserve the Atlantic and Eastern Pacific basin selection without redirect loops or broken Back/Forward behavior.
+5. Reconcile canonical and sitemap behavior with the site's actual static-hosting capabilities; preserve visible fallback links when a server redirect is unavailable.
+6. Add focused static/URL tests and run local HTTP plus controlled-browser checks when available.
+
+Keep these architecture boundaries:
 
 1. One canonical tabbed tropical overview at `tropical.html?basin=atl|epac|cpac`.
 2. `tropical_at.html` and `tropical_ep.html` retained as compatibility entry points only after unified-page parity.
 3. A shared Leaflet engine with separate overview and storm-detail modes.
 4. Overview map: active storms, simplified track/cone, and NHC outlook areas only.
 5. Active storm map: current/past/forecast positions, cone, warnings, surge warnings, selectable wind radii, and later optional arrival-time layers.
-6. Standard site ChuckCopeland[Font Awesome bolt]WX navigation branding.
+6. Preserve the Tropical `NCHurric` + hurricane icon + `ne` wordmark on canonical and compatibility entries rather than inheriting the homepage brand.
 7. County/home dark weather-center language, reusing the existing site selectors with tropical-only overrides.
 
-Begin with Phase 0 only unless I authorize implementation beyond it:
-
-- Re-verify the official NHC CurrentStorms and Graphical Tropical Weather Outlook sources for AL, EP, and CP.
-- Inspect the exact current `xgtwo_atl.json`, `xgtwo_pac.json`, and `xgtwo_cpac.json` schemas.
-- Download representative official KMZ fixtures for outlook, track, cone, warnings, and radii.
-- Determine whether the hosting PHP environment supports the required bounded KMZ unzip/XML conversion.
-- Document the chosen source contracts, refresh policy, normalized overview/storm package schemas, date-line strategy, failure states, and exact proposed file changes.
-- Make no page implementation changes during Phase 0 unless I explicitly approve them.
+Do not begin Phase 5 active-page work, Phase 6 archive work, or Phase 7 consolidation. Make the smallest coherent Phase 4 change and preserve the current Tropical, homepage, and county behavior.
 
 Keep static checks, parser/runtime tests, controlled-browser checks, owner smoke tests, and live external-source checks as separate validation categories. Do not infer one from another.
 ```

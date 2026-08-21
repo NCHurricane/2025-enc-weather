@@ -29,7 +29,7 @@ export const NavigationModule = {
           { text: "Washington", href: "counties/washington/index.html" }
         ]
       },
-      { text: "Tropical", href: "tropical.html" },
+      { text: "Tropical", href: "tropical.html?basin=atl" },
       {
         text: "Other Markets",
         href: "#",
