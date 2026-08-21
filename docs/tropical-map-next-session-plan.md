@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Next-Session Plan
 
-Updated: 2026-08-19
+Updated: 2026-08-20
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phases 0, 1, and 2 are complete locally. Phase 3's unified tropical overview is implemented locally and passes static, automated, parser, and HTTP checks; owner desktop/mobile smoke testing is pending. Evidence is documented in [`tropical-map-phase-0-source-contracts.md`](tropical-map-phase-0-source-contracts.md), [`tropical-map-phase-1-normalized-packages.md`](tropical-map-phase-1-normalized-packages.md), [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md), and [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Phase 4 compatibility routes and navigation have not begun and require approval after Phase 3 acceptance. Do not commit, deploy, or overwrite user-owned working-tree changes without explicit authorization.
+Status: Phases 0, 1, and 2 are complete, and the Phase 3 baseline is committed at `45ff1fb`. The final Phase 3 follow-up adds shared, collision-managed 20,000-city labels plus a separate scoped editorial-favorites file to Overview and Satellite and is implemented and validated locally; owner desktop/mobile smoke testing is pending. Evidence is documented in [`tropical-map-phase-0-source-contracts.md`](tropical-map-phase-0-source-contracts.md), [`tropical-map-phase-1-normalized-packages.md`](tropical-map-phase-1-normalized-packages.md), [`tropical-map-phase-2-shared-leaflet-engine.md`](tropical-map-phase-2-shared-leaflet-engine.md), and [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Phase 4 compatibility routes and navigation have not begun and require approval after Phase 3 acceptance. Do not commit, deploy, or overwrite user-owned working-tree changes without explicit authorization.
 
 ## Objective
 
@@ -645,7 +645,7 @@ Exit criterion: a minimal test harness switches all three basins without recreat
 
 ### Phase 3: unified tropical overview
 
-Implementation status: core map behavior passed owner desktop/mobile smoke. The approved site-shell/four-panel/interactive-satellite revision is implemented locally; static, automated, parser, fixture-publication, and local HTTP checks pass, with a second owner smoke pending. See [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Do not begin Phase 4 before owner acceptance and explicit approval.
+Implementation status: the baseline is committed at `45ff1fb`. The approved 20,000-city label and scoped-favorites follow-up is implemented locally; static, automated, parser, data-generation, and local HTTP checks pass, with owner desktop/mobile smoke pending. See [`tropical-map-phase-3-unified-overview.md`](tropical-map-phase-3-unified-overview.md). Do not begin Phase 4 before owner acceptance and explicit approval.
 
 1. Migrate `tropical.html` to the existing site weather-center shell and branding.
 2. Add accessible basin tabs and URL state.
@@ -655,6 +655,10 @@ Implementation status: core map behavior passed owner desktop/mobile smoke. The 
 6. Present Current Systems with the county alert-chip styling.
 7. Add Central Pacific supporting states without borrowing incorrect basin content.
 8. Validate Back/Forward, refresh, deep links, and invalid basin normalization.
+9. Match Satellite centers, zooms, responsive adjustments, and extents to Overview.
+10. Add one shared local Natural Earth world-border overlay to Overview and Satellite.
+11. Add shared, collision-managed world-city labels from a deterministic 20,000-record derivative of the owner-provided SimpleMaps free Basic dataset, including date-line normalization and visible CC BY 4.0 attribution.
+12. Keep editorial city priorities in the separate shared `js/data/map-city-favorites.json`; seed Honolulu, Hamilton (Bermuda), and Nassau for Tropical at zoom 4, and support future `county` and `homepage` scopes without editing source datasets.
 
 Exit criterion: Atlantic, Eastern Pacific, and Central Pacific work from one canonical page at desktop and mobile widths.
 

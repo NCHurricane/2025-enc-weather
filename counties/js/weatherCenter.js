@@ -7,7 +7,7 @@ import {
   loadWeatherPageContext,
 } from './countyContext.js?v=20260816-home1';
 import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260816-1';
-import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260816-2';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260820-3';
 
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -499,6 +499,7 @@ class CountyTemperatureViewer {
       leafletMap,
       this.context.center,
       this.cityLabelsUrl,
+      { mapScope: this.context.isRegional ? 'homepage' : 'county' },
     );
     this.markerLayer = window.L.layerGroup().addTo(leafletMap);
     leafletMap.on('moveend zoomend', this.handleMapSettled);

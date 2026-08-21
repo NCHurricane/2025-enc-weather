@@ -1,8 +1,8 @@
 # County UI Migration: Next-Session Plan
 
-Updated: 2026-08-15
+Updated: 2026-08-20
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: the current county UI, marker-thinning, city-label, and token-free NWS statewide-conditions checkpoint is committed and pushed at `6d14cb2`. Static, statewide-success, fallback, responsive, zone-switching, and local-source validation are complete. This plan update is the only current working-tree change; do not commit or deploy without explicit user authorization.
+Status: the current county UI, marker-thinning, city-label, and token-free NWS statewide-conditions checkpoint is committed and pushed at `6d14cb2`. The current Tropical follow-up also adds uncommitted shared city-favorites support to the county/homepage label loader; its seeded records are Tropical-only, so county/homepage output is unchanged until an editorial record uses those scopes. Do not commit or deploy without explicit user authorization.
 
 ## Resume order
 
@@ -20,6 +20,8 @@ The original all-county UI migration was committed at `9b5fbf1`, based on the us
 The user subsequently committed the combined marker and statewide-conditions checkpoint at `69c365a`. That commit intentionally includes the 632-entry `counties/nc-weather-stations.json`, `counties/api/cache_nc_conditions.php`, shared-source routing, the new mobile zoom-9 policy, the ten `weatherCenter.js?v=20260816-1` page references, the previously refreshed county JSON, and the Bertie coordinate edits.
 
 The current checkpoint is `6d14cb2`. It replaces the statewide cache's original provider-specific implementation with direct NWS observation requests requiring no API token, retains atomic cache publication and safe local fallback, adds shared collision-thinned city labels to Conditions/Radar/Satellite, adds statewide station thinning, and changes the regular marker geometry to `76x48` with anchor `[38,54]`. The catalog whitespace cleanup and all implementation work through that checkpoint are committed and pushed. The generated cache is ignored runtime output and is not part of the commit.
+
+The uncommitted 2026-08-20 follow-up keeps editorial city priorities in `js/data/map-city-favorites.json` instead of modifying `us-cities-all.json` or `satellite-city-labels.json`. Records scoped to `county` or `homepage` bypass their normal rank threshold at `minZoom` and take collision priority while retaining configured home-location priority.
 
 ## Completed this session
 
@@ -145,6 +147,7 @@ Do not fix source/data defects as part of a UI closeout. Record and route them s
 - `counties/api/cache_nc_conditions.php` now requests the five latest observations directly from the NWS API with bounded concurrency, one bounded retry, minimum response/reporting thresholds, locking, and atomic publication. It requires no provider token.
 - The generated `counties/data/nc-current.json` identified its source as `National Weather Service API` and contained 632 requested stations, 632 available responses, and 559 reporting stations. The source catalog contained 632 unique, nonblank IDs and 632 valid coordinates.
 - JavaScript syntax passed for the context, weather-center, weather-map, shared city-label, alert, standard/multi-zone app, interactive-map, and meteogram modules. PHP syntax passed for the statewide cache script, and `git show --check` passed for `6d14cb2`.
+- The 2026-08-20 city-favorites follow-up passed JavaScript syntax checks and the 44-test Tropical/shared-label suite; HTTP probes returned `200` for the homepage, Bertie County page, shared favorites asset/module, and updated weather-map controllers. Rendered verification remains an owner smoke because the controlled browser connection failed before page control.
 - Chrome at `1280x900` loaded Bertie in `statewide` mode at zoom 10 with 632 configured and 559 reporting stations. Twenty visible/live markers matched the rendered marker count; all seven condition fields kept visible/live/DOM counts synchronized; station details opened; 35 collision-thinned city labels rendered; and the page had no horizontal overflow.
 - The regular marker rendered at `76x48` with Leaflet offsets `-38px/-54px`, confirming the committed `[38,54]` anchor. Zooming `10 -> 11 -> 10` updated station spacing `96 -> 70 -> 96`, marker counts, and city-label counts without errors.
 - Chrome at `390x844` reloaded Bertie in `statewide` mode at zoom 9 with 28 visible/live/rendered markers, 21 city labels, working station details, and no horizontal overflow.

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "honolulu-hawaii-us",
+    "city": "Honolulu",
+    "latitude": 21.3294,
+    "longitude": -157.846,
+    "rank": 1986,
+    "maps": ["tropical"],
+    "minZoom": 4
+  },
+  {
+    "id": "hamilton-bermuda",
+    "city": "Hamilton",
+    "latitude": 32.295,
+    "longitude": -64.7831,
+    "rank": 49408,
+    "maps": ["tropical"],
+    "minZoom": 4
+  },
+  {
+    "id": "nassau-bahamas",
+    "city": "Nassau",
+    "latitude": 25.0781,
+    "longitude": -77.3386,
+    "rank": 2935,
+    "maps": ["tropical"],
+    "minZoom": 4
+  },
+  {
+    "id": "greenville",
+    "city": "Greenville",
+    "latitude": 35.5943,
+    "longitude": -77.376,
+    "rank": "4932",
+    "maps": ["tropical", "homepage"],
+    "minZoom": 4
+  }
+]

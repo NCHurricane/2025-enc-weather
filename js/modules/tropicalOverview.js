@@ -1,7 +1,8 @@
 import { WEATHER_BASEMAPS } from './interactiveWeatherMap.js?v=20260816-5';
+import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260820-2';
 import { TropicalMapEngine } from './tropicalMapEngine.js?v=20260819-14';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260819-1';
-import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260819-phase3-7';
+import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260820-phase3-9';
 
 export const TROPICAL_BASINS = Object.freeze(['atl', 'epac', 'cpac']);
 
@@ -182,6 +183,7 @@ export class TropicalOverviewController {
     this.activeSection = 'overview';
     this.activePackage = null;
     this.supportingCache = new Map();
+    this.overviewCityLabels = null;
 
     this.tabs = Array.from(documentRef?.querySelectorAll?.('[data-tropical-basin]') || []);
     this.sectionTabs = Array.from(documentRef?.querySelectorAll?.('[data-tropical-section]') || []);
@@ -311,6 +313,7 @@ export class TropicalOverviewController {
       );
     }
     try {
+      this.ensureOverviewCityLabels();
       await this.engine.loadOverview(nextBasin, {
         url: `active/cache/tropical-map/overview-${nextBasin}.json`,
         memoryCache: true,
@@ -319,6 +322,19 @@ export class TropicalOverviewController {
     } catch (error) {
       console.error('[tropical-overview] Basin load failed:', error);
     }
+  }
+
+  ensureOverviewCityLabels() {
+    if (this.overviewCityLabels) return this.overviewCityLabels;
+    const leafletMap = this.engine?.ensureMap?.();
+    if (!leafletMap) return null;
+    this.overviewCityLabels = installTropicalCityLabels(leafletMap, {
+      leaflet: this.windowRef.L,
+      fetchImpl: this.windowRef.fetch,
+      paneName: 'tropicalOverviewCityLabelPane',
+      paneZIndex: 306,
+    });
+    return this.overviewCityLabels;
   }
 
   syncBasinUi(focusTab) {

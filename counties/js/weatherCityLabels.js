@@ -1,3 +1,9 @@
+import {
+  MAP_CITY_FAVORITES_URL,
+  loadMapCityFavorites,
+  mergeMapCityFavorites,
+} from '../../js/modules/mapCityFavorites.js?v=20260820-1';
+
 const weatherCityDataPromises = new Map();
 
 function escapeCityLabelHtml(value) {
@@ -27,7 +33,9 @@ function isHomeLabel(city, homeCenter) {
 }
 
 function cityLabelDimensions(city, homeCenter) {
-  const major = isHomeLabel(city, homeCenter) || (Number.isFinite(city.rank) && city.rank <= 1000);
+  const major = city.favorite
+    || isHomeLabel(city, homeCenter)
+    || (Number.isFinite(city.rank) && city.rank <= 1000);
   return {
     major,
     width: Math.max(32, Math.min(190, city.city.length * (major ? 8 : 7) + 12)),
@@ -55,7 +63,7 @@ function thinCityLabelsByCollision(cities, leafletMap, homeCenter) {
       || box.bottom < occupied.top
       || box.top > occupied.bottom
     ));
-    if (overlaps) continue;
+    if (overlaps && !city.favorite) continue;
 
     accepted.push(city);
     occupiedBoxes.push(box);
@@ -64,10 +72,11 @@ function thinCityLabelsByCollision(cities, leafletMap, homeCenter) {
   return accepted;
 }
 
-function loadWeatherCityData(dataUrl) {
-  if (weatherCityDataPromises.has(dataUrl)) return weatherCityDataPromises.get(dataUrl);
+function loadWeatherCityData(dataUrl, mapScope, favoritesUrl) {
+  const cacheKey = `${dataUrl}|${favoritesUrl}|${mapScope}`;
+  if (weatherCityDataPromises.has(cacheKey)) return weatherCityDataPromises.get(cacheKey);
 
-  const request = fetch(dataUrl)
+  const cityRequest = fetch(dataUrl)
     .then((response) => {
       if (!response.ok) throw new Error(`City label data request failed (${response.status})`);
       return response.json();
@@ -91,16 +100,26 @@ function loadWeatherCityData(dataUrl) {
           (Number.isFinite(a.rank) ? a.rank : Number.MAX_SAFE_INTEGER)
           - (Number.isFinite(b.rank) ? b.rank : Number.MAX_SAFE_INTEGER)
         ));
-    })
+    });
+  const favoriteRequest = loadMapCityFavorites(favoritesUrl)
     .catch((error) => {
-      weatherCityDataPromises.delete(dataUrl);
+      console.warn('[county-weather-map] City favorites failed:', error);
+      return [];
+    });
+  const request = Promise.all([cityRequest, favoriteRequest])
+    .then(([cities, favorites]) => mergeMapCityFavorites(cities, favorites, mapScope))
+    .catch((error) => {
+      weatherCityDataPromises.delete(cacheKey);
       throw error;
     });
-  weatherCityDataPromises.set(dataUrl, request);
+  weatherCityDataPromises.set(cacheKey, request);
   return request;
 }
 
-export function installWeatherCityLabels(leafletMap, homeCenter, dataUrl) {
+export function installWeatherCityLabels(leafletMap, homeCenter, dataUrl, {
+  mapScope = 'county',
+  favoritesUrl = MAP_CITY_FAVORITES_URL,
+} = {}) {
   if (!leafletMap || !window.L || !dataUrl) return null;
 
   const paneName = 'weatherPlaceLabelPane';
@@ -120,9 +139,14 @@ export function installWeatherCityLabels(leafletMap, homeCenter, dataUrl) {
       && city.latitude <= bounds.getNorth()
       && city.longitude >= bounds.getWest()
       && city.longitude <= bounds.getEast()
-      && (isHomeLabel(city, overlay.homeCenter) || !Number.isFinite(city.rank) || city.rank <= maxRank)
+      && (
+        (city.favorite && overlay.map.getZoom() >= city.minZoom)
+        || isHomeLabel(city, overlay.homeCenter)
+        || (!city.favorite && (!Number.isFinite(city.rank) || city.rank <= maxRank))
+      )
     )).sort((a, b) => (
       Number(isHomeLabel(b, overlay.homeCenter)) - Number(isHomeLabel(a, overlay.homeCenter))
+      || Number(b.favorite) - Number(a.favorite)
     ));
     const cities = thinCityLabelsByCollision(visibleCities, overlay.map, overlay.homeCenter);
 
@@ -146,7 +170,7 @@ export function installWeatherCityLabels(leafletMap, homeCenter, dataUrl) {
   overlay.render = render;
 
   leafletMap.on('moveend', render);
-  loadWeatherCityData(dataUrl)
+  loadWeatherCityData(dataUrl, mapScope, favoritesUrl)
     .then((data) => {
       overlay.data = data;
       render();

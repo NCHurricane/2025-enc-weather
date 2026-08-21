@@ -3,6 +3,7 @@ import {
   WEATHER_BASEMAPS,
   formatWeatherTime,
 } from './interactiveWeatherMap.js?v=20260816-5';
+import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260820-2';
 import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
@@ -194,6 +195,7 @@ export class TropicalSatelliteMap {
     this.loadGeneration = 0;
     this.fallbackGeneration = 0;
     this.map = null;
+    this.cityLabels = null;
 
     this.productSelect = resolveElement(documentRef, 'tropical-satellite-product');
     this.playButton = resolveElement(documentRef, 'tropical-satellite-play-pause');
@@ -280,7 +282,13 @@ export class TropicalSatelliteMap {
       },
       onPlayStateChange: (playing) => this.syncPlayButton(playing),
     });
-    this.map.ensureMap();
+    const leafletMap = this.map.ensureMap();
+    this.cityLabels = installTropicalCityLabels(leafletMap, {
+      leaflet: this.windowRef.L,
+      fetchImpl: this.windowRef.fetch,
+      paneName: 'tropicalSatelliteCityLabelPane',
+      paneZIndex: 475,
+    });
     this.updateViewport();
     return this.map;
   }
