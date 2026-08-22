@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+import { WEATHER_BASEMAPS } from '../../js/modules/interactiveWeatherMap.js?v=20260821-unified-active-1';
 // ============================================================================
 // Watches & Warnings Maps Module (ww-maps.js)
 // ---------------------------------------------------------------------------
@@ -995,6 +996,165 @@ function readableTextColor(bgHex) {
   return L > 0.5 ? "#111" : "#fff";
 }
 
+const ALERT_MAPS = new Map();
+let alertFeatureCollection = null;
+
+function alertKey(feature) {
+  const properties = feature?.properties || {};
+  return `${properties.phen || ''}.${properties.sig || ''}`;
+}
+
+function alertMapId(hazard) {
+  return hazard === 'surge' ? 'ww-surge-map' : 'ww-wind-map';
+}
+
+function alertPopup(feature) {
+  const properties = feature?.properties || {};
+  const key = alertKey(feature);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ww-alert-popup';
+  const title = document.createElement('strong');
+  title.textContent = labelForKey(key);
+  const location = document.createElement('span');
+  location.textContent = [properties.zoneName, properties.state].filter(Boolean).join(', ');
+  wrapper.append(title, location);
+  return wrapper;
+}
+
+function ensureAlertMap(hazard) {
+  const mapId = alertMapId(hazard);
+  if (ALERT_MAPS.has(mapId)) return ALERT_MAPS.get(mapId);
+  const container = document.getElementById(mapId);
+  if (!container || !window.L) return null;
+  try {
+    const map = window.L.map(container, {
+      preferCanvas: true,
+      zoomControl: true,
+      attributionControl: true,
+    });
+    map.setView([27, -80], 4, { animate: false });
+    const basemapLayers = new Map();
+    const controlLayers = {};
+    for (const [id, config] of Object.entries(WEATHER_BASEMAPS)) {
+      const layer = window.L.tileLayer(config.url, {
+        attribution: config.attribution,
+        maxZoom: config.maxZoom || 20,
+        subdomains: config.subdomains || 'abc',
+      });
+      basemapLayers.set(id, layer);
+      controlLayers[config.label || id] = layer;
+    }
+    (basemapLayers.get('esri') || basemapLayers.values().next().value)?.addTo(map);
+    window.L.control.layers(controlLayers, null, {
+      collapsed: true,
+      position: 'topleft',
+    }).addTo(map);
+    const state = { map, layer: null, bounds: null };
+    ALERT_MAPS.set(mapId, state);
+    return state;
+  } catch (error) {
+    console.warn('[active-alert-map] Unable to initialize Leaflet:', error);
+    container.dataset.alertMapError = error instanceof Error ? error.message : String(error);
+    return null;
+  }
+}
+
+function renderLeafletPanel(hazard) {
+  const container = document.getElementById(alertMapId(hazard));
+  const features = alertFeatureCollection?.features?.filter(
+    (feature) => feature?.properties?.hazard === hazard
+  ) || [];
+  if (!features.length) return false;
+  const state = ensureAlertMap(hazard);
+  if (!state) return false;
+  if (state.layer) state.map.removeLayer(state.layer);
+  try {
+    state.layer = window.L.geoJSON({ type: 'FeatureCollection', features }, {
+      renderer: window.L.canvas({ padding: 0.35 }),
+      style: (feature) => {
+        const color = colorForKey(alertKey(feature));
+        return { color, fillColor: color, weight: 2, opacity: 0.95, fillOpacity: 0.3 };
+      },
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(alertPopup(feature), { maxWidth: 280 });
+        layer.on({
+          mouseover: () => layer.setStyle?.({ weight: 3, fillOpacity: 0.44 }),
+          mouseout: () => state.layer?.resetStyle?.(layer),
+        });
+      },
+    }).addTo(state.map);
+    if (container) {
+      delete container.dataset.alertMapError;
+    }
+  } catch (error) {
+    console.warn('[active-alert-map] Unable to render alert polygons:', error);
+    if (container) container.dataset.alertMapError = error instanceof Error ? error.message : String(error);
+    return false;
+  }
+  state.bounds = state.layer.getBounds();
+  window.setTimeout(() => {
+    state.map.invalidateSize({ pan: false });
+    if (state.bounds?.isValid?.()) {
+      state.map.fitBounds(state.bounds.pad(0.08), { animate: false, maxZoom: 8 });
+    }
+  }, 0);
+  return true;
+}
+
+function visibleAlertHazard() {
+  return document.querySelector('[data-alert-tab][aria-selected="true"]')?.dataset.alertTab || 'wind';
+}
+
+function activateAlertTab(requested, { focus = false } = {}) {
+  const allTabs = Array.from(document.querySelectorAll('[data-alert-tab]'));
+  const tabs = allTabs.filter((tab) => !tab.hidden);
+  const selected = tabs.find((tab) => tab.dataset.alertTab === requested) || tabs[0];
+  if (!selected) return false;
+  for (const tab of allTabs) {
+    const active = tab === selected;
+    tab.classList.toggle('is-active', active);
+    tab.setAttribute('aria-selected', String(active));
+    tab.tabIndex = active ? 0 : -1;
+  }
+  document.querySelectorAll('[data-alert-panel]').forEach((panel) => {
+    const active = panel.dataset.alertPanel === selected.dataset.alertTab;
+    panel.hidden = !active;
+    panel.setAttribute('aria-hidden', String(!active));
+  });
+  if (focus) selected.focus();
+  if (!document.getElementById('storm-panel-alerts')?.hidden) {
+    renderLeafletPanel(selected.dataset.alertTab);
+  }
+  return true;
+}
+
+function bindAlertTabs() {
+  const tabs = Array.from(document.querySelectorAll('[data-alert-tab]'));
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => activateAlertTab(tab.dataset.alertTab));
+    tab.addEventListener('keydown', (event) => {
+      const visible = tabs.filter((candidate) => !candidate.hidden);
+      const index = visible.indexOf(tab);
+      let next = null;
+      if (event.key === 'ArrowRight') next = (index + 1) % visible.length;
+      if (event.key === 'ArrowLeft') next = (index - 1 + visible.length) % visible.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = visible.length - 1;
+      if (next === null || index < 0) return;
+      event.preventDefault();
+      activateAlertTab(visible[next].dataset.alertTab, { focus: true });
+    });
+  }
+}
+
+function configureAlertTabs(hasWind, hasSurge) {
+  const windTab = document.querySelector('[data-alert-tab="wind"]');
+  const surgeTab = document.querySelector('[data-alert-tab="surge"]');
+  if (windTab) windTab.hidden = !hasWind;
+  if (surgeTab) surgeTab.hidden = !hasSurge;
+  activateAlertTab(hasWind ? 'wind' : 'surge');
+}
+
 function renderTextList(containerId, displaySection, emptyMsg) {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -1014,22 +1174,21 @@ function renderTextList(containerId, displaySection, emptyMsg) {
     title.textContent = block.label;
     const bg = colorForKey(block.key);
     const fg = readableTextColor(bg);
-    Object.assign(title.style, {
-      backgroundColor: bg,
-      color: fg,
-      padding: "0.35rem 0.5rem",
-      borderRadius: "0.375rem",
-      fontWeight: "600",
-      display: "inline-block",
-      marginBottom: "0.25rem",
-    });
+    title.style.setProperty('--ww-alert-color', bg);
+    title.style.setProperty('--ww-alert-text', fg);
     h.appendChild(title);
     const list = document.createElement("ul");
     for (const st of block.states) {
       const stCode = st.state && st.state !== "UNK" ? st.state : "—";
       const zones = st.zones.join(", ");
       const li = document.createElement("li");
-      li.textContent = `${stCode}: ${zones}`;
+      const stateCode = document.createElement('strong');
+      stateCode.className = 'ww-state-code';
+      stateCode.textContent = stCode;
+      const zoneList = document.createElement('span');
+      zoneList.className = 'ww-zone-list';
+      zoneList.textContent = zones;
+      li.append(stateCode, zoneList);
       list.appendChild(li);
     }
     h.appendChild(list);
@@ -1047,8 +1206,12 @@ async function init() {
   const stormId = getParam("storm");
   if (!stormId) return;
 
-  loadBasemap();
-  loadPlacenames();
+  bindAlertTabs();
+  window.addEventListener('nch:active-workspace-panel-change', (event) => {
+    if (event?.detail?.group === 'storm' && event?.detail?.panel === 'alerts') {
+      renderLeafletPanel(visibleAlertHazard());
+    }
+  });
 
   try {
     const url = `${BASE_PATH}/active/storms/${stormId}/tcv.json?v=${Date.now()}`;
@@ -1068,16 +1231,12 @@ async function init() {
     const surgeFeatures = data.features?.features?.filter(f => f.properties.hazard === 'surge') ?? [];
     const hasWind = windFeatures.length > 0;
     const hasSurge = surgeFeatures.length > 0;
+    alertFeatureCollection = data.features;
 
-    const hazardsContainer = document.querySelector('.hazards-container');
-    const surgeContainer = document.querySelector('.surge-container');
-
-    if (hazardsContainer) {
-      hazardsContainer.style.display = hasWind ? '' : 'none';
-    }
-    if (surgeContainer) {
-      surgeContainer.style.display = hasSurge ? '' : 'none';
-    }
+    configureAlertTabs(hasWind, hasSurge);
+    window.dispatchEvent(new CustomEvent('nch:active-alerts-state', {
+      detail: { hasWind, hasSurge },
+    }));
 
     renderTextList(
       "ww-wind-text",
@@ -1090,24 +1249,16 @@ async function init() {
       "No active US watches/warnings."
     );
 
-    let raf = null;
-    const onResize = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        drawPanel("ww-wind-canvas", data.features, "wind");
-        drawPanel("ww-surge-canvas", data.features, "surge");
-      });
-    };
-    window.addEventListener("resize", onResize, { passive: true });
-    onResize();
+    if (!document.getElementById('storm-panel-alerts')?.hidden) {
+      renderLeafletPanel(visibleAlertHazard());
+    }
   } catch {
     renderTextList("ww-wind-text", null, "No active US watches/warnings.");
     renderTextList("ww-surge-text", null, "No active US watches/warnings.");
-    // Also hide containers on error
-    const hazardsContainer = document.querySelector('.hazards-container');
-    const surgeContainer = document.querySelector('.surge-container');
-    if (hazardsContainer) hazardsContainer.style.display = 'none';
-    if (surgeContainer) surgeContainer.style.display = 'none';
+    configureAlertTabs(false, false);
+    window.dispatchEvent(new CustomEvent('nch:active-alerts-state', {
+      detail: { hasWind: false, hasSurge: false },
+    }));
   }
 }
 

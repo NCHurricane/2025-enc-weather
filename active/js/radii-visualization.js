@@ -21,7 +21,7 @@ const RADII_CONFIG = {
   EXTRA_FRAME: 20, // extra outer room around compass
   LABEL_OFFSET: 18, // gap from compass circle to cardinal label
   LABEL_SAFE_PAD: 25, // keep labels X px inside the canvas edge
-  VERTEX_LABEL_OFFSET: 50, // distance of vertex labels away from polygon
+  VERTEX_LABEL_OFFSET: 34, // distance of vertex labels away from polygon
   MIN_RADII_EXTENT: 50, // minimum maxDist in nm (adjustable)
   RADII_PADDING: 120, // padding in nm beyond largest r34
 };
@@ -192,7 +192,7 @@ class RadiiDrawer {
       canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
     );
 
-    ctx.font = `bold ${devPxFromCss(18)}px Roboto, Arial, sans-serif`;
+    ctx.font = `bold ${devPxFromCss(13)}px Roboto, Arial, sans-serif`;
     ctx.lineWidth = 1 * devicePixelRatioSafe();
     ctx.fillStyle = "rgba(255,255,255,0.95)";
     ctx.textAlign = "center";
@@ -211,7 +211,7 @@ class RadiiDrawer {
       )
     );
 
-    ctx.font = `bold ${devPxFromCss(12)}px Roboto, Arial, sans-serif`;
+    ctx.font = `bold ${devPxFromCss(9)}px Roboto, Arial, sans-serif`;
     ctx.lineWidth = 1 * devicePixelRatioSafe();
     ctx.fillStyle = "rgba(255,255,255,0.55)";
 
@@ -323,7 +323,7 @@ class RadiiDrawer {
 
     // Style Vertex Labels
     if (this.activeWind !== "all") {
-      ctx.font = `bold ${devPxFromCss(16)}px Roboto, Arial, sans-serif`;
+      ctx.font = `bold ${devPxFromCss(11)}px Roboto, Arial, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 1 * devicePixelRatioSafe();
@@ -342,7 +342,7 @@ class RadiiDrawer {
   drawStormCenter() {
     const ctx = this.ctx;
 
-    ctx.font = `900 ${devPxFromCss(28)}px 'Font Awesome 6 Free'`;
+    ctx.font = `900 ${devPxFromCss(21)}px 'Font Awesome 6 Free'`;
     ctx.lineWidth = 1 * devicePixelRatioSafe();
     ctx.fillStyle = "#d5ff3d53";
     ctx.textAlign = "center";

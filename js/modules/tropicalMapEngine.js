@@ -11,6 +11,18 @@ export const TROPICAL_LAYER_KEYS = Object.freeze([
   'stormPositions',
 ]);
 
+export const TROPICAL_STORM_LAYER_KEYS = Object.freeze([
+  'currentPosition',
+  'bestTrack',
+  'cone',
+  'forecastTrack',
+  'watchesWarnings',
+  'surgeWarnings',
+  'windRadii34',
+  'windRadii50',
+  'windRadii64',
+]);
+
 export const TROPICAL_BASIN_VIEWS = Object.freeze({
   atl: Object.freeze({
     label: 'Atlantic',
@@ -47,8 +59,10 @@ export function tropicalZoomForView(view, compact = false) {
   return view.zoom + (compact ? view.mobileZoomAdjustment || 0 : 0);
 }
 
-const VALID_PACKAGE_STATES = new Set(['fresh', 'empty', 'stale', 'unavailable']);
+const VALID_PACKAGE_STATES = new Set(['fresh', 'partial', 'empty', 'stale', 'unavailable']);
 const SUPPORTED_OVERVIEW_SCHEMA_VERSION = '1.0.0';
+const SUPPORTED_STORM_SCHEMA_VERSION = '1.0.0';
+const VALID_PRODUCT_STATES = new Set(['fresh', 'not-issued', 'unavailable']);
 const EMPTY_FEATURE_COLLECTION = Object.freeze({ type: 'FeatureCollection', features: [] });
 
 const LEGEND_ITEMS = Object.freeze([
@@ -59,6 +73,23 @@ const LEGEND_ITEMS = Object.freeze([
   Object.freeze({ label: 'Medium chance', className: 'is-medium' }),
   Object.freeze({ label: 'High chance', className: 'is-high' }),
 ]);
+
+const STORM_LEGEND_ITEMS = Object.freeze([
+  Object.freeze({ label: 'Current position', className: 'is-storm' }),
+  Object.freeze({ label: 'Past track', className: 'is-best-track' }),
+  Object.freeze({ label: 'Forecast track', className: 'is-track' }),
+  Object.freeze({ label: 'Forecast cone', className: 'is-cone' }),
+  Object.freeze({ label: 'Watches / warnings', className: 'is-warning' }),
+  Object.freeze({ label: 'Wind radii', className: 'is-radii' }),
+]);
+
+function stormIdBasin(stormId) {
+  const prefix = String(stormId || '').slice(0, 2).toUpperCase();
+  if (prefix === 'AL') return 'atl';
+  if (prefix === 'EP') return 'epac';
+  if (prefix === 'CP') return 'cpac';
+  throw new Error(`Invalid ATCF storm ID: ${stormId}`);
+}
 
 function resolveElement(value, documentRef) {
   return typeof value === 'string' ? documentRef?.getElementById(value) || null : value;
@@ -268,6 +299,57 @@ export function buildTropicalPopup(layerKey, properties = {}) {
     return `<article class="tropical-popup"><h3>${escapeHtml(areaLabel)}</h3><ul>${chances || '<li>Development chance unavailable</li>'}</ul>${sourceTime}${sourceLink}</article>`;
   }
 
+  if (layerKey === 'currentPosition') {
+    const title = properties.name || stormId || 'Current position';
+    const intensity = Number.isFinite(Number(properties.intensityKnots))
+      ? `<li>Maximum wind: ${Number(properties.intensityKnots)} kt</li>`
+      : '';
+    const pressure = Number.isFinite(Number(properties.pressureMillibars))
+      ? `<li>Pressure: ${Number(properties.pressureMillibars)} mb</li>`
+      : '';
+    return `<article class="tropical-popup"><h3>${escapeHtml(title)}</h3><ul>${intensity}${pressure}</ul>${sourceTime}</article>`;
+  }
+
+  if (layerKey === 'forecastTrack') {
+    const hour = Number.isFinite(Number(properties.forecastHour))
+      ? `<li>Forecast hour: ${Number(properties.forecastHour)}</li>`
+      : '';
+    const wind = Number.isFinite(Number(properties.intensityKnots))
+      ? `<li>Maximum wind: ${Number(properties.intensityKnots)} kt</li>`
+      : '';
+    const validTime = properties.validTime
+      ? `<p class="tropical-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
+      : sourceTime;
+    return `<article class="tropical-popup"><h3>Forecast track${stormId ? ` for ${escapeHtml(stormId)}` : ''}</h3><ul>${hour}${wind}</ul>${validTime}</article>`;
+  }
+
+  if (layerKey === 'bestTrack') {
+    const label = properties.label || 'Past track';
+    const description = properties.description
+      ? `<p>${escapeHtml(properties.description)}</p>`
+      : '';
+    return `<article class="tropical-popup"><h3>${escapeHtml(label)}</h3>${description}${sourceTime}</article>`;
+  }
+
+  if (layerKey === 'watchesWarnings' || layerKey === 'surgeWarnings') {
+    const fallback = layerKey === 'surgeWarnings' ? 'Storm surge alert' : 'Tropical watch / warning';
+    const description = properties.description
+      ? `<p>${escapeHtml(properties.description)}</p>`
+      : '';
+    return `<article class="tropical-popup"><h3>${escapeHtml(properties.warningType || fallback)}</h3>${description}${sourceTime}</article>`;
+  }
+
+  if (layerKey.startsWith('windRadii')) {
+    const threshold = Number(properties.windThresholdKnots) || Number(layerKey.slice(-2));
+    const hour = Number.isFinite(Number(properties.forecastHour))
+      ? `<li>Forecast hour: ${Number(properties.forecastHour)}</li>`
+      : '';
+    const validTime = properties.validTime
+      ? `<p class="tropical-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
+      : sourceTime;
+    return `<article class="tropical-popup"><h3>${threshold}-kt wind radii</h3><ul>${hour}</ul>${validTime}</article>`;
+  }
+
   const productLabel = layerKey === 'cones' ? 'Forecast cone' : 'Forecast track';
   const stormLabel = stormId ? ` for ${escapeHtml(stormId)}` : '';
   const sourceLink = officialSourceLink(properties.sourceUrl);
@@ -300,6 +382,94 @@ export function validateTropicalOverviewPackage(packageData) {
   return packageData;
 }
 
+export function validateTropicalStormManifest(manifest, expectedStormId = null) {
+  if (!manifest || typeof manifest !== 'object') {
+    throw new Error('Tropical storm manifest is missing');
+  }
+  if (manifest.kind !== 'tropical-storm-map') {
+    throw new Error('Tropical storm manifest kind is invalid');
+  }
+  if (manifest.schemaVersion !== SUPPORTED_STORM_SCHEMA_VERSION) {
+    throw new Error(`Unsupported tropical storm schema: ${manifest.schemaVersion}`);
+  }
+  const stormId = String(manifest.stormId || '').toUpperCase();
+  stormIdBasin(stormId);
+  if (expectedStormId && stormId !== String(expectedStormId).toUpperCase()) {
+    throw new Error(`Tropical storm manifest identity mismatch: ${stormId}`);
+  }
+  if (manifest.stormState !== 'live') {
+    throw new Error(`Tropical storm state is invalid: ${manifest.stormState}`);
+  }
+  if (!VALID_PACKAGE_STATES.has(manifest.state)) {
+    throw new Error(`Tropical storm package state is invalid: ${manifest.state}`);
+  }
+  if (!manifest.products || typeof manifest.products !== 'object') {
+    throw new Error('Tropical storm manifest has no products');
+  }
+  for (const [productKey, product] of Object.entries(manifest.products)) {
+    if (!product || !VALID_PRODUCT_STATES.has(product.state)) {
+      throw new Error(`Tropical storm product state is invalid: ${productKey}`);
+    }
+    if (product.state === 'fresh') {
+      if (typeof product.file !== 'string' || !/^[a-z0-9-]+\.geojson$/i.test(product.file)) {
+        throw new Error(`Tropical storm product file is invalid: ${productKey}`);
+      }
+    } else if (product.file !== null) {
+      throw new Error(`Unavailable tropical storm product cannot name a file: ${productKey}`);
+    }
+  }
+  if (manifest.products.currentPosition?.state !== 'fresh') {
+    throw new Error('Tropical storm current position is required');
+  }
+  manifest.stormId = stormId;
+  return manifest;
+}
+
+function validateStormCollection(collection, stormId, productKey) {
+  if (!collection || collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
+    throw new Error(`Tropical storm layer is invalid: ${productKey}`);
+  }
+  for (const feature of collection.features) {
+    if (String(feature?.properties?.stormId || '').toUpperCase() !== stormId) {
+      throw new Error(`Tropical storm layer identity mismatch: ${productKey}`);
+    }
+  }
+  return collection;
+}
+
+function productFileUrl(manifestUrl, file) {
+  try {
+    return new URL(file, manifestUrl).href;
+  } catch {
+    const base = String(manifestUrl).replace(/[^/]*$/, '');
+    return `${base}${file}`;
+  }
+}
+
+function emptyStormLayers() {
+  return Object.fromEntries(TROPICAL_STORM_LAYER_KEYS.map((key) => [key, EMPTY_FEATURE_COLLECTION]));
+}
+
+function splitStormProducts(manifest, collections) {
+  const layers = emptyStormLayers();
+  layers.currentPosition = collections.currentPosition || EMPTY_FEATURE_COLLECTION;
+  layers.bestTrack = collections.bestTrack || EMPTY_FEATURE_COLLECTION;
+  layers.cone = collections.cone || EMPTY_FEATURE_COLLECTION;
+  layers.forecastTrack = collections.forecastTrack || EMPTY_FEATURE_COLLECTION;
+  layers.watchesWarnings = collections.watchesWarnings || EMPTY_FEATURE_COLLECTION;
+  layers.surgeWarnings = collections.surgeWarnings || EMPTY_FEATURE_COLLECTION;
+  const radii = collections.windRadii || EMPTY_FEATURE_COLLECTION;
+  for (const threshold of [34, 50, 64]) {
+    layers[`windRadii${threshold}`] = {
+      ...radii,
+      features: radii.features.filter(
+        (feature) => Number(feature?.properties?.windThresholdKnots) === threshold,
+      ),
+    };
+  }
+  return { manifest, layers };
+}
+
 function layerCount(packageData, key) {
   return packageData.layers[key]?.features?.length || 0;
 }
@@ -315,7 +485,7 @@ export function summarizeTropicalOverview(packageData) {
   };
 }
 
-function createLegendControl(leaflet, documentRef, position) {
+function createLegendControl(leaflet, documentRef, position, items = LEGEND_ITEMS) {
   const control = leaflet.control({ position });
   control.onAdd = () => {
     const container = documentRef.createElement('section');
@@ -328,7 +498,7 @@ function createLegendControl(leaflet, documentRef, position) {
     container.appendChild(heading);
 
     const list = documentRef.createElement('ul');
-    for (const item of LEGEND_ITEMS) {
+    for (const item of items) {
       const row = documentRef.createElement('li');
       const swatch = documentRef.createElement('span');
       swatch.className = `tropical-map-legend__swatch ${item.className}`;
@@ -363,6 +533,7 @@ export class TropicalMapEngine {
     referenceOverlays = [],
     responsiveBreakpoint = TROPICAL_RESPONSIVE_BREAKPOINT,
     showLegend = true,
+    mode = 'overview',
     onStatus = () => {},
   } = {}) {
     this.documentRef = documentRef;
@@ -387,6 +558,9 @@ export class TropicalMapEngine {
     this.referenceOverlays = Array.isArray(referenceOverlays) ? referenceOverlays : [];
     this.responsiveBreakpoint = responsiveBreakpoint;
     this.showLegend = showLegend;
+    if (!['overview', 'storm'].includes(mode)) throw new Error(`Unsupported tropical map mode: ${mode}`);
+    this.mode = mode;
+    this.layerKeys = mode === 'storm' ? TROPICAL_STORM_LAYER_KEYS : TROPICAL_LAYER_KEYS;
     this.onStatus = onStatus;
     this.activeBasin = assertBasin(basin);
     this.compactLayout = null;
@@ -405,8 +579,12 @@ export class TropicalMapEngine {
     this.loadGeneration = 0;
     this.mapInstanceCount = 0;
     this.renderedBasin = null;
+    this.renderedStormId = null;
     this.state = 'idle';
-    this.layerCounts = Object.fromEntries(TROPICAL_LAYER_KEYS.map((key) => [key, 0]));
+    this.layerCounts = Object.fromEntries(this.layerKeys.map((key) => [key, 0]));
+    this.layerVisibility = Object.fromEntries(
+      this.layerKeys.map((key) => [key, !['windRadii50', 'windRadii64'].includes(key)]),
+    );
     this.handleWindowResize = this.handleWindowResize.bind(this);
     this.handleBasemapChange = this.handleBasemapChange.bind(this);
     this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
@@ -455,14 +633,19 @@ export class TropicalMapEngine {
       .map((reference) => this.addGeoJsonReferenceOverlay(reference))
       .filter(Boolean);
 
-    for (const layerKey of TROPICAL_LAYER_KEYS) {
+    for (const layerKey of this.layerKeys) {
       const group = this.leaflet.layerGroup();
-      group.addTo(this.map);
+      if (this.layerVisibility[layerKey]) group.addTo(this.map);
       this.layerGroups.set(layerKey, group);
     }
 
     if (this.showLegend && this.documentRef) {
-      this.legendControl = createLegendControl(this.leaflet, this.documentRef, 'bottomright');
+      this.legendControl = createLegendControl(
+        this.leaflet,
+        this.documentRef,
+        'bottomright',
+        this.mode === 'storm' ? STORM_LEGEND_ITEMS : LEGEND_ITEMS,
+      );
       this.legendControl.addTo(this.map);
     }
     this.installResponsiveObserver();
@@ -591,8 +774,10 @@ export class TropicalMapEngine {
       ['tropicalBasemapPane', 200],
       ['tropicalReferencePane', 305],
       ['tropicalConePane', 310],
+      ['tropicalRadiiPane', 315],
       ['tropicalOutlookPane', 320],
       ['tropicalTrackPane', 330],
+      ['tropicalWarningPane', 335],
       ['tropicalPointPane', 340],
     ];
     for (const [name, zIndex] of panes) {
@@ -715,7 +900,63 @@ export class TropicalMapEngine {
     }
   }
 
+  async loadStorm(stormId, { manifestUrl, fit = true, cache = 'no-store' } = {}) {
+    if (this.mode !== 'storm') throw new Error('Storm packages require storm map mode');
+    const expectedStormId = String(stormId || '').toUpperCase();
+    const basin = stormIdBasin(expectedStormId);
+    if (!manifestUrl) throw new Error('Tropical storm manifest URL is required');
+    if (typeof this.fetchImpl !== 'function') throw new Error('Fetch is unavailable');
+
+    const request = this.beginLoad(basin);
+    try {
+      const manifestResponse = await this.fetchImpl(manifestUrl, {
+        cache,
+        signal: request.signal,
+        headers: { Accept: 'application/json' },
+      });
+      if (!manifestResponse.ok) {
+        throw new Error(`Tropical storm manifest request failed (${manifestResponse.status})`);
+      }
+      const manifest = validateTropicalStormManifest(await manifestResponse.json(), expectedStormId);
+      const freshProducts = Object.entries(manifest.products).filter(
+        ([, product]) => product.state === 'fresh',
+      );
+      const entries = await Promise.all(
+        freshProducts.map(async ([productKey, product]) => {
+          const url = productFileUrl(manifestResponse.url || manifestUrl, product.file);
+          const response = await this.fetchImpl(url, {
+            cache,
+            signal: request.signal,
+            headers: { Accept: 'application/geo+json, application/json' },
+          });
+          if (!response.ok) {
+            throw new Error(`Tropical storm product request failed: ${productKey} (${response.status})`);
+          }
+          return [
+            productKey,
+            validateStormCollection(await response.json(), expectedStormId, productKey),
+          ];
+        }),
+      );
+      return this.renderStorm(splitStormProducts(manifest, Object.fromEntries(entries)), {
+        generation: request.generation,
+        fit,
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError' || request.generation !== this.loadGeneration) return false;
+      this.setStatus(
+        'unavailable',
+        request.preservedLayers
+          ? `${expectedStormId} detailed map data is unavailable. Previously rendered layers remain visible.`
+          : `${expectedStormId} detailed map data is unavailable. Other storm information remains available below.`,
+        { error, generation: request.generation, stormId: expectedStormId },
+      );
+      throw error;
+    }
+  }
+
   renderOverview(packageData, { generation = null, fit = true } = {}) {
+    if (this.mode !== 'overview') throw new Error('Overview packages require overview map mode');
     this.ensureMap();
     validateTropicalOverviewPackage(packageData);
     if (generation !== null && generation !== this.loadGeneration) return false;
@@ -749,6 +990,35 @@ export class TropicalMapEngine {
     return true;
   }
 
+  renderStorm(packageData, { generation = null, fit = true } = {}) {
+    if (this.mode !== 'storm') throw new Error('Storm packages require storm map mode');
+    this.ensureMap();
+    const manifest = validateTropicalStormManifest(packageData?.manifest);
+    if (generation !== null && generation !== this.loadGeneration) return false;
+    const basin = stormIdBasin(manifest.stormId);
+    if (basin !== this.activeBasin) this.setBasin(basin);
+
+    const normalizedLayers = new Map();
+    for (const layerKey of TROPICAL_STORM_LAYER_KEYS) {
+      const collection = validateStormCollection(
+        packageData.layers?.[layerKey] || EMPTY_FEATURE_COLLECTION,
+        manifest.stormId,
+        layerKey,
+      );
+      const normalized = normalizeGeoJsonForBasin(collection, basin);
+      normalizedLayers.set(layerKey, normalized);
+      const group = this.layerGroups.get(layerKey);
+      group.clearLayers();
+      group.addLayer(this.createGeoJsonLayer(layerKey, normalized));
+      this.layerCounts[layerKey] = normalized.features.length;
+    }
+    this.renderedBasin = basin;
+    this.renderedStormId = manifest.stormId;
+    if (fit) this.fitCollections(normalizedLayers.values());
+    this.applyStormPackageStatus(manifest);
+    return true;
+  }
+
   createGeoJsonLayer(layerKey, collection) {
     const options = {
       pane: this.paneForLayer(layerKey),
@@ -769,8 +1039,10 @@ export class TropicalMapEngine {
   }
 
   paneForLayer(layerKey) {
-    if (layerKey === 'cones') return 'tropicalConePane';
-    if (layerKey === 'forecastTracks') return 'tropicalTrackPane';
+    if (layerKey === 'cones' || layerKey === 'cone') return 'tropicalConePane';
+    if (layerKey.startsWith('windRadii')) return 'tropicalRadiiPane';
+    if (layerKey === 'watchesWarnings' || layerKey === 'surgeWarnings') return 'tropicalWarningPane';
+    if (['forecastTracks', 'forecastTrack', 'bestTrack'].includes(layerKey)) return 'tropicalTrackPane';
     if (layerKey === 'outlookAreas') return 'tropicalOutlookPane';
     return 'tropicalPointPane';
   }
@@ -780,7 +1052,7 @@ export class TropicalMapEngine {
       const color = outlookColor(properties);
       return { color, fillColor: color, weight: 2, opacity: 0.9, fillOpacity: 0.2 };
     }
-    if (layerKey === 'cones') {
+    if (layerKey === 'cones' || layerKey === 'cone') {
       return {
         color: '#f8fafc',
         fillColor: '#cbd5e1',
@@ -789,14 +1061,34 @@ export class TropicalMapEngine {
         fillOpacity: 0.28,
       };
     }
-    if (layerKey === 'forecastTracks') {
+    if (layerKey === 'forecastTracks' || layerKey === 'forecastTrack') {
       return { color: '#f8fafc', weight: 3, opacity: 0.95, dashArray: '7 6' };
+    }
+    if (layerKey === 'bestTrack') {
+      return { color: '#38bdf8', weight: 3, opacity: 0.95 };
+    }
+    if (layerKey === 'watchesWarnings') {
+      const warning = String(properties.warningType || '').toLowerCase();
+      const color = warning.includes('hurricane')
+        ? '#ef4444'
+        : warning.includes('tropical storm')
+          ? '#facc15'
+          : '#f97316';
+      return { color, fillColor: color, weight: 5, opacity: 1, fillOpacity: 0.2 };
+    }
+    if (layerKey === 'surgeWarnings') {
+      return { color: '#ec4899', fillColor: '#ec4899', weight: 5, opacity: 1, fillOpacity: 0.2 };
+    }
+    if (layerKey.startsWith('windRadii')) {
+      const threshold = Number(properties.windThresholdKnots) || Number(layerKey.slice(-2));
+      const color = { 34: '#facc15', 50: '#f97316', 64: '#ef4444' }[threshold] || '#facc15';
+      return { color, fillColor: color, weight: 1.5, opacity: 0.8, fillOpacity: 0.14 };
     }
     return {};
   }
 
   pointStyleForLayer(layerKey, properties) {
-    if (layerKey === 'stormPositions') {
+    if (layerKey === 'stormPositions' || layerKey === 'currentPosition') {
       const color = stormColor(properties.classification);
       return {
         pane: 'tropicalPointPane',
@@ -804,6 +1096,26 @@ export class TropicalMapEngine {
         color: '#ffffff',
         weight: 2,
         fillColor: color,
+        fillOpacity: 1,
+      };
+    }
+    if (layerKey === 'forecastTrack') {
+      return {
+        pane: 'tropicalPointPane',
+        radius: 5,
+        color: '#111827',
+        weight: 1.5,
+        fillColor: '#f8fafc',
+        fillOpacity: 1,
+      };
+    }
+    if (layerKey === 'bestTrack') {
+      return {
+        pane: 'tropicalPointPane',
+        radius: 4,
+        color: '#082f49',
+        weight: 1,
+        fillColor: '#38bdf8',
         fillOpacity: 1,
       };
     }
@@ -844,11 +1156,43 @@ export class TropicalMapEngine {
   }
 
   clearRenderedLayers() {
-    for (const layerKey of TROPICAL_LAYER_KEYS) {
+    for (const layerKey of this.layerKeys) {
       this.layerGroups.get(layerKey)?.clearLayers();
       this.layerCounts[layerKey] = 0;
     }
     this.renderedBasin = null;
+    this.renderedStormId = null;
+  }
+
+  setLayerVisible(layerKey, visible) {
+    if (!this.layerGroups.has(layerKey)) return false;
+    this.layerVisibility[layerKey] = Boolean(visible);
+    if (!this.map) return true;
+    const group = this.layerGroups.get(layerKey);
+    if (visible && !this.map.hasLayer?.(group)) group.addTo(this.map);
+    if (!visible && this.map.hasLayer?.(group)) this.map.removeLayer?.(group);
+    return true;
+  }
+
+  applyStormPackageStatus(manifest) {
+    const unavailable = Object.values(manifest.products).filter(
+      (product) => product.state === 'unavailable',
+    ).length;
+    const issued = Object.values(manifest.products).filter((product) => product.state === 'fresh').length;
+    const issueTime = formatTime(manifest.sourceIssueTime);
+    if (manifest.state === 'partial' || unavailable > 0) {
+      this.setStatus(
+        'partial',
+        `Showing ${manifest.stormId} detailed map with ${issued} available product${issued === 1 ? '' : 's'}; ${unavailable} product${unavailable === 1 ? '' : 's'} unavailable. NHC source time: ${issueTime}.`,
+        { manifest, stormId: manifest.stormId },
+      );
+      return;
+    }
+    this.setStatus(
+      'fresh',
+      `Showing ${manifest.stormId} detailed map with ${issued} issued product${issued === 1 ? '' : 's'}. NHC source time: ${issueTime}.`,
+      { manifest, stormId: manifest.stormId },
+    );
   }
 
   applyPackageStatus(packageData) {
@@ -900,11 +1244,14 @@ export class TropicalMapEngine {
 
   getSnapshot() {
     return {
+      mode: this.mode,
       activeBasin: this.activeBasin,
+      renderedStormId: this.renderedStormId,
       state: this.state,
       generation: this.loadGeneration,
       mapInstanceCount: this.mapInstanceCount,
       layerCounts: { ...this.layerCounts },
+      layerVisibility: { ...this.layerVisibility },
     };
   }
 
@@ -929,6 +1276,7 @@ export class TropicalMapEngine {
     this.basemapLayerControl = null;
     this.zoomIndicator = null;
     this.renderedBasin = null;
+    this.renderedStormId = null;
     this.layerGroups.clear();
     this.overviewCache.clear();
     this.legendControl = null;

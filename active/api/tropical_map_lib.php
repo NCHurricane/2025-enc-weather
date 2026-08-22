@@ -202,6 +202,33 @@ final class TropicalMapLib
         return $response;
     }
 
+    public static function fetchKmlToTemp(string $url): array
+    {
+        $response = self::fetch($url, [
+            'application/vnd.google-earth.kml+xml',
+            'application/xml',
+            'text/xml',
+            'text/plain',
+            'application/octet-stream',
+        ]);
+        $path = tempnam(sys_get_temp_dir(), 'nch-tropical-');
+        if ($path === false) {
+            throw new TropicalMapException('Unable to create a KML temporary file');
+        }
+        $kmlPath = $path . '.kml';
+        if (!rename($path, $kmlPath)) {
+            @unlink($path);
+            throw new TropicalMapException('Unable to prepare a KML temporary path');
+        }
+        if (file_put_contents($kmlPath, $response['body'], LOCK_EX) === false) {
+            @unlink($kmlPath);
+            throw new TropicalMapException('Unable to write the KML temporary file');
+        }
+        unset($response['body']);
+        $response['path'] = $kmlPath;
+        return $response;
+    }
+
     public static function extractKmlFromKmz(string $path): string
     {
         if (!class_exists(PharData::class)) {
@@ -273,6 +300,26 @@ final class TropicalMapLib
     public static function parseKmzFeatures(string $path): array
     {
         return self::parseKmlFeatures(self::extractKmlFromKmz($path));
+    }
+
+    /** @return array<int,array{type:string,geometry:array,properties:array}> */
+    public static function parseProductFeatures(string $path): array
+    {
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'kml') {
+            if (!is_file($path)) {
+                throw new TropicalMapException("KML file does not exist: {$path}");
+            }
+            $bytes = filesize($path);
+            if (!is_int($bytes) || $bytes < 1 || $bytes > self::MAX_ENTRY_BYTES) {
+                throw new TropicalMapException("KML size is outside the bound: {$path}");
+            }
+            $xml = file_get_contents($path);
+            if ($xml === false || $xml === '') {
+                throw new TropicalMapException("KML file is empty or unreadable: {$path}");
+            }
+            return self::parseKmlFeatures($xml);
+        }
+        return self::parseKmzFeatures($path);
     }
 
     /** @return array<int,array{type:string,geometry:array,properties:array}> */
@@ -674,6 +721,77 @@ final class TropicalMapLib
         return self::featureCollection($warnings);
     }
 
+    public static function parseBestTrackProduct(
+        string $path,
+        string $stormId,
+        string $sourceIssueTime,
+        string $sourceUrl
+    ): array {
+        $stormId = self::validateStormId($stormId);
+        $features = self::parseProductFeatures($path);
+        self::assertProductIdentity($features, $stormId, null);
+        $history = [];
+        foreach ($features as $feature) {
+            $geometryType = $feature['geometry']['type'];
+            if (!in_array($geometryType, ['Point', 'MultiPoint', 'LineString', 'MultiLineString'], true)) {
+                continue;
+            }
+            $history[] = [
+                'type' => 'Feature',
+                'geometry' => $feature['geometry'],
+                'properties' => [
+                    'product' => $geometryType === 'Point' || $geometryType === 'MultiPoint'
+                        ? 'past-position'
+                        : 'best-track',
+                    'stormId' => $stormId,
+                    'label' => trim((string) ($feature['properties']['name'] ?? '')),
+                    'description' => self::descriptionText((string) ($feature['properties']['description'] ?? '')),
+                    'sourceIssueTime' => $sourceIssueTime,
+                    'sourceUrl' => $sourceUrl,
+                ],
+            ];
+        }
+        if ($history === []) {
+            throw new TropicalMapException("Best-track product for {$stormId} contains no point or line geometry");
+        }
+        return self::featureCollection($history);
+    }
+
+    public static function parseSurgeWarningsProduct(
+        string $path,
+        string $stormId,
+        string $advisory,
+        string $sourceIssueTime,
+        string $sourceUrl
+    ): array {
+        $stormId = self::validateStormId($stormId);
+        self::assertSurgeProductUrl($sourceUrl, $stormId, $advisory);
+        $features = self::parseProductFeatures($path);
+        $warnings = [];
+        foreach ($features as $feature) {
+            if (!in_array($feature['geometry']['type'], ['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'], true)) {
+                continue;
+            }
+            $warnings[] = [
+                'type' => 'Feature',
+                'geometry' => $feature['geometry'],
+                'properties' => [
+                    'product' => 'surge-warning',
+                    'stormId' => $stormId,
+                    'advisoryNumber' => $advisory,
+                    'warningType' => trim((string) ($feature['properties']['name'] ?? '')),
+                    'description' => self::descriptionText((string) ($feature['properties']['description'] ?? '')),
+                    'sourceIssueTime' => $sourceIssueTime,
+                    'sourceUrl' => $sourceUrl,
+                ],
+            ];
+        }
+        if ($warnings === []) {
+            throw new TropicalMapException("Storm-surge warning product for {$stormId} contains no line or polygon geometry");
+        }
+        return self::featureCollection($warnings);
+    }
+
     public static function parseWindRadiiProducts(
         ?string $initialPath,
         ?string $forecastPath,
@@ -724,12 +842,26 @@ final class TropicalMapLib
                 }
                 $groups[$group][] = ['geometry' => $feature['geometry'], 'threshold' => $threshold];
             }
-            if (count($groups) !== count($pointFeatures)) {
+            $groupCount = count($groups);
+            $pointCount = count($pointFeatures);
+            if ($groupCount === 0 || $groupCount > $pointCount) {
                 throw new TropicalMapException(sprintf(
                     'Forecast-radii group count (%d) does not match forecast-point count (%d)',
-                    count($groups),
-                    count($pointFeatures)
+                    $groupCount,
+                    $pointCount
                 ));
+            }
+            if ($groupCount < $pointCount) {
+                foreach (array_slice($pointFeatures, $groupCount) as $pointFeature) {
+                    $intensity = $pointFeature['properties']['intensityKnots'] ?? null;
+                    if (!is_int($intensity) || $intensity >= 34) {
+                        throw new TropicalMapException(sprintf(
+                            'Forecast-radii group count (%d) does not match forecast-point count (%d)',
+                            $groupCount,
+                            $pointCount
+                        ));
+                    }
+                }
             }
             foreach ($groups as $index => $features) {
                 // The explicit initial-radii product owns forecast hour zero when available.
@@ -909,10 +1041,12 @@ final class TropicalMapLib
             'forecastTrack' => ['file' => 'forecast-track.geojson', 'manifestKey' => 'forecastTrack'],
             'trackCone' => ['file' => 'cone.geojson', 'manifestKey' => 'cone'],
             'windWatchesWarnings' => ['file' => 'watches-warnings.geojson', 'manifestKey' => 'watchesWarnings'],
+            'bestTrackGIS' => ['file' => 'best-track.geojson', 'manifestKey' => 'bestTrack'],
+            'stormSurgeWatchWarningGIS' => ['file' => 'surge-warnings.geojson', 'manifestKey' => 'surgeWarnings'],
         ];
         foreach ($simpleProducts as $sourceKey => $definition) {
             $source = $storm[$sourceKey] ?? null;
-            $url = is_array($source) ? (string) ($source['kmzFile'] ?? '') : '';
+            $url = self::productUrl($source);
             if ($url === '') {
                 $products[$definition['manifestKey']] = ['state' => 'not-issued', 'file' => null];
                 continue;
@@ -922,28 +1056,45 @@ final class TropicalMapLib
                 if ($path === null) {
                     throw new TropicalMapException('provider returned no local product path');
                 }
+                $productAdvisory = self::productAdvisory($source, $advisory);
+                $productIssueTime = self::productIssueTime($source, $issueTime);
                 if ($sourceKey === 'forecastTrack') {
-                    $track = self::parseTrackProduct($path, $stormId, $advisory, $issueTime, $url);
+                    $track = self::parseTrackProduct($path, $stormId, $productAdvisory, $productIssueTime, $url);
                     $files[$definition['file']] = $track['all'];
                 } elseif ($sourceKey === 'trackCone') {
                     $files[$definition['file']] = self::parseConeProduct(
                         $path,
                         $stormId,
-                        $advisory,
-                        $issueTime,
+                        $productAdvisory,
+                        $productIssueTime,
                         $url
                     );
-                } else {
+                } elseif ($sourceKey === 'windWatchesWarnings') {
                     $files[$definition['file']] = self::parseWarningsProduct(
                         $path,
                         $stormId,
-                        $advisory,
-                        $issueTime,
+                        $productAdvisory,
+                        $productIssueTime,
+                        $url
+                    );
+                } elseif ($sourceKey === 'bestTrackGIS') {
+                    $files[$definition['file']] = self::parseBestTrackProduct(
+                        $path,
+                        $stormId,
+                        $productIssueTime,
+                        $url
+                    );
+                } else {
+                    $files[$definition['file']] = self::parseSurgeWarningsProduct(
+                        $path,
+                        $stormId,
+                        $productAdvisory,
+                        $productIssueTime,
                         $url
                     );
                 }
                 $products[$definition['manifestKey']] = ['state' => 'fresh', 'file' => $definition['file']];
-                $sources[] = self::sourceRecord($sourceKey, $url, $issueTime, $generatedAt, 'fresh');
+                $sources[] = self::sourceRecord($sourceKey, $url, $productIssueTime, $generatedAt, 'fresh');
             } catch (Throwable $error) {
                 $products[$definition['manifestKey']] = ['state' => 'unavailable', 'file' => null];
                 $errors[] = [
@@ -958,8 +1109,8 @@ final class TropicalMapLib
 
         $initial = $storm['initialWindExtent'] ?? null;
         $forecast = $storm['forecastWindRadiiGIS'] ?? null;
-        $initialUrl = is_array($initial) ? (string) ($initial['kmzFile'] ?? '') : '';
-        $forecastUrl = is_array($forecast) ? (string) ($forecast['kmzFile'] ?? '') : '';
+        $initialUrl = self::productUrl($initial);
+        $forecastUrl = self::productUrl($forecast);
         if ($initialUrl === '' && $forecastUrl === '') {
             $products['windRadii'] = ['state' => 'not-issued', 'file' => null];
         } elseif ($track === null) {
@@ -974,19 +1125,29 @@ final class TropicalMapLib
             try {
                 $initialPath = $initialUrl !== '' ? $productProvider($storm, 'initialWindExtent') : null;
                 $forecastPath = $forecastUrl !== '' ? $productProvider($storm, 'forecastWindRadiiGIS') : null;
+                $radiiSource = is_array($forecast) ? $forecast : (is_array($initial) ? $initial : []);
+                $radiiAdvisory = self::productAdvisory($radiiSource, $advisory);
+                $radiiIssueTime = self::productIssueTime($radiiSource, $issueTime);
                 $files['wind-radii.geojson'] = self::parseWindRadiiProducts(
                     $initialPath,
                     $forecastPath,
                     $track['points'],
                     $stormId,
-                    $advisory,
-                    $issueTime,
+                    $radiiAdvisory,
+                    $radiiIssueTime,
                     ['initial' => $initialUrl, 'forecast' => $forecastUrl]
                 );
                 $products['windRadii'] = ['state' => 'fresh', 'file' => 'wind-radii.geojson'];
                 foreach (['initialWindExtent' => $initialUrl, 'forecastWindRadiiGIS' => $forecastUrl] as $key => $url) {
                     if ($url !== '') {
-                        $sources[] = self::sourceRecord($key, $url, $issueTime, $generatedAt, 'fresh');
+                        $source = $storm[$key] ?? [];
+                        $sources[] = self::sourceRecord(
+                            $key,
+                            $url,
+                            self::productIssueTime(is_array($source) ? $source : [], $radiiIssueTime),
+                            $generatedAt,
+                            'fresh'
+                        );
                     }
                 }
             } catch (Throwable $error) {
@@ -1378,42 +1539,101 @@ final class TropicalMapLib
         return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
     }
 
-    private static function assertProductIdentity(array $features, string $stormId, string $advisory): void
+    private static function productUrl(mixed $product): string
     {
-        $foundIdentity = false;
+        if (!is_array($product)) {
+            return '';
+        }
+        foreach (['kmzFile', 'kmlFile'] as $key) {
+            $url = trim((string) ($product[$key] ?? ''));
+            if ($url !== '') {
+                return $url;
+            }
+        }
+        return '';
+    }
+
+    private static function productAdvisory(mixed $product, string $fallback): string
+    {
+        $advisory = is_array($product) ? trim((string) ($product['advNum'] ?? '')) : '';
+        if ($advisory === '') {
+            return $fallback;
+        }
+        if (!preg_match('/^\d{1,4}[A-Za-z]?$/', $advisory)) {
+            throw new TropicalMapException("Invalid product advisory number: {$advisory}");
+        }
+        return $advisory;
+    }
+
+    private static function productIssueTime(mixed $product, string $fallback): string
+    {
+        $raw = is_array($product) ? trim((string) ($product['issuance'] ?? '')) : '';
+        if ($raw === '') {
+            return $fallback;
+        }
+        try {
+            $date = new DateTimeImmutable($raw, new DateTimeZone('UTC'));
+        } catch (Throwable $error) {
+            throw new TropicalMapException("Invalid product issuance timestamp: {$raw}", 0, $error);
+        }
+        return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+    }
+
+    private static function assertSurgeProductUrl(string $sourceUrl, string $stormId, string $advisory): void
+    {
+        $path = parse_url($sourceUrl, PHP_URL_PATH);
+        $file = is_string($path) ? rawurldecode(basename($path)) : '';
+        if (!preg_match('/^((?:AL|EP|CP)\d{6})_WatchWarningSS_(\d{1,4}[A-Za-z]?)adv\.kml$/i', $file, $match)) {
+            throw new TropicalMapException("Storm-surge product URL does not carry verifiable identity for {$stormId}");
+        }
+        if (strtoupper($match[1]) !== $stormId) {
+            throw new TropicalMapException("Storm identity mismatch in storm-surge product URL for {$stormId}");
+        }
+        if (self::normalizeAdvisory($match[2]) !== self::normalizeAdvisory($advisory)) {
+            throw new TropicalMapException("Advisory mismatch in storm-surge product URL for {$stormId}");
+        }
+    }
+
+    private static function assertProductIdentity(array $features, string $stormId, ?string $advisory): void
+    {
+        $foundStormIdentity = false;
+        $foundAdvisoryIdentity = false;
         foreach ($features as $feature) {
             $extended = [];
             foreach (($feature['properties']['extendedData'] ?? []) as $key => $value) {
                 $extended[strtolower((string) $key)] = trim((string) $value);
             }
             if (($extended['atcfid'] ?? '') !== '') {
-                $foundIdentity = true;
+                $foundStormIdentity = true;
                 if (strtoupper($extended['atcfid']) !== $stormId) {
                     throw new TropicalMapException("Storm identity mismatch in product for {$stormId}");
                 }
             }
             if (($extended['advisorynum'] ?? '') !== '') {
-                $foundIdentity = true;
-                if (self::normalizeAdvisory($extended['advisorynum']) !== self::normalizeAdvisory($advisory)) {
+                $foundAdvisoryIdentity = true;
+                if ($advisory !== null && self::normalizeAdvisory($extended['advisorynum']) !== self::normalizeAdvisory($advisory)) {
                     throw new TropicalMapException("Advisory identity mismatch in product for {$stormId}");
                 }
             }
             $description = self::descriptionText((string) ($feature['properties']['description'] ?? ''));
             if (preg_match('/\b((?:AL|EP|CP)\d{6})\b/i', $description, $match)) {
-                $foundIdentity = true;
+                $foundStormIdentity = true;
                 if (strtoupper($match[1]) !== $stormId) {
                     throw new TropicalMapException("Storm identity mismatch in product description for {$stormId}");
                 }
             }
             if (preg_match('/Advisory\s*#\s*(\d{1,4}[A-Za-z]?)/i', $description, $match)) {
-                $foundIdentity = true;
-                if (self::normalizeAdvisory($match[1]) !== self::normalizeAdvisory($advisory)) {
+                $foundAdvisoryIdentity = true;
+                if ($advisory !== null && self::normalizeAdvisory($match[1]) !== self::normalizeAdvisory($advisory)) {
                     throw new TropicalMapException("Advisory mismatch in product description for {$stormId}");
                 }
             }
         }
-        if (!$foundIdentity) {
-            throw new TropicalMapException("Product does not carry verifiable identity for {$stormId}");
+        if (!$foundStormIdentity) {
+            throw new TropicalMapException("Product does not carry verifiable storm identity for {$stormId}");
+        }
+        if ($advisory !== null && !$foundAdvisoryIdentity) {
+            throw new TropicalMapException("Product does not carry verifiable advisory identity for {$stormId}");
         }
     }
 

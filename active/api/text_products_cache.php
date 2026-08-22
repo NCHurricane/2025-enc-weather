@@ -2,11 +2,12 @@
 <?php
 declare(strict_types=1);
 error_reporting(E_ALL);
+require_once __DIR__ . '/pacific_writer_common.php';
 
 /**
  * NHC Text Products Cache Script - text_products_cache.php
  * * This script polls the latest advisories from the NHC for current storms
- * in the Atlantic and Pacific basins. It reads active storms from the
+ * in the Atlantic, Eastern Pacific, and Central Pacific basins. It reads active storms from the
  * nhc_current_storms.json file and caches all relevant text products.
  * * Products cached:
  * - Tropical Cyclone Public Advisory (TCP) - English & Spanish
@@ -15,7 +16,7 @@ error_reporting(E_ALL);
  * - Wind Speed Probabilities (PWS)
  * - Tropical Cyclone Update (TCU) - English & Spanish (optional)
  * - Monthly Tropical Weather Summary (TWS)
- * * Files are saved as JSON in the active/storms/{AL|EP}nnYYYY directory with WMO naming convention (TCPAT1.json, TASEP2.json, etc.)
+ * * Files are saved as JSON in the active/storms/{AL|EP|CP}nnYYYY directory with WMO naming convention (TCPAT1.json, TCPCP2.json, etc.)
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -55,31 +56,21 @@ function logMessage($message, $level = 'INFO') {
     }
 }
 
+function fetchContentResponse($url) {
+    return pacific_writer_fetch_response($url, [
+        'User-Agent: ' . USER_AGENT,
+        'Accept: application/xml,text/xml;q=0.9,*/*;q=0.8',
+    ], TIMEOUT);
+}
+
 function fetchContent($url) {
-    $context = stream_context_create([
-        'http' => [
-            'timeout' => TIMEOUT,
-            'user_agent' => USER_AGENT,
-            'ignore_errors' => true
-        ]
-    ]);
-    
-    $content = @file_get_contents($url, false, $context);
-    
-    if ($content === false) {
-        $error = error_get_last();
-        logMessage("Failed to fetch {$url}: " . (isset($error['message']) ? $error['message'] : 'Unknown error'), 'ERROR');
+    $response = fetchContentResponse($url);
+    $status = (int)($response['status'] ?? 0);
+    $content = $response['body'] ?? null;
+    if ($status < 200 || $status >= 300 || !is_string($content) || $content === '') {
+        logMessage("Failed to fetch {$url} (HTTP {$status})", 'WARNING');
         return false;
     }
-    
-    if (isset($http_response_header)) {
-        $statusLine = $http_response_header[0];
-        if (!preg_match('/HTTP\/\d\.\d\s+200\s+/', $statusLine)) {
-            logMessage("HTTP error for {$url}: {$statusLine}", 'WARNING');
-            return false;
-        }
-    }
-    
     return $content;
 }
 
@@ -197,7 +188,7 @@ function xmlToOutlookJson($xmlContent, $sourceUrl) {
 
 function getAdvisoryNumber($stormId) {
     $stormId = strtoupper(trim($stormId));
-    preg_match('/^(AL|EP)(\d{2})(\d{4})$/', $stormId, $matches);
+    preg_match('/^(AL|EP|CP)(\d{2})(\d{4})$/', $stormId, $matches);
     if (count($matches) !== 4) {
         logMessage("Invalid storm ID format after uppercasing: {$stormId}", 'ERROR');
         return false;
@@ -235,7 +226,7 @@ function getActiveStorms() {
             $dirs = scandir(STORMS_DIR);
             foreach ($dirs as $dir) {
                 if ($dir !== '.' && $dir !== '..' && is_dir(STORMS_DIR . $dir)) {
-                    if (preg_match('/^(AL|EP)\d{6}$/', $dir)) {
+                    if (preg_match('/^(AL|EP|CP)\d{6}$/', $dir)) {
                         $storms[] = ['id' => $dir];
                     }
                 }
@@ -364,6 +355,25 @@ function getTextProductTypes() {
     ];
 }
 
+function getStormProductRoute(array $storm) {
+    $stormId = strtoupper(trim((string)($storm['id'] ?? '')));
+    if (!preg_match('/^(AL|EP|CP)\d{6}$/', $stormId)) {
+        return false;
+    }
+
+    $binNumber = strtoupper(trim((string)($storm['binNumber'] ?? '')));
+    if (preg_match('/^(AT|EP|CP)([1-5])$/', $binNumber, $matches)) {
+        return ['basinCode' => $matches[1], 'slot' => (int)$matches[2]];
+    }
+
+    $basin = substr($stormId, 0, 2);
+    $basinCode = ['AL' => 'AT', 'EP' => 'EP', 'CP' => 'CP'][$basin] ?? null;
+    $slot = getAdvisoryNumber($stormId);
+    return $basinCode !== null && $slot !== false
+        ? ['basinCode' => $basinCode, 'slot' => $slot]
+        : false;
+}
+
 function cacheTextProducts() {
     $products = getTextProductTypes();
     $activeStorms = getActiveStorms();
@@ -406,14 +416,23 @@ function cacheTextProducts() {
         logMessage("Processing storm-specific products for " . count($activeStorms) . " active storms...", 'INFO');
         foreach ($activeStorms as $storm) {
             $stormId = strtoupper($storm['id']);
-            $advisoryNumber = getAdvisoryNumber($stormId);
-            if ($advisoryNumber === false) {
+            $route = getStormProductRoute($storm);
+            if ($route === false) {
+                logMessage("No text-product route for {$stormId}", 'ERROR');
                 continue;
             }
 
             $basin = substr($stormId, 0, 2);
-            $basinCode = ($basin === 'AL') ? 'AT' : 'EP';
+            $basinCode = $route['basinCode'];
+            $advisoryNumber = $route['slot'];
             $stormDir = STORMS_DIR . $stormId . '/';
+            $manifest = [
+                'schemaVersion' => '1.0.0',
+                'kind' => 'storm-text-products',
+                'stormId' => $stormId,
+                'generatedAt' => gmdate('c'),
+                'products' => [],
+            ];
 
             if (!is_dir($stormDir) && !mkdir($stormDir, 0755, true)) {
                 logMessage("Failed to create directory: {$stormDir}", 'ERROR');
@@ -431,29 +450,69 @@ function cacheTextProducts() {
 
                 $fileName = $product['filename'] . $basinCode . $advisoryNumber . '.json';
                 $url = sprintf($product['url_pattern'], $basinCode, $advisoryNumber);
-                $content = fetchContent($url);
+                $response = fetchContentResponse($url);
+                $status = (int)($response['status'] ?? 0);
+                $content = $response['body'] ?? null;
 
-                if ($content === false) {
-                    if ($product['required']) {
-                        logMessage("Failed to fetch required product {$productCode} for {$stormId}", 'ERROR');
+                if ($status < 200 || $status >= 300 || !is_string($content) || $content === '') {
+                    $notIssued = !$product['required'] && in_array($status, [404, 410], true);
+                    $manifest['products'][$productCode] = [
+                        'state' => $notIssued ? 'not-issued' : 'unavailable',
+                        'required' => (bool)$product['required'],
+                        'file' => null,
+                        'sourceUrl' => $url,
+                        'httpStatus' => $status !== 0 ? $status : null,
+                    ];
+                    if ($notIssued) {
+                        logMessage("Optional product {$productCode} is not issued for {$stormId}", 'INFO');
+                    } elseif ($product['required']) {
+                        logMessage("Failed to fetch required product {$productCode} for {$stormId} (HTTP {$status})", 'ERROR');
                     } else {
-                        logMessage("Failed to fetch optional product {$productCode} for {$stormId}", 'WARNING');
+                        logMessage("Optional product {$productCode} is unavailable for {$stormId} (HTTP {$status})", 'WARNING');
                     }
                     continue;
                 }
 
                 $jsonContent = xmlToJson($content);
                 if ($jsonContent === false) {
+                    $manifest['products'][$productCode] = [
+                        'state' => 'unavailable',
+                        'required' => (bool)$product['required'],
+                        'file' => null,
+                        'sourceUrl' => $url,
+                        'httpStatus' => $status,
+                        'reason' => 'parse-failed',
+                    ];
                     logMessage("Failed to parse {$productCode} for {$stormId}", 'ERROR');
                     continue;
                 }
 
                 if (file_put_contents($stormDir . $fileName, $jsonContent) === false) {
+                    $manifest['products'][$productCode] = [
+                        'state' => 'unavailable',
+                        'required' => (bool)$product['required'],
+                        'file' => null,
+                        'sourceUrl' => $url,
+                        'httpStatus' => $status,
+                        'reason' => 'publish-failed',
+                    ];
                     logMessage("Failed to write cache file for {$productCode} for {$stormId}", 'ERROR');
                 } else {
+                    $manifest['products'][$productCode] = [
+                        'state' => 'available',
+                        'required' => (bool)$product['required'],
+                        'file' => $fileName,
+                        'sourceUrl' => $url,
+                        'httpStatus' => $status,
+                    ];
                     logMessage("Successfully cached {$productCode} for {$stormId} as {$fileName}", 'INFO');
                     $stormProductsCached++;
                 }
+            }
+            try {
+                nch_writer_publish_json($stormDir . 'text-products-manifest.json', $manifest);
+            } catch (Throwable $error) {
+                logMessage("Failed to publish text-product manifest for {$stormId}: {$error->getMessage()}", 'ERROR');
             }
         }
         logMessage("Finished processing storm-specific products. Cached: {$stormProductsCached}", 'INFO');

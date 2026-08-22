@@ -190,6 +190,9 @@ export function formatWeatherTime(value) {
 export class InteractiveWeatherMap {
   constructor({
     container,
+    mapInstance = null,
+    dataPane = 'weatherDataPane',
+    dataPaneZIndex = 300,
     center,
     zoom,
     minZoom = 4,
@@ -213,6 +216,9 @@ export class InteractiveWeatherMap {
     onPlayStateChange = () => {},
   }) {
     this.container = resolveElement(container);
+    this.ownsMap = !mapInstance;
+    this.dataPane = dataPane;
+    this.dataPaneZIndex = dataPaneZIndex;
     this.center = center;
     this.zoom = zoom;
     this.minZoom = minZoom;
@@ -239,7 +245,7 @@ export class InteractiveWeatherMap {
     this.onFrame = onFrame;
     this.onPlayStateChange = onPlayStateChange;
 
-    this.map = null;
+    this.map = mapInstance || null;
     this.zoomIndicator = null;
     this.basemapLayer = null;
     this.basemapLayers = new Map();
@@ -257,6 +263,7 @@ export class InteractiveWeatherMap {
     this.playTimer = null;
     this.scrubRequestToken = 0;
     this.playing = false;
+    this.visible = true;
     this.lastCtrlWheelAt = Number.NEGATIVE_INFINITY;
     this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
     this.handleCtrlWheel = this.handleCtrlWheel.bind(this);
@@ -267,7 +274,10 @@ export class InteractiveWeatherMap {
   }
 
   ensureMap() {
-    if (this.map) return this.map;
+    if (this.map) {
+      this.ensureDataPane();
+      return this.map;
+    }
     if (!this.container) throw new Error('Interactive map container was not found');
     if (!window.L) throw new Error('Leaflet did not load');
 
@@ -284,7 +294,7 @@ export class InteractiveWeatherMap {
     this.installZoomIndicator();
 
     this.map.createPane('weatherBasemapPane').style.zIndex = '200';
-    this.map.createPane('weatherDataPane').style.zIndex = '300';
+    this.ensureDataPane();
     this.map.createPane('weatherReferencePane').style.zIndex = '450';
     this.map.getPane('weatherReferencePane').style.pointerEvents = 'none';
 
@@ -304,6 +314,13 @@ export class InteractiveWeatherMap {
     }
 
     return this.map;
+  }
+
+  ensureDataPane() {
+    if (!this.map) return null;
+    const pane = this.map.getPane?.(this.dataPane) || this.map.createPane?.(this.dataPane);
+    if (pane?.style) pane.style.zIndex = String(this.dataPaneZIndex);
+    return pane;
   }
 
   installZoomIndicator() {
@@ -588,7 +605,7 @@ export class InteractiveWeatherMap {
       version: '1.3.0',
       opacity: 0,
       attribution: this.source.attribution || 'NOAA/NWS',
-      pane: 'weatherDataPane',
+      pane: this.dataPane,
     };
 
     if (time) options.time = time;
@@ -694,7 +711,7 @@ export class InteractiveWeatherMap {
             // the outgoing tile container during playback can expose the map
             // pane for a browser paint and produce a visible blink.
             this.weatherLayer = layer;
-            layer.setOpacity(this.overlayOpacity);
+            layer.setOpacity(this.visible ? this.overlayOpacity : 0);
             if (previousLayer && previousLayer !== layer && this.map.hasLayer(previousLayer)) {
               previousLayer.setOpacity(0);
             }
@@ -817,12 +834,15 @@ export class InteractiveWeatherMap {
   }
 
   setVisible(visible) {
+    this.visible = Boolean(visible);
     if (!visible) {
       this.stop();
+      this.weatherLayerPool.forEach(({ layer }) => layer.setOpacity?.(0));
       return;
     }
 
     if (this.map) {
+      this.weatherLayer?.setOpacity?.(this.overlayOpacity);
       window.setTimeout(() => this.map.invalidateSize(false), 0);
     }
   }
@@ -837,7 +857,11 @@ export class InteractiveWeatherMap {
       this.container?.removeEventListener('wheel', this.handleCtrlWheel, true);
     }
     this.map?.off('zoom zoomend resize', this.updateZoomIndicator);
-    if (this.map) this.map.remove();
+    this.weatherLayerPool.forEach(({ layer }) => {
+      layer.setOpacity?.(0);
+      if (this.map?.hasLayer?.(layer)) this.map.removeLayer?.(layer);
+    });
+    if (this.map && this.ownsMap) this.map.remove();
     this.weatherLayerPool.clear();
     this.zoomIndicator = null;
     this.map = null;

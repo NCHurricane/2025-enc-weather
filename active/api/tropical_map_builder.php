@@ -30,7 +30,7 @@ function tropicalMapUsage(): void
     echo <<<TEXT
 Usage:
   php {$script} overview [--basin=atl|epac|cpac|all] [--fixtures]
-  php {$script} storm --storm=ATCF_ID [--fixtures]
+  php {$script} storm --storm=ATCF_ID [--fixtures] [--current-storms-file=PATH]
   php {$script} all [--basin=atl|epac|cpac|all] [--fixtures]
 
 Options:
@@ -38,6 +38,7 @@ Options:
   --fixture-root=PATH        Override test/fixtures/tropical-map/official.
   --overview-output=PATH     Override active/cache/tropical-map.
   --storm-root=PATH          Override active/storms.
+  --current-storms-file=PATH Use a retained CurrentStorms payload without rewriting it.
   --generated-at=ISO         Deterministic package time for tests.
 
 The command is CLI-only. It publishes validated JSON atomically and preserves
@@ -72,6 +73,7 @@ function tropicalMapParseArguments(array $arguments): array
             'fixture-root',
             'overview-output',
             'storm-root',
+            'current-storms-file',
             'generated-at',
         ], true)) {
             throw new TropicalMapException("Unknown option: --{$key}");
@@ -112,10 +114,16 @@ function tropicalMapFixtureProductMap(string $fixtureRoot): array
  *   cleanup:callable
  * }
  */
-function tropicalMapCreateSources(bool $fixtures, string $fixtureRoot, array $requestedBasins): array
+function tropicalMapCreateSources(
+    bool $fixtures,
+    string $fixtureRoot,
+    array $requestedBasins,
+    ?array $currentStormsOverride = null
+): array
 {
     if ($fixtures) {
-        $currentStorms = TropicalMapLib::readJsonFile($fixtureRoot . '/CurrentStorms.json');
+        $currentStorms = $currentStormsOverride
+            ?? TropicalMapLib::readJsonFile($fixtureRoot . '/CurrentStorms.json');
         $outlooks = [];
         $files = ['atl' => 'atl', 'epac' => 'pac', 'cpac' => 'cpac'];
         foreach ($requestedBasins as $basin) {
@@ -144,14 +152,18 @@ function tropicalMapCreateSources(bool $fixtures, string $fixtureRoot, array $re
     }
 
     $temporaryFiles = [];
-    $kmzCache = [];
+    $productCache = [];
     $sourceErrors = [];
-    try {
-        $currentResponse = TropicalMapLib::fetchJson(TROPICAL_MAP_CURRENT_STORMS_URL);
-        $currentStorms = $currentResponse['json'];
-    } catch (Throwable $error) {
-        $currentStorms = [];
-        $sourceErrors['currentStorms'] = $error;
+    if ($currentStormsOverride !== null) {
+        $currentStorms = $currentStormsOverride;
+    } else {
+        try {
+            $currentResponse = TropicalMapLib::fetchJson(TROPICAL_MAP_CURRENT_STORMS_URL);
+            $currentStorms = $currentResponse['json'];
+        } catch (Throwable $error) {
+            $currentStorms = [];
+            $sourceErrors['currentStorms'] = $error;
+        }
     }
     $outlooks = [];
     foreach ($requestedBasins as $basin) {
@@ -168,18 +180,23 @@ function tropicalMapCreateSources(bool $fixtures, string $fixtureRoot, array $re
             $sourceErrors["outlook:{$basin}"] = $error;
         }
     }
-    $provider = static function (array $storm, string $productKey) use (&$kmzCache, &$temporaryFiles): ?string {
+    $provider = static function (array $storm, string $productKey) use (&$productCache, &$temporaryFiles): ?string {
         $product = $storm[$productKey] ?? null;
-        $url = is_array($product) ? trim((string) ($product['kmzFile'] ?? '')) : '';
+        $url = '';
+        if (is_array($product)) {
+            $url = trim((string) ($product['kmzFile'] ?? $product['kmlFile'] ?? ''));
+        }
         if ($url === '') {
             return null;
         }
-        if (!isset($kmzCache[$url])) {
-            $response = TropicalMapLib::fetchKmzToTemp($url);
-            $kmzCache[$url] = $response['path'];
+        if (!isset($productCache[$url])) {
+            $response = str_ends_with(strtolower(parse_url($url, PHP_URL_PATH) ?: ''), '.kml')
+                ? TropicalMapLib::fetchKmlToTemp($url)
+                : TropicalMapLib::fetchKmzToTemp($url);
+            $productCache[$url] = $response['path'];
             $temporaryFiles[] = $response['path'];
         }
-        return $kmzCache[$url];
+        return $productCache[$url];
     };
     $cleanup = static function () use (&$temporaryFiles): void {
         foreach (array_unique($temporaryFiles) as $path) {
@@ -286,7 +303,21 @@ try {
             ? ['atl', 'epac', 'cpac']
             : [TropicalMapLib::validateBasin($basinOption)];
     }
-    $sources = tropicalMapCreateSources($fixtures, $fixtureRoot, $basins);
+    $currentStormsOverride = null;
+    if (isset($options['current-storms-file'])) {
+        if ($fixtures) {
+            throw new TropicalMapException('--current-storms-file cannot be combined with --fixtures');
+        }
+        $currentStormsFile = tropicalMapAbsoluteOrRepositoryPath((string) $options['current-storms-file']);
+        $currentStormsOverride = TropicalMapLib::readJsonFile($currentStormsFile);
+        if (is_array($currentStormsOverride['data']['activeStorms'] ?? null)) {
+            $currentStormsOverride = $currentStormsOverride['data'];
+        }
+        if (!is_array($currentStormsOverride['activeStorms'] ?? null)) {
+            throw new TropicalMapException('--current-storms-file has no activeStorms array');
+        }
+    }
+    $sources = tropicalMapCreateSources($fixtures, $fixtureRoot, $basins, $currentStormsOverride);
 
     if (in_array($parsed['mode'], ['overview', 'all'], true)) {
         foreach ($basins as $basin) {

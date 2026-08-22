@@ -1,23 +1,35 @@
 #!/usr/bin/env php
 <?php
 /**
- * NHC Advisory Writer, Pacific - advisory_writer.php
- * Fetches NHC advisory XML (Pacific only) and caches a compact advisory.json under:
- * /active/storms/EPnnYYYY/advisory.json
+ * NHC Advisory Writer, Pacific
+ * Fetches NHC advisory XML and caches a compact advisory.json under:
+ * /active/storms/{basin}nnYYYY/advisory.json
  *
  * Query (Web Mode):
- * ?storm=ALnnYYYY  or ?storm=ALL
+ * ?storm=EPnnYYYY  or ?storm=ALL
  *
  * Execution (CLI Mode):
- * php advisory_writer.php --storm=EPnnYYYY
- * php advisory_writer.php --storm=ALL
- * php advisory_writer.php (defaults to --storm=ALL)
+ * php advisory_writer_ep.php --storm=EPnnYYYY
+ * php advisory_writer_ep.php --storm=ALL
+ * php advisory_writer_ep.php (defaults to --storm=ALL)
+ *
+ * advisory_writer_cp.php defines the Central Pacific basin settings and
+ * delegates to this shared Pacific implementation.
  */
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../active/logs/advisory_writer_ep_error.log');
+require_once __DIR__ . '/pacific_writer_common.php';
+
+$PACIFIC_BASIN = defined('NCH_PACIFIC_BASIN') ? strtoupper((string) NCH_PACIFIC_BASIN) : 'EP';
+$PACIFIC_LABEL = defined('NCH_PACIFIC_LABEL') ? (string) NCH_PACIFIC_LABEL : 'Eastern Pacific';
+$PACIFIC_REMOTE_STORMS_FIRST = defined('NCH_PACIFIC_REMOTE_STORMS_FIRST') && NCH_PACIFIC_REMOTE_STORMS_FIRST;
+if (!in_array($PACIFIC_BASIN, array('EP', 'CP'), true)) {
+    throw new RuntimeException('Unsupported Pacific basin: ' . $PACIFIC_BASIN);
+}
+$PACIFIC_LOG_SUFFIX = strtolower($PACIFIC_BASIN);
+ini_set('error_log', __DIR__ . '/../../active/logs/advisory_writer_' . $PACIFIC_LOG_SUFFIX . '_error.log');
 
 
 $isCli = (PHP_SAPI === 'cli' || defined('STDIN'));
@@ -54,14 +66,14 @@ $LOWERCASE_ALL = false;
  * @param string $level The log level (e.g., INFO, ERROR, DEBUG).
  */
 function adv_log($msg, $level = 'INFO') {
-    global $isCli;
+    global $isCli, $PACIFIC_LOG_SUFFIX;
     
     $logDir = __DIR__ . '/../../active/logs/';
-    $logFile = $logDir . 'advisory_writer_ep.log';
+    $logFile = $logDir . 'advisory_writer_' . $PACIFIC_LOG_SUFFIX . '.log';
 
     if (!is_dir($logDir)) {
         if (!@mkdir($logDir, 0755, true)) {
-            error_log("advisory_writer_ep.php: CRITICAL - Failed to create log directory: {$logDir}");
+            error_log("advisory_writer_{$PACIFIC_LOG_SUFFIX}.php: CRITICAL - Failed to create log directory: {$logDir}");
             return;
         }
     }
@@ -203,11 +215,12 @@ function array_filter_non_empty($s) {
 }
 
 function processSingleStorm($stormId) {
+    global $PACIFIC_BASIN;
     $stormId = strtoupper($stormId);
     adv_log("Processing single storm: {$stormId}", 'INFO');
     
     $number = substr($stormId, 2, 2);
-    $folder = sprintf('EP%02d', (int)$number);
+    $folder = sprintf('%s%02d', $PACIFIC_BASIN, (int)$number);
     $fname  = 'atcf-' . strtolower($stormId) . '.xml';
     $srcUrl = "https://www.nhc.noaa.gov/storm_graphics/{$folder}/{$fname}";
 
@@ -222,13 +235,16 @@ function processSingleStorm($stormId) {
         throw new Exception('Unable to create cache directory: ' . $cacheDir);
     }
 
-    $ctx = stream_context_create(array('http' => array('timeout' => 8, 'user_agent' => 'NCHurricane/1.0')));
-    $raw = @file_get_contents($srcUrl, false, $ctx);
+    $raw = pacific_writer_fetch_url($srcUrl, array(
+        'User-Agent: NCHurricane Pacific advisory writer/1.0',
+        'Accept: application/xml, text/xml;q=0.9,*/*;q=0.8',
+    ), 8);
     
     if ($raw === false || strlen($raw) < 64) {
         adv_log("Primary source failed for {$stormId}, trying FTP fallback.", 'WARN');
         $ftpUrl = "ftp://ftp.nhc.noaa.gov/atcf/adv/" . strtolower(substr($stormId, 0, 2)) . substr($stormId, 2) . "_info.xml";
-        $raw = @file_get_contents($ftpUrl, false, $ctx);
+        $ftpCtx = stream_context_create(array('ftp' => array('timeout' => 8)));
+        $raw = @file_get_contents($ftpUrl, false, $ftpCtx);
         
 
         if ($raw === false || strlen($raw) < 64) {
@@ -367,40 +383,55 @@ function processSingleStorm($stormId) {
     return array('storm' => $stormId, 'cached' => basename($dest));
 }
 
-function processAllEPStorms() {
-    global $isCli;
+function loadPacificCurrentStorms() {
+    global $PACIFIC_REMOTE_STORMS_FIRST;
     $currentStormsPath = dirname(__DIR__) . '/cache/nhc_current_storms.json';    
-    adv_log("Looking for active storms file: {$currentStormsPath}", 'DEBUG');
-    
-    if (!file_exists($currentStormsPath)) {
-        bail(500, "Current storms cache not found at {$currentStormsPath}");
+    $remote = 'https://www.nhc.noaa.gov/CurrentStorms.json';
+    $sources = $PACIFIC_REMOTE_STORMS_FIRST
+        ? array($remote, $currentStormsPath)
+        : array($currentStormsPath, $remote);
+
+    foreach ($sources as $source) {
+        adv_log("Looking for active storms source: {$source}", 'DEBUG');
+        $rawStorms = preg_match('#^https?://#i', $source)
+            ? pacific_writer_fetch_url($source, array(
+                'User-Agent: NCHurricane Pacific advisory writer/1.0',
+                'Accept: application/json',
+            ), 10)
+            : @file_get_contents($source);
+        if ($rawStorms === false || trim($rawStorms) === '') continue;
+        $decoded = json_decode($rawStorms, true);
+        $stormsData = is_array($decoded) ? pacific_writer_normalize_storms($decoded) : null;
+        if ($stormsData !== null) {
+            return $stormsData;
+        }
     }
-    
-    $rawStorms = file_get_contents($currentStormsPath);
-    $stormsData = json_decode($rawStorms, true);
-    
-    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
-        bail(500, 'Invalid storms data format in nhc_current_storms.json');
-    }
+
+    bail(500, 'Unable to load a valid current-storms source.');
+}
+
+function processAllPacificStorms() {
+    global $isCli, $PACIFIC_BASIN, $PACIFIC_LABEL;
+    $stormsData = loadPacificCurrentStorms();
     
     $stormIds = array();
     foreach($stormsData['data']['activeStorms'] as $storm) {
         $stormIds[] = $storm['id'];
     }
 
-    $alStorms = array_filter($stormIds, 'is_ep_storm');
+    $pacificStorms = array_filter($stormIds, 'is_pacific_storm');
     
-    if (empty($alStorms)) {
-        adv_log("No active EP storms found to process.", 'INFO');
+    if (empty($pacificStorms)) {
+        adv_log("No active {$PACIFIC_LABEL} storms found to process.", 'INFO');
         if (!$isCli) {
-            ok(array('ok' => true, 'message' => 'No active EP storms', 'processed' => array()));
+            ok(array('ok' => true, 'message' => "No active {$PACIFIC_LABEL} storms", 'processed' => array()));
         }
         return;
     }
     
-    adv_log("Found active storms: " . implode(', ', $alStorms), 'INFO');
+    adv_log("Found active storms: " . implode(', ', $pacificStorms), 'INFO');
     $results = array();
-    foreach ($alStorms as $stormId) {
+    foreach ($pacificStorms as $stormId) {
         try {
             $result = processSingleStorm($stormId);
             $results[] = array('storm' => $stormId, 'status' => 'success', 'result' => $result);
@@ -423,23 +454,25 @@ function processAllEPStorms() {
     }
 }
 
-function is_ep_storm($id) {
-    return preg_match('/^EP\d{2}\d{4}$/', strtoupper(trim($id)));
+function is_pacific_storm($id) {
+    global $PACIFIC_BASIN;
+    return preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', strtoupper(trim($id)));
 }
 
 try {
+    global $PACIFIC_BASIN;
     adv_log("Script execution started for target: {$storm}", 'INFO');
     
     if ($storm === 'ALL') {
-        processAllEPStorms();
+        processAllPacificStorms();
     } elseif ($storm !== '') {
-        if (!preg_match('/^EP\d{2}\d{4}$/', $storm)) {
-            bail(400, 'Invalid storm id. Expected EPnnYYYY.');
+        if (!preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', $storm)) {
+            bail(400, "Invalid storm id. Expected {$PACIFIC_BASIN}nnYYYY.");
         }
         $result = processSingleStorm($storm);
         ok(array('ok' => true, 'storm' => $storm, 'cached' => $result['cached']));
     } else {
-        bail(400, 'No storm specified. Use ?storm=ALL or ?storm=EPnnYYYY');
+        bail(400, "No storm specified. Use ?storm=ALL or ?storm={$PACIFIC_BASIN}nnYYYY");
     }
     adv_log("Script execution finished.", 'INFO');
 

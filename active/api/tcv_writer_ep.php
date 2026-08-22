@@ -2,20 +2,34 @@
 <?php
 declare(strict_types=1);
 error_reporting(E_ALL);
+require_once __DIR__ . '/pacific_writer_common.php';
+require_once __DIR__ . '/tcv_product_state.php';
 
 /**
- * NHC TCV Writer (Eastern Pacific)
+ * NHC TCV Writer (Pacific)
  * Fixes:
  *  1) Correct MIATCVEP source URLs (no .YYYY; use FTP raw text or .shtml as fallback).
  *  2) Prevent unhandled exceptions from zone geometry fetches (cache_zone_geo wrapped).
  *  3) Keep --storm=ALL loop resilient (per-storm try/catch so one failure doesn't abort).
  *  4) Ensure HTTP headers are passed as a string for PHP 8.4 stream context.
+ *
+ * tcv_writer_cp.php defines Central Pacific settings and delegates to this
+ * shared implementation. Central Pacific uses WFO Honolulu's local TCVHFO
+ * product because CPHC national basin-number TCV products were discontinued.
  */
 
 
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
 }
+
+$PACIFIC_BASIN = defined('NCH_PACIFIC_BASIN') ? strtoupper((string) NCH_PACIFIC_BASIN) : 'EP';
+$PACIFIC_LABEL = defined('NCH_PACIFIC_LABEL') ? (string) NCH_PACIFIC_LABEL : 'Eastern Pacific';
+$PACIFIC_REMOTE_STORMS_FIRST = defined('NCH_PACIFIC_REMOTE_STORMS_FIRST') && NCH_PACIFIC_REMOTE_STORMS_FIRST;
+if (!in_array($PACIFIC_BASIN, ['EP', 'CP'], true)) {
+    throw new RuntimeException('Unsupported Pacific basin: ' . $PACIFIC_BASIN);
+}
+$PACIFIC_LOG_SUFFIX = strtolower($PACIFIC_BASIN);
 
 function web_json($data, int $status = 200): void {
     if (PHP_SAPI === 'cli') return;
@@ -38,46 +52,47 @@ $CACHE_DIR = $ACTIVE . '/cache/zones';
 @mkdir($CACHE_DIR, 0775, true);
 
 function out(string $msg): void {
+    global $PACIFIC_LOG_SUFFIX;
     $ROOT = realpath(dirname(__DIR__, 2));
     $logDir = $ROOT . '/active/logs';
     if (!is_dir($logDir)) {@mkdir($logDir, 0775, true);}
-    $logFile = $logDir . '/tcv_writer_ep.log';
+    $logFile = $logDir . '/tcv_writer_' . $PACIFIC_LOG_SUFFIX . '.log';
     $ts = date('Y-m-d H:i:s');
     @file_put_contents($logFile, "[$ts] $msg\n", FILE_APPEND);
 }
 
-$stormListCandidates = [
-    $ACTIVE . '/cache/nhc_current_storms.json', 
-];
+$localStormsPath = $ACTIVE . '/cache/nhc_current_storms.json';
+$remoteStormsUrl = 'https://www.nhc.noaa.gov/CurrentStorms.json';
+$stormListCandidates = $PACIFIC_REMOTE_STORMS_FIRST
+    ? [$remoteStormsUrl, $localStormsPath]
+    : [$localStormsPath, $remoteStormsUrl];
 
 $currentStormsPath = null;
-foreach ($stormListCandidates as $p) {
-    if (is_readable($p)) { $currentStormsPath = $p; break; }
-}
 $currentStormsJson = '';
-if ($currentStormsPath !== null) {
-    $currentStormsJson = file_get_contents($currentStormsPath);
-} else {
-    $remote = 'https://www.nhc.noaa.gov/CurrentStorms.json';
-    $ctx = stream_context_create([
-        'http' => [
-            'method'  => 'GET',
-            'timeout' => 10,
-            'header'  => "User-Agent: NCHurricane.com TCV fetcher
-Accept: application/json
-",
-        ],
-        'ssl' => [ 'verify_peer' => true, 'verify_peer_name' => true ],
-    ]);
-    $currentStormsJson = @file_get_contents($remote, false, $ctx) ?: '';
-    if ($currentStormsJson !== '') { $currentStormsPath = 'REMOTE:' . $remote; }
+foreach ($stormListCandidates as $p) {
+    if (preg_match('#^https?://#i', $p)) {
+        $candidateJson = pacific_writer_fetch_url($p, [
+            'User-Agent: NCHurricane.com TCV fetcher',
+            'Accept: application/json',
+        ], 10) ?? '';
+    } else {
+        $candidateJson = is_readable($p) ? (file_get_contents($p) ?: '') : '';
+    }
+    $decodedCandidate = json_decode($candidateJson, true);
+    $candidateData = is_array($decodedCandidate) ? pacific_writer_normalize_storms($decodedCandidate) : null;
+    if ($candidateData !== null) {
+        $currentStormsJson = $candidateJson;
+        $currentStormsPath = $p;
+        $stormsData = $candidateData;
+        break;
+    }
 }
 if ($currentStormsJson === '') {
-    $msg = 'Missing storms list. Tried local ' . implode(' | ', $stormListCandidates) . ' and remote https://www.nhc.noaa.gov/CurrentStorms.json';
+    $msg = 'Missing or invalid storms list. Tried ' . implode(' | ', $stormListCandidates);
     if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: ' . $msg . "\n"); } else { web_json(['error' => $msg], 500); }
     exit(1);
 }
-$stormsData = json_decode($currentStormsJson, true);
+$stormsData = $stormsData ?? null;
 if (!is_array($stormsData)) {
     $msg = 'Invalid JSON from ' . $currentStormsPath;
     if (PHP_SAPI === 'cli') { fwrite(STDERR, 'FATAL: ' . $msg . "\n"); } else { web_json(['error' => $msg], 500); }
@@ -92,9 +107,10 @@ $stormArg = null; $force = false; $log = false;
 $input = trim($argvStr . ' ' . $qs);
 $parts = preg_split('/[&\s]+/', $input, -1, PREG_SPLIT_NO_EMPTY);
 foreach ($parts as $p) {
-    if (stripos($p, 'storm=') === 0) {
-        $stormArg = strtoupper(trim(substr($p, strlen('storm='))));
-    } elseif (strcasecmp($p, '--storm=ALL') === 0 || strcasecmp($p, 'storm=ALL') === 0) {
+    $normalized = preg_replace('/^--/', '', $p);
+    if (stripos($normalized, 'storm=') === 0) {
+        $stormArg = strtoupper(trim(substr($normalized, strlen('storm='))));
+    } elseif (strcasecmp($normalized, 'storm=ALL') === 0) {
         $stormArg = 'ALL';
     } elseif (strcasecmp($p, '--force') === 0) {
         $force = true;
@@ -112,40 +128,13 @@ function vlog(bool $on, string $msg): void {
 function http_get(string $url, int $tries = 3, int $timeout = 12): string {
     $last = '';
     $ua = "NCHurricane.com TCV fetcher";
-    $hdr = "User-Agent: $ua\r\nAccept: */*\r\n";
     for ($i = 0; $i < $tries; $i++) {
-        $ctx = stream_context_create([
-            'http' => [
-                'method'        => 'GET',
-                'timeout'       => $timeout,
-                'header'        => $hdr,
-                'ignore_errors' => true,
-            ],
-            'ssl' => [
-                'verify_peer'      => true,
-                'verify_peer_name' => true,
-            ],
-        ]);
-        $res = @file_get_contents($url, false, $ctx);
-        if ($res !== false && $res !== '') return $res;
+        $res = pacific_writer_fetch_url($url, ["User-Agent: $ua", 'Accept: */*'], $timeout);
+        if ($res !== null && $res !== '') return $res;
         $last = error_get_last()['message'] ?? 'unknown';
         usleep(250_000);
     }
     throw new RuntimeException("Failed GET $url: $last");
-}
-
-function parse_tcv_text(string $txt): array {
-    $lines = preg_split("/\r?\n/", $txt);
-    $adv = null; $issued = null; $zones = [];
-    foreach ($lines as $ln) {
-        if ($adv === null && preg_match('/Advisory\s+(Number\s+)?(\d+)/i', $ln, $m)) { $adv = (int)$m[2]; }
-        if ($issued === null && preg_match('/\b(\d{1,2}:\d{2}\s*[AP]M\s*(?:PDT|PST|MDT|MST|CDT|CST|EDT|EST|UTC))\b/i', $ln, $m)) { $issued = trim($m[1]); }
-        if (preg_match_all('/\b([A-Z]{3}\d{3})\b/', $ln, $mm)) {
-            foreach ($mm[1] as $z) { $zones[] = strtoupper($z); }
-        }
-    }
-    $zones = array_values(array_unique($zones));
-    return ['advisory'=>$adv, 'issued'=>$issued, 'zones'=>$zones, 'raw'=>$txt];
 }
 
 function cache_zone_geo(string $zoneId) {
@@ -168,7 +157,28 @@ function write_storm_tcv(string $stormId, array $payload): void {
     @file_put_contents($outFile, json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 }
 
+function tcv_product_candidates(): array {
+    global $PACIFIC_BASIN;
+    $candidates = [];
+    if ($PACIFIC_BASIN === 'CP') {
+        for ($version = 1; $version <= 10; $version++) {
+            $candidates[] = 'https://forecast.weather.gov/product.php?site=HFO&issuedby=HFO&product=TCV'
+                . '&format=TXT&version=' . $version . '&glossary=0';
+        }
+        return $candidates;
+    }
+
+    for ($n = 1; $n <= 5; $n++) {
+        $candidates[] = sprintf('https://www.nhc.noaa.gov/ftp/pub/forecasts/public/MIATCVEP%d', $n);
+    }
+    for ($n = 1; $n <= 5; $n++) {
+        $candidates[] = sprintf('https://www.nhc.noaa.gov/text/MIATCVEP%d.shtml', $n);
+    }
+    return $candidates;
+}
+
 function process_storm(string $stormId, array $stormsData, bool $force, bool $log): bool {
+    global $PACIFIC_BASIN;
     vlog($log, "Processing TCV for $stormId...\n");
 
     $stormRec = null;
@@ -177,18 +187,18 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
     }
     if (!$stormRec) {
         vlog($log, "  WARN: Storm not in active list: $stormId\n");
-        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[],'note'=>'not active']);
+        write_storm_tcv($stormId, [
+            'stormId'=>$stormId,
+            'state'=>'not-issued',
+            'reason'=>'storm-not-active',
+            'tcv'=>null,
+            'zones'=>[],
+        ]);
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
 
-    $candidates = [];
-    for ($n = 1; $n <= 5; $n++) {
-        $candidates[] = sprintf('https://www.nhc.noaa.gov/ftp/pub/forecasts/public/MIATCVEP%d', $n);
-    }
-    for ($n = 1; $n <= 5; $n++) {
-        $candidates[] = sprintf('https://www.nhc.noaa.gov/text/MIATCVEP%d.shtml', $n);
-    }
+    $candidates = tcv_product_candidates();
 
     $chosen = null; $chosenRaw = null;
     foreach ($candidates as $url) {
@@ -211,13 +221,39 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
     }
 
     if ($chosenRaw === null) {
-        vlog($log, "  INFO: No TCV text matched for $stormId; writing empty file.\n");
-        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[]]);
+        vlog($log, "  INFO: No current TCV issued for $stormId; writing explicit not-issued state.\n");
+        write_storm_tcv($stormId, [
+            'stormId'=>$stormId,
+            'state'=>'not-issued',
+            'reason'=>'no-matching-current-product',
+            'tcv'=>null,
+            'zones'=>[],
+        ]);
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
 
-    $parsed = parse_tcv_text($chosenRaw);
+    $parsed = nch_parse_tcv_text($chosenRaw);
+
+    $currentAdvisory = (string) ($stormRec['publicAdvisory']['advNum'] ?? '');
+    $classification = nch_classify_tcv($parsed, $currentAdvisory);
+    if ($classification['state'] !== 'available') {
+        $state = $classification['state'];
+        $reason = $classification['reason'];
+        vlog($log, "  INFO: TCV state for {$stormId} is {$state} ({$reason}); writing no active zones.\n");
+        write_storm_tcv($stormId, [
+            'stormId' => $stormId,
+            'state' => $state,
+            'reason' => $reason,
+            'source' => $chosen,
+            'sourceAdvisory' => $classification['sourceAdvisory'],
+            'sourceIssued' => $parsed['issued'],
+            'tcv' => null,
+            'zones' => [],
+        ]);
+        vlog($log, "  SUCCESS: $stormId (empty)\n");
+        return true;
+    }
 
     foreach ($parsed['zones'] as $z) {
         try { cache_zone_geo($z); }
@@ -226,8 +262,11 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
 
     $payload = [
         'stormId' => $stormId,
+        'state'   => 'available',
+        'reason'  => null,
         'source'  => $chosen,
         'tcv'     => [ 'advisory'=>$parsed['advisory'], 'issued'=>$parsed['issued'], 'zones'=>$parsed['zones'] ],
+        'zones'   => $parsed['zones'],
     ];
     write_storm_tcv($stormId, $payload);
     vlog($log, "  SUCCESS: $stormId\n");
@@ -236,28 +275,35 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
 
 try {
     if ($stormArg === 'ALL') {
-        $alStorms = [];
+        $pacificStorms = [];
         foreach (($stormsData['data']['activeStorms'] ?? []) as $storm) {
             $sid = strtoupper(trim($storm['id'] ?? ''));
-            if (preg_match('/^EP\d{2}\d{4}$/', $sid)) { $alStorms[] = $sid; }
+            if (preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', $sid)) { $pacificStorms[] = $sid; }
         }
-        if (!$alStorms) { vlog($log, "INFO: No active EP storms found\n"); if (PHP_SAPI !== 'cli') web_json(['info'=>'No active EP storms found']); exit(0); }
+        if (!$pacificStorms) { vlog($log, "INFO: No active {$PACIFIC_LABEL} storms found\n"); if (PHP_SAPI !== 'cli') web_json(['info'=>"No active {$PACIFIC_LABEL} storms found"]); exit(0); }
 
-        vlog($log, "Executing TCV Writer (EP)...\n");
-        foreach ($alStorms as $sid) {
+        vlog($log, "Executing TCV Writer ({$PACIFIC_BASIN})...\n");
+        foreach ($pacificStorms as $sid) {
             try {
                 $ok = process_storm($sid, $stormsData, $force, $log);
                 if (!$ok) vlog($log, "  ERROR: processing failed for $sid\n");
             } catch (Throwable $e) {
                 vlog($log, "  ERROR: unhandled for $sid: " . $e->getMessage() . "\n");
-                write_storm_tcv($sid, ['stormId'=>$sid,'tcv'=>null,'zones'=>[],'error'=>$e->getMessage()]);
+                write_storm_tcv($sid, [
+                    'stormId'=>$sid,
+                    'state'=>'unavailable',
+                    'reason'=>'writer-error',
+                    'tcv'=>null,
+                    'zones'=>[],
+                    'error'=>$e->getMessage(),
+                ]);
             }
         }
-        if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>$alStorms]);
+        if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>$pacificStorms]);
         exit(0);
     }
 
-    if (!preg_match('/^EP\d{2}\d{4}$/', $stormArg)) {
+    if (!preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', $stormArg)) {
         $msg = "ERROR: Invalid storm id: $stormArg\n"; vlog($log, $msg); if (PHP_SAPI !== 'cli') web_json(['error'=>$msg], 400); exit(1);
     }
     $ok = process_storm($stormArg, $stormsData, $force, $log);

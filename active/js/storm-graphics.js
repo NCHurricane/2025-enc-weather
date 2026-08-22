@@ -14,10 +14,25 @@
 //  - Excessive Rainfall Outlook (WPC)
 // =============================
 
+export function graphicFileName(localUrl) {
+  try {
+    return decodeURIComponent(new URL(localUrl, 'https://nchurricane.invalid/').pathname.split('/').pop() || '');
+  } catch {
+    return '';
+  }
+}
+
+export function isGraphicAvailable(manifest, localUrl) {
+  if (!manifest?.products) return true;
+  const filename = graphicFileName(localUrl);
+  return filename !== '' && manifest.products[filename]?.state === 'available';
+}
+
 class StormGraphics {
   constructor() {
     this.stormId = null;
     this.basin = null;
+    this.manifest = null;
     this.sections = [
       {
         id: 'track-messages',
@@ -27,6 +42,25 @@ class StormGraphics {
         hasTabs: true,
         defaultLanguage: 'en',
         defaultProduct: '5day'
+      },
+      {
+        id: 'key-messages',
+        containerId: 'key-messages-section',
+        graphics: [],
+        languages: [],
+        hasTabs: true,
+        hideProductTabs: true,
+        defaultLanguage: 'en',
+        defaultProduct: 'key-messages'
+      },
+      {
+        id: 'experimental',
+        containerId: 'experimental-section',
+        graphics: [],
+        languages: [],
+        hasTabs: true,
+        defaultLanguage: 'en',
+        defaultProduct: '5day-experimental'
       },
       {
         id: 'wind-graphics',
@@ -61,7 +95,11 @@ class StormGraphics {
     ];
   }
 
-  init(stormData) {
+  section(id) {
+    return this.sections.find(section => section.id === id);
+  }
+
+  async init(stormData) {
     if (!stormData || !stormData.id) {
       console.error('Invalid storm data');
       return;
@@ -69,14 +107,64 @@ class StormGraphics {
 
     this.stormId = stormData.id;
     this.basin = stormData.id.substring(0, 2);
+    this.manifest = await this.loadManifest();
+    this.isDesktop = window.innerWidth >= 768;
     this.buildGraphicsUrls();
+    this.applyAvailability();
     this.render();
+  }
+
+  async loadManifest() {
+    try {
+      const response = await fetch(`./storms/${encodeURIComponent(this.stormId)}/graphics-manifest.json?${Date.now()}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) return null;
+      const manifest = await response.json();
+      return manifest?.kind === 'storm-graphics'
+        && String(manifest?.stormId || '').toUpperCase() === this.stormId
+        && manifest?.products
+        ? manifest
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  applyAvailability() {
+    if (!this.manifest) return;
+    this.sections.forEach(section => {
+      if (section.id === 'wind-analysis') return;
+      if (Array.isArray(section.languages) && section.languages.length) {
+        section.languages = section.languages
+          .map(language => ({
+            ...language,
+            graphics: language.graphics.filter(graphic => isGraphicAvailable(this.manifest, graphic.localUrl))
+          }))
+          .filter(language => language.graphics.length);
+      }
+      if (Array.isArray(section.graphics) && section.graphics.length) {
+        section.graphics = section.graphics.filter(graphic => {
+          if (section.timeframes) {
+            return section.timeframes.some(time => isGraphicAvailable(
+              this.manifest,
+              `${graphic.localBaseUrl}${time}${graphic.suffix}`
+            ));
+          }
+          return isGraphicAvailable(this.manifest, graphic.localUrl);
+        });
+      }
+    });
   }
 
   buildGraphicsUrls() {
     const remoteBaseUrl = 'https://www.nhc.noaa.gov/storm_graphics';
     const localBaseUrl = `./storms/${this.stormId}`;
-    const basinFolder = this.basin === 'AL' || this.basin === 'AT' ? 'AT' : 'EP';
+    const basinFolder = { AL: 'AT', AT: 'AT', EP: 'EP', CP: 'CP' }[this.basin];
+    if (!basinFolder) {
+      console.warn(`Unsupported graphics basin: ${this.basin}`);
+      return;
+    }
     const stormNum = this.stormId.substring(2, 4);
     const graphicsFolder = `${basinFolder}${stormNum}`;
 
@@ -91,7 +179,7 @@ class StormGraphics {
     });
 
     // Track and Messages
-    this.sections[0].languages = [
+    const trackLanguages = [
       {
         id: 'en',
         label: 'English',
@@ -126,7 +214,18 @@ class StormGraphics {
       }
     ];
 
-    this.sections[1].graphics = [
+    const languagesFor = (products) => trackLanguages
+      .map(language => ({
+        ...language,
+        graphics: language.graphics.filter(graphic => products.includes(graphic.product))
+      }))
+      .filter(language => language.graphics.length);
+
+    this.section('track-messages').languages = languagesFor(['3day', '5day']);
+    this.section('key-messages').languages = languagesFor(['key-messages']);
+    this.section('experimental').languages = languagesFor(['3day-experimental', '5day-experimental']);
+
+    this.section('wind-graphics').graphics = [
       {
         name: 'Wind Field',
         localUrl: `${localBaseUrl}/current_wind.png`,
@@ -157,12 +256,12 @@ class StormGraphics {
       }
     ];
 
-    this.sections[2].graphics = [
+    this.section('wind-probability').graphics = [
       {
         name: '34 kt',
         localBaseUrl: `${localBaseUrl}/wind_probs_34_F`,
         remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_34_F`,
-        suffix: `_sm2.png`,
+        suffix: `.png`,
         id: 'graphic-wind-prob-ts',
         className: 'storm-graphic-img'
       },
@@ -170,7 +269,7 @@ class StormGraphics {
         name: '50 kt',
         localBaseUrl: `${localBaseUrl}/wind_probs_50_F`,
         remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_50_F`,
-        suffix: `_sm2.png`,
+        suffix: `.png`,
         id: 'graphic-wind-prob-gale',
         className: 'storm-graphic-img'
       },
@@ -178,7 +277,7 @@ class StormGraphics {
         name: '64 kt',
         localBaseUrl: `${localBaseUrl}/wind_probs_64_F`,
         remoteBaseUrl: `${remoteBaseUrl}/${graphicsFolder}/${this.stormId}_wind_probs_64_F`,
-        suffix: `_sm2.png`,
+        suffix: `.png`,
         id: 'graphic-wind-prob-hurricane',
         className: 'storm-graphic-img'
       }
@@ -188,7 +287,7 @@ class StormGraphics {
     const year = fullYear.substring(2, 4);
     const rainFileBase = `${this.basin}${stormNum}${year}`;
 
-    this.sections[3].graphics = [
+    this.section('surge-rain').graphics = [
       {
         name: 'Peak Surge',
         localUrl: `${localBaseUrl}/peak_surge.png`,
@@ -227,7 +326,7 @@ class StormGraphics {
     const mtcswaStormNum = mtcswaStormId.substring(2, 4); // nn
     const mtcswaYear = mtcswaStormId.substring(4, 8); // YYYY
     const mtcswaOspoUrl = `https://www.ospo.noaa.gov/products/ocean/tropical/mtcswa/index.html?storm=${mtcswaStormId}`;
-    this.sections[4].graphics = [
+    this.section('wind-analysis').graphics = [
       {
         name: 'Wind Analysis',
         localUrl: `${localBaseUrl}/wind_analysis.png`,
@@ -258,6 +357,17 @@ class StormGraphics {
       const container = document.getElementById(section.containerId);
       if (!container) {
         console.warn(`Container ${section.containerId} not found`);
+        return;
+      }
+
+      const hasContent = Array.isArray(section.languages) && section.languages.length
+        ? true
+        : Array.isArray(section.graphics) && section.graphics.length > 0;
+      if (!hasContent) {
+        const message = section.id === 'surge-rain'
+          ? 'No surge or rainfall graphics are currently issued for this storm.'
+          : 'No graphics are currently issued for this section.';
+        container.innerHTML = `<p class="graphic-empty-state" role="status">${message}</p>`;
         return;
       }
 
@@ -388,26 +498,29 @@ class StormGraphics {
           aria-labelledby="${section.id}-language-tab-${language.id}"
           aria-hidden="${!isActiveLanguage}"
           ${isActiveLanguage ? '' : 'hidden'}>
-          <div class="graphics-tabs track-product-tabs" role="tablist" aria-label="${language.label} products">
       `;
 
-      language.graphics.forEach(graphic => {
-        const isActiveProduct = graphic.product === defaultProduct;
-        const tabId = `${section.id}-${language.id}-${graphic.product}`;
-        html += `
-          <button
-            type="button"
-            class="graphics-tab track-product-tab ${isActiveProduct ? 'active' : ''}"
-            id="${tabId}-tab"
-            data-track-product="${tabId}"
-            role="tab"
-            aria-selected="${isActiveProduct}"
-            aria-controls="${tabId}">
-            ${graphic.name}
-          </button>
-        `;
-      });
-      html += '</div><div class="graphics-content-container">';
+      if (!section.hideProductTabs) {
+        html += `<div class="graphics-tabs track-product-tabs" role="tablist" aria-label="${language.label} products">`;
+        language.graphics.forEach(graphic => {
+          const isActiveProduct = graphic.product === defaultProduct;
+          const tabId = `${section.id}-${language.id}-${graphic.product}`;
+          html += `
+            <button
+              type="button"
+              class="graphics-tab track-product-tab ${isActiveProduct ? 'active' : ''}"
+              id="${tabId}-tab"
+              data-track-product="${tabId}"
+              role="tab"
+              aria-selected="${isActiveProduct}"
+              aria-controls="${tabId}">
+              ${graphic.name}
+            </button>
+          `;
+        });
+        html += '</div>';
+      }
+      html += '<div class="graphics-content-container">';
 
       language.graphics.forEach(graphic => {
         const isActiveProduct = graphic.product === defaultProduct;
@@ -417,7 +530,7 @@ class StormGraphics {
             class="graphics-content-panel ${isActiveProduct ? 'active' : ''}"
             id="${tabId}"
             role="tabpanel"
-            aria-labelledby="${tabId}-tab"
+            aria-labelledby="${section.hideProductTabs ? `${section.id}-language-tab-${language.id}` : `${tabId}-tab`}"
             aria-hidden="${!isActiveProduct}"
             ${isActiveProduct ? '' : 'hidden'}>
             <div class="single-graphic">
@@ -528,6 +641,7 @@ class StormGraphics {
       if (currentIsDesktop !== this.isDesktop) {
         this.isDesktop = currentIsDesktop;
         this.buildGraphicsUrls();
+        this.applyAvailability();
         this.render();
       }
     });
@@ -656,5 +770,5 @@ class StormGraphics {
 // Initialize when storm data is available
 export function initStormGraphics(stormData) {
   const graphics = new StormGraphics();
-  graphics.init(stormData);
+  return graphics.init(stormData);
 }

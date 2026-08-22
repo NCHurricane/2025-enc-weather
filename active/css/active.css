@@ -227,6 +227,7 @@
 
 .overview-v2 .message-type-text {
     font-size: clamp(1rem, 2vw, 1.5rem);
+    text-transform: uppercase;
 }
 
 .overview-v2 [data-key='advisory-number'] {
@@ -267,12 +268,23 @@
     color: red;
 }
 
+.overview-v2 .ov-info-line[data-key='issued'] .ov-label,
+.overview-v2 .ov-info-line[data-key='location'] .ov-label,
+.overview-v2 .ov-info-line[data-key='max-wind'] .ov-label,
+.overview-v2 .ov-info-line[data-key='min-pressure'] .ov-label,
+.overview-v2 .ov-info-line[data-key='direction'] .ov-label,
+.overview-v2 .ov-info-line[data-key='speed'] .ov-label
+{
+    font-size: clamp(0.9rem, 2vw, 0.8rem);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR DATE, "ISSUED"                               */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='issued'] .ov-label,
 .overview-v2 .ov-info-line[data-key='issued'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -293,9 +305,8 @@
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR "LOCATION"                               */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='location'] .ov-label,
 .overview-v2 .ov-info-line[data-key='location'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -316,9 +327,8 @@
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR "MAX WIND"                                   */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='max-wind'] .ov-label,
 .overview-v2 .ov-info-line[data-key='max-wind'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -339,9 +349,8 @@
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR "MIN PRESSURE"                                   */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='min-pressure'] .ov-label,
 .overview-v2 .ov-info-line[data-key='min-pressure'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -362,9 +371,8 @@
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR "DIRECTION"                                   */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='direction'] .ov-label,
 .overview-v2 .ov-info-line[data-key='direction'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -385,9 +393,8 @@
 /*-----------------------------------------------------------------*/
 /* SPECIAL STYLES FOR "SPEED"                                   */
 /*-----------------------------------------------------------------*/
-.overview-v2 .ov-info-line[data-key='speed'] .ov-label,
 .overview-v2 .ov-info-line[data-key='speed'] .ov-value {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -409,7 +416,7 @@
 /* SPECIAL STYLES FOR "CENTER LOCATION"                            */
 /*-----------------------------------------------------------------*/
 .ov-center-section {
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-size: clamp(1.1rem, 2vw, 0.9rem);
     font-weight: bold;
     text-transform: uppercase;
     color: var(--color-text-light);
@@ -1003,7 +1010,6 @@
     .text-content {
         font-size: 0.8em;
         padding: 10px;
-        max-height: 300px;
     }
 
     /* Radii Controls */
@@ -1069,5 +1075,1341 @@
     .radii-legend {
         font-size: 0.8rem;
         gap: 10px;
+    }
+}
+
+/*=================================================================*/
+/* PHASE 5 DARK WEATHER-CENTER SHELL                               */
+/*=================================================================*/
+
+body {
+    color: #edf6fb;
+}
+
+.container {
+    width: min(var(--site-main-width), calc(100% - 24px));
+    max-width: 1600px;
+    padding-bottom: clamp(32px, 5vw, 72px);
+}
+
+.main-title-active {
+    margin: clamp(22px, 4vw, 48px) 0 8px;
+    text-align: center;
+}
+
+.active-top-layout,
+.ww-layout-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 24px);
+    align-items: stretch;
+}
+
+.storm-header-container,
+.active-storm-map-container,
+.active-satellite-container,
+.radii-container,
+.wind-analysis-container,
+.hazards-container,
+.surge-container,
+.graphics-container,
+.wind-graphics-container,
+.wind-probability-container,
+.surge-rain-container,
+.text-products-container {
+    min-width: 0;
+    margin: 0;
+    padding: clamp(10px, 1.5vw, 18px) 0;
+}
+
+.section-title-active {
+    margin: 0;
+    color: #f5f9fc;
+    font-size: clamp(1rem, 1.8vw, 1.45rem);
+    cursor: default;
+    letter-spacing: 0.025em;
+}
+
+.section-title-active .fontawesome-icon {
+    margin-right: 0.5rem;
+    color: #fff200;
+}
+
+.glass {
+    position: relative;
+    border: 1px solid rgba(171, 198, 218, 0.42);
+    border-radius: 12px;
+    background: #071b2e;
+    box-shadow: 0 8px 24px rgba(2, 8, 14, 0.3);
+    backdrop-filter: none;
+}
+
+.glass::after {
+    content: none;
+}
+
+.storm-header-section,
+.active-storm-map-section,
+.active-satellite-section,
+.storm-hazards-section,
+.storm-surge-section,
+.storm-text-section,
+.radii-section,
+.wind-analysis-section,
+.track-messages-section,
+.wind-graphics-section,
+.wind-probability-section,
+.surge-rain-section {
+    box-sizing: border-box;
+    margin-top: 8px;
+    padding: clamp(10px, 1.5vw, 18px);
+}
+
+.storm-header-section,
+.active-storm-map-section {
+    min-height: 590px;
+}
+
+.active-storm-map-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.active-storm-map-section .interactive-weather-map-shell {
+    min-height: 470px;
+    overflow: hidden;
+    border: 1px solid rgba(171, 198, 218, 0.32);
+    border-radius: 9px;
+    background: #020817;
+}
+
+#active-storm-map {
+    min-height: 470px;
+}
+
+.active-storm-map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.active-storm-map-controls label {
+    display: inline-flex;
+    min-height: 20px;
+    align-items: center;
+    gap: 3px;
+    padding: 2px;
+    color: #f5f9fc;
+    font: 700 0.72rem/1.2 var(--font-heading, "Montserrat", sans-serif);
+    cursor: pointer;
+}
+
+.active-storm-map-controls label:has(input:focus-visible) {
+    outline: 2px solid #fff200;
+    outline-offset: 2px;
+}
+
+.active-storm-map-controls label.is-unavailable {
+    opacity: 0.48;
+    cursor: not-allowed;
+}
+
+.active-storm-map-controls input {
+    accent-color: #fff200;
+}
+
+.active-storm-map-section .tropical-map-status {
+    min-height: 1.5em;
+    margin: 0;
+    font-size: 0.78rem;
+}
+
+.active-satellite-wide {
+    width: 100%;
+}
+
+.active-satellite-wide .active-satellite-section {
+    min-height: 0;
+}
+
+.storm-hazards-section,
+.storm-surge-section,
+.storm-text-section,
+.track-messages-section,
+.radii-section,
+.wind-analysis-section,
+.wind-graphics-section,
+.wind-probability-section {
+    min-height: clamp(420px, 55vh, 720px);
+}
+
+.surge-rain-section {
+    min-height: clamp(380px, 50vh, 680px);
+}
+
+@media (max-width: 900px) {
+    .active-top-layout,
+    .ww-layout-container {
+        grid-template-columns: 1fr;
+    }
+
+    .storm-header-section,
+    .active-storm-map-section {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 680px) {
+    .container {
+        width: min(100% - 14px, 1600px);
+    }
+
+    .active-storm-map-section .interactive-weather-map-shell,
+    #active-storm-map {
+        min-height: 390px;
+    }
+
+    .active-storm-map-controls label {
+        flex: 1 1 calc(33.333% - 6px);
+        justify-content: start;
+        padding-inline: 6px;
+        font-size: 0.65rem;
+    }
+}
+
+/*=================================================================*/
+/* ACTIVE STORM PRODUCT WORKSPACE                                  */
+/*=================================================================*/
+
+.active-storm-workspace {
+    --active-subtab-height: 28px;
+    --active-subtab-font-size: 0.75rem;
+    --active-subtab-padding: 4px 5px;
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    margin-top: clamp(24px, 4vw, 46px);
+}
+
+#main-content .active-storm-workspace :is(
+    .active-alert-tab,
+    .active-satellite-tab,
+    .graphics-tab,
+    .text-tab,
+    .radii-btn,
+    .radii-hour-btn
+) {
+    box-sizing: border-box;
+    height: var(--active-subtab-height);
+    min-height: var(--active-subtab-height);
+    max-height: var(--active-subtab-height);
+    padding: var(--active-subtab-padding);
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: var(--active-subtab-font-size);
+    line-height: 1.1;
+}
+
+.active-module {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(164, 190, 211, 0.52);
+    border-radius: 12px;
+    background: #071b2e;
+    box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
+}
+
+.active-module-tabs {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: stretch;
+    padding: 0 10px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.34);
+    background: #0a1f34;
+}
+
+.active-module-tab {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 60px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 0;
+    background: transparent;
+    color: #c7d6e1;
+    cursor: pointer;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: clamp(0.78rem, 1vw, 0.95rem);
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.active-module-tab::after {
+    position: absolute;
+    right: 7px;
+    bottom: 0;
+    left: 7px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: transparent;
+    content: "";
+}
+
+.active-module-tab i {
+    color: #eef5fb;
+    font-size: 1rem;
+}
+
+.active-module-tab:hover {
+    background: rgba(255, 255, 255, 0.045);
+    color: #fff;
+}
+
+.active-module-tab:focus-visible {
+    z-index: 2;
+    outline: 2px solid #fff200;
+    outline-offset: -4px;
+}
+
+.active-module-tab.is-active {
+    color: #fff;
+}
+
+.active-module-tab.is-active::after {
+    background: #fff200;
+}
+
+.active-module-tab[hidden],
+.active-module-panel[hidden],
+.active-map-satellite-controls[hidden],
+.active-satellite-loading[hidden],
+.active-satellite-error[hidden],
+.active-satellite-image-container[hidden],
+.active-map-satellite-legend[hidden] {
+    display: none !important;
+}
+
+.active-module-panel {
+    min-width: 0;
+    padding: clamp(12px, 2vw, 20px);
+    background: #071b2e;
+}
+
+.active-summary-layout {
+    display: grid;
+    min-height: clamp(500px, 56vw, 610px);
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: clamp(14px, 2vw, 24px);
+}
+
+.active-summary-layout .storm-header-container {
+    min-width: 0;
+    padding: 0;
+}
+
+.active-module .storm-header-section,
+.active-module .active-storm-map-section,
+.active-module .storm-hazards-section,
+.active-module .storm-surge-section,
+.active-module .storm-text-section,
+.active-module .track-messages-section,
+.active-module .radii-section,
+.active-module .wind-analysis-section,
+.active-module .wind-graphics-section,
+.active-module .wind-probability-section,
+.active-module .surge-rain-section {
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.active-summary-layout .storm-header-section,
+.active-summary-layout .storm-header,
+.active-summary-layout #overview-v2,
+.active-summary-layout .overview-v2 {
+    height: 100%;
+}
+
+.active-summary-forecast {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(177, 201, 220, 0.26);
+    border-radius: 9px;
+    background: #061524;
+}
+
+.active-summary-forecast-content {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+}
+
+#active-summary-forecast-image {
+    display: block;
+    width: 100%;
+    max-height: 535px;
+    border-radius: 7px;
+    object-fit: contain;
+}
+
+#active-summary-forecast-image[hidden] {
+    display: none;
+}
+
+.active-summary-forecast-empty {
+    display: grid;
+    min-height: 240px;
+    place-items: center;
+    align-content: center;
+    gap: 12px;
+    padding: 24px;
+    color: #cbd9e4;
+    text-align: center;
+}
+
+.active-summary-forecast-empty[hidden] {
+    display: none;
+}
+
+.active-summary-forecast-empty i {
+    color: #7fa3bd;
+    font-size: 2.2rem;
+}
+
+.active-summary-forecast-empty p {
+    max-width: 34rem;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.active-summary-products-link,
+.active-map-play-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border: 1px solid rgba(151, 180, 202, 0.58);
+    border-radius: 8px;
+    background: #173750;
+    color: #f5f9fc;
+    cursor: pointer;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.76rem;
+    font-weight: 650;
+}
+
+.active-summary-products-link:hover,
+.active-map-play-button:hover {
+    border-color: rgba(220, 234, 243, 0.82);
+    background: #1c405d;
+}
+
+.active-summary-products-link:focus-visible,
+.active-map-play-button:focus-visible {
+    outline: 2px solid #fff200;
+    outline-offset: 2px;
+}
+
+.active-module-panel--map {
+    padding: 0;
+}
+
+.active-module .active-storm-map-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.active-map-toolbar {
+    position: relative;
+    display: grid;
+    min-height: auto;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    align-items: center;
+    gap: 9px 14px;
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
+    background: #0b2238;
+}
+
+.active-map-satellite-controls {
+    display: flex;
+    min-width: 0;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    align-items: center;
+    gap: 10px;
+}
+
+#active-satellite-play-pause {
+    box-sizing: border-box;
+    width: 38px;
+    min-width: 38px;
+    padding: 7px;
+}
+
+.active-map-satellite-controls .weather-map-scrubber {
+    min-width: 190px;
+    flex: 1 1 260px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.active-map-imagery,
+.active-map-layers {
+    position: relative;
+}
+
+.active-map-imagery {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.active-map-layers {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.active-map-imagery > summary,
+.active-map-layers > summary {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 11px;
+    border: 1px solid rgba(151, 180, 202, 0.58);
+    border-radius: 8px;
+    background: #102a43;
+    color: #f5f9fc;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.74rem;
+    font-weight: 650;
+}
+
+.active-map-imagery > summary::-webkit-details-marker,
+.active-map-layers > summary::-webkit-details-marker {
+    display: none;
+}
+
+.active-map-imagery > summary:focus-visible,
+.active-map-layers > summary:focus-visible {
+    outline: 2px solid #fff200;
+    outline-offset: 2px;
+}
+
+.active-map-imagery-options,
+.active-map-layers .active-storm-map-controls {
+    position: absolute;
+    top: calc(100% + 7px);
+    z-index: 1200;
+    display: grid;
+    gap: 6px;
+    padding: 9px;
+    border: 1px solid rgba(171, 198, 218, 0.5);
+    border-radius: 9px;
+    background: rgba(7, 27, 46, 0.98);
+    box-shadow: 0 10px 24px rgba(2, 8, 14, 0.46);
+}
+
+.active-map-imagery-options {
+    left: 0;
+    width: min(125px, calc(100vw - 36px));
+    grid-template-columns: 1fr;
+}
+
+.active-map-layers .active-storm-map-controls {
+    left: 0;
+    width: min(125px, calc(100vw - 36px));
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.active-map-imagery-options label,
+.active-storm-map-controls label {
+    display: flex;
+    min-width: 0;
+    min-height: 20px;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 6px;
+    color: #dce7ef;
+    cursor: pointer;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.active-map-imagery-options label:hover,
+.active-storm-map-controls label:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.active-map-imagery-options input,
+.active-storm-map-controls input {
+    flex: 0 0 auto;
+    accent-color: #fff200;
+}
+
+.active-map-imagery:not([open]) .active-map-imagery-options,
+.active-map-layers:not([open]) .active-storm-map-controls {
+    display: none;
+}
+
+.active-module .active-storm-map-section .interactive-weather-map-shell,
+.active-module #active-storm-map {
+    min-height: clamp(480px, 60vw, 680px);
+    border: 0;
+    border-radius: 0;
+}
+
+.active-storm-map-section .interactive-weather-map-shell {
+    position: relative;
+}
+
+.active-storm-map-section .interactive-weather-map-shell.is-satellite-fallback #active-storm-map {
+    visibility: hidden;
+}
+
+.active-storm-map-section .active-satellite-image-container {
+    position: absolute;
+    inset: 0;
+    z-index: 600;
+    display: flex;
+    max-width: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    background: #020817;
+}
+
+.active-storm-map-section .active-satellite-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.active-storm-map-section .active-satellite-loading,
+.active-storm-map-section .active-satellite-error {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    z-index: 1250;
+    transform: translateX(-50%);
+    box-shadow: 0 6px 18px rgba(2, 8, 14, 0.38);
+}
+
+.active-map-status-row {
+    display: flex;
+    min-height: 42px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px 18px;
+    padding: 8px 12px;
+    border-top: 1px solid rgba(177, 201, 220, 0.2);
+    background: #0b2238;
+}
+
+.active-map-status-row .tropical-map-status,
+.active-map-status-row .active-satellite-timestamp {
+    position: static;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #c7d6e1;
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: left;
+}
+
+.active-map-satellite-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-top: 1px solid rgba(177, 201, 220, 0.18);
+    background: #081b2e;
+    color: #bfcfdb;
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+    font-size: 0.74rem;
+}
+
+.active-map-satellite-legend strong {
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+}
+
+.active-alerts-layout {
+    display: block;
+}
+
+.active-alert-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 6px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
+    background: #102a43;
+}
+
+.active-alert-tab {
+    position: relative;
+    display: inline-flex;
+    min-height: var(--active-subtab-height);
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: var(--active-subtab-padding);
+    border: 0;
+    background: transparent;
+    color: #bfcfdb;
+    cursor: pointer;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: var(--active-subtab-font-size);
+    font-weight: 650;
+}
+
+.active-alert-tab::after {
+    position: absolute;
+    right: 7px;
+    bottom: 0;
+    left: 7px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: transparent;
+    content: "";
+}
+
+.active-alert-tab:hover,
+.active-alert-tab.is-active {
+    color: #fff;
+}
+
+.active-alert-tab.is-active::after {
+    background: #fff200;
+}
+
+.active-alert-tab:focus-visible {
+    outline: 2px solid #fff200;
+    outline-offset: -4px;
+}
+
+.active-alert-tab[hidden],
+[data-alert-panel][hidden] {
+    display: none;
+}
+
+.active-alerts-layout .hazards-container,
+.active-alerts-layout .surge-container {
+    min-width: 0;
+    padding: 0;
+}
+
+.active-alerts-layout .storm-hazards-section,
+.active-alerts-layout .storm-surge-section {
+    min-height: 0;
+    margin-top: 8px;
+    padding: 10px;
+    border: 1px solid rgba(177, 201, 220, 0.24);
+    border-radius: 9px;
+    background: #061524;
+}
+
+.ww-leaflet-map {
+    width: 100%;
+    height: clamp(380px, 45vw, 580px);
+    overflow: hidden;
+    border: 1px solid rgba(177, 201, 220, 0.3);
+    border-radius: 8px;
+    background: #020817;
+}
+
+.ww-alert-popup {
+    display: grid;
+    gap: 4px;
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+}
+
+.ww-alert-popup strong {
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+}
+
+.ww-textcol {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.ww-block {
+    overflow: hidden;
+    border: 1px solid rgba(177, 201, 220, 0.24);
+    border-radius: 8px;
+    background: #0a1f34;
+}
+
+.ww-block-title {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    padding: 8px 11px;
+    border-left: 4px solid var(--ww-alert-color, #9fb9cc);
+    background: color-mix(in srgb, var(--ww-alert-color, #9fb9cc) 24%, #0a1f34);
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.ww-block ul {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ww-block li {
+    display: grid;
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+    padding: 9px 11px;
+    border-top: 1px solid rgba(177, 201, 220, 0.16);
+    color: #cfdae3;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.ww-state-code {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: #173750;
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.7rem;
+}
+
+.ww-zone-list {
+    min-width: 0;
+}
+
+.active-module--nhc .active-module-panel,
+.active-module--wind .active-module-panel {
+    min-height: clamp(500px, 56vw, 680px);
+}
+
+.active-module--nhc .storm-text-section,
+.active-module--nhc .track-messages-section,
+.active-module--wind .radii-section,
+.active-module--wind .wind-analysis-section,
+.active-module--wind .wind-graphics-section,
+.active-module--wind .wind-probability-section {
+    min-height: inherit;
+}
+
+.active-module--nhc #nhc-panel-advisories,
+.active-module--nhc #nhc-panel-advisories .storm-text-section {
+    min-height: 0;
+}
+
+.active-module .graphics-tabs,
+.active-module .text-tabs,
+.active-module .radii-hour-controls,
+.active-module .radii-controls {
+    padding-inline: 6px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
+    background: #102a43;
+}
+
+.active-module .graphics-tab,
+.active-module .text-tab,
+.active-module .radii-btn,
+.active-module .radii-hour-btn {
+    position: relative;
+    min-height: var(--active-subtab-height);
+    padding: var(--active-subtab-padding);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #bfcfdb;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: var(--active-subtab-font-size);
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.active-module .graphics-tab:hover,
+.active-module .text-tab:hover,
+.active-module .radii-btn:hover,
+.active-module .radii-hour-btn:hover {
+    background: rgba(255, 255, 255, 0.045);
+    color: #fff;
+}
+
+.active-module .graphics-tab.active,
+.active-module .text-tab.active,
+.active-module .radii-btn.active,
+.active-module .radii-hour-btn.active {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-weight: 650;
+}
+
+.active-module .graphics-tab.active::after,
+.active-module .text-tab.active::after,
+.active-module .radii-btn.active::after,
+.active-module .radii-hour-btn.active::after {
+    background: #fff200;
+    content: "";
+}
+
+.active-module .track-language-panel[hidden],
+.active-module .graphics-content-panel[hidden] {
+    display: none !important;
+}
+
+.active-module-heading {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.34);
+    background: #0a1f34;
+}
+
+.active-module-heading i {
+    color: #fff200;
+}
+
+.active-module-heading h2 {
+    margin: 0;
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+    font-weight: 700;
+}
+
+.active-module--surge-rain .active-module-panel {
+    min-height: clamp(450px, 52vw, 650px);
+}
+
+.active-module--surge-rain .surge-rain-section {
+    min-height: inherit;
+}
+
+@media (max-width: 900px) {
+    .active-summary-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .active-summary-layout {
+        min-height: 0;
+    }
+
+    .active-summary-forecast-content {
+        min-height: 420px;
+    }
+
+    .active-map-imagery-options {
+        width: min(125px, calc(100vw - 16px));
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .active-storm-workspace {
+        gap: 24px;
+        margin-top: 22px;
+    }
+
+    .active-module-tabs {
+        display: grid;
+        overflow: visible;
+        grid-auto-flow: row;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        padding: 0 5px;
+    }
+
+    .active-module-tab {
+        min-width: 0;
+        min-height: 48px;
+        gap: 7px;
+        padding: 7px 8px;
+        font-size: 0.72rem;
+    }
+
+    .active-module-tab i,
+    .active-alert-tab i {
+        display: none;
+    }
+
+    [data-active-tab-group="storm"] .active-module-tab {
+        min-width: 0;
+    }
+
+    .active-module-panel {
+        padding: 8px;
+    }
+
+    .active-summary-forecast {
+        display: none;
+    }
+
+    .active-map-toolbar {
+        align-items: stretch;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 8px;
+    }
+
+    .active-map-satellite-controls {
+        width: 100%;
+    }
+
+    .active-map-satellite-controls {
+        flex-wrap: wrap;
+    }
+
+    .active-map-imagery > summary,
+    .active-map-layers > summary {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .active-map-layers .active-storm-map-controls {
+        width: min(350px, calc(100vw - 16px));
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .active-module .active-storm-map-section .interactive-weather-map-shell,
+    .active-module #active-storm-map {
+        min-height: 460px;
+    }
+
+    .active-map-status-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .active-module--nhc .active-module-panel,
+    .active-module--wind .active-module-panel,
+    .active-module--surge-rain .active-module-panel {
+        min-height: 420px;
+    }
+
+    .active-module .graphics-tabs,
+    .active-module .text-tabs,
+    .active-module .radii-hour-controls,
+    .active-module .radii-controls {
+        display: grid;
+        overflow: visible;
+        grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+    }
+
+    .active-module .graphics-tab,
+    .active-module .text-tab,
+    .active-module .radii-btn,
+    .active-module .radii-hour-btn {
+        width: auto;
+        min-width: 0;
+        min-height: var(--active-subtab-height);
+        padding: var(--active-subtab-padding);
+        white-space: normal;
+    }
+}
+
+/*=================================================================*/
+/* SITE TYPOGRAPHY & CONTROL ALIGNMENT                              */
+/*=================================================================*/
+
+.main-title-active {
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: clamp(2rem, 3.2vw, 3.15rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    text-shadow: none;
+    text-transform: uppercase;
+}
+
+.main-title-active #storm-id {
+    margin-left: 0.4rem;
+    color: #bfcfdb;
+    font-size: 0.55em;
+    font-weight: 650;
+    letter-spacing: 0.035em;
+}
+
+.section-title-active {
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: clamp(0.95rem, 1.35vw, 1.2rem);
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: none;
+}
+
+#overview-v2 {
+    height: 100%;
+    gap: 0;
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+}
+
+#overview-v2 .overview-v2 {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+
+#overview-v2 .ov-info-line {
+    display: grid;
+    grid-template-columns: minmax(9.5rem, 42%) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.35rem 0.8rem;
+    padding: 0.55rem 0;
+    line-height: 1.35;
+}
+
+/* #overview-v2 .ov-info-line .ov-label,
+#overview-v2 .ov-info-line .ov-value {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    color: #eef5fb;
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+    font-style: normal;
+    text-shadow: none;
+    text-transform: none;
+} */
+
+#overview-v2 .ov-info-line .ov-label {
+    color: #bfcfdb;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-weight: 650;
+}
+
+#overview-v2 .ov-info-line .ov-value {
+    font-weight: 600;
+}
+
+#overview-v2 .ov-info-line[data-key='category'] {
+    display: block;
+    padding: 0.2rem 0 0.65rem;
+}
+
+#overview-v2 .ov-info-line[data-key='category'] .ov-value {
+    color: #ff7373;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+    text-shadow: none;
+}
+
+#overview-v2 .ov-info-line[data-key='message-type'] {
+    display: block;
+    margin: 0 0 0.35rem;
+    padding: 0 0 0.75rem;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.32);
+    text-align: center;
+}
+
+#overview-v2 .ov-info-line[data-key='message-type'] .ov-value {
+    margin: 0;
+    color: #e3edf5;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-style: normal;
+    font-weight: 650;
+    text-align: left;
+    text-shadow: none;
+}
+
+#overview-v2 .message-type-text,
+#overview-v2 [data-key='advisory-number'] {
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+}
+
+#overview-v2 .ov-center-section {
+    margin: 0.8rem 0 0;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(177, 201, 220, 0.24);
+    border-radius: 8px;
+    background: #0a1f34;
+    color: #dce7ef;
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: left;
+    text-shadow: none;
+    text-transform: uppercase;
+}
+
+#overview-v2 .ov-center-title {
+    color: #fff;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-weight: 650;
+}
+
+#overview-v2 .ov-nhc-link-block {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.nhc-link-btn {
+    display: inline-flex;
+    min-height: 38px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border: 1px solid rgba(151, 180, 202, 0.58);
+    border-radius: 8px;
+    background: #173750;
+    color: #f5f9fc;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1.25;
+    text-decoration: none;
+    transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.nhc-link-btn:hover {
+    border-color: rgba(220, 234, 243, 0.82);
+    background: #1c405d;
+    color: #fff;
+}
+
+.nhc-link-btn:focus-visible {
+    outline: 2px solid #fff200;
+    outline-offset: 2px;
+}
+
+.active-satellite-section .active-satellite-tabs,
+.storm-text-section .text-tabs,
+.glass .graphics-tabs,
+.radii-section .radii-hour-controls,
+.radii-section .radii-controls {
+    padding-inline: 6px;
+    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
+    background: #102a43;
+}
+
+.active-satellite-section .active-satellite-tab,
+.storm-text-section .text-tab,
+.glass .graphics-tab,
+.radii-section .radii-btn,
+.radii-section .radii-hour-btn {
+    position: relative;
+    min-height: var(--active-subtab-height);
+    padding: var(--active-subtab-padding);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #bfcfdb;
+    font-family: var(--font-heading, "Montserrat", sans-serif);
+    font-size: var(--active-subtab-font-size);
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.active-satellite-section .active-satellite-tab::after,
+.storm-text-section .text-tab::after,
+.glass .graphics-tab::after,
+.radii-section .radii-btn::after,
+.radii-section .radii-hour-btn::after {
+    position: absolute;
+    right: 7px;
+    bottom: 0;
+    left: 7px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: transparent;
+    content: "";
+}
+
+.active-satellite-section .active-satellite-tab:hover,
+.storm-text-section .text-tab:hover,
+.glass .graphics-tab:hover,
+.radii-section .radii-btn:hover,
+.radii-section .radii-hour-btn:hover {
+    background: rgba(255, 255, 255, 0.045);
+    color: #fff;
+}
+
+.active-satellite-section .active-satellite-tab:focus-visible,
+.storm-text-section .text-tab:focus-visible,
+.glass .graphics-tab:focus-visible,
+.radii-section .radii-btn:focus-visible,
+.radii-section .radii-hour-btn:focus-visible {
+    z-index: 2;
+    outline: 2px solid #fff200;
+    outline-offset: -3px;
+}
+
+.active-satellite-section .active-satellite-tab.active,
+.storm-text-section .text-tab.active,
+.glass .graphics-tab.active,
+.radii-section .radii-btn.active,
+.radii-section .radii-hour-btn.active {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-weight: 650;
+}
+
+.active-satellite-section .active-satellite-tab.active::after,
+.storm-text-section .text-tab.active::after,
+.glass .graphics-tab.active::after,
+.radii-section .radii-btn.active::after,
+.radii-section .radii-hour-btn.active::after {
+    background: #fff200;
+    content: "";
+}
+
+#ww-wind-text-empty,
+#ww-surge-text-empty {
+    font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-weight: 600;
+}
+
+@media (max-width: 680px) {
+    .main-title-active #storm-id {
+        margin-left: 0;
+    }
+
+    #overview-v2 .ov-info-line {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
+        text-align: center;
     }
 }

@@ -10,7 +10,7 @@
         <link rel="canonical" href="https://nchurricane.com/active/" />
 
         <meta name="description"
-            content="Active tropical storm overview, watches and warnings, NHC graphics, wind radii, and advisory text products for the Atlantic." />
+            content="Detailed active tropical cyclone maps, watches and warnings, NHC graphics, wind radii, and advisory text for the Atlantic and Pacific basins." />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="NCHurricane.com" />
@@ -18,7 +18,7 @@
         <meta property="og:url" content="https://nchurricane.com/active/" />
         <meta property="og:title" content="Active Tropical Storms — NCHurricane" />
         <meta property="og:description"
-            content="Overview, hazards, graphics, wind radii, and advisory text for active Atlantic tropical systems." />
+            content="Detailed maps, hazards, graphics, wind radii, and advisory text for active NHC tropical systems." />
         <meta property="og:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
         <meta property="og:image:type" content="image/webp" />
         <meta property="og:image:alt" content="NCHurricane active storms preview with tropical graphics" />
@@ -29,7 +29,7 @@
         <meta name="twitter:site" content="@chuckcopelandwx" />
         <meta name="twitter:title" content="Active Tropical Storms — NCHurricane" />
         <meta name="twitter:description"
-            content="Live overview of active Atlantic tropical systems with hazards and graphics." />
+            content="Detailed maps and official information for active NHC tropical systems." />
         <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
         <link rel="icon" href="../favicon.ico" sizes="any" />
@@ -37,10 +37,15 @@
         <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin />
         <link rel="dns-prefetch" href="//kit.fontawesome.com" />
 
-    <link rel="stylesheet" href="../css/styles.css?v=20260819-width1" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <link rel="stylesheet" href="../css/styles.css?v=20260819-width1" />
+        <link rel="stylesheet" href="../counties/css/county.css?v=20260819-width1" />
+        <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260816-2" />
+        <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
         <link rel="stylesheet" href="../css/tropical.css?v=2025.09.29" />
-        <link rel="stylesheet" href="./css/active.css?v=20260819-width1" />
-        <link rel="stylesheet" href="./css/storm-graphics.css?v=2025.09.29" />
+        <link rel="stylesheet" href="./css/active.css?v=20260821-active-tweaks-7" />
+        <link rel="stylesheet" href="./css/storm-graphics.css?v=20260821-product-states-2" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
@@ -67,7 +72,7 @@
                         "@type": "WebPage",
                         "name": "Active Tropical Storms",
                         "url": "https://nchurricane.com/active/",
-                        "description": "Active tropical storm overview, watches and warnings, NHC graphics, wind radii, and advisory text products for the Atlantic.",
+                        "description": "Detailed active tropical cyclone maps, watches and warnings, NHC graphics, wind radii, and advisory text for the Atlantic and Pacific basins.",
                         "isPartOf": { "@type": "WebSite", "name": "NCHurricane.com", "url": "https://nchurricane.com/" },
                     "primaryImageOfPage": { "@type": "ImageObject", "url": "https://nchurricane.com/images/2026-OG-Card.webp" },
                         "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
@@ -80,213 +85,337 @@
     </head>
 
     <body>
-
-        <svg style="display: none">
-            <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
-                <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17"
-                    result="turbulence" />
-                <!-- Liked Seeds: 5, 14, 17 -->
-
-                <feComponentTransfer in="turbulence" result="mapped">
-                    <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
-                    <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
-                    <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
-                </feComponentTransfer>
-
-                <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
-
-                <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100"
-                    lighting-color="white" result="specLight">
-                    <fePointLight x="-200" y="-200" z="300" />
-                </feSpecularLighting>
-
-                <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
-
-                <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R"
-                    yChannelSelector="G" />
-            </filter>
-        </svg>
+        <a class="skip-link" href="#main-content">Skip to main content</a>
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
-        <main class="container">
-            <h1 class="main-title-active"><span id="storm-title">Loading name...</span><span id="storm-id">...and
-                    designation</span></h1>
+        <main class="container" id="main-content">
+            <h1 class="main-title-active">
+                <span id="storm-title">Loading name...</span>
+                <span id="storm-id">...and designation</span>
+            </h1>
 
+            <div class="active-storm-workspace">
+                <section class="active-module active-module--storm" aria-label="Storm overview and map">
+                    <div class="active-module-tabs" data-active-tab-group="storm" data-query-key="stormView"
+                        role="tablist" aria-label="Storm information">
+                        <button id="storm-tab-summary" class="active-module-tab is-active" type="button"
+                            role="tab" aria-selected="true" aria-controls="storm-panel-summary"
+                            data-active-tab="summary">
+                            <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+                            <span>Summary</span>
+                        </button>
+                        <button id="storm-tab-map" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="storm-panel-map"
+                            data-active-tab="map" tabindex="-1">
+                            <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+                            <span>Map &amp; Satellite</span>
+                        </button>
+                        <button id="storm-tab-alerts" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="storm-panel-alerts"
+                            data-active-tab="alerts" tabindex="-1" hidden>
+                            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                            <span>Alerts</span>
+                        </button>
+                    </div>
 
-            <div class="ww-layout-container">
-                <!-- Active header -->
-                <section class="storm-header-container" aria-labelledby="storm-header-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-hurricane fontawesome-icon"></i>LATEST INFORMATION
-                    </div>
-                    <div class="storm-header-section glass" id="storm-header-section">
-                        <div class="storm-header">
-                            <div id="overview-v2"></div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Satellite Images -->
-                <section class="active-satellite-container" aria-labelledby="active-satellite-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-satellite fontawesome-icon"></i>FLOATER SATELLITE
-                    </div>
-                    <div class="active-satellite-section glass" id="active-satellite-header-section">
-                        <div class="active-satellite-interface">
-                            <!-- START: Dynamic Satellite Floater -->
-                            <div class="active-satellite-controls">
-                                <div id="active-satellite-product-tabs" class="active-satellite-tabs">
-                                    <!-- Tabs are dynamically generated in satellite.js -->
-                                </div>
-                            </div>
-                            <div class="active-satellite-content">
-                                <div id="active-satellite-timestamp" class="active-satellite-timestamp"></div>
-                                <div id="active-satellite-image-container" class="active-satellite-image-container">
-                                    <div class="active-satellite-controls-play-pause">
-                                        <button id="active-satellite-play-pause"
-                                            class="active-satellite-play-pause-button"
-                                            aria-label="Play satellite animation">
-                                            <i class="fa-solid fa-play fa-2xl" aria-hidden="true"></i>
-                                        </button>
+                    <section id="storm-panel-summary" class="active-module-panel active-module-panel--summary"
+                        role="tabpanel" aria-labelledby="storm-tab-summary" data-active-panel="summary"
+                        aria-hidden="false">
+                        <div class="active-summary-layout">
+                            <div class="storm-header-container">
+                                <h2 class="sr-only" id="storm-header-title">Latest storm information</h2>
+                                <div class="storm-header-section" id="storm-header-section">
+                                    <div class="storm-header">
+                                        <div id="overview-v2"></div>
                                     </div>
-                                    <img id="active-satellite-image" class="active-satellite-image"
-                                        alt="GOES-19 Storm Floater Satellite" />
                                 </div>
-                                <div id="active-satellite-loading" class="active-satellite-loading">
+                            </div>
+                            <div class="active-summary-forecast">
+                                <div class="active-summary-forecast-content">
+                                    <img id="active-summary-forecast-image"
+                                        alt="Latest NHC five-day forecast track and cone" loading="eager" />
+                                    <div id="active-summary-forecast-empty" class="active-summary-forecast-empty"
+                                        role="status" hidden>
+                                        <i class="fa-regular fa-image" aria-hidden="true"></i>
+                                        <p>The latest five-day graphic is not available for this retained storm record.</p>
+                                    </div>
+                                    <button class="active-summary-products-link" type="button"
+                                        data-open-active-group="nhc" data-open-active-panel="track">
+                                        Open Track &amp; Cone products
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="storm-panel-map" class="active-module-panel active-module-panel--map"
+                        role="tabpanel" aria-labelledby="storm-tab-map" data-active-panel="map"
+                        aria-hidden="true" hidden>
+                        <div class="active-storm-map-section">
+                            <div class="active-map-toolbar">
+                                <details class="active-map-imagery">
+                                    <summary>
+                                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                                        Satellite imagery
+                                    </summary>
+                                    <div id="active-map-imagery-source" class="active-map-imagery-options"
+                                        role="radiogroup" aria-label="Map imagery">
+                                        <label><input type="radio" name="active-map-imagery" value="map"
+                                                data-map-imagery checked /> Storm map</label>
+                                        <label><input type="radio" name="active-map-imagery" value="GEOCOLOR"
+                                                data-map-imagery /> GeoColor</label>
+                                        <label><input type="radio" name="active-map-imagery" value="CLEAN_IR"
+                                                data-map-imagery /> Clean IR</label>
+                                        <label><input type="radio" name="active-map-imagery" value="02"
+                                                data-map-imagery /> Visible</label>
+                                        <label><input type="radio" name="active-map-imagery" value="07"
+                                                data-map-imagery /> Shortwave IR</label>
+                                        <label><input type="radio" name="active-map-imagery" value="08"
+                                                data-map-imagery /> Water Vapor</label>
+                                    </div>
+                                </details>
+                                <div id="active-map-satellite-controls" class="active-map-satellite-controls" hidden>
+                                    <button id="active-satellite-play-pause" class="active-map-play-button"
+                                        type="button" aria-label="Play satellite animation" aria-pressed="false">
+                                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                                    </button>
+                                    <div id="active-map-scrubber" class="weather-map-scrubber" hidden>
+                                        <input id="active-satellite-frame-scrubber" type="range"
+                                            min="0" max="0" value="0" aria-label="Satellite animation frame" />
+                                        <span class="weather-map-frame-count">
+                                            <span class="weather-map-frame-label">Frame</span>
+                                            <output id="active-satellite-frame-indicator"
+                                                for="active-satellite-frame-scrubber">0 / 0</output>
+                                        </span>
+                                    </div>
+                                </div>
+                                <details class="active-map-layers">
+                                    <summary>
+                                        <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                                        Storm overlays
+                                    </summary>
+                                    <div class="active-storm-map-controls" role="group"
+                                        aria-label="Detailed storm map layers">
+                                        <label><input type="checkbox" data-storm-layer="currentPosition" checked disabled /> Current</label>
+                                        <label><input type="checkbox" data-storm-layer="bestTrack" checked /> Past track</label>
+                                        <label><input type="checkbox" data-storm-layer="forecastTrack" checked /> Forecast</label>
+                                        <label><input type="checkbox" data-storm-layer="cone" checked /> Cone</label>
+                                        <label><input type="checkbox" data-storm-layer="watchesWarnings" checked /> Warnings</label>
+                                        <label><input type="checkbox" data-storm-layer="surgeWarnings" checked /> Surge</label>
+                                        <label><input type="checkbox" data-storm-layer="windRadii34" checked /> 34 kt</label>
+                                        <label><input type="checkbox" data-storm-layer="windRadii50" /> 50 kt</label>
+                                        <label><input type="checkbox" data-storm-layer="windRadii64" /> 64 kt</label>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <div class="interactive-weather-map-shell">
+                                <div id="active-storm-map" class="interactive-weather-map" role="region"
+                                    aria-label="Detailed active tropical cyclone map"
+                                    aria-describedby="active-storm-map-status"></div>
+                                <div id="active-satellite-image-container" class="active-satellite-image-container"
+                                    hidden>
+                                    <img id="active-satellite-image" class="active-satellite-image" alt="" />
+                                </div>
+                                <div id="active-satellite-loading" class="active-satellite-loading"
+                                    role="status" hidden>
                                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-                                    <span>Loading satellite imagery...</span>
+                                    <span>Loading satellite imagery…</span>
                                 </div>
-                                <div id="active-satellite-error" class="active-satellite-error" style="display: none">
+                                <div id="active-satellite-error" class="active-satellite-error"
+                                    role="alert" hidden>
                                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
-                                    <span>Unable to load satellite imagery</span>
-                                    <small>This could be due to a connection issue or NOAA server maintenance.</small>
+                                    <span>Satellite imagery is temporarily unavailable.</span>
                                 </div>
                             </div>
-                            <!-- END: Dynamic Satellite Floater -->
-                        </div>
-                    </div>
-                </section>
-            </div>
 
-            <!-- Watches & Warnings -->
-            <div class="ww-layout-container">
-                <section class="hazards-container" aria-labelledby="hazards-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-triangle-exclamation fontawesome-icon"></i>WATCHES &frasl; WARNINGS
-                    </div>
-                    <section class="storm-hazards-section glass">
-                        <div class="ww-grid">
-                            <div class="ww-mapcol">
-                                <canvas id="ww-wind-canvas" aria-label="Wind watches and warnings map"></canvas>
+                            <div class="active-map-status-row">
+                                <p id="active-storm-map-status" class="tropical-map-status"
+                                    role="status" aria-live="polite">
+                                    Select this tab to load the detailed storm map.
+                                </p>
+                                <p id="active-satellite-timestamp" class="active-satellite-timestamp">
+                                    Storm map imagery
+                                </p>
                             </div>
-                            <div class="ww-textcol" id="ww-wind-text" aria-live="polite"></div>
+                            <aside id="active-satellite-legend" class="active-map-satellite-legend"
+                                aria-label="Satellite imagery legend" hidden>
+                                <span>Satellite:</span>
+                                <strong id="active-satellite-legend-title">Satellite imagery</strong>
+                            </aside>
+                        </div>
+                    </section>
+
+                    <section id="storm-panel-alerts" class="active-module-panel active-module-panel--alerts"
+                        role="tabpanel" aria-labelledby="storm-tab-alerts" data-active-panel="alerts"
+                        aria-hidden="true" hidden>
+                        <div class="active-alert-tabs" role="tablist" aria-label="Storm alert products">
+                            <button id="alert-tab-wind" class="active-alert-tab is-active" type="button"
+                                role="tab" aria-selected="true" aria-controls="alert-panel-wind"
+                                data-alert-tab="wind">
+                                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                Watches &amp; Warnings
+                            </button>
+                            <button id="alert-tab-surge" class="active-alert-tab" type="button"
+                                role="tab" aria-selected="false" aria-controls="alert-panel-surge"
+                                data-alert-tab="surge" tabindex="-1">
+                                <i class="fa-solid fa-water" aria-hidden="true"></i>
+                                Storm Surge Alerts
+                            </button>
+                        </div>
+                        <div class="active-alerts-layout">
+                            <section id="alert-panel-wind" class="hazards-container" role="tabpanel"
+                                aria-labelledby="alert-tab-wind" data-alert-panel="wind">
+                                <div class="storm-hazards-section">
+                                    <div class="ww-grid">
+                                        <div class="ww-mapcol">
+                                            <div id="ww-wind-map" class="ww-leaflet-map" role="region"
+                                                aria-label="Wind watches and warnings map"></div>
+                                        </div>
+                                        <div class="ww-textcol" id="ww-wind-text" aria-live="polite"></div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section id="alert-panel-surge" class="surge-container" role="tabpanel"
+                                aria-labelledby="alert-tab-surge" data-alert-panel="surge" hidden>
+                                <div class="storm-surge-section">
+                                    <div class="ww-grid">
+                                        <div class="ww-mapcol">
+                                            <div id="ww-surge-map" class="ww-leaflet-map" role="region"
+                                                aria-label="Storm surge watches and warnings map"></div>
+                                        </div>
+                                        <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     </section>
                 </section>
 
-                <!-- Storm Surge Watches & Warnings (separate container) -->
-                <section class="surge-container" aria-labelledby="surge-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-water fontawesome-icon"></i>STORM SURGE ALERTS
+                <section class="active-module active-module--nhc" aria-label="NHC advisories and graphics">
+                    <div class="active-module-tabs" data-active-tab-group="nhc" data-query-key="nhcView"
+                        role="tablist" aria-label="NHC products">
+                        <button id="nhc-tab-advisories" class="active-module-tab is-active" type="button"
+                            role="tab" aria-selected="true" aria-controls="nhc-panel-advisories"
+                            data-active-tab="advisories">
+                            <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                            <span>Advisories</span>
+                        </button>
+                        <button id="nhc-tab-track" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="nhc-panel-track"
+                            data-active-tab="track" tabindex="-1">
+                            <i class="fa-solid fa-route" aria-hidden="true"></i>
+                            <span>Track &amp; Cone</span>
+                        </button>
+                        <button id="nhc-tab-key" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="nhc-panel-key"
+                            data-active-tab="key" tabindex="-1">
+                            <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+                            <span>Key Messages</span>
+                        </button>
+                        <button id="nhc-tab-experimental" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="nhc-panel-experimental"
+                            data-active-tab="experimental" tabindex="-1">
+                            <i class="fa-solid fa-flask" aria-hidden="true"></i>
+                            <span>Experimental</span>
+                        </button>
                     </div>
-                    <section class="storm-surge-section glass">
-                        <div class="ww-grid">
-                            <div class="ww-mapcol">
-                                <canvas id="ww-surge-canvas" aria-label="Storm surge watches and warnings map"></canvas>
-                            </div>
-                            <div class="ww-textcol" id="ww-surge-text" aria-live="polite"></div>
-                        </div>
+                    <section id="nhc-panel-advisories" class="active-module-panel text-products-container"
+                        role="tabpanel" aria-labelledby="nhc-tab-advisories"
+                        data-active-panel="advisories" aria-hidden="false">
+                        <div class="storm-text-section" id="storm-text-section"></div>
+                    </section>
+                    <section id="nhc-panel-track" class="active-module-panel graphics-container"
+                        role="tabpanel" aria-labelledby="nhc-tab-track"
+                        data-active-panel="track" aria-hidden="true" hidden>
+                        <div class="track-messages-section" id="track-messages-section"></div>
+                    </section>
+                    <section id="nhc-panel-key" class="active-module-panel graphics-container"
+                        role="tabpanel" aria-labelledby="nhc-tab-key"
+                        data-active-panel="key" aria-hidden="true" hidden>
+                        <div class="track-messages-section" id="key-messages-section"></div>
+                    </section>
+                    <section id="nhc-panel-experimental" class="active-module-panel graphics-container"
+                        role="tabpanel" aria-labelledby="nhc-tab-experimental"
+                        data-active-panel="experimental" aria-hidden="true" hidden>
+                        <div class="track-messages-section" id="experimental-section"></div>
                     </section>
                 </section>
-            </div>
 
-            <!-- Text Products -->
-            <div class="ww-layout-container">
-                <section class="text-products-container" aria-labelledby="text-products-title">
-                    <div class="section-title-active">
-                        <i class=" fa-solid fa-newspaper fontawesome-icon"></i>TEXT ADVISORIES
+                <section class="active-module active-module--wind" aria-label="Wind products">
+                    <div class="active-module-tabs" data-active-tab-group="wind" data-query-key="windView"
+                        role="tablist" aria-label="Wind products">
+                        <button id="wind-tab-radii" class="active-module-tab is-active" type="button"
+                            role="tab" aria-selected="true" aria-controls="wind-panel-radii"
+                            data-active-tab="radii">
+                            <i class="fa-solid fa-wind" aria-hidden="true"></i>
+                            <span>Radii</span>
+                        </button>
+                        <button id="wind-tab-analysis" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="wind-panel-analysis"
+                            data-active-tab="analysis" tabindex="-1">
+                            <i class="fa-solid fa-compass" aria-hidden="true"></i>
+                            <span>Analysis</span>
+                        </button>
+                        <button id="wind-tab-graphics" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="wind-panel-graphics"
+                            data-active-tab="graphics" tabindex="-1">
+                            <i class="fa-solid fa-chart-area" aria-hidden="true"></i>
+                            <span>Wind Graphics</span>
+                        </button>
+                        <button id="wind-tab-probability" class="active-module-tab" type="button"
+                            role="tab" aria-selected="false" aria-controls="wind-panel-probability"
+                            data-active-tab="probability" tabindex="-1">
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                            <span>Probability</span>
+                        </button>
                     </div>
-                    <div class="storm-text-section glass" id="storm-text-section">
-                        <!-- Text products interface will be dynamically generated here -->
-                    </div>
+                    <section id="wind-panel-radii" class="active-module-panel radii-container"
+                        role="tabpanel" aria-labelledby="wind-tab-radii"
+                        data-active-panel="radii" aria-hidden="false">
+                        <div class="radii-section" id="radii-section">
+                            <table id="radii-table" class="radii-table" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Quadrant</th>
+                                        <th scope="col">34 kt</th>
+                                        <th scope="col">50 kt</th>
+                                        <th scope="col">64 kt</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section id="wind-panel-analysis" class="active-module-panel wind-analysis-container"
+                        role="tabpanel" aria-labelledby="wind-tab-analysis"
+                        data-active-panel="analysis" aria-hidden="true" hidden>
+                        <div class="wind-analysis-section" id="wind-analysis-section"></div>
+                    </section>
+                    <section id="wind-panel-graphics" class="active-module-panel wind-graphics-container"
+                        role="tabpanel" aria-labelledby="wind-tab-graphics"
+                        data-active-panel="graphics" aria-hidden="true" hidden>
+                        <div class="wind-graphics-section" id="wind-graphics-section"></div>
+                    </section>
+                    <section id="wind-panel-probability" class="active-module-panel wind-probability-container"
+                        role="tabpanel" aria-labelledby="wind-tab-probability"
+                        data-active-panel="probability" aria-hidden="true" hidden>
+                        <div class="wind-probability-section" id="wind-probability-section"></div>
+                    </section>
                 </section>
 
-                <!-- Track and Messages Graphics -->
-                <section class="graphics-container" aria-labelledby="graphics-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-route fontawesome-icon"></i>TRACK & KEY MESSAGES
-                    </div>
-                    <div class="track-messages-section glass" id="track-messages-section">
-                        <!-- Track and messages graphics will be dynamically generated here -->
-                    </div>
-                </section>
-            </div>
-
-            <!-- Radii -->
-            <div class="ww-layout-container">
-                <section class="radii-container" aria-labelledby="overview-title">
-                    <div class="section-title-active">
-                        <i class=" fa-solid fa-wind fontawesome-icon"></i>WIND RADII
-                    </div>
-                    <div class="radii-section glass" id="radii-section">
-                        <table id="radii-table" class="radii-table" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Quadrant</th>
-                                    <th scope="col">34 kt</th>
-                                    <th scope="col">50 kt</th>
-                                    <th scope="col">64 kt</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Wind Field Analysis -->
-                <section class="wind-analysis-container" id="wind-analysis-container"
-                    aria-labelledby="wind-analysis-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-route fontawesome-icon"></i>WIND ANALYSIS
-                    </div>
-                    <div class="wind-analysis-section glass" id="wind-analysis-section">
-                        <!-- Wind analysis graphics will be dynamically generated here -->
-                    </div>
-                </section>
-            </div>
-
-            <!-- Wind Graphics & Wind Probability Graphics -->
-            <div class="ww-layout-container">
-                <section class="wind-graphics-container" aria-labelledby="wind-graphics-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-wind fontawesome-icon"></i>WIND GRAPHICS
-                    </div>
-                    <div class="wind-graphics-section glass" id="wind-graphics-section">
-                        <!-- Wind graphics will be dynamically generated here -->
-                    </div>
-                </section>
-
-                <section class="wind-probability-container" aria-labelledby="wind-probability-title">
-                    <div class="section-title-active">
-                        <i class="fa-solid fa-chart-line fontawesome-icon"></i>WIND PROBABILITY
-                    </div>
-                    <div class="wind-probability-section glass" id="wind-probability-section">
-                        <!-- Wind probability graphics will be dynamically generated here -->
+                <section class="active-module active-module--surge-rain"
+                    aria-labelledby="surge-rain-title">
+                    <header class="active-module-heading">
+                        <i class="fa-solid fa-cloud-rain" aria-hidden="true"></i>
+                        <h2 id="surge-rain-title">Surge &amp; Rain Products</h2>
+                    </header>
+                    <div class="active-module-panel surge-rain-container">
+                        <div class="surge-rain-section" id="surge-rain-section"></div>
                     </div>
                 </section>
             </div>
-
-            <!-- Surge and Rain Graphics -->
-            <section class="surge-rain-container" aria-labelledby="surge-rain-title">
-                <div class="section-title-active">
-                    <i class="fa-solid fa-cloud-rain fontawesome-icon"></i>STORM SURGE &frasl; RAINFALL
-                </div>
-                <div class="surge-rain-section glass" id="surge-rain-section">
-                    <!-- Surge and rain graphics will be dynamically generated here -->
-                </div>
-            </section>
-
         </main>
 
         <footer class="footer">
@@ -332,19 +461,15 @@
             </div>
         </footer>
 
-        <!-- Keep your existing JS; these IDs match your previous wiring -->
-        <!-- Keep your existing JS; these IDs match your previous wiring -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
-        <script type="module" src="./js/storm-graphics.js?v=2025.09.29"></script>
-        <script type="module" src="./js/storm.js?v=2025.09.29"></script>
-        <script type="module" src="./js/satellite.js?v=2025.09.29"></script>
-        <script type="module" src="./js/storm_text.js?v=2025.09.29"></script>
-        <script type="module">
-            import { RadiiVisualization } from './js/radii-visualization.js?v=2025.09.29';
-        </script>
+        <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
+        <script type="module" src="./js/activeStormMap.js?v=20260821-active-tweaks-4"></script>
+        <script type="module" src="./js/storm.js?v=20260821-product-states-2"></script>
+        <script type="module" src="./js/storm_text.js?v=20260821-product-states-1"></script>
 
-        <!-- MODIFIED: Load ww-maps.js as a regular script -->
-        <script type="module" src="./js/ww-maps.js?v=2025.09.29" defer></script>
+        <script type="module" src="./js/ww-maps.js?v=20260821-active-tweaks-6" defer></script>
 
         <script type="module">
             import { initTropicalBanner } from './js/tropical-banner.js?v=2025.09.29';
@@ -352,23 +477,15 @@
         </script>
 
         <script type="module">
-            import { initSatellite } from './js/satellite.js?v=2025.09.29';
-            initSatellite({
-                tabsContainerId: 'active-satellite-product-tabs',
-                playButtonId: 'active-satellite-play-pause',
-                imageId: 'active-satellite-image',
-                containerId: 'active-satellite-image-container',
-                loadingId: 'active-satellite-loading',
-                errorId: 'active-satellite-error',
-                timestampId: 'active-satellite-timestamp',
-            });
-        </script>
-
-        <!-- MODIFIED: Removed the block that imported and called initMaps -->
-        <script type="module">
         import { NavigationModule } from '../js/modules/navigation.js?v=20260821-phase4-1';
 
             document.addEventListener('DOMContentLoaded', () => {
+                NavigationModule.navData.logo = {
+                    textBefore: 'NCHurric',
+                    iconClass: 'fa-solid fa-hurricane',
+                    textAfter: 'ne',
+                    ariaLabel: 'NCHurricane home',
+                };
                 NavigationModule.init('../');
             });
         </script>

@@ -20,6 +20,7 @@
 ============================== */
 const TEXT_CONFIG = {
   STORMS_ROOT: "./storms",
+  ACTIVE_STORMS_CACHE: "./cache/nhc_current_storms.json",
   FALLBACK_MESSAGES: {
     notAvailable: "Product not available",
     loading: "Loading text product...",
@@ -29,7 +30,7 @@ const TEXT_CONFIG = {
 
 const TEXT_PRODUCTS = {
   TCP: {
-    name: "Public Advisory",
+    name: "Advisory",
     fileName: "TCP",
     required: true,
     priority: 1,
@@ -44,14 +45,14 @@ const TEXT_PRODUCTS = {
     description: "Condiciones actuales y pronóstico para el público general"
   },
   TCM: {
-    name: "Forecast/Advisory",
+    name: "Forecast",
     fileName: "TCM",
     required: true,
     priority: 3,
     description: "Technical forecast for marine and aviation interests"
   },
   TCD: {
-    name: "Discussion",
+    name: "Disc",
     fileName: "TCD",
     required: true,
     priority: 4,
@@ -66,7 +67,7 @@ const TEXT_PRODUCTS = {
     description: "Razonamiento del meteorólogo detrás del pronóstico"
   },
   PWS: {
-    name: "Wind Probabilities",
+    name: "Wind Prob",
     fileName: "PWS",
     required: true,
     priority: 6,
@@ -104,7 +105,7 @@ function getStormParam() {
 }
 
 function getAdvisoryNumber(stormId) {
-  const match = stormId.match(/^(AL|EP)(\d{2})(\d{4})$/);
+  const match = stormId.match(/^(AL|EP|CP)(\d{2})(\d{4})$/);
   if (!match) return null;
 
   const stormNumber = parseInt(match[2]);
@@ -114,12 +115,42 @@ function getAdvisoryNumber(stormId) {
 function getBasinCode(stormId) {
   if (stormId.startsWith('AL')) return 'AT';
   if (stormId.startsWith('EP')) return 'EP';
+  if (stormId.startsWith('CP')) return 'CP';
   return null;
 }
 
+let activeStormRoutesPromise = null;
+
+async function getStormProductRoute(stormId) {
+  if (!activeStormRoutesPromise) {
+    activeStormRoutesPromise = fetch(`${TEXT_CONFIG.ACTIVE_STORMS_CACHE}?${Date.now()}`, { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => {
+        const storms = Array.isArray(payload?.activeStorms)
+          ? payload.activeStorms
+          : Array.isArray(payload?.data?.activeStorms)
+            ? payload.data.activeStorms
+            : [];
+        return new Map(storms.map(storm => [String(storm?.id || '').toUpperCase(), storm]));
+      })
+      .catch(() => new Map());
+  }
+
+  const storm = (await activeStormRoutesPromise).get(stormId);
+  const binNumber = String(storm?.binNumber || '').toUpperCase();
+  const match = binNumber.match(/^(AT|EP|CP)([1-5])$/);
+  if (match) return { basinCode: match[1], slot: Number(match[2]) };
+
+  return {
+    basinCode: getBasinCode(stormId),
+    slot: getAdvisoryNumber(stormId)
+  };
+}
+
 async function fetchTextProduct(stormId, productType) {
-  const advisoryNum = getAdvisoryNumber(stormId);
-  const basinCode = getBasinCode(stormId);
+  const route = await getStormProductRoute(stormId);
+  const advisoryNum = route?.slot;
+  const basinCode = route?.basinCode;
 
   if (!advisoryNum || !basinCode) return null;
 
@@ -135,6 +166,22 @@ async function fetchTextProduct(stormId, productType) {
     return JSON.parse(cleanText);
   } catch (error) {
     console.warn(`Failed to fetch text product ${productType}:`, error);
+    return null;
+  }
+}
+
+async function fetchTextProductManifest(stormId) {
+  const url = `${TEXT_CONFIG.STORMS_ROOT}/${encodeURIComponent(stormId)}/text-products-manifest.json?${Date.now()}`;
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) return null;
+    const manifest = await response.json();
+    return manifest?.kind === 'storm-text-products'
+      && String(manifest?.stormId || '').toUpperCase() === stormId
+      && manifest?.products
+      ? manifest
+      : null;
+  } catch {
     return null;
   }
 }
@@ -349,12 +396,17 @@ async function loadTextProducts(stormId) {
       required: config.required
     }));
 
-  const productDataResults = await Promise.all(
-    allPossibleProducts.map(p => fetchTextProduct(stormId, p.code))
-  );
+  const [productDataResults, manifest] = await Promise.all([
+    Promise.all(allPossibleProducts.map(p => fetchTextProduct(stormId, p.code))),
+    fetchTextProductManifest(stormId)
+  ]);
 
   const availableProducts = allPossibleProducts.filter((product, index) => {
     const productData = productDataResults[index];
+    const manifestState = manifest?.products?.[product.code]?.state;
+    if (!product.required && manifestState && manifestState !== 'available') {
+      return false;
+    }
     if (product.code === 'TCU' || product.code === 'TUS') {
       return isProductFresh(productData);
     }

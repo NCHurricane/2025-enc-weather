@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 error_reporting(E_ALL);
+require_once __DIR__ . '/pacific_writer_common.php';
 
 // nhc_graphics_cache.php
 // Downloads and caches NHC storm graphics for all active AL/EP storms for the current year
@@ -54,14 +55,6 @@ function fetch_json($local, $remote) {
     throw new Exception('Could not load storm list from local or remote');
 }
 
-function save_image($url, $dest) {
-    $tmp = $dest . '.tmp';
-    $data = @file_get_contents($url);
-    if ($data === false) throw new Exception("Failed to download $url");
-    if (file_put_contents($tmp, $data) === false) throw new Exception("Failed to write $tmp");
-    if (!rename($tmp, $dest)) throw new Exception("Failed to move $tmp to $dest");
-}
-
 try {
     $storms_json = fetch_json($local_json, $remote_json);
     $active_storms = [];
@@ -91,77 +84,72 @@ try {
         // Graphics to download
         $graphics = [
             // Track and Messages
-            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_sm2.png", '3day_cone_no_line_and_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_sm2.png", '5day_cone_no_line_and_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_es_sm2.png", '3day_cone_es.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_es_sm2.png", '5day_cone_es.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_fr_sm2.png", '3day_cone_fr.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_fr_sm2.png", '5day_cone_fr.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_sm2.png", '3day_expCone.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_sm2.png", '5day_expCone.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_es_sm2.png", '3day_expCone_es.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_es_sm2.png", '5day_expCone_es.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_fr_sm2.png", '3day_expCone_fr.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_fr_sm2.png", '5day_expCone_fr.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_key_messages_sm2.png", 'key_messages.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_spanish_key_messages_sm2.png", 'spanish_key_messages.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone.png", '3day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone.png", '5day_cone_no_line_and_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_es.png", '3day_cone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_es.png", '5day_cone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_cone_fr.png", '3day_cone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_cone_fr.png", '5day_cone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone.png", '3day_expCone.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone.png", '5day_expCone.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_es.png", '3day_expCone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_es.png", '5day_expCone_es.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_expCone_fr.png", '3day_expCone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_5day_expCone_fr.png", '5day_expCone_fr.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_key_messages.png", 'key_messages.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_spanish_key_messages.png", 'spanish_key_messages.png'],
             // Wind Field/History/Arrival
-            ["{$base_url}/$basinFolder/{$stormId}_current_wind_sm2.png", 'current_wind.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_wind_history_sm2.png", 'wind_history.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_earliest_reasonable_toa_34_sm2.png", '3day_earliest_reasonable_toa_34.png'],
-            ["{$base_url}/$basinFolder/{$stormId}_3day_most_likely_toa_34_sm2.png", '3day_most_likely_toa_34.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_current_wind.png", 'current_wind.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_wind_history.png", 'wind_history.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_earliest_reasonable_toa_34.png", '3day_earliest_reasonable_toa_34.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_3day_most_likely_toa_34.png", '3day_most_likely_toa_34.png'],
             // Peak Surge
-            ["{$base_url}/$basinFolder/{$stormId}_peak_surge_sm2.png", 'peak_surge.png'],
+            ["{$base_url}/$basinFolder/{$stormId}_peak_surge.png", 'peak_surge.png'],
             // Rainfall/Excess Rain (2-digit year)
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCQPF_sm2.gif", 'WPCQPF.gif'],
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}INTQPF_sm2.gif", 'INTQPF.gif'],
-            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCERO_sm2.gif", 'WPCERO.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCQPF.gif", 'WPCQPF.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}INTQPF.gif", 'INTQPF.gif'],
+            ["{$base_url}/$basinFolder/{$basin}{$stormNum}{$current_yy}WPCERO.gif", 'WPCERO.gif'],
         ];
         // Wind Probabilities (all timeframes)
         foreach ([34, 50, 64] as $kt) {
             foreach (['000','012','024','036','048','060'] as $tf) {
                 $graphics[] = [
-                    "{$base_url}/$basinFolder/{$stormId}_wind_probs_{$kt}_F{$tf}_sm2.png",
-                    "wind_probs_{$kt}_F{$tf}_sm2.png"
+                    "{$base_url}/$basinFolder/{$stormId}_wind_probs_{$kt}_F{$tf}.png",
+                    "wind_probs_{$kt}_F{$tf}.png"
                 ];
             }
         }
-        // Helper to get remote file's Last-Modified header as a timestamp
-        function get_remote_last_modified($url) {
-            $headers = @get_headers($url, $associative = true);
-            if (is_array($headers) && isset($headers['Last-Modified'])) {
-                $lm = is_array($headers['Last-Modified']) ? end($headers['Last-Modified']) : $headers['Last-Modified'];
-                $ts = strtotime($lm);
-                if ($ts !== false) return $ts;
-            }
-            return false;
-        }
-        // List of graphics to check remote age before saving
-        $age_sensitive = ['WPCQPF_sm2.gif', 'INTQPF_sm2.gif', 'WPCERO_sm2.gif', 'peak_surge_sm2.png'];
+        $manifest = [
+            'schemaVersion' => '1.0.0',
+            'kind' => 'storm-graphics',
+            'stormId' => $stormId,
+            'generatedAt' => gmdate('c'),
+            'products' => [],
+        ];
+        $age_sensitive = ['WPCQPF.gif', 'INTQPF.gif', 'WPCERO.gif', 'peak_surge.png'];
         foreach ($graphics as [$url, $filename]) {
             $dest = $storm_dir . $filename;
-            $check_age = in_array($filename, $age_sensitive, true);
-            if ($check_age) {
-                $remote_ts = get_remote_last_modified($url);
-                $now = time();
-                if ($remote_ts !== false && ($now - $remote_ts) > 86400) {
-                    // Remote file is older than 24h, skip download and delete local if exists
-                    if (file_exists($dest)) {
-                        @unlink($dest);
-                        log_msg("Deleted stale $dest (remote file >24h old)");
-                    }
-                    log_msg("Skipped $url (remote file >24h old)");
-                    continue;
-                }
-            }
-            try {
-                save_image($url, $dest);
+            $result = nch_writer_download_image(
+                $url,
+                $dest,
+                [
+                    'User-Agent: NCHurricane Atlantic graphics cache/1.0',
+                    'Accept: image/*,*/*;q=0.8',
+                ],
+                30,
+                in_array($filename, $age_sensitive, true) ? 86400 : null
+            );
+            $manifest['products'][$filename] = $result;
+            if ($result['state'] === 'available') {
                 log_msg("Saved $url to $dest");
                 $count++;
-            } catch (Exception $e) {
-                log_msg("Error saving $url: " . $e->getMessage());
+            } elseif ($result['state'] === 'not-issued') {
+                log_msg("Not issued: $url");
+            } else {
+                log_msg("{$result['state']}: $url" . (isset($result['error']) ? " ({$result['error']})" : ''));
             }
         }
+        nch_writer_publish_json($storm_dir . 'graphics-manifest.json', $manifest);
     }
     log_msg("Done. $count images saved.");
 } catch (Exception $e) {

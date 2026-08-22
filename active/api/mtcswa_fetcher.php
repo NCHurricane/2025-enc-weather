@@ -3,8 +3,10 @@ declare(strict_types=1);
 error_reporting(E_ALL);
 
 // mtcswa_fetcher.php
-// Fetches latest "0hr" MTCSWA images for Atlantic and EPac storms from NOAA and saves to storm directories
+// Fetches latest "0hr" MTCSWA images for Atlantic, EPac, and CPac storms from NOAA and saves to storm directories
 // Run every 3 hours on the half hour via cron
+
+require_once __DIR__ . '/pacific_writer_common.php';
 
 $js_url = 'https://www.ospo.noaa.gov/Visualization01/cData/Ocean/Tropical/MTCSWA/mtcswa_list.js';
 $stormlist_url = 'https://www.ospo.noaa.gov/Visualization01/cData/Ocean/Tropical/MTCSWA/mtcswa_list.js';
@@ -25,16 +27,11 @@ function log_msg($msg) {
 }
 
 function fetch_js($url) {
-    $opts = [
-        'http' => [
-            'method' => 'GET',
-            'header' => "User-Agent: NCHurricane.com Weather App/1.0\r\n",
-            'timeout' => 30
-        ]
-    ];
-    $ctx = stream_context_create($opts);
-    $js = @file_get_contents($url, false, $ctx);
-    if ($js === false) throw new Exception("Failed to fetch JS file");
+    $js = pacific_writer_fetch_url($url, [
+        'User-Agent: NCHurricane.com Weather App/1.0',
+        'Accept: application/javascript,text/javascript,*/*;q=0.8',
+    ], 30);
+    if ($js === null) throw new Exception("Failed to fetch JS file");
     return $js;
 }
 
@@ -63,8 +60,11 @@ function get_latest_0hr_image($images) {
 
 function save_image($url, $dest) {
     $tmp = $dest . '.tmp';
-    $data = @file_get_contents($url);
-    if ($data === false) throw new Exception("Failed to download $url");
+    $data = pacific_writer_fetch_url($url, [
+        'User-Agent: NCHurricane.com Weather App/1.0',
+        'Accept: image/png,image/*;q=0.8,*/*;q=0.5',
+    ], 30);
+    if ($data === null) throw new Exception("Failed to download $url");
     if (file_put_contents($tmp, $data) === false) throw new Exception("Failed to write $tmp");
     if (!rename($tmp, $dest)) throw new Exception("Failed to move $tmp to $dest");
 }
@@ -83,13 +83,14 @@ try {
             log_msg("Skipping storm #$stormIdx: missing required fields");
             continue;
         }
-        // Only process Atlantic (AL, Atlantic) and East Pacific (EP, East Pacific) storms
+        // Only process Atlantic, East Pacific, and Central Pacific storms
         $basin = strtoupper(trim($entry['basin']));
         $basinName = trim($entry['basinName']);
         $isAtlantic = ($basin === 'AL' && strcasecmp($basinName, 'Atlantic') === 0);
         $isEastPac = ($basin === 'EP' && strcasecmp($basinName, 'East Pacific') === 0);
-        if (!($isAtlantic || $isEastPac)) {
-            log_msg("Skipping storm #$stormIdx: not Atlantic or East Pacific (basin: $basin, basinName: $basinName)");
+        $isCentralPac = ($basin === 'CP' && strcasecmp($basinName, 'Central Pacific') === 0);
+        if (!($isAtlantic || $isEastPac || $isCentralPac)) {
+            log_msg("Skipping storm #$stormIdx: unsupported basin (basin: $basin, basinName: $basinName)");
             continue;
         }
         if (isset($entry['id']) && strtoupper($entry['id']) === 'INVEST') {

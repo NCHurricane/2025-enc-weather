@@ -9,6 +9,7 @@
 }
 
 .tropical-map-status[data-state='stale'],
+.tropical-map-status[data-state='partial'],
 .tropical-map-status[data-state='unavailable'] {
   color: #fdba74;
 }
@@ -74,6 +75,24 @@
   border-top: 0.2rem dashed #f8fafc;
   border-radius: 0;
   background: transparent;
+}
+
+.tropical-map-legend__swatch.is-best-track {
+  height: 0;
+  border: 0;
+  border-top: 0.2rem solid #38bdf8;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tropical-map-legend__swatch.is-warning {
+  border-radius: 0.1rem;
+  background: #ef4444;
+}
+
+.tropical-map-legend__swatch.is-radii {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.3);
 }
 
 .tropical-map-legend__swatch.is-low {

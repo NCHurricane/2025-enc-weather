@@ -2,14 +2,18 @@
 <?php
 declare(strict_types=1);
 error_reporting(E_ALL);
+require_once __DIR__ . '/pacific_writer_common.php';
 
 /**
- * NHC CXML Writer, Eastern Pacific - cxml_writer_ep.php
- * Fetch NHC CXML for Eastern Pacific storms, convert to compact JSON, and write cache:
- *   ../storms/{EPnnYYYY}/storm.json
+ * NHC CXML Writer, Pacific
+ * Fetch NHC CXML for Pacific storms, convert to compact JSON, and write cache:
+ *   ../storms/{basin}nnYYYY/storm.json
  *
  * Query:
  *   ?storm=EPnnYYYY  or ?storm=ALL
+ *
+ * cxml_writer_cp.php defines the Central Pacific basin settings and delegates
+ * to this shared Pacific implementation.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -17,13 +21,21 @@ if (PHP_SAPI !== 'cli') {
     header('Cache-Control: no-store, no-cache, must-revalidate');
 }
 
+$PACIFIC_BASIN = defined('NCH_PACIFIC_BASIN') ? strtoupper((string) NCH_PACIFIC_BASIN) : 'EP';
+$PACIFIC_LABEL = defined('NCH_PACIFIC_LABEL') ? (string) NCH_PACIFIC_LABEL : 'Eastern Pacific';
+$PACIFIC_REMOTE_STORMS_FIRST = defined('NCH_PACIFIC_REMOTE_STORMS_FIRST') && NCH_PACIFIC_REMOTE_STORMS_FIRST;
+if (!in_array($PACIFIC_BASIN, ['EP', 'CP'], true)) {
+    throw new RuntimeException('Unsupported Pacific basin: ' . $PACIFIC_BASIN);
+}
+$PACIFIC_LOG_SUFFIX = strtolower($PACIFIC_BASIN);
 
-$USER_AGENT = "NCHurricane CXMLWriterEP/1.0 (admin@nchurricane.com)";
+$USER_AGENT = "NCHurricane CXMLWriter{$PACIFIC_BASIN}/1.0 (admin@nchurricane.com)";
 
 function out($s){
+    global $PACIFIC_LOG_SUFFIX;
     $line = "[" . date('Y-m-d H:i:s') . "] $s";
     $logDir = __DIR__ . '/../../active/logs/';
-    $logFile = $logDir . 'cxml_writer_ep.log';
+    $logFile = $logDir . 'cxml_writer_' . $PACIFIC_LOG_SUFFIX . '.log';
     if (!is_dir($logDir)) {
         @mkdir($logDir, 0755, true);
     }
@@ -61,40 +73,58 @@ if (!$stormParam && PHP_SAPI === 'cli') {
   }
 }
 
-if ($stormParam === '') bail('missing --storm=ALnnYYYY or --all');
+if ($stormParam === '') bail("missing --storm={$PACIFIC_BASIN}nnYYYY or --all");
 
 $cacheRoot = realpath(__DIR__ . '/..');
 if ($cacheRoot === false) $cacheRoot = __DIR__ . '/..';
 $stormsRoot = $cacheRoot . '/storms';
 
 function expand_short_id(string $id, string $stormsRoot): string {
+  global $PACIFIC_BASIN;
   if (!preg_match('/^[A-Z]{2}\d{2}$/', $id)) return $id;
-  $list = realpath(__DIR__ . '/cache/nhc_current_storms.json');
-  if ($list && ($raw = @file_get_contents($list))) {
-    $arr = json_decode($raw, true);
-    if (is_array($arr)) {
-      foreach ($arr['data']['activeStorms'] as $s) {
-        $sid = strtoupper((string)($s['id'] ?? ''));
-        if ($sid && strpos($sid, substr($id,0,2)) === 0 && substr($sid,2,2) === substr($id,2,2)) {
-          return $sid;
-        }
-      }
+  $arr = loadPacificCurrentStormsCxml();
+  foreach (($arr['data']['activeStorms'] ?? []) as $s) {
+    $sid = strtoupper((string)($s['id'] ?? ''));
+    if ($sid && strpos($sid, $PACIFIC_BASIN) === 0 && substr($sid,2,2) === substr($id,2,2)) {
+      return $sid;
     }
   }
   return $id;
 }
 
-$stormId = expand_short_id($stormParam, $stormsRoot);
-$shortId = strtolower(substr($stormId, 0, 2) . substr($stormId, 2, 2));
+function loadPacificCurrentStormsCxml(): array {
+  global $PACIFIC_REMOTE_STORMS_FIRST;
+  $local = dirname(__DIR__) . '/cache/nhc_current_storms.json';
+  $remote = 'https://www.nhc.noaa.gov/CurrentStorms.json';
+  $sources = $PACIFIC_REMOTE_STORMS_FIRST ? [$remote, $local] : [$local, $remote];
+  foreach ($sources as $source) {
+    $raw = preg_match('#^https?://#i', $source)
+      ? pacific_writer_fetch_url($source, [
+          'User-Agent: NCHurricane Pacific CXML writer/1.0',
+          'Accept: application/json',
+        ], 10)
+      : @file_get_contents($source);
+    if ($raw === false || trim($raw) === '') continue;
+    $decoded = json_decode($raw, true);
+    $arr = is_array($decoded) ? pacific_writer_normalize_storms($decoded) : null;
+    if ($arr !== null) {
+      return $arr;
+    }
+  }
+  throw new RuntimeException('Unable to load a valid current-storms source.');
+}
 
+$stormId = expand_short_id($stormParam, $stormsRoot);
 
 if ($stormParam === 'ALL') {
-    out("Entering ALL mode - calling processAllEPStormsCXML()");
-    processAllEPStormsCXML($stormsRoot);
+    out("Entering ALL mode - calling processAllPacificStormsCXML()");
+    processAllPacificStormsCXML($stormsRoot);
     exit;
 }
 
-
+if (!preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', $stormId)) {
+    bail("invalid storm id; expected {$PACIFIC_BASIN}nnYYYY");
+}
 
 try {
     processSingleStormCXML($stormId, $stormsRoot);
@@ -102,31 +132,27 @@ try {
     bail($e->getMessage());
 }
 
-function processAllEPStormsCXML(string $stormsRoot): void {
-    $currentStormsPath = dirname(__DIR__) . '/cache/nhc_current_storms.json';
-    if (!file_exists($currentStormsPath)) {
-        out("ERROR: Current storms cache not found at {$currentStormsPath}");
+function processAllPacificStormsCXML(string $stormsRoot): void {
+    global $PACIFIC_BASIN, $PACIFIC_LABEL;
+    try {
+        $stormsData = loadPacificCurrentStormsCxml();
+    } catch (Throwable $e) {
+        out("ERROR: " . $e->getMessage());
         exit(1);
     }
-    $rawStorms = file_get_contents($currentStormsPath);
-    $stormsData = json_decode($rawStorms, true);
-    if (!$stormsData || !isset($stormsData['data']['activeStorms'])) {
-        out("ERROR: Invalid storms data format");
-        exit(1);
-    }
-    $epStorms = [];
+    $pacificStorms = [];
     foreach ($stormsData['data']['activeStorms'] as $storm) {
         $stormId = strtoupper(trim($storm['id'] ?? ''));
-        if (preg_match('/^EP\d{2}\d{4}$/', $stormId)) {
-            $epStorms[] = $stormId;
+        if (preg_match('/^' . preg_quote($PACIFIC_BASIN, '/') . '\d{2}\d{4}$/', $stormId)) {
+            $pacificStorms[] = $stormId;
         }
     }
-    if (empty($epStorms)) {
-        out("INFO: No active EP storms found");
+    if (empty($pacificStorms)) {
+        out("INFO: No active {$PACIFIC_LABEL} storms found");
         exit(0);
     }
     $successCount = 0;
-    foreach ($epStorms as $stormId) {
+    foreach ($pacificStorms as $stormId) {
         out("Processing {$stormId}...");
         try {
             processSingleStormCXML($stormId, $stormsRoot);
@@ -136,7 +162,7 @@ function processAllEPStormsCXML(string $stormsRoot): void {
             out("  ERROR: {$stormId} - " . $e->getMessage());
         }
     }
-    out("Completed: {$successCount}/" . count($epStorms) . " storms processed successfully");
+    out("Completed: {$successCount}/" . count($pacificStorms) . " storms processed successfully");
 }
 
 function processSingleStormCXML(string $stormId, string $stormsRoot): void {

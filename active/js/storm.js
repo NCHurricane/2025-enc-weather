@@ -25,8 +25,8 @@
 // ==============================
 
 
-import { initStormGraphics } from './storm-graphics.js';
-import { RadiiVisualization } from './radii-visualization.js';
+import { initStormGraphics } from './storm-graphics.js?v=20260821-product-states-2';
+import { RadiiVisualization } from './radii-visualization.js?v=20260821-active-tweaks-2';
 
 const CONFIG = {
   STORMS_ROOT: "./storms",
@@ -61,7 +61,7 @@ function showBannerOnly() {
 }
 
 function isValidLongId(id) {
-  return /^(?:AL|EP)\d{2}\d{4}$/.test(id);
+  return /^(?:AL|EP|CP)\d{2}\d{4}$/.test(id);
 }
 
 async function getJson(url) {
@@ -91,7 +91,7 @@ async function loadRadiiCache(longId) {
   return await getJson(url);
 }
 
-async function isCurrentlyActiveStorm(longId) {
+async function loadActiveStormRecord(longId) {
   const payload = await getJson(`${CONFIG.ACTIVE_STORMS_CACHE}?${Date.now()}`);
   const storms = Array.isArray(payload?.activeStorms)
     ? payload.activeStorms
@@ -99,10 +99,10 @@ async function isCurrentlyActiveStorm(longId) {
       ? payload.data.activeStorms
       : [];
 
-  return storms.some((storm) => {
+  return storms.find((storm) => {
     const candidate = String(storm?.id || storm?.atcfID || "").toUpperCase();
     return candidate === longId;
-  });
+  }) || null;
 }
 
 function redirectToNotFound() {
@@ -138,18 +138,6 @@ function formatUtcShort(ts) {
 }
 
 
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      init();
-    },
-    { once: true }
-  );
-} else {
-  init();
-}
-
 const toNA = (v) =>
   v == null ||
     String(v).trim() === "" ||
@@ -174,7 +162,7 @@ function createHeaderLine(content, className = "") {
   return `<div class="ov-header-line ${className}">${content}</div>`;
 }
 
-function renderOverviewV2(advisory, longId) {
+function renderOverviewV2(advisory, longId, activeStorm = null) {
   if (!els.overview) return;
 
   const sysType = (advisory?.systemType || "—").toString();
@@ -296,18 +284,31 @@ function renderOverviewV2(advisory, longId) {
 
 
   // Calculate NHC graphics link
-  function getNHCLink(longId) {
+  function getNHCLink(longId, binNumber = '', officialUrl = '') {
+    try {
+      const parsed = new URL(String(officialUrl || ''));
+      if (parsed.protocol === 'https:'
+        && parsed.hostname === 'www.nhc.noaa.gov'
+        && /^\/graphics_(?:at|ep|cp)[1-5]\.shtml$/i.test(parsed.pathname)) {
+        return parsed.href;
+      }
+    } catch {
+      // Fall through to the verified bin-number route.
+    }
+    const officialBin = String(binNumber || '').trim().toLowerCase();
+    if (/^(?:at|ep|cp)[1-5]$/.test(officialBin)) {
+      return `https://www.nhc.noaa.gov/graphics_${officialBin}.shtml?start#contents`;
+    }
     const basin = longId.slice(0, 2);
     const stormNum = parseInt(longId.slice(2, 4), 10);
-    if (!['AL', 'EP'].includes(basin) || isNaN(stormNum)) return null;
+    if (!['AL', 'EP', 'CP'].includes(basin) || isNaN(stormNum)) return null;
     const n = ((stormNum - 1) % 5) + 1;
-    const url = basin === 'AL'
-      ? `https://www.nhc.noaa.gov/graphics_at${n}.shtml?start#contents`
-      : `https://www.nhc.noaa.gov/graphics_ep${n}.shtml?start#contents`;
+    const graphicsBasin = { AL: 'at', EP: 'ep', CP: 'cp' }[basin];
+    const url = `https://www.nhc.noaa.gov/graphics_${graphicsBasin}${n}.shtml?start#contents`;
     return url;
   }
 
-  const nhcLinkUrl = getNHCLink(longId);
+  const nhcLinkUrl = getNHCLink(longId, activeStorm?.binNumber, activeStorm?.forecastGraphics?.url);
   const nhcLinkHtml = nhcLinkUrl
     ? `<a href="${nhcLinkUrl}" class="nhc-link-btn" target="_blank" rel="noopener">Go to the system's NHC Page</a>`
     : "";
@@ -374,7 +375,8 @@ async function init() {
     return;
   }
 
-  if (!(await isCurrentlyActiveStorm(longId))) {
+  const activeStorm = await loadActiveStormRecord(longId);
+  if (!activeStorm) {
     redirectToNotFound();
     return;
   }
@@ -390,7 +392,7 @@ async function init() {
     return;
   }
 
-  renderOverviewV2(advisory, longId);
+  renderOverviewV2(advisory, longId, activeStorm);
 
   try {
     const rad = cache?.radii || null;
@@ -413,11 +415,16 @@ async function init() {
         type: advisory?.systemType || ""
       };
 
-      initStormGraphics(stormData);
+      await initStormGraphics(stormData);
     }
   } catch (error) {
     console.error("Error initializing storm graphics:", error);
   }
+
+  window.NCHActiveStorm = { stormId: longId, advisory };
+  window.dispatchEvent(new CustomEvent("nch:active-storm-ready", {
+    detail: window.NCHActiveStorm,
+  }));
 }
 
 if (document.readyState === "loading") {

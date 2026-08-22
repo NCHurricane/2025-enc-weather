@@ -17,7 +17,7 @@
 
 .graphics-tab.time-tab {
   font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-  padding: 0.4rem 0.6rem;
+  padding: 0.2rem 0.3rem;
   box-sizing: border-box;
   margin-bottom: 0;
   white-space: nowrap;
@@ -251,7 +251,7 @@
 @media (max-width: 600px) {
   .graphics-tab.time-tab {
     font-size: 0.75rem;
-    padding: 0.35rem 0.5rem;
+    padding: 0.175rem 0.25rem;
   }
 }
 
@@ -265,7 +265,7 @@
 
   .graphics-tab:not(.time-tab) {
     font-size: 0.7rem;
-    padding: 0.4rem 0.7rem;
+    padding: 0.2rem 0.35rem;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
@@ -317,7 +317,7 @@
   .graphics-tab:not(.time-tab):not(.category-tab) {
     width: 50%;
     font-size: 0.85rem;
-    padding: 0.4rem 0.7rem;
+    padding: 0.2rem 0.35rem;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
@@ -386,6 +386,16 @@
   display: none;
 }
 
+.graphic-empty-state {
+  margin: 0;
+  padding: 1rem;
+  color: var(--text-muted, #b8c9d9);
+  text-align: center;
+  border: 1px solid rgba(160, 190, 214, 0.22);
+  border-radius: 0.5rem;
+  background: rgba(5, 25, 43, 0.4);
+}
+
 @media (max-width: 768px) {
   .graphics-tabs.track-language-tabs {
     display: grid;
@@ -403,7 +413,7 @@
   .graphics-tabs.track-product-tabs .graphics-tab {
     width: auto;
     max-width: none;
-    padding: 0.55rem 0.35rem;
+    padding: 0.275rem 0.175rem;
     white-space: normal;
   }
 

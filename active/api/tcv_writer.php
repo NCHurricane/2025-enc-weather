@@ -2,6 +2,7 @@
 <?php
 declare(strict_types=1);
 error_reporting(E_ALL);
+require_once __DIR__ . '/tcv_product_state.php';
 
 /**
  * NHC TCV Writer (Atlantic)
@@ -134,20 +135,6 @@ function http_get(string $url, int $tries = 3, int $timeout = 12): string {
     throw new RuntimeException("Failed GET $url: $last");
 }
 
-function parse_tcv_text(string $txt): array {
-    $lines = preg_split("/\r?\n/", $txt);
-    $adv = null; $issued = null; $zones = [];
-    foreach ($lines as $ln) {
-        if ($adv === null && preg_match('/Advisory\s+(Number\s+)?(\d+)/i', $ln, $m)) { $adv = (int)$m[2]; }
-        if ($issued === null && preg_match('/\b(\d{1,2}:\d{2}\s*[AP]M\s*(?:EDT|EST|CDT|CST|UTC))\b/i', $ln, $m)) { $issued = trim($m[1]); }
-        if (preg_match_all('/\b([A-Z]{3}\d{3})\b/', $ln, $mm)) {
-            foreach ($mm[1] as $z) { $zones[] = strtoupper($z); }
-        }
-    }
-    $zones = array_values(array_unique($zones));
-    return ['advisory'=>$adv, 'issued'=>$issued, 'zones'=>$zones, 'raw'=>$txt];
-}
-
 function cache_zone_geo(string $zoneId) {
     global $CACHE_DIR;
     $zoneId = strtoupper(trim($zoneId));
@@ -177,7 +164,13 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
     }
     if (!$stormRec) {
         vlog($log, "  WARN: Storm not in active list: $stormId\n");
-        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[],'note'=>'not active']);
+        write_storm_tcv($stormId, [
+            'stormId'=>$stormId,
+            'state'=>'not-issued',
+            'reason'=>'storm-not-active',
+            'tcv'=>null,
+            'zones'=>[],
+        ]);
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
@@ -211,13 +204,37 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
     }
 
     if ($chosenRaw === null) {
-        vlog($log, "  INFO: No TCV text matched for $stormId; writing empty file.\n");
-        write_storm_tcv($stormId, ['stormId'=>$stormId,'tcv'=>null,'zones'=>[]]);
+        vlog($log, "  INFO: No current TCV issued for $stormId; writing explicit not-issued state.\n");
+        write_storm_tcv($stormId, [
+            'stormId'=>$stormId,
+            'state'=>'not-issued',
+            'reason'=>'no-matching-current-product',
+            'tcv'=>null,
+            'zones'=>[],
+        ]);
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
 
-    $parsed = parse_tcv_text($chosenRaw);
+    $parsed = nch_parse_tcv_text($chosenRaw);
+    $classification = nch_classify_tcv(
+        $parsed,
+        (string) ($stormRec['publicAdvisory']['advNum'] ?? '')
+    );
+    if ($classification['state'] !== 'available') {
+        write_storm_tcv($stormId, [
+            'stormId' => $stormId,
+            'state' => $classification['state'],
+            'reason' => $classification['reason'],
+            'source' => $chosen,
+            'sourceAdvisory' => $classification['sourceAdvisory'],
+            'sourceIssued' => $parsed['issued'],
+            'tcv' => null,
+            'zones' => [],
+        ]);
+        vlog($log, "  SUCCESS: $stormId ({$classification['state']})\n");
+        return true;
+    }
 
     foreach ($parsed['zones'] as $z) {
         try { cache_zone_geo($z); }
@@ -226,8 +243,11 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
 
     $payload = [
         'stormId' => $stormId,
+        'state'   => 'available',
+        'reason'  => null,
         'source'  => $chosen,
         'tcv'     => [ 'advisory'=>$parsed['advisory'], 'issued'=>$parsed['issued'], 'zones'=>$parsed['zones'] ],
+        'zones'   => $parsed['zones'],
     ];
     write_storm_tcv($stormId, $payload);
     vlog($log, "  SUCCESS: $stormId\n");
@@ -250,7 +270,14 @@ try {
                 if (!$ok) vlog($log, "  ERROR: processing failed for $sid\n");
             } catch (Throwable $e) {
                 vlog($log, "  ERROR: unhandled for $sid: " . $e->getMessage() . "\n");
-                write_storm_tcv($sid, ['stormId'=>$sid,'tcv'=>null,'zones'=>[],'error'=>$e->getMessage()]);
+                write_storm_tcv($sid, [
+                    'stormId'=>$sid,
+                    'state'=>'unavailable',
+                    'reason'=>'writer-error',
+                    'tcv'=>null,
+                    'zones'=>[],
+                    'error'=>$e->getMessage(),
+                ]);
             }
         }
         if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>$alStorms]);

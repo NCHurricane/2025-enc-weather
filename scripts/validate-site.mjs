@@ -6,6 +6,7 @@ import {
   initTropicalCompatibility,
   tropicalCompatibilityTarget,
 } from '../js/modules/tropicalCompatibility.js';
+import { validateTropicalStormManifest } from '../js/modules/tropicalMapEngine.js';
 
 const root = process.cwd();
 const excludedDirectories = new Set(['.git', 'node_modules', 'logs', 'output']);
@@ -147,6 +148,133 @@ const initialized = initTropicalCompatibility({
 });
 if (!initialized || replacements.length !== 1 || replacements[0] !== '/tropical.html?source=bookmark&basin=epac#overview') {
   errors.push('tropicalCompatibility.js: compatibility navigation must replace browser history');
+}
+
+const stormManifest = {
+  schemaVersion: '1.0.0',
+  kind: 'tropical-storm-map',
+  stormId: 'CP012026',
+  stormState: 'live',
+  state: 'partial',
+  products: {
+    currentPosition: { state: 'fresh', file: 'current-position.geojson' },
+    bestTrack: { state: 'not-issued', file: null },
+    surgeWarnings: { state: 'unavailable', file: null },
+  },
+};
+try {
+  validateTropicalStormManifest(stormManifest, 'CP012026');
+  validateTropicalStormManifest({ ...stormManifest, stormId: 'AL052025' }, 'AL052025');
+} catch (error) {
+  errors.push(`tropicalMapEngine.js: valid detailed storm manifest rejected (${error.message})`);
+}
+try {
+  validateTropicalStormManifest(stormManifest, 'AL052025');
+  errors.push('tropicalMapEngine.js: detailed storm manifest identity mismatch was accepted');
+} catch {
+  // Expected exact-storm rejection.
+}
+
+const activePage = await readFile(path.join(root, 'active', 'index.html'), 'utf8').catch(() => '');
+for (const required of [
+  'id="active-storm-map"',
+  'id="active-storm-map-status"',
+  'data-storm-layer="bestTrack"',
+  'data-storm-layer="surgeWarnings"',
+  'data-storm-layer="windRadii34"',
+  'data-active-tab-group="storm"',
+  'data-active-tab-group="nhc"',
+  'data-active-tab-group="wind"',
+  'id="active-map-imagery-source"',
+  'id="active-satellite-frame-scrubber"',
+  'id="key-messages-section"',
+  'activeStormMap.js?v=',
+  'activeStormWorkspace.js?v=',
+  'leaflet@1.9.4/dist/leaflet.js',
+  'ariaLabel: \'NCHurricane home\'',
+]) {
+  if (!activePage.includes(required)) errors.push(`active/index.html: missing Phase 5 contract ${required}`);
+}
+if (activePage.includes('id="glass-distortion"') || !activePage.includes('id="main-content"')) {
+  errors.push('active/index.html: old distortion filter remains or accessible main target is missing');
+}
+if (activePage.includes('src="./js/satellite.js')) {
+  errors.push('active/index.html: standalone satellite controller must not compete with the combined map controller');
+}
+
+const stormController = await readFile(path.join(root, 'active', 'js', 'activeStormMap.js'), 'utf8').catch(() => '');
+if (!stormController.includes('mode: \'storm\'')
+    || !stormController.includes('./storms/${encodeURIComponent(normalized)}/map/manifest.json')
+    || !stormController.includes('mapInstance: this.engine.map')
+    || !stormController.includes('tropicalSatelliteSource')) {
+  errors.push('active/js/activeStormMap.js: detailed mode, exact-storm URL, or shared satellite-map composition is missing');
+}
+
+const workspaceController = await readFile(path.join(root, 'active', 'js', 'activeStormWorkspace.js'), 'utf8').catch(() => '');
+for (const required of ['popstate', 'ArrowRight', 'nch:active-alerts-state', 'nch:active-workspace-panel-change']) {
+  if (!workspaceController.includes(required)) {
+    errors.push(`active/js/activeStormWorkspace.js: missing responsive tab contract ${required}`);
+  }
+}
+
+const stormReader = await readFile(path.join(root, 'active', 'js', 'storm.js'), 'utf8').catch(() => '');
+if (!stormReader.includes('/^(?:AL|EP|CP)\\d{2}\\d{4}$/')
+    || !stormReader.includes('nch:active-storm-ready')
+    || !stormReader.includes('activeStorm?.binNumber')) {
+  errors.push('active/js/storm.js: AL/EP/CP validation or map-ready handoff is missing');
+}
+
+const tropicalMapLib = await readFile(path.join(root, 'active', 'api', 'tropical_map_lib.php'), 'utf8').catch(() => '');
+for (const product of ['best-track.geojson', 'surge-warnings.geojson', 'wind-radii.geojson']) {
+  if (!tropicalMapLib.includes(product)) errors.push(`tropical_map_lib.php: ${product} publisher is missing`);
+}
+
+const pacificWriterCommon = await readFile(path.join(root, 'active', 'api', 'pacific_writer_common.php'), 'utf8').catch(() => '');
+if (!pacificWriterCommon.includes("isset($payload['activeStorms'])")
+    || !pacificWriterCommon.includes("isset($payload['data']['activeStorms'])")) {
+  errors.push('pacific_writer_common.php: official and retained current-storm schemas must both be normalized');
+}
+for (const [filename, implementation] of [
+  ['advisory_writer_cp.php', 'advisory_writer_ep.php'],
+  ['cxml_writer_cp.php', 'cxml_writer_ep.php'],
+  ['tcv_writer_cp.php', 'tcv_writer_ep.php'],
+]) {
+  const writer = await readFile(path.join(root, 'active', 'api', filename), 'utf8').catch(() => '');
+  if (!writer.includes("define('NCH_PACIFIC_BASIN', 'CP')")
+      || !writer.includes("define('NCH_PACIFIC_REMOTE_STORMS_FIRST', true)")
+      || !writer.includes(`require __DIR__ . '/${implementation}'`)) {
+    errors.push(`${filename}: Central Pacific basin, live-feed, or shared implementation contract is missing`);
+  }
+}
+const pacificTcvWriter = await readFile(path.join(root, 'active', 'api', 'tcv_writer_ep.php'), 'utf8').catch(() => '');
+if (!pacificTcvWriter.includes('issuedby=HFO&product=TCV')
+    || !pacificTcvWriter.includes('nch_classify_tcv')) {
+  errors.push('tcv_writer_ep.php: Central Pacific HFO source or explicit product-state gate is missing');
+}
+const cpGraphicsWriter = await readFile(path.join(root, 'active', 'api', 'nhc_graphics_cache_cp.php'), 'utf8').catch(() => '');
+if (!cpGraphicsWriter.includes("define('NCH_GRAPHICS_BASIN', 'CP')")
+    || !cpGraphicsWriter.includes("require __DIR__ . '/nhc_graphics_cache_ep.php'")) {
+  errors.push('nhc_graphics_cache_cp.php: Central Pacific graphics-cache wrapper is missing');
+}
+const textProductsCache = await readFile(path.join(root, 'active', 'api', 'text_products_cache.php'), 'utf8').catch(() => '');
+if (!textProductsCache.includes("['AL' => 'AT', 'EP' => 'EP', 'CP' => 'CP']")
+    || !textProductsCache.includes("$storm['binNumber']")) {
+  errors.push('text_products_cache.php: Central Pacific bin-number routing is missing');
+}
+const stormText = await readFile(path.join(root, 'active', 'js', 'storm_text.js'), 'utf8').catch(() => '');
+if (!stormText.includes("if (stormId.startsWith('CP')) return 'CP'")
+    || !stormText.includes('storm?.binNumber')) {
+  errors.push('active/js/storm_text.js: Central Pacific text-product routing is missing');
+}
+const stormGraphics = await readFile(path.join(root, 'active', 'js', 'storm-graphics.js'), 'utf8').catch(() => '');
+if (!stormGraphics.includes("CP: 'CP'")
+    || !stormGraphics.includes('graphics-manifest.json')
+    || !stormGraphics.includes("state === 'available'")) {
+  errors.push('active/js/storm-graphics.js: Central Pacific routing or graphics-manifest gating is missing');
+}
+const mtcswaFetcher = await readFile(path.join(root, 'active', 'api', 'mtcswa_fetcher.php'), 'utf8').catch(() => '');
+if (!mtcswaFetcher.includes("$basin === 'CP'") || !mtcswaFetcher.includes("'Central Pacific'")) {
+  errors.push('active/api/mtcswa_fetcher.php: Central Pacific storm routing is missing');
 }
 
 for (const [filename, basin, label] of [
