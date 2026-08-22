@@ -34,5 +34,41 @@
     "rank": "4932",
     "maps": ["tropical", "homepage"],
     "minZoom": 4
+  },
+  {
+    "id": "san-diego-california-us",
+    "city": "San Diego",
+    "latitude": 32.83,
+    "longitude": -117.12,
+    "rank": 15,
+    "maps": ["county"],
+    "minZoom": 7
+  },
+  {
+    "id": "escondido-california-us",
+    "city": "Escondido",
+    "latitude": 33.13,
+    "longitude": -117.07,
+    "rank": 299,
+    "maps": ["county"],
+    "minZoom": 8
+  },
+  {
+    "id": "borrego-springs-california-us",
+    "city": "Borrego Springs",
+    "latitude": 33.24,
+    "longitude": -116.36,
+    "rank": 9319,
+    "maps": ["county"],
+    "minZoom": 8
+  },
+  {
+    "id": "julian-california-us",
+    "city": "Julian",
+    "latitude": 33.07,
+    "longitude": -116.59,
+    "rank": 12791,
+    "maps": ["county"],
+    "minZoom": 8
   }
 ]

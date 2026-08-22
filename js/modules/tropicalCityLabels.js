@@ -3,7 +3,7 @@ import {
   clearMapCityFavoriteCache,
   loadMapCityFavorites,
   mergeMapCityFavorites,
-} from './mapCityFavorites.js?v=20260820-1';
+} from './mapCityFavorites.js?v=20260822-san-diego-cities-3';
 
 export const TROPICAL_CITY_LABEL_LIMIT = 20000;
 export const TROPICAL_CITY_LABELS_URL = new URL(

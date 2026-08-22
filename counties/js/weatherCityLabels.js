@@ -2,7 +2,7 @@ import {
   MAP_CITY_FAVORITES_URL,
   loadMapCityFavorites,
   mergeMapCityFavorites,
-} from '../../js/modules/mapCityFavorites.js?v=20260820-1';
+} from '../../js/modules/mapCityFavorites.js?v=20260822-san-diego-cities-3';
 
 const weatherCityDataPromises = new Map();
 

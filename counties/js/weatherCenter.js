@@ -6,8 +6,8 @@ import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
 } from './countyContext.js?v=20260816-home1';
-import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260816-1';
-import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260820-3';
+import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260822-map-borders-1';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260822-san-diego-cities-3';
 
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -152,7 +152,7 @@ function markerMetric(field, data = {}) {
     return {
       available: true,
       compact: false,
-      html: `${Math.round(value)}<span class="temperature-marker-percent"> %</span>`,
+      html: `${Math.round(value)}<span class="temperature-marker-percent">%</span>`,
       spoken: `Relative humidity ${Math.round(value)} percent`,
     };
   }
@@ -170,9 +170,9 @@ function markerMetric(field, data = {}) {
       available: true,
       compact: true,
       html: `
-        <span class="temperature-marker-direction">${direction}</span>
-        <br />
         <span class="temperature-marker-speed">${Math.round(speed)} MPH</span>
+        <br />
+        <span class="temperature-marker-direction">${direction}</span>
       `,
       spoken: `Wind ${direction === '--' ? '' : `${direction} at `}${Math.round(speed)} miles per hour`,
     };
@@ -196,7 +196,7 @@ function markerMetric(field, data = {}) {
   return {
     available: true,
     compact: true,
-    html: `${displayedValue}<small class="temperature-marker-unit">${fieldConfig.unit}</small>`,
+    html: `${displayedValue}<small class="temperature-marker-unit"><br />${fieldConfig.unit}</small>`,
     spoken: `${fieldConfig.spoken} ${displayedValue} ${spokenUnit}`,
   };
 }

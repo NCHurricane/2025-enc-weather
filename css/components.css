@@ -27,7 +27,9 @@
 
 .weather-center-alerts {
   min-height: 42px;
-  margin: 3em 0 1em;
+  margin: 1em 0 0.5em;
+  font-family: var(--font-heading), sans-serif;
+
 }
 
 .weather-center-alerts .alert {
@@ -36,11 +38,12 @@
   padding: 0 14px;
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(4, 10, 16, 0.18);
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 400;
 }
 
 .weather-center-alerts .alert:has(.alert-none) {
   display: flex;
-  min-height: 54px;
   align-items: center;
   padding: 8px 12px;
   border: 1px solid rgba(171, 198, 218, 0.46) !important;

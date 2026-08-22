@@ -386,8 +386,8 @@ County scripts run at different intervals based on how frequently the data chang
 ```
 .
 ├── index.html                      # Home page with interactive county map
-├── tropical_at.html                # Atlantic tropical weather page
-├── tropical_ep.html                # Eastern Pacific tropical weather page
+├── tropical_at.html                # Atlantic compatibility entry
+├── tropical_ep.html                # Eastern Pacific compatibility entry
 ├── 404.html                        # Custom 404 error page
 │
 ├── active/                         # Tropical storm data and processing

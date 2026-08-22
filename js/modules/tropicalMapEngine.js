@@ -678,7 +678,15 @@ export class TropicalMapEngine {
 
   addGeoJsonReferenceOverlay(reference) {
     if (!this.map || !this.leaflet?.geoJSON || typeof this.fetchImpl !== 'function') return null;
-    const { url, rendererFilter, attribution, style = {}, ...geoJsonOptions } = reference;
+    const {
+      url,
+      minZoom,
+      maxZoom,
+      rendererFilter,
+      attribution,
+      style = {},
+      ...geoJsonOptions
+    } = reference;
     delete geoJsonOptions.type;
 
     const renderer = this.leaflet.canvas?.({
@@ -693,7 +701,25 @@ export class TropicalMapEngine {
       style,
     });
     if (attribution) layer.getAttribution = () => attribution;
-    layer.addTo(this.map);
+
+    const syncLayer = () => {
+      if (!this.map) return;
+      const zoom = Number(this.map.getZoom?.());
+      const visible =
+        (minZoom === undefined || zoom >= minZoom)
+        && (maxZoom === undefined || zoom <= maxZoom);
+      if (visible && !this.map.hasLayer?.(layer)) layer.addTo(this.map);
+      if (!visible && this.map.hasLayer?.(layer)) this.map.removeLayer?.(layer);
+
+      const rendererContainer = renderer?.getContainer?.() || renderer?._container;
+      if (rendererContainer) {
+        rendererContainer.style.display = visible ? '' : 'none';
+        if (rendererFilter) rendererContainer.style.filter = rendererFilter;
+      }
+    };
+
+    this.map.on?.('zoomend', syncLayer);
+    syncLayer();
 
     this.fetchImpl(url, {
       cache: 'force-cache',
@@ -704,10 +730,9 @@ export class TropicalMapEngine {
         return response.json();
       })
       .then((geoJson) => {
-        if (!this.map || !this.map.hasLayer?.(layer)) return;
+        if (!this.map) return;
         layer.addData(geoJson);
-        const rendererContainer = renderer?.getContainer?.() || renderer?._container;
-        if (rendererContainer && rendererFilter) rendererContainer.style.filter = rendererFilter;
+        syncLayer();
       })
       .catch((error) => {
         console.warn('[tropical-map] World-border GeoJSON failed:', error);

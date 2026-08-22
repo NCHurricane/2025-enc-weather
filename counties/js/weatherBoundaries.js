@@ -1,6 +1,11 @@
+import {
+  MAP_BORDER_RENDERER_FILTER,
+  MAP_MAJOR_BORDER_STYLE,
+  WORLD_COUNTRY_BORDER_OVERLAY,
+} from '../../js/modules/mapBoundaryOverlays.js?v=20260822-map-borders-1';
+
 const BOUNDARY_ATTRIBUTION =
   'Boundaries: <a href="https://www.census.gov/geographies/mapping-files/2025/geo/carto-boundary-file.html">U.S. Census Bureau</a>';
-const BOUNDARY_RENDERER_FILTER = 'drop-shadow(0 0 1px rgba(45, 45, 45, 0.95))';
 
 const stateBoundaryUrl = new URL(
   '../data/boundaries/us-states-2025-500k.geojson',
@@ -12,12 +17,13 @@ const countyBoundaryUrl = new URL(
 ).toString();
 
 export const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
+  WORLD_COUNTRY_BORDER_OVERLAY,
   Object.freeze({
     type: 'geojson',
     url: countyBoundaryUrl,
     minZoom: 7,
     attribution: BOUNDARY_ATTRIBUTION,
-    rendererFilter: BOUNDARY_RENDERER_FILTER,
+    rendererFilter: MAP_BORDER_RENDERER_FILTER,
     zoomStyles: Object.freeze([
       Object.freeze({
         minZoom: 7,
@@ -47,15 +53,9 @@ export const WEATHER_BOUNDARY_OVERLAYS = Object.freeze([
   Object.freeze({
     type: 'geojson',
     url: stateBoundaryUrl,
+    maxZoom: 8,
     attribution: BOUNDARY_ATTRIBUTION,
-    rendererFilter: BOUNDARY_RENDERER_FILTER,
-    style: Object.freeze({
-      color: '#ededed',
-      weight: 1.4,
-      opacity: 0.72,
-      fill: false,
-      lineCap: 'round',
-      lineJoin: 'round',
-    }),
+    rendererFilter: MAP_BORDER_RENDERER_FILTER,
+    style: MAP_MAJOR_BORDER_STYLE,
   }),
 ]);

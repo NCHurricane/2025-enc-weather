@@ -21,6 +21,18 @@ node scripts/build-tropical-city-labels.mjs
 
 The maps display SimpleMaps and CC BY 4.0 attribution through Leaflet.
 
+## Homepage and county city labels
+
+Homepage and county Conditions, Radar, and Satellite maps use
+`counties/bertie/data/us-cities-all.json`. The browser-facing file contains
+31,254 ranked U.S. city records with `city`, `latitude`, `longitude`, `rank`,
+and `state`, including Alaska and Hawaii. Each page fetches and parses the file
+once, then shares the normalized records among its three weather maps.
+
+`counties/bertie/data/satellite-city-labels.json` is the retained legacy
+eastern-U.S. subset and is not the source for current homepage or county maps.
+Editorial priorities continue to belong in `map-city-favorites.json`.
+
 ## Editorial city favorites
 
 `map-city-favorites.json` is the site-owned override file for city labels that

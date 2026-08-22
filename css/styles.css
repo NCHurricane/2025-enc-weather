@@ -685,9 +685,7 @@ main.container {
 
 .alert-none {
     color: var(--color-accent);
-    font-size: 0.9rem;
     display: block;
-    font-weight: bold;
     padding: 10px 0;
 }
 
@@ -713,7 +711,7 @@ main.container {
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.45);
     color: var(--color-white);
-    font-size: clamp(0.75rem, 2.4vw, 1rem);
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
     line-height: 1.2;
     overflow-wrap: anywhere;
     white-space: normal;
@@ -1281,7 +1279,6 @@ main.container {
         font-size: 1rem;
     }
 
-    .alert-none,
     .section-title,
     .detailed-title,
     .satellite-title,

@@ -5,7 +5,7 @@ export const MAP_CITY_FAVORITE_SCOPES = Object.freeze([
 ]);
 
 export const MAP_CITY_FAVORITES_URL = new URL(
-  '../data/map-city-favorites.json?v=20260820-1',
+  '../data/map-city-favorites.json?v=20260822-san-diego-cities-3',
   import.meta.url,
 ).toString();
 

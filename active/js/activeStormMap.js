@@ -3,12 +3,13 @@ import {
   WEATHER_BASEMAPS,
   formatWeatherTime,
 } from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260821-basemap-menu-2';
-import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260819-1';
+import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260822-san-diego-cities-3';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260822-border-cities-1';
+import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260822-map-borders-1';
 import {
   TROPICAL_SATELLITE_PRODUCTS,
   tropicalSatelliteSource,
-} from '../../js/modules/tropicalSatelliteMap.js?v=20260821-basemap-menu-2';
+} from '../../js/modules/tropicalSatelliteMap.js?v=20260822-map-consistency-3';
 
 const LAYER_PRODUCT = Object.freeze({
   currentPosition: 'currentPosition',
@@ -96,6 +97,7 @@ export class ActiveStormMapController {
     this.imageryGeneration = 0;
     this.fallbackMode = false;
     this.fallbackPlaying = false;
+    this.cityLabels = null;
     this.handleStormReady = this.handleStormReady.bind(this);
     this.handleWorkspacePanelChange = this.handleWorkspacePanelChange.bind(this);
     this.handleImageryChange = this.handleImageryChange.bind(this);
@@ -146,6 +148,7 @@ export class ActiveStormMapController {
     if (!/^(?:AL|EP|CP)\d{6}$/.test(normalized)) return false;
     if (normalized === this.startedStormId) {
       this.engine?.setVisible(true);
+      this.ensureCityLabels();
       this.applyMobileZoomFloor();
       return true;
     }
@@ -168,6 +171,7 @@ export class ActiveStormMapController {
       referenceOverlays: TROPICAL_REFERENCE_OVERLAYS,
       onStatus: (event) => this.handleMapStatus(event),
     });
+    this.ensureCityLabels();
     for (const control of this.controls) {
       this.engine.setLayerVisible(control.dataset.stormLayer, control.checked);
     }
@@ -183,6 +187,19 @@ export class ActiveStormMapController {
       console.warn('[active-storm-map] Detailed map unavailable:', error);
       return false;
     }
+  }
+
+  ensureCityLabels() {
+    if (this.cityLabels) return this.cityLabels;
+    const leafletMap = this.engine?.ensureMap?.();
+    if (!leafletMap) return null;
+    this.cityLabels = installTropicalCityLabels(leafletMap, {
+      leaflet: this.windowRef.L,
+      fetchImpl: this.windowRef.fetch,
+      paneName: 'activeStormCityLabelPane',
+      paneZIndex: 306,
+    });
+    return this.cityLabels;
   }
 
   centerOnStorm(center = this.pendingStormCenter) {
@@ -394,6 +411,8 @@ export class ActiveStormMapController {
     this.windowRef?.removeEventListener?.('nch:active-workspace-panel-change', this.handleWorkspacePanelChange);
     this.imageryGroup?.removeEventListener('change', this.handleImageryChange);
     this.playButton?.removeEventListener('click', this.handlePlayback);
+    this.cityLabels?.destroy?.();
+    this.cityLabels = null;
     this.satelliteMap?.destroy();
     this.satelliteMap = null;
     this.engine?.destroy();

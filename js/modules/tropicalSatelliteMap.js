@@ -3,13 +3,13 @@ import {
   WEATHER_BASEMAPS,
   formatWeatherTime,
 } from './interactiveWeatherMap.js?v=20260821-basemap-menu-2';
-import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260820-2';
+import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260822-san-diego-cities-3';
 import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260821-basemap-menu-2';
-import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260819-1';
+} from './tropicalMapEngine.js?v=20260822-border-cities-1';
+import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
 const NASA_GIBS_URL = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi';

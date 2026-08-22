@@ -33,8 +33,9 @@ Before editing:
    the current task proves otherwise.
 4. Read only the relevant current handoff and source contracts:
    - Tropical or active-storm work:
-     `docs/tropical-map-next-session-plan.md` and the applicable
-     `docs/tropical-map-phase-*.md` file.
+     `docs/tropical-map-next-session-plan.md`. Consult the applicable
+     historical Phase 0-3 record under
+     `docs/archive/tropical-map/2026-08/` only when its evidence is relevant.
    - County UI, statewide conditions, alerts, markers, or shared county maps:
      `docs/county-ui-next-session-plan.md`.
    - SEO, analytics, launch, headers, or account-owned marketing work:

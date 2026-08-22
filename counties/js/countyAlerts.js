@@ -120,16 +120,13 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
       >
         <i class="fa-solid fa-cloud-bolt" aria-hidden="true"></i>
         <span class="county-hwo-trigger-copy">
-          <span>Forecast outlook</span>
           <strong>
             <span class="county-hwo-label-long">Hazardous Weather Outlook</span>
             <span class="county-hwo-label-short">HWO</span>
           </strong>
-          ${issued ? `<small>Issued ${escapeHTML(issued)}</small>` : ''}
         </span>
         <span class="county-hwo-trigger-action">
-          View
-          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
         </span>
       </button>
 

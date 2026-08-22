@@ -58,6 +58,8 @@ counties/*/logs/
 
 #Documentation
 docs/*
+!docs/archive/
+!docs/archive/**
 
 # OS Files
 .DS_Store

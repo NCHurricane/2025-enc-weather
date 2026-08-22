@@ -6,8 +6,8 @@ import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
 } from './countyContext.js?v=20260816-home1';
-import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260816-1';
-import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260820-3';
+import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260822-map-borders-1';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260822-san-diego-cities-3';
 
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
