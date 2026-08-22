@@ -148,21 +148,6 @@
 /*-----------------------------------------------------------------*/
 /* HEADER & OVERVIEW                                              */
 /*-----------------------------------------------------------------*/
-.main-title-active {
-    color: var(--text-accent, #fff200);
-    font-family: var(--font-active);
-    font-size: clamp(2rem, 3vw, 5rem);
-    line-height: 1.2;
-}
-
-.main-title-active #storm-id {
-    font-size: clamp(1.5rem, 2.5vw, 3rem);
-    margin-left: 0.25rem;
-    font-weight: 800;
-    letter-spacing: 0.01em;
-    opacity: 0.95;
-}
-
 .storm-header {
     display: flex;
     flex-wrap: wrap;
@@ -447,37 +432,8 @@
 .active-satellite-tabs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-    border-bottom: 2px solid var(--color-primary);
     margin: 0;
-    padding: 0;
     gap: 0;
-}
-.active-satellite-tab {
-    border: none;
-    border-bottom-width: medium;
-    border-bottom-style: none;
-    border-bottom-color: currentcolor;
-    color: var(--color-text-light);
-    cursor: pointer;
-    font-family: var(--font-active);
-    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-    font-weight: 800;
-    padding: 12px 8px;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    text-align: center;
-    transition: all 0.2s ease;
-    position: relative;
-    border-bottom: 2px solid var(--color-primary);
-}
-.active-satellite-tab:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text);
-}
-.active-satellite-tab.active {
-    background: var(--color-primary);
-    color: #fff;
-    border-bottom: 3px solid var(--color-accent);
 }
 .active-satellite-controls-play-pause {
     position: absolute;
@@ -627,53 +583,14 @@
     flex-wrap: wrap;
     justify-content: flex-start;
     align-items: stretch;
-    border-bottom: 2px solid var(--color-primary);
     margin: 0;
-    padding: 0;
     gap: 0;
 }
 
 .text-tab,
 .text-tab .text-tab.spanish {
-    /* background-color: var(--color-background); */
-    border: none;
-    color: var(--color-text-light);
-    cursor: pointer;
-    font-family: var(--font-active);
-    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-    font-weight: 800;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.2s ease;
-    position: relative;
-    border-bottom: 2px solid var(--color-primary);
     flex: 1 1 auto;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
     box-sizing: border-box;
-}
-
-.text-tab:hover {
-    background-color: var(--color-accent);
-    color: var(--color-text);
-    font-weight: bold;
-}
-
-/* .text-tab:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-  z-index: 1;
-} */
-
-.text-tab.active {
-    background-color: var(--color-primary);
-    color: var(--color-text-light);
-    font-weight: bold;
-    border-bottom: 3px solid var(--color-accent);
-}
-
-.text-tab.active::after {
-    content: none;
 }
 
 .tab-name {
@@ -761,63 +678,7 @@
 .radii-controls {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    border-bottom: 2px solid var(--color-primary);
-    padding: 0;
     gap: 0;
-}
-
-.radii-btn,
-.radii-hour-btn {
-    padding: 12px 8px;
-    border: none;
-    color: var(--color-text-light);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-    font-weight: 800;
-    text-align: center;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    font-family: var(--font-active);
-    position: relative;
-}
-
-.radii-btn:hover,
-.radii-hour-btn:hover {
-    color: var(--color-text);
-    background-color: var(--color-accent);
-    font-weight: bold;
-}
-
-.radii-btn.active,
-.radii-hour-btn.active {
-    background-color: var(--color-primary);
-    color: var(--color-text-light);
-    font-weight: bold;
-    z-index: 1;
-}
-
-.radii-btn.active::after,
-.radii-hour-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background-color: var(--color-accent);
-}
-
-#radii-34 {
-    background: #ffd93d;
-}
-
-#radii-50 {
-    background: #ff9f1c;
-}
-
-#radii-64 {
-    background: #ff6b6b;
 }
 
 .radii-legend {
@@ -940,12 +801,6 @@
         grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     }
 
-    .radii-btn,
-    .radii-hour-btn {
-        font-size: 0.8em;
-        padding: 10px 6px;
-    }
-
     .radii-compass {
         max-width: 350px;
     }
@@ -960,9 +815,6 @@
 /* Mobile (Small)                                                  */
 /*-----------------------------------------------------------------*/
 @media (max-width: 640px) {
-    .main-title-active {
-        text-align: center;
-    }
     #storm-id {
         display: none;
     }
@@ -1018,11 +870,6 @@
         padding: 8px;
     }
 
-    .radii-btn {
-        padding: 4px 8px;
-        font-size: 0.75rem;
-    }
-
     .radii-legend,
     .legend-item {
         font-size: 0.75rem;
@@ -1045,22 +892,10 @@
 }
 
 @media (max-width: 360px) {
-    /* Text Tabs */
-    .text-tab {
-        padding: 10px 8px;
-        font-size: 0.8em;
-    }
-
     /* Radii Controls */
     .radii-hour-controls,
     .radii-controls {
         grid-template-columns: 1fr;
-    }
-
-    .radii-btn,
-    .radii-hour-btn {
-        padding: 10px 8px;
-        font-size: 0.8rem;
     }
 
     .radii-compass {
@@ -1283,30 +1118,9 @@ body {
 /*=================================================================*/
 
 .active-storm-workspace {
-    --active-subtab-height: 28px;
-    --active-subtab-font-size: 0.75rem;
-    --active-subtab-padding: 4px 5px;
     display: grid;
     gap: clamp(28px, 5vw, 64px);
     margin-top: clamp(24px, 4vw, 46px);
-}
-
-#main-content .active-storm-workspace :is(
-    .active-alert-tab,
-    .active-satellite-tab,
-    .graphics-tab,
-    .text-tab,
-    .radii-btn,
-    .radii-hour-btn
-) {
-    box-sizing: border-box;
-    height: var(--active-subtab-height);
-    min-height: var(--active-subtab-height);
-    max-height: var(--active-subtab-height);
-    padding: var(--active-subtab-padding);
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: var(--active-subtab-font-size);
-    line-height: 1.1;
 }
 
 .active-module {
@@ -1316,70 +1130,6 @@ body {
     border-radius: 12px;
     background: #071b2e;
     box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
-}
-
-.active-module-tabs {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    align-items: stretch;
-    padding: 0 10px;
-    border-bottom: 1px solid rgba(177, 201, 220, 0.34);
-    background: #0a1f34;
-}
-
-.active-module-tab {
-    position: relative;
-    display: flex;
-    min-width: 0;
-    min-height: 60px;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 11px 13px;
-    border: 0;
-    background: transparent;
-    color: #c7d6e1;
-    cursor: pointer;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: clamp(0.78rem, 1vw, 0.95rem);
-    font-weight: 650;
-    line-height: 1.2;
-}
-
-.active-module-tab::after {
-    position: absolute;
-    right: 7px;
-    bottom: 0;
-    left: 7px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: transparent;
-    content: "";
-}
-
-.active-module-tab i {
-    color: #eef5fb;
-    font-size: 1rem;
-}
-
-.active-module-tab:hover {
-    background: rgba(255, 255, 255, 0.045);
-    color: #fff;
-}
-
-.active-module-tab:focus-visible {
-    z-index: 2;
-    outline: 2px solid #fff200;
-    outline-offset: -4px;
-}
-
-.active-module-tab.is-active {
-    color: #fff;
-}
-
-.active-module-tab.is-active::after {
-    background: #fff200;
 }
 
 .active-module-tab[hidden],
@@ -1767,51 +1517,6 @@ body {
 .active-alert-tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0 6px;
-    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-    background: #102a43;
-}
-
-.active-alert-tab {
-    position: relative;
-    display: inline-flex;
-    min-height: var(--active-subtab-height);
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: var(--active-subtab-padding);
-    border: 0;
-    background: transparent;
-    color: #bfcfdb;
-    cursor: pointer;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: var(--active-subtab-font-size);
-    font-weight: 650;
-}
-
-.active-alert-tab::after {
-    position: absolute;
-    right: 7px;
-    bottom: 0;
-    left: 7px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: transparent;
-    content: "";
-}
-
-.active-alert-tab:hover,
-.active-alert-tab.is-active {
-    color: #fff;
-}
-
-.active-alert-tab.is-active::after {
-    background: #fff200;
-}
-
-.active-alert-tab:focus-visible {
-    outline: 2px solid #fff200;
-    outline-offset: -4px;
 }
 
 .active-alert-tab[hidden],
@@ -1935,58 +1640,6 @@ body {
     min-height: 0;
 }
 
-.active-module .graphics-tabs,
-.active-module .text-tabs,
-.active-module .radii-hour-controls,
-.active-module .radii-controls {
-    padding-inline: 6px;
-    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-    background: #102a43;
-}
-
-.active-module .graphics-tab,
-.active-module .text-tab,
-.active-module .radii-btn,
-.active-module .radii-hour-btn {
-    position: relative;
-    min-height: var(--active-subtab-height);
-    padding: var(--active-subtab-padding);
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: #bfcfdb;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: var(--active-subtab-font-size);
-    font-weight: 650;
-    line-height: 1.25;
-}
-
-.active-module .graphics-tab:hover,
-.active-module .text-tab:hover,
-.active-module .radii-btn:hover,
-.active-module .radii-hour-btn:hover {
-    background: rgba(255, 255, 255, 0.045);
-    color: #fff;
-}
-
-.active-module .graphics-tab.active,
-.active-module .text-tab.active,
-.active-module .radii-btn.active,
-.active-module .radii-hour-btn.active {
-    border: 0;
-    background: transparent;
-    color: #fff;
-    font-weight: 650;
-}
-
-.active-module .graphics-tab.active::after,
-.active-module .text-tab.active::after,
-.active-module .radii-btn.active::after,
-.active-module .radii-hour-btn.active::after {
-    background: #fff200;
-    content: "";
-}
-
 .active-module .track-language-panel[hidden],
 .active-module .graphics-content-panel[hidden] {
     display: none !important;
@@ -2048,28 +1701,9 @@ body {
     }
 
     .active-module-tabs {
-        display: grid;
         overflow: visible;
         grid-auto-flow: row;
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        padding: 0 5px;
-    }
-
-    .active-module-tab {
-        min-width: 0;
-        min-height: 48px;
-        gap: 7px;
-        padding: 7px 8px;
-        font-size: 0.72rem;
-    }
-
-    .active-module-tab i,
-    .active-alert-tab i {
-        display: none;
-    }
-
-    [data-active-tab-group="storm"] .active-module-tab {
-        min-width: 0;
     }
 
     .active-module-panel {
@@ -2137,8 +1771,6 @@ body {
     .active-module .radii-hour-btn {
         width: auto;
         min-width: 0;
-        min-height: var(--active-subtab-height);
-        padding: var(--active-subtab-padding);
         white-space: normal;
     }
 }
@@ -2146,17 +1778,6 @@ body {
 /*=================================================================*/
 /* SITE TYPOGRAPHY & CONTROL ALIGNMENT                              */
 /*=================================================================*/
-
-.main-title-active {
-    color: #fff;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: clamp(2rem, 3.2vw, 3.15rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.05;
-    text-shadow: none;
-    text-transform: uppercase;
-}
 
 .main-title-active #storm-id {
     margin-left: 0.4rem;
@@ -2311,88 +1932,6 @@ body {
 .nhc-link-btn:focus-visible {
     outline: 2px solid #fff200;
     outline-offset: 2px;
-}
-
-.active-satellite-section .active-satellite-tabs,
-.storm-text-section .text-tabs,
-.glass .graphics-tabs,
-.radii-section .radii-hour-controls,
-.radii-section .radii-controls {
-    padding-inline: 6px;
-    border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-    background: #102a43;
-}
-
-.active-satellite-section .active-satellite-tab,
-.storm-text-section .text-tab,
-.glass .graphics-tab,
-.radii-section .radii-btn,
-.radii-section .radii-hour-btn {
-    position: relative;
-    min-height: var(--active-subtab-height);
-    padding: var(--active-subtab-padding);
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: #bfcfdb;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: var(--active-subtab-font-size);
-    font-weight: 650;
-    line-height: 1.25;
-}
-
-.active-satellite-section .active-satellite-tab::after,
-.storm-text-section .text-tab::after,
-.glass .graphics-tab::after,
-.radii-section .radii-btn::after,
-.radii-section .radii-hour-btn::after {
-    position: absolute;
-    right: 7px;
-    bottom: 0;
-    left: 7px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: transparent;
-    content: "";
-}
-
-.active-satellite-section .active-satellite-tab:hover,
-.storm-text-section .text-tab:hover,
-.glass .graphics-tab:hover,
-.radii-section .radii-btn:hover,
-.radii-section .radii-hour-btn:hover {
-    background: rgba(255, 255, 255, 0.045);
-    color: #fff;
-}
-
-.active-satellite-section .active-satellite-tab:focus-visible,
-.storm-text-section .text-tab:focus-visible,
-.glass .graphics-tab:focus-visible,
-.radii-section .radii-btn:focus-visible,
-.radii-section .radii-hour-btn:focus-visible {
-    z-index: 2;
-    outline: 2px solid #fff200;
-    outline-offset: -3px;
-}
-
-.active-satellite-section .active-satellite-tab.active,
-.storm-text-section .text-tab.active,
-.glass .graphics-tab.active,
-.radii-section .radii-btn.active,
-.radii-section .radii-hour-btn.active {
-    border: 0;
-    background: transparent;
-    color: #fff;
-    font-weight: 650;
-}
-
-.active-satellite-section .active-satellite-tab.active::after,
-.storm-text-section .text-tab.active::after,
-.glass .graphics-tab.active::after,
-.radii-section .radii-btn.active::after,
-.radii-section .radii-hour-btn.active::after {
-    background: #fff200;
-    content: "";
 }
 
 #ww-wind-text-empty,

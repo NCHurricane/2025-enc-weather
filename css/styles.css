@@ -40,6 +40,26 @@
     --font-mono: 'Fira Code', monospace;
     --font-active: 'Saira', sans-serif;
 
+    /* Shared component tokens */
+    --component-title-color: #fff;
+    --component-title-font-size: 2rem;
+    --component-title-font-weight: 700;
+    --component-title-letter-spacing: -0.025em;
+    --component-title-line-height: 1.05;
+    --component-tab-active-color: #fff;
+    --component-tab-inactive-color: #c7d6e1;
+    --component-subtab-inactive-color: #bfcfdb;
+    --component-tab-indicator-color: var(--color-accent);
+    --component-tab-hover-background: rgba(255, 255, 255, 0.045);
+    --component-primary-tab-height: 60px;
+    --component-primary-tab-font-size: 0.9rem;
+    --component-primary-tab-line-height: 1.2;
+    --component-primary-tab-padding: 11px 13px;
+    --component-subtab-height: 35px;
+    --component-subtab-font-size: 0.75rem;
+    --component-subtab-line-height: 1.1;
+    --component-subtab-padding: 4px 5px;
+
     /* Breakpoints */
     --breakpoint-sm: 600px;
     --breakpoint-md: 768px;
@@ -211,15 +231,6 @@ button {
     max-width: 2000px;
     padding-top: clamp(100px, 5vw, 3em);
     width: var(--site-main-width);
-}
-
-.main-title {
-    color: var(--color-accent);
-    text-shadow: var(--color-black) 3px 3px 1px;
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 2rem;
-    text-transform: uppercase;
 }
 
 .notfound-title {
@@ -1021,10 +1032,6 @@ button {
         max-width: 250px;
     }
 
-    .main-title {
-        font-size: 1.5rem;
-    }
-
     .current-container {
         background-image: none;
     }
@@ -1143,10 +1150,6 @@ button {
 
     .instructions {
         font-size: 0.7rem;
-    }
-
-    .main-title {
-        font-size: 1rem;
     }
 
     .alert-details {

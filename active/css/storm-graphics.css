@@ -16,27 +16,13 @@
 }
 
 .graphics-tab.time-tab {
-  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-  padding: 0.2rem 0.3rem;
   box-sizing: border-box;
   margin-bottom: 0;
   white-space: nowrap;
   text-align: center;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.graphics-tab.time-tab:hover {
-  background: var(--color-accent);
-}
-
-.graphics-tab.time-tab.active {
-  background: #007bff;
-  color: white;
 }
 
 /* Keeping this as it might be used in tab content */
@@ -60,10 +46,6 @@
 }
 
 /* Tabs for Wind Probability */
-.graphics-tabs {
-  width: 100%;
-}
-
 .tab-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -150,47 +132,6 @@
   gap: 0;  
 }
 
-/* Individual tabs */
-.graphics-tab {
-  border: none;
-  color: var(--color-text-light);
-  cursor: pointer;
-  font-family: var(--font-active);
-  font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-  font-weight: 800;
-  padding: 12px 8px;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  text-align: center;
-  transition: all 0.2s ease;
-  position: relative;
-  border-bottom: 2px solid var(--color-primary); /* Added */
-}
-
-.graphics-tab:hover {
-  background-color: var(--color-accent);
-  color: var(--color-text);
-  font-weight: bold;
-}
-
-/* .graphics-tab:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-  z-index: 1;
-} */
-
-.graphics-tab.active {
-  background-color: var(--color-primary);
-  color: var(--color-text-light);
-  font-weight: bold;
-  border-bottom: 3px solid var(--color-accent); /* Yellow accent border when active */
-}
-
-/* Remove the old underline effect for active tab */
-.graphics-tab.active::after {
-  content: none;
-}
-
 /* Content container */
 .graphics-content-container {
   position: relative;
@@ -242,17 +183,6 @@
   .graphics-tabs {
     grid-template-columns: 1fr;
   }
-  .graphics-tab {
-    padding: 10px 8px;
-    font-size: 0.8em;
-  }
-}
-
-@media (max-width: 600px) {
-  .graphics-tab.time-tab {
-    font-size: 0.75rem;
-    padding: 0.175rem 0.25rem;
-  }
 }
 
 /* Responsive */
@@ -264,8 +194,6 @@
   }
 
   .graphics-tab:not(.time-tab) {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.35rem;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
@@ -282,8 +210,6 @@
     flex: 1 1 0;
     min-width: 0;
     max-width: 100%;
-    font-size: 0.7rem;
-    padding: 0.4rem 0.7rem;
     box-sizing: border-box;
     margin-bottom: 0;
     white-space: nowrap;
@@ -316,8 +242,6 @@
 
   .graphics-tab:not(.time-tab):not(.category-tab) {
     width: 50%;
-    font-size: 0.85rem;
-    padding: 0.2rem 0.35rem;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
@@ -377,9 +301,7 @@
 }
 
 .track-product-tab {
-  font-size: clamp(0.75rem, 1.25vw, 0.95rem);
-  line-height: 1.2;
-  padding: 10px 6px;
+  line-height: var(--component-subtab-line-height);
 }
 
 .track-language-panel[hidden] {
@@ -419,15 +341,5 @@
 
   .track-product-tabs .track-product-tab:last-child:nth-child(odd) {
     grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 420px) {
-  .graphics-tabs.track-language-tabs .graphics-tab {
-    font-size: 0.72rem;
-  }
-
-  .graphics-tabs.track-product-tabs .graphics-tab {
-    font-size: 0.72rem;
   }
 }

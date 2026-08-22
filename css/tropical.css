@@ -76,18 +76,9 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.tropical-basin-tabs .weather-center-tab {
-  min-height: 68px;
-  font-size: clamp(0.9rem, 1.2vw, 1.08rem);
-}
-
 .tropical-section-tabs {
   border-bottom-color: rgba(177, 201, 220, 0.28);
   background: #102a43;
-}
-
-.tropical-section-tabs .weather-center-tab {
-  min-height: 50px;
 }
 
 .tropical-basin-tabs .weather-center-tab span,
@@ -396,17 +387,6 @@
 @media (max-width: 480px) {
   .tropical-weather-center .weather-center-map-card {
     --weather-center-content-height: 330px;
-  }
-
-  .tropical-basin-tabs .weather-center-tab {
-    min-height: 54px;
-    padding: 7px 4px;
-    font-size: 0.68rem;
-  }
-
-  .tropical-section-tabs .weather-center-tab {
-    min-height: 48px;
-    font-size: 0.66rem;
   }
 
   .tropical-source-link {

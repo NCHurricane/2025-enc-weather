@@ -1684,23 +1684,6 @@ main.container {
   padding-top: clamp(85px, 10vw, 95px);
 }
 
-.weather-center-heading {
-  margin: 0 0 14px;
-  text-align: center;
-}
-
-.weather-center-heading .main-title {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(2rem, 3.2vw, 3.15rem);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-  text-shadow: none;
-  text-transform: none;
-  text-transform: uppercase;
-}
-
 .weather-center-layout {
   display: block;
 }
@@ -1759,139 +1742,6 @@ main.container {
   border-radius: 12px;
   background: #071b2e;
   box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
-}
-
-.weather-center-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 0;
-  padding: 0 10px;
-  border-bottom: 1px solid rgba(177, 201, 220, 0.34);
-  background: #0a1f34;
-}
-
-.weather-center-tab {
-  position: relative;
-  display: flex;
-  min-width: 0;
-  min-height: 62px;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
-  gap: 11px;
-  padding: 12px 14px;
-  border: 0;
-  background: transparent;
-  color: #e3edf5;
-  cursor: pointer;
-  font-family: "Montserrat", Arial, sans-serif;
-  font-size: clamp(0.84rem, 1vw, 1rem);
-  font-weight: 650;
-  text-transform: none;
-}
-
-.weather-center-tab + .weather-center-tab::before {
-  position: absolute;
-  top: 15px;
-  bottom: 15px;
-  left: 0;
-  width: 1px;
-  background: rgba(181, 202, 219, 0.34);
-  content: "";
-}
-
-.weather-center-tab::after {
-  position: absolute;
-  right: 7px;
-  bottom: 0;
-  left: 7px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: transparent;
-  content: "";
-}
-
-.weather-center-tab i {
-  color: #f2f6f9;
-  font-size: 1.05rem;
-}
-
-.weather-center-tab:hover {
-  background: rgba(255, 255, 255, 0.045);
-  color: #fff;
-}
-
-.weather-center-tab:focus-visible {
-  z-index: 2;
-  outline: 2px solid #fff200;
-  outline-offset: -4px;
-}
-
-.weather-center-tab.is-active {
-  color: #fff;
-}
-
-.weather-center-tab.is-active::after {
-  background: #fff200;
-}
-
-.weather-center-condition-tabs {
-  display: flex;
-  overflow-x: auto;
-  padding: 0 10px;
-  border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-  background: #102a43;
-  scrollbar-color: rgba(255, 242, 0, 0.75) transparent;
-  scrollbar-width: thin;
-}
-
-.weather-center-condition-tab {
-  position: relative;
-  display: flex;
-  min-width: 90px;
-  min-height: 42px;
-  flex: 1 0 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 7px;
-  border: 0;
-  background: transparent;
-  color: #bfcfdb;
-  cursor: pointer;
-  font-family: "Montserrat", Arial, sans-serif;
-  font-size: clamp(0.7rem, 0.82vw, 0.8rem);
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.weather-center-condition-tab::after {
-  position: absolute;
-  right: 8px;
-  bottom: 0;
-  left: 8px;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: transparent;
-  content: "";
-}
-
-.weather-center-condition-tab:hover {
-  background: rgba(255, 255, 255, 0.045);
-  color: #fff;
-}
-
-.weather-center-condition-tab:focus-visible {
-  outline: 2px solid #fff200;
-  outline-offset: -3px;
-}
-
-.weather-center-condition-tab.is-active {
-  color: #fff;
-}
-
-.weather-center-condition-tab.is-active::after {
-  background: #fff200;
 }
 
 .weather-center-condition-panel {
@@ -2348,47 +2198,6 @@ main.container {
   padding: 13px 14px 14px;
 }
 
-.weather-center-forecast-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-  background: #0b2238;
-}
-
-.weather-center-forecast-tab {
-  min-height: 38px;
-  padding: 7px 9px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #c7d5df;
-  cursor: pointer;
-  font-family: "Montserrat", Arial, sans-serif;
-  font-size: clamp(0.76rem, 0.9vw, 0.88rem);
-  font-weight: 650;
-  text-align: center;
-  text-transform: none;
-}
-
-.weather-center-forecast-tab:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-.weather-center-forecast-tab:focus-visible {
-  outline: 2px solid #fff200;
-  outline-offset: 1px;
-}
-
-.weather-center-forecast-tab.is-active {
-  border-color: rgba(196, 216, 231, 0.34);
-  background: #173b5a;
-  color: #fff;
-  box-shadow: inset 0 -3px #fff200;
-}
-
 .weather-center-forecast-content {
   min-height: 0;
   box-sizing: border-box;
@@ -2679,57 +2488,16 @@ main.container {
     width: calc(100% - 24px);
   }
 
-  .weather-center-heading {
-    margin-bottom: 10px;
-  }
-
   .weather-center-map-card {
     --weather-center-content-height: 380px;
   }
 
-  .weather-center-tabs {
-    padding: 0 4px;
-  }
-
-  .weather-center-condition-tabs {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    overflow: visible;
-    padding: 0;
-  }
-
-  .weather-center-condition-tab {
-    min-width: 0;
-    min-height: 10px;
-    padding: 6px 4px;
-    font-size: 0;
-  }
-
-  .weather-center-condition-tab::before {
-    content: attr(data-short-label);
-    font-size: 0.72rem;
-  }
-
   .weather-center-condition-tab:nth-child(-n + 4) {
     grid-column: span 3;
-    border-bottom: 1px solid rgba(177, 201, 220, 0.16);
   }
 
   .weather-center-condition-tab:nth-child(n + 5) {
     grid-column: span 4;
-  }
-
-  .weather-center-tab {
-    min-height: 56px;
-    flex-direction: column;
-    gap: 4px;
-    padding: 7px 3px;
-    font-size: 0.7rem;
-  }
-
-  .weather-center-tab + .weather-center-tab::before {
-    top: 12px;
-    bottom: 12px;
   }
 
   .temperature-controls,
@@ -2780,16 +2548,6 @@ main.container {
 
   .weather-center-toolbar-label {
     padding-right: 12px;
-  }
-
-  .weather-center-forecast-tabs {
-    padding: 7px;
-  }
-
-  .weather-center-forecast-tab {
-    min-height: 36px;
-    padding: 6px 3px;
-    font-size: 0.68rem;
   }
 
   .weather-center-forecast-content {
@@ -2949,22 +2707,6 @@ main.container {
   .weather-center-alerts .alert-details {
     margin-bottom: 5px;
     padding: 5px;
-  }
-
-  .weather-center-tab {
-    min-height: 40px;
-    flex-direction: row;
-    gap: 0;
-    padding: 5px 3px;
-  }
-
-  .weather-center-tab i {
-    display: none;
-  }
-
-  .weather-center-tab + .weather-center-tab::before {
-    top: 8px;
-    bottom: 8px;
   }
 
   .weather-center-map-card .leaflet-control-zoom a {

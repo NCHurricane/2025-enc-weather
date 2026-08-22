@@ -1,0 +1,291 @@
+/* Shared presentation for page titles, primary tabs, and subtabs. */
+
+.weather-center-heading {
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.main-title,
+.main-title-active {
+  color: var(--component-title-color);
+  font-family: var(--font-heading);
+  font-size: var(--component-title-font-size);
+  font-weight: var(--component-title-font-weight);
+  letter-spacing: var(--component-title-letter-spacing);
+  line-height: var(--component-title-line-height);
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.weather-center-heading .main-title {
+  margin: 0;
+}
+
+.weather-center-tabs,
+.active-module-tabs {
+  display: grid;
+  align-items: stretch;
+  gap: 0;
+  padding: 0 10px;
+  border-bottom: 1px solid rgba(177, 201, 220, 0.34);
+  background: #0a1f34;
+}
+
+.weather-center-tabs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.active-module-tabs {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.weather-center-tabs .weather-center-tab,
+.active-module-tabs .active-module-tab {
+  position: relative;
+  display: flex;
+  width: auto;
+  min-width: 0;
+  height: var(--component-primary-tab-height);
+  min-height: var(--component-primary-tab-height);
+  max-height: var(--component-primary-tab-height);
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  padding: var(--component-primary-tab-padding);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--component-tab-inactive-color);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--component-primary-tab-font-size);
+  font-weight: 650;
+  line-height: var(--component-primary-tab-line-height);
+  text-align: center;
+  text-transform: none;
+}
+
+.weather-center-tabs .weather-center-tab::after,
+.active-module-tabs .active-module-tab::after {
+  content: none;
+}
+
+.weather-center-tabs .weather-center-tab i,
+.active-module-tabs .active-module-tab i {
+  color: #eef5fb;
+  font-size: 1rem;
+}
+
+.weather-center-tabs .weather-center-tab:hover,
+.active-module-tabs .active-module-tab:hover {
+  background: var(--component-tab-hover-background);
+  color: var(--component-tab-active-color);
+}
+
+.weather-center-tabs .weather-center-tab:focus-visible,
+.active-module-tabs .active-module-tab:focus-visible {
+  z-index: 2;
+  outline: 2px solid var(--component-tab-indicator-color);
+  outline-offset: -4px;
+}
+
+.weather-center-tabs .weather-center-tab.is-active,
+.active-module-tabs .active-module-tab.is-active {
+  border-bottom-color: var(--component-tab-indicator-color);
+  color: var(--component-tab-active-color);
+  font-weight: 650;
+}
+
+.weather-center-condition-tabs,
+.weather-center-forecast-tabs,
+.active-alert-tabs,
+.active-satellite-tabs,
+.graphics-tabs,
+.text-tabs,
+.radii-hour-controls,
+.radii-controls {
+  padding-inline: 6px;
+  border-bottom: 1px solid rgba(177, 201, 220, 0.24);
+  background: #102a43;
+}
+
+.weather-center-condition-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-color: rgba(255, 242, 0, 0.75) transparent;
+  scrollbar-width: thin;
+}
+
+.weather-center-forecast-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+}
+
+.active-alert-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.weather-center-condition-tabs .weather-center-condition-tab,
+.weather-center-forecast-tabs .weather-center-forecast-tab,
+#main-content .active-storm-workspace :is(
+  .active-alert-tab,
+  .active-satellite-tab,
+  .graphics-tab,
+  .text-tab,
+  .radii-btn,
+  .radii-hour-btn
+) {
+  position: relative;
+  display: flex;
+  width: auto;
+  min-width: 0;
+  height: var(--component-subtab-height);
+  min-height: var(--component-subtab-height);
+  max-height: var(--component-subtab-height);
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  overflow: hidden;
+  padding: var(--component-subtab-padding);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--component-subtab-inactive-color);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--component-subtab-font-size);
+  font-weight: 650;
+  line-height: var(--component-subtab-line-height);
+  text-align: center;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.weather-center-condition-tabs .weather-center-condition-tab::after,
+.weather-center-forecast-tabs .weather-center-forecast-tab::after,
+#main-content .active-storm-workspace :is(
+  .active-alert-tab,
+  .active-satellite-tab,
+  .graphics-tab,
+  .text-tab,
+  .radii-btn,
+  .radii-hour-btn
+)::after {
+  content: none;
+}
+
+.weather-center-condition-tabs .weather-center-condition-tab:hover,
+.weather-center-forecast-tabs .weather-center-forecast-tab:hover,
+#main-content .active-storm-workspace :is(
+  .active-alert-tab,
+  .active-satellite-tab,
+  .graphics-tab,
+  .text-tab,
+  .radii-btn,
+  .radii-hour-btn
+):hover {
+  background: var(--component-tab-hover-background);
+  color: var(--component-tab-active-color);
+}
+
+.weather-center-condition-tabs .weather-center-condition-tab:focus-visible,
+.weather-center-forecast-tabs .weather-center-forecast-tab:focus-visible,
+#main-content .active-storm-workspace :is(
+  .active-alert-tab,
+  .active-satellite-tab,
+  .graphics-tab,
+  .text-tab,
+  .radii-btn,
+  .radii-hour-btn
+):focus-visible {
+  z-index: 2;
+  outline: 2px solid var(--component-tab-indicator-color);
+  outline-offset: -3px;
+}
+
+.weather-center-condition-tabs .weather-center-condition-tab.is-active,
+.weather-center-forecast-tabs .weather-center-forecast-tab.is-active,
+#main-content .active-storm-workspace :is(
+  .active-alert-tab.is-active,
+  .active-satellite-tab.active,
+  .graphics-tab.active,
+  .text-tab.active,
+  .radii-btn.active,
+  .radii-hour-btn.active
+) {
+  border-bottom-color: var(--component-tab-indicator-color);
+  background: transparent;
+  color: var(--component-tab-active-color);
+  font-weight: 650;
+  box-shadow: none;
+}
+
+@media (max-width: 680px) {
+  :root {
+    --component-primary-tab-height: 40px;
+    --component-primary-tab-font-size: 0.7rem;
+    --component-primary-tab-line-height: 1.1;
+    --component-primary-tab-padding: 5px 3px;
+  }
+
+  .weather-center-tabs,
+  .active-module-tabs {
+    padding-inline: 4px;
+  }
+
+  .active-module-tabs {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .weather-center-tabs .weather-center-tab,
+  .active-module-tabs .active-module-tab {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .weather-center-tabs .weather-center-tab i,
+  .active-module-tabs .active-module-tab i,
+  #main-content .active-storm-workspace :is(.active-alert-tab, .active-satellite-tab) i {
+    display: none;
+  }
+
+  .weather-center-condition-tabs {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    overflow: visible;
+    padding-inline: 0;
+  }
+
+  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label] {
+    text-indent: -100vw;
+  }
+
+  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]::before {
+    position: absolute;
+    inset: 0 3px 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--component-subtab-inactive-color);
+    content: attr(data-short-label);
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    text-indent: 0;
+  }
+
+  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label].is-active::before,
+  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]:hover::before {
+    color: var(--component-tab-active-color);
+  }
+}
