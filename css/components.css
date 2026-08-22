@@ -1,4 +1,4 @@
-/* Shared presentation for page titles, primary tabs, and subtabs. */
+/* Shared presentation for page titles, tabs, weather-center shell, and map menus. */
 
 .weather-center-heading {
   margin: 0 0 14px;
@@ -19,6 +19,87 @@
 
 .weather-center-heading .main-title {
   margin: 0;
+}
+
+.weather-center-layout {
+  display: block;
+}
+
+.weather-center-alerts {
+  min-height: 42px;
+  margin: 3em 0 1em;
+}
+
+.weather-center-alerts .alert {
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(4, 10, 16, 0.18);
+}
+
+.weather-center-alerts .alert:has(.alert-none) {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(171, 198, 218, 0.46) !important;
+  border-left: 5px solid #7fe0aa !important;
+  border-radius: 9px !important;
+  background: #0a1f34 !important;
+  color: #fff;
+}
+
+.weather-center-alerts .alert-none {
+  padding: 0;
+  color: #fff;
+}
+
+.weather-center-alerts .alert-none .alert-title-chip {
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 0.82rem;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.weather-center-alerts .alert-none i {
+  color: #7fe0aa;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+
+.weather-center-map-card {
+  --weather-center-content-height: clamp(480px, calc(100svh - 350px), 650px);
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(164, 190, 211, 0.52);
+  border-radius: 12px;
+  background: #071b2e;
+  box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
+}
+
+.weather-center-condition-panel,
+.weather-center-panel {
+  min-width: 0;
+}
+
+.weather-center-panel[hidden] {
+  display: none !important;
+}
+
+@media (min-width: 1200px) and (min-aspect-ratio: 4 / 3) {
+  .weather-center-map-card {
+    --weather-center-content-height: clamp(280px, calc(100svh - 490px), 650px);
+  }
+}
+
+@media (max-width: 768px) {
+  .weather-center-map-card {
+    --weather-center-content-height: 380px;
+  }
 }
 
 .weather-center-tabs,
@@ -229,6 +310,132 @@
   box-shadow: none;
 }
 
+.weather-center-map-card :is(.radar-select, .satellite-select) {
+  border-color: var(--component-menu-border-color);
+  background-color: var(--component-menu-background);
+  color: var(--component-menu-color);
+  font-family: var(--font-heading);
+  font-size: var(--component-menu-font-size);
+  font-weight: var(--component-menu-font-weight);
+  line-height: var(--component-menu-line-height);
+}
+
+.weather-center-map-card :is(.radar-select, .satellite-select):hover {
+  background-color: var(--component-menu-hover-background);
+}
+
+.weather-center-map-card :is(.radar-select, .satellite-select) option {
+  background: var(--component-menu-option-background);
+  color: var(--component-menu-color);
+  font-family: var(--font-heading);
+  font-size: var(--component-menu-font-size);
+  font-weight: var(--component-menu-font-weight);
+  line-height: var(--component-menu-line-height);
+}
+
+.map-menu {
+  position: relative;
+}
+
+.map-basemap-control {
+  position: relative;
+  z-index: 1200;
+}
+
+.map-basemap-control .map-menu > summary {
+  width: 33px;
+  min-height: 33px;
+  justify-content: center;
+  padding: 0;
+  border-color: rgba(31, 52, 67, 0.45);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #74787b;
+  box-shadow: 0 3px 12px rgba(4, 13, 20, 0.25);
+}
+
+.map-basemap-control .map-menu > summary i {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.map-menu > summary {
+  display: inline-flex;
+  min-height: 38px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid rgba(151, 180, 202, 0.58);
+  border-radius: 8px;
+  background: #102a43;
+  color: #f5f9fc;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.map-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.map-menu > summary:focus-visible {
+  outline: 2px solid var(--component-tab-indicator-color);
+  outline-offset: 2px;
+}
+
+.map-menu-options {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 1200;
+  display: grid;
+  width: min(175px, calc(100vw - 36px));
+  box-sizing: border-box;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid var(--component-menu-border-color);
+  border-radius: 9px;
+  background: var(--component-menu-background);
+  box-shadow: 0 10px 24px rgba(2, 8, 14, 0.46);
+}
+
+.map-menu--align-end .map-menu-options {
+  right: 0;
+  left: auto;
+}
+
+.map-menu-options label {
+  display: flex;
+  min-width: 0;
+  min-height: 20px;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 6px;
+  color: var(--component-menu-color);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--component-menu-font-size);
+  font-weight: var(--component-menu-font-weight);
+  line-height: var(--component-menu-line-height);
+}
+
+.map-menu-options label:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.map-menu-options input {
+  flex: 0 0 auto;
+  accent-color: var(--component-tab-indicator-color);
+}
+
+.map-menu:not([open]) .map-menu-options {
+  display: none;
+}
+
 @media (max-width: 680px) {
   :root {
     --component-primary-tab-height: 40px;
@@ -287,5 +494,22 @@
   .weather-center-condition-tabs .weather-center-condition-tab[data-short-label].is-active::before,
   .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]:hover::before {
     color: var(--component-tab-active-color);
+  }
+
+  .map-menu > summary {
+    width: 100%;
+    justify-content: center;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .weather-center-alerts {
+    margin-bottom: 10px;
+  }
+
+  .weather-center-map-card {
+    --weather-center-content-height: 330px;
+    border-radius: 9px;
   }
 }

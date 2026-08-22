@@ -1,3 +1,5 @@
+import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+
 const DEFAULT_BASEMAP_URL =
   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
 const DEFAULT_BASEMAP_ATTRIBUTION =
@@ -586,7 +588,6 @@ export class TropicalMapEngine {
       this.layerKeys.map((key) => [key, !['windRadii50', 'windRadii64'].includes(key)]),
     );
     this.handleWindowResize = this.handleWindowResize.bind(this);
-    this.handleBasemapChange = this.handleBasemapChange.bind(this);
     this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
   }
 
@@ -729,29 +730,15 @@ export class TropicalMapEngine {
   }
 
   installBasemapControl() {
-    if (!this.map || this.basemapLayerControl || !this.leaflet?.control?.layers) return;
-    const controlLayers = {};
-    for (const [basemapId, layer] of this.basemapLayers) {
-      controlLayers[this.basemaps[basemapId]?.label || basemapId] = layer;
-    }
-    this.basemapLayerControl = this.leaflet.control.layers(controlLayers, null, {
-      collapsed: true,
+    if (!this.map || this.basemapLayerControl) return;
+    this.basemapLayerControl = installBasemapMenuControl({
+      leaflet: this.leaflet,
+      map: this.map,
+      basemaps: this.basemaps,
+      initialBasemap: this.activeBasemapId,
       position: this.basemapControlPosition,
-    }).addTo(this.map);
-    this.basemapLayerControl
-      .getContainer?.()
-      ?.querySelector?.('.leaflet-control-layers-toggle')
-      ?.setAttribute?.('aria-label', 'Choose a base map');
-    this.map.on?.('baselayerchange', this.handleBasemapChange);
-  }
-
-  handleBasemapChange(event) {
-    for (const [basemapId, layer] of this.basemapLayers) {
-      if (layer !== event.layer) continue;
-      this.activeBasemapId = basemapId;
-      this.basemapLayer = layer;
-      break;
-    }
+      onSelect: (basemapId) => this.setBasemap(basemapId),
+    });
   }
 
   setBasemap(basemapId) {
@@ -766,6 +753,7 @@ export class TropicalMapEngine {
     }
     if (!this.map.hasLayer?.(nextLayer)) nextLayer.addTo(this.map);
     this.basemapLayer = nextLayer;
+    this.basemapLayerControl?.setActiveBasemap?.(basemapId);
     return true;
   }
 
@@ -1268,7 +1256,6 @@ export class TropicalMapEngine {
     this.resizeObserver = null;
     this.windowRef?.removeEventListener?.('resize', this.handleWindowResize);
     this.map?.off?.('zoom zoomend resize', this.updateZoomIndicator);
-    this.map?.off?.('baselayerchange', this.handleBasemapChange);
     this.map?.remove?.();
     this.map = null;
     this.basemapLayer = null;

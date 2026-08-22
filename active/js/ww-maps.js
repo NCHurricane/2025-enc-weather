@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
-import { WEATHER_BASEMAPS } from '../../js/modules/interactiveWeatherMap.js?v=20260821-unified-active-1';
+import {
+  WEATHER_BASEMAPS,
+  installBasemapMenuControl,
+} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
 // ============================================================================
 // Watches & Warnings Maps Module (ww-maps.js)
 // ---------------------------------------------------------------------------
@@ -1034,7 +1037,6 @@ function ensureAlertMap(hazard) {
     });
     map.setView([27, -80], 4, { animate: false });
     const basemapLayers = new Map();
-    const controlLayers = {};
     for (const [id, config] of Object.entries(WEATHER_BASEMAPS)) {
       const layer = window.L.tileLayer(config.url, {
         attribution: config.attribution,
@@ -1042,13 +1044,24 @@ function ensureAlertMap(hazard) {
         subdomains: config.subdomains || 'abc',
       });
       basemapLayers.set(id, layer);
-      controlLayers[config.label || id] = layer;
     }
     (basemapLayers.get('esri') || basemapLayers.values().next().value)?.addTo(map);
-    window.L.control.layers(controlLayers, null, {
-      collapsed: true,
+    installBasemapMenuControl({
+      leaflet: window.L,
+      map,
+      basemaps: WEATHER_BASEMAPS,
+      initialBasemap: 'esri',
       position: 'topleft',
-    }).addTo(map);
+      onSelect: (basemapId) => {
+        const nextLayer = basemapLayers.get(basemapId);
+        if (!nextLayer) return false;
+        for (const layer of basemapLayers.values()) {
+          if (layer !== nextLayer && map.hasLayer(layer)) map.removeLayer(layer);
+        }
+        if (!map.hasLayer(nextLayer)) nextLayer.addTo(map);
+        return true;
+      },
+    });
     const state = { map, layer: null, bounds: null };
     ALERT_MAPS.set(mapId, state);
     return state;

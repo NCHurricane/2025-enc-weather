@@ -59,6 +59,14 @@
     --component-subtab-font-size: 0.75rem;
     --component-subtab-line-height: 1.1;
     --component-subtab-padding: 4px 5px;
+    --component-menu-background: rgba(7, 27, 46, 0.98);
+    --component-menu-option-background: #071b2e;
+    --component-menu-hover-background: #102a43;
+    --component-menu-border-color: rgba(171, 198, 218, 0.5);
+    --component-menu-color: #dce7ef;
+    --component-menu-font-size: 0.72rem;
+    --component-menu-font-weight: 600;
+    --component-menu-line-height: 1.2;
 
     /* Breakpoints */
     --breakpoint-sm: 600px;
@@ -233,6 +241,15 @@ button {
     width: var(--site-main-width);
 }
 
+main.container {
+    box-sizing: border-box;
+    width: var(--site-main-width);
+    max-width: none;
+    min-height: 100vh;
+    min-height: calc(100svh + 1px);
+    padding-top: clamp(85px, 10vw, 95px);
+}
+
 .notfound-title {
     font-size: 1rem;
     margin-bottom: 0.5rem;
@@ -254,24 +271,26 @@ button {
     top: 0;
     left: 0;
     width: 100%;
-    background: var(--gradient-header);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(14, 21, 29, 0.97);
     color: var(--color-text-light);
     z-index: 1000;
-    box-shadow: var(--shadow-standard);
+    box-shadow: 0 6px 18px rgba(4, 10, 16, 0.25);
 }
 
 .header-container {
     display: flex;
+    box-sizing: border-box;
     align-items: center;
     justify-content: space-between;
-    max-width: 2000px;
+    max-width: none;
     margin: 0 auto;
-    padding: 20px;
+    padding: 13px clamp(20px, 3.3vw, 64px);
 }
 
 .header-container img {
     width: 100%;
-    max-width: 350px;
+    max-width: 305px;
 }
 
 .header-container .logo-link {
@@ -319,7 +338,7 @@ button {
 }
 
 .header-container .site-wordmark .fa-bolt-lightning {
-    animation: brand-bolt-flash 3.4s ease-in-out infinite;
+    animation: brand-bolt-flash 5.4s ease-in-out infinite;
 }
 
 .header-container .site-wordmark .fa-hurricane {
@@ -366,6 +385,11 @@ button {
     }
 }
 
+.header-container .logo-link:hover .site-wordmark,
+.header-container .logo-link:focus-visible .site-wordmark {
+    color: var(--color-accent);
+}
+
 .nav-menu {
     list-style: none;
     display: flex;
@@ -381,8 +405,9 @@ button {
     border: 0;
     text-decoration: none;
     font-family: var(--font-primary);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
+    letter-spacing: 0.015em;
     text-transform: uppercase;
     transition: color 0.3s ease, transform 0.3s ease;
     display: inline-block;
@@ -1028,8 +1053,20 @@ button {
     padding-top: 90px;
   } */
 
+    .header-container {
+        padding: 11px 14px;
+    }
+
     .header-container img {
-        max-width: 250px;
+        max-width: 230px;
+    }
+
+    .header-container .site-wordmark {
+        font-size: 0.9rem;
+    }
+
+    main.container {
+        width: calc(100% - 24px);
     }
 
     .current-container {
@@ -1140,6 +1177,12 @@ button {
         font-size: 2rem;
         padding: 25px;
         border-radius: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    main.container {
+        width: calc(100% - 16px);
     }
 }
 

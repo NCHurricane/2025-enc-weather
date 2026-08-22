@@ -2,13 +2,13 @@ import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260821-unified-active-1';
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260821-phase5-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260821-basemap-menu-2';
 import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260819-1';
 import {
   TROPICAL_SATELLITE_PRODUCTS,
   tropicalSatelliteSource,
-} from '../../js/modules/tropicalSatelliteMap.js?v=20260821-unified-active-1';
+} from '../../js/modules/tropicalSatelliteMap.js?v=20260821-basemap-menu-2';
 
 const LAYER_PRODUCT = Object.freeze({
   currentPosition: 'currentPosition',

@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260816-5';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
@@ -227,7 +227,6 @@ class CountyRadarViewer {
     this.stationSelect = document.getElementById('radar-station-select');
     this.productSelect = document.getElementById('radar-product-select');
     this.playButton = document.getElementById('radar-play-pause');
-    this.basemapSelect = document.getElementById('radar-basemap-select');
     this.mapElement = document.getElementById('radar-map');
     this.fallback = document.getElementById('radar-fallback');
     this.fallbackImage = document.getElementById('radar-image');
@@ -270,9 +269,6 @@ class CountyRadarViewer {
       if (this.toggle.checked) this.loadSource();
     });
     this.playButton.addEventListener('click', () => this.togglePlayback());
-    this.basemapSelect?.addEventListener('change', () => {
-      this.map?.setBasemap(this.basemapSelect.value);
-    });
     this.toggle.addEventListener('change', () => this.handleVisibility());
     document.addEventListener(COUNTY_ZONE_CHANGE_EVENT, this.handleZoneChange);
 
@@ -294,8 +290,8 @@ class CountyRadarViewer {
       maxFrames: 12,
       overlayOpacity: 0.8,
       ariaLabel: `Interactive radar map centered on ${contextAreaLabel(this.context)}`,
-      initialBasemap: this.basemapSelect?.value || 'esri',
-      showBasemapControl: !this.basemapSelect,
+      initialBasemap: 'esri',
+      showBasemapControl: true,
       basemapControlPosition: 'topleft',
       referenceOverlays: WEATHER_BOUNDARY_OVERLAYS,
       scrubber: this.scrubber,
@@ -561,7 +557,6 @@ class CountySatelliteViewer {
     this.toggle = document.getElementById('satellite-toggle');
     this.productSelect = document.getElementById('satellite-product-select');
     this.playButton = document.getElementById('satellite-play-pause');
-    this.basemapSelect = document.getElementById('satellite-basemap-select');
     this.mapElement = document.getElementById('satellite-map');
     this.fallback = document.getElementById('satellite-fallback');
     this.fallbackImage = document.getElementById('satellite-image');
@@ -598,9 +593,6 @@ class CountySatelliteViewer {
       if (this.toggle.checked) this.loadSource();
     });
     this.playButton.addEventListener('click', () => this.togglePlayback());
-    this.basemapSelect?.addEventListener('change', () => {
-      this.map?.setBasemap(this.basemapSelect.value);
-    });
     this.toggle.addEventListener('change', () => this.handleVisibility());
     document.addEventListener(COUNTY_ZONE_CHANGE_EVENT, this.handleZoneChange);
     setPlayButton(this.playButton, false, 'satellite');
@@ -619,8 +611,8 @@ class CountySatelliteViewer {
       maxFrames: 12,
       overlayOpacity: 0.92,
       ariaLabel: `Interactive satellite map centered on ${contextAreaLabel(this.context)}`,
-      initialBasemap: this.basemapSelect?.value || 'esri',
-      showBasemapControl: !this.basemapSelect,
+      initialBasemap: 'esri',
+      showBasemapControl: true,
       basemapControlPosition: 'topleft',
       referenceOverlays: [...WEATHER_BOUNDARY_OVERLAYS],
       scrubber: this.scrubber,

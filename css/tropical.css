@@ -72,17 +72,19 @@
   font-size: 0.86rem;
 }
 
-.tropical-basin-tabs {
+.weather-center-tabs.tropical-basin-tabs {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.tropical-section-tabs {
-  border-bottom-color: rgba(177, 201, 220, 0.28);
-  background: #102a43;
+.weather-center-condition-tabs.tropical-section-tabs {
+  display: flex;
 }
 
-.tropical-basin-tabs .weather-center-tab span,
-.tropical-section-tabs .weather-center-tab span {
+.weather-center-condition-tabs.tropical-section-tabs .weather-center-condition-tab {
+  flex: 1 1 0;
+}
+
+.tropical-basin-tabs .weather-center-tab span {
   white-space: normal;
 }
 
@@ -99,6 +101,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 8px;
+  margin: 3em 0 0;
 }
 
 .tropical-current-systems .county-alert-chip {

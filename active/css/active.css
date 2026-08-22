@@ -1105,7 +1105,7 @@ body {
         min-height: 390px;
     }
 
-    .active-storm-map-controls label {
+    .active-map-layers .active-storm-map-controls label {
         flex: 1 1 calc(33.333% - 6px);
         justify-content: start;
         padding-inline: 6px;
@@ -1320,11 +1320,6 @@ body {
     background: transparent;
 }
 
-.active-map-imagery,
-.active-map-layers {
-    position: relative;
-}
-
 .active-map-imagery {
     grid-column: 1;
     grid-row: 2;
@@ -1335,50 +1330,7 @@ body {
     grid-row: 2;
 }
 
-.active-map-imagery > summary,
-.active-map-layers > summary {
-    display: inline-flex;
-    min-height: 38px;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 11px;
-    border: 1px solid rgba(151, 180, 202, 0.58);
-    border-radius: 8px;
-    background: #102a43;
-    color: #f5f9fc;
-    cursor: pointer;
-    list-style: none;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: 0.74rem;
-    font-weight: 650;
-}
-
-.active-map-imagery > summary::-webkit-details-marker,
-.active-map-layers > summary::-webkit-details-marker {
-    display: none;
-}
-
-.active-map-imagery > summary:focus-visible,
-.active-map-layers > summary:focus-visible {
-    outline: 2px solid #fff200;
-    outline-offset: 2px;
-}
-
-.active-map-imagery-options,
-.active-map-layers .active-storm-map-controls {
-    position: absolute;
-    top: calc(100% + 7px);
-    z-index: 1200;
-    display: grid;
-    gap: 6px;
-    padding: 9px;
-    border: 1px solid rgba(171, 198, 218, 0.5);
-    border-radius: 9px;
-    background: rgba(7, 27, 46, 0.98);
-    box-shadow: 0 10px 24px rgba(2, 8, 14, 0.46);
-}
-
-.active-map-imagery-options {
+.active-map-imagery .active-map-imagery-options {
     left: 0;
     width: min(125px, calc(100vw - 36px));
     grid-template-columns: 1fr;
@@ -1388,39 +1340,6 @@ body {
     left: 0;
     width: min(125px, calc(100vw - 36px));
     grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.active-map-imagery-options label,
-.active-storm-map-controls label {
-    display: flex;
-    min-width: 0;
-    min-height: 20px;
-    align-items: center;
-    gap: 2px;
-    padding: 3px;
-    border-radius: 6px;
-    color: #dce7ef;
-    cursor: pointer;
-    font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: 0.72rem;
-    font-weight: 600;
-    line-height: 1.2;
-}
-
-.active-map-imagery-options label:hover,
-.active-storm-map-controls label:hover {
-    background: rgba(255, 255, 255, 0.07);
-}
-
-.active-map-imagery-options input,
-.active-storm-map-controls input {
-    flex: 0 0 auto;
-    accent-color: #fff200;
-}
-
-.active-map-imagery:not([open]) .active-map-imagery-options,
-.active-map-layers:not([open]) .active-storm-map-controls {
-    display: none;
 }
 
 .active-module .active-storm-map-section .interactive-weather-map-shell,
@@ -1688,7 +1607,7 @@ body {
         min-height: 420px;
     }
 
-    .active-map-imagery-options {
+    .active-map-imagery .active-map-imagery-options {
         width: min(125px, calc(100vw - 16px));
         grid-template-columns: repeat(1, minmax(0, 1fr));
     }
@@ -1726,13 +1645,6 @@ body {
 
     .active-map-satellite-controls {
         flex-wrap: wrap;
-    }
-
-    .active-map-imagery > summary,
-    .active-map-layers > summary {
-        width: 100%;
-        box-sizing: border-box;
-        justify-content: center;
     }
 
     .active-map-layers .active-storm-map-controls {

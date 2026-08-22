@@ -3,6 +3,7 @@ const DEFAULT_BASEMAP_URL =
 const DEFAULT_BASEMAP_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>, ChuckCopelandWX';
 const referenceGeoJsonPromises = new Map();
+let basemapMenuSequence = 0;
 
 export const WEATHER_BASEMAPS = Object.freeze({
   light: {
@@ -33,6 +34,84 @@ export const WEATHER_BASEMAPS = Object.freeze({
     maxZoom: 18,
   },
 });
+
+export function installBasemapMenuControl({
+  leaflet = globalThis.L,
+  map,
+  basemaps = WEATHER_BASEMAPS,
+  initialBasemap = 'esri',
+  position = 'topleft',
+  onSelect = () => true,
+} = {}) {
+  const entries = Object.entries(basemaps || {});
+  const documentRef = map?.getContainer?.()?.ownerDocument || globalThis.document;
+  if (!leaflet?.control || !leaflet?.DomUtil || !map || !documentRef || entries.length === 0) {
+    return null;
+  }
+
+  const radioName = `map-basemap-${++basemapMenuSequence}`;
+  let selectedBasemapId = basemaps[initialBasemap] ? initialBasemap : entries[0][0];
+  const inputs = new Map();
+  const control = leaflet.control({ position });
+
+  control.setActiveBasemap = (basemapId) => {
+    if (!basemaps[basemapId]) return false;
+    selectedBasemapId = basemapId;
+    for (const [id, input] of inputs) input.checked = id === basemapId;
+    return true;
+  };
+
+  control.onAdd = () => {
+    const container = leaflet.DomUtil.create('div', 'map-basemap-control');
+    const details = documentRef.createElement('details');
+    details.className = 'map-menu map-menu--map-control';
+
+    const summary = documentRef.createElement('summary');
+    summary.setAttribute('aria-label', 'Choose base map');
+    summary.title = 'Choose base map';
+    const icon = documentRef.createElement('i');
+    icon.className = 'fa-solid fa-layer-group';
+    icon.setAttribute('aria-hidden', 'true');
+    summary.appendChild(icon);
+
+    const options = documentRef.createElement('div');
+    options.className = 'map-menu-options';
+    options.setAttribute('role', 'radiogroup');
+    options.setAttribute('aria-label', 'Base map');
+
+    for (const [basemapId, config] of entries) {
+      const label = documentRef.createElement('label');
+      const input = documentRef.createElement('input');
+      input.type = 'radio';
+      input.name = radioName;
+      input.value = basemapId;
+      input.checked = basemapId === selectedBasemapId;
+      input.addEventListener('change', () => {
+        if (!input.checked) return;
+        const previousBasemapId = selectedBasemapId;
+        if (onSelect(basemapId) === false) {
+          control.setActiveBasemap(previousBasemapId);
+          return;
+        }
+        control.setActiveBasemap(basemapId);
+        details.removeAttribute('open');
+      });
+      inputs.set(basemapId, input);
+      label.append(input, documentRef.createTextNode(config.label || basemapId));
+      options.appendChild(label);
+    }
+
+    details.append(summary, options);
+    container.appendChild(details);
+    leaflet.DomEvent?.disableClickPropagation?.(container);
+    leaflet.DomEvent?.disableScrollPropagation?.(container);
+    return container;
+  };
+
+  control.addTo(map);
+  control.setActiveBasemap(selectedBasemapId);
+  return control;
+}
 
 function resolveElement(value) {
   return typeof value === 'string' ? document.getElementById(value) : value;
@@ -267,7 +346,6 @@ export class InteractiveWeatherMap {
     this.lastCtrlWheelAt = Number.NEGATIVE_INFINITY;
     this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
     this.handleCtrlWheel = this.handleCtrlWheel.bind(this);
-    this.handleBasemapChange = this.handleBasemapChange.bind(this);
     this.handleScrubberInput = this.handleScrubberInput.bind(this);
     this.scrubber?.addEventListener('input', this.handleScrubberInput);
     this.syncScrubber(false);
@@ -430,29 +508,14 @@ export class InteractiveWeatherMap {
     if (!this.map || this.basemapLayerControl) return;
     this.createBasemapLayers();
 
-    const controlLayers = {};
-    for (const [basemapId, layer] of this.basemapLayers) {
-      controlLayers[this.basemaps[basemapId]?.label || basemapId] = layer;
-    }
-
-    this.basemapLayerControl = window.L.control.layers(controlLayers, null, {
-      collapsed: true,
+    this.basemapLayerControl = installBasemapMenuControl({
+      leaflet: window.L,
+      map: this.map,
+      basemaps: this.basemaps,
+      initialBasemap: this.activeBasemapId,
       position: this.basemapControlPosition,
-    }).addTo(this.map);
-    this.basemapLayerControl
-      .getContainer()
-      ?.querySelector('.leaflet-control-layers-toggle')
-      ?.setAttribute('aria-label', 'Choose a base map');
-    this.map.on('baselayerchange', this.handleBasemapChange);
-  }
-
-  handleBasemapChange(event) {
-    for (const [basemapId, layer] of this.basemapLayers) {
-      if (layer !== event.layer) continue;
-      this.activeBasemapId = basemapId;
-      this.basemapLayer = layer;
-      break;
-    }
+      onSelect: (basemapId) => this.setBasemap(basemapId),
+    });
   }
 
   setBasemap(basemapId) {
@@ -471,6 +534,7 @@ export class InteractiveWeatherMap {
     }
     if (!this.map.hasLayer(nextLayer)) nextLayer.addTo(this.map);
     this.basemapLayer = nextLayer;
+    this.basemapLayerControl?.setActiveBasemap?.(basemapId);
     return true;
   }
 

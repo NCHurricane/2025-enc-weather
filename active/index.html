@@ -39,14 +39,14 @@
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
             integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <link rel="stylesheet" href="../css/styles.css?v=20260821-components-1" />
-        <link rel="stylesheet" href="../counties/css/county.css?v=20260821-components-1" />
+        <link rel="stylesheet" href="../css/styles.css?v=20260821-dropdowns-1" />
+        <link rel="stylesheet" href="../counties/css/county.css?v=20260821-dropdowns-1" />
         <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260816-2" />
         <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
         <link rel="stylesheet" href="../css/tropical.css?v=20260821-components-1" />
-        <link rel="stylesheet" href="./css/active.css?v=20260821-components-1" />
+        <link rel="stylesheet" href="./css/active.css?v=20260821-map-menu-1" />
         <link rel="stylesheet" href="./css/storm-graphics.css?v=20260821-components-1" />
-        <link rel="stylesheet" href="../css/components.css?v=20260821-1" />
+        <link rel="stylesheet" href="../css/components.css?v=20260821-8" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
@@ -155,12 +155,12 @@
                         aria-hidden="true" hidden>
                         <div class="active-storm-map-section">
                             <div class="active-map-toolbar">
-                                <details class="active-map-imagery">
+                                <details class="active-map-imagery map-menu">
                                     <summary>
                                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                                         Satellite imagery
                                     </summary>
-                                    <div id="active-map-imagery-source" class="active-map-imagery-options"
+                                    <div id="active-map-imagery-source" class="active-map-imagery-options map-menu-options"
                                         role="radiogroup" aria-label="Map imagery">
                                         <label><input type="radio" name="active-map-imagery" value="map"
                                                 data-map-imagery checked /> Storm map</label>
@@ -191,12 +191,12 @@
                                         </span>
                                     </div>
                                 </div>
-                                <details class="active-map-layers">
+                                <details class="active-map-layers map-menu">
                                     <summary>
                                         <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                                         Storm overlays
                                     </summary>
-                                    <div class="active-storm-map-controls" role="group"
+                                    <div class="active-storm-map-controls map-menu-options" role="group"
                                         aria-label="Detailed storm map layers">
                                         <label><input type="checkbox" data-storm-layer="currentPosition" checked disabled /> Current</label>
                                         <label><input type="checkbox" data-storm-layer="bestTrack" checked /> Past track</label>
@@ -466,11 +466,11 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
         <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
-        <script type="module" src="./js/activeStormMap.js?v=20260821-active-tweaks-4"></script>
+        <script type="module" src="./js/activeStormMap.js?v=20260821-basemap-menu-2"></script>
         <script type="module" src="./js/storm.js?v=20260821-product-states-2"></script>
         <script type="module" src="./js/storm_text.js?v=20260821-product-states-1"></script>
 
-        <script type="module" src="./js/ww-maps.js?v=20260821-active-tweaks-6" defer></script>
+        <script type="module" src="./js/ww-maps.js?v=20260821-basemap-menu-2" defer></script>
 
         <script type="module">
             import { initTropicalBanner } from './js/tropical-banner.js?v=2025.09.29';
