@@ -194,6 +194,29 @@
   background: #102a43;
 }
 
+.graphics-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 0;
+  margin: 0;
+}
+
+.text-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  margin: 0;
+}
+
+.radii-hour-controls,
+.radii-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0;
+}
+
 .weather-center-condition-tabs {
   display: flex;
   overflow-x: auto;
@@ -494,6 +517,16 @@
   .weather-center-condition-tabs .weather-center-condition-tab[data-short-label].is-active::before,
   .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]:hover::before {
     color: var(--component-tab-active-color);
+  }
+
+  #main-content .active-storm-workspace :is(
+    .text-tabs,
+    .radii-hour-controls,
+    .radii-controls
+  ) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+    overflow: visible;
   }
 
   .map-menu > summary {

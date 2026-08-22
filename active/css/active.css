@@ -578,21 +578,6 @@
     padding-bottom: 1em;
 }
 
-.text-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: stretch;
-    margin: 0;
-    gap: 0;
-}
-
-.text-tab,
-.text-tab .text-tab.spanish {
-    flex: 1 1 auto;
-    box-sizing: border-box;
-}
-
 .tab-name {
     display: block;
     margin-bottom: 2px;
@@ -672,13 +657,6 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-}
-
-.radii-hour-controls,
-.radii-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 0;
 }
 
 .radii-legend {
@@ -1668,23 +1646,6 @@ body {
         min-height: 420px;
     }
 
-    .active-module .graphics-tabs,
-    .active-module .text-tabs,
-    .active-module .radii-hour-controls,
-    .active-module .radii-controls {
-        display: grid;
-        overflow: visible;
-        grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
-    }
-
-    .active-module .graphics-tab,
-    .active-module .text-tab,
-    .active-module .radii-btn,
-    .active-module .radii-hour-btn {
-        width: auto;
-        min-width: 0;
-        white-space: normal;
-    }
 }
 
 /*=================================================================*/

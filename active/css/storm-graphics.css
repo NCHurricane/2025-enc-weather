@@ -16,12 +16,7 @@
 }
 
 .graphics-tab.time-tab {
-  box-sizing: border-box;
   margin-bottom: 0;
-  white-space: nowrap;
-  text-align: center;
-  cursor: pointer;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -122,16 +117,6 @@
   overflow: hidden;
 }
 
-/* Tab navigation */
-.graphics-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  border-bottom: 2px solid var(--color-primary);
-  margin: 0;
-  padding: 0;
-  gap: 0;  
-}
-
 /* Content container */
 .graphics-content-container {
   position: relative;
@@ -175,13 +160,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Extra small mobile screens */
-@media (max-width: 360px) {
-  .graphics-tabs {
-    grid-template-columns: 1fr;
   }
 }
 

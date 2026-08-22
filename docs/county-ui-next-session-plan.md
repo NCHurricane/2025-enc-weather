@@ -6,7 +6,7 @@ Status: the current county UI, marker-thinning, token-free NWS statewide conditi
 
 ## Resume order
 
-1. Read the user-supplied `AGENTS.md` instructions in the session prompt. There is currently no tracked `AGENTS.md` at the repository root.
+1. Read the tracked repository-root `AGENTS.md`, then apply any additional user-supplied session instructions.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
 4. Confirm the current shared checkpoint is still `9e3ecb6 Continuing with the UI update. Also added a new world-cities json with favorite cities.` on `main` and matches `origin/main`.
