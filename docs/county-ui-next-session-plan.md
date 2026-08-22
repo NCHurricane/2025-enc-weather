@@ -1,17 +1,17 @@
 # County UI Migration: Next-Session Plan
 
-Updated: 2026-08-21
+Updated: 2026-08-22
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: the current county UI, marker-thinning, token-free NWS statewide conditions, and shared city-favorites support are committed and pushed through `9e3ecb6`. The owner confirmed the favorites scheme and homepage workflow are working correctly, including Greenville with `tropical` and `homepage` scope. No current record uses `county`, so county output remains unchanged. There is no pending county implementation phase; do not commit or deploy without explicit user authorization.
+Status: the current shared checkpoint is `9c36ca5`. A user-authorized, uncommitted CSS ownership follow-up now moves the shared weather-center shell and scoped weather-page base styling out of `county.css`; details and validation are recorded below. There is no pending county product phase. Do not commit or deploy without explicit user authorization.
 
 ## Resume order
 
 1. Read the tracked repository-root `AGENTS.md`, then apply any additional user-supplied session instructions.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
-4. Confirm the current shared checkpoint is still `9e3ecb6 Continuing with the UI update. Also added a new world-cities json with favorite cities.` on `main` and matches `origin/main`.
-5. Preserve the current tree. The only intended post-checkpoint changes are the next-session handoff updates.
-6. There is no pending implementation phase in this plan. Continue only from the user's next explicit requirement. Treat `counties/data/nc-current.json` as generated runtime data, do not commit it, and do not deploy unless separately requested.
+4. Confirm the current shared checkpoint is still `9c36ca5 More refactoring and considating of the css files.` on `main` and matches `origin/main`.
+5. Preserve the current task-owned CSS/HTML/handoff changes described below and any unrelated user work.
+6. There is no pending county product phase in this plan. Continue the CSS consolidation only from the user's next explicit requirement. Treat `counties/data/nc-current.json` as generated runtime data, do not commit it, and do not deploy unless separately requested.
 
 ## Current checkpoint
 
@@ -22,6 +22,19 @@ The user subsequently committed the combined marker and statewide-conditions che
 The current checkpoint is `6d14cb2`. It replaces the statewide cache's original provider-specific implementation with direct NWS observation requests requiring no API token, retains atomic cache publication and safe local fallback, adds shared collision-thinned city labels to Conditions/Radar/Satellite, adds statewide station thinning, and changes the regular marker geometry to `76x48` with anchor `[38,54]`. The catalog whitespace cleanup and all implementation work through that checkpoint are committed and pushed. The generated cache is ignored runtime output and is not part of the commit.
 
 Commit `9e3ecb6` adds the shared 2026-08-20 editorial city-priority workflow in `js/data/map-city-favorites.json` instead of modifying `us-cities-all.json` or `satellite-city-labels.json`. Records scoped to `county` or `homepage` bypass their normal rank threshold at `minZoom` and take collision priority while retaining configured home-location priority. Greenville currently uses `tropical` and `homepage`; no record currently uses `county`. The owner confirmed this scheme and the homepage integration are working correctly.
+
+## 2026-08-22 shared CSS ownership follow-up (uncommitted)
+
+- Starting from clean shared checkpoint `9c36ca5`, moved the shared weather-center container, control-row, selector, status, map-shell, note, and responsive rules from `counties/css/county.css` into `css/components.css`.
+- Removed superseded legacy Radar/Satellite control and select rules plus two dead weather-center selectors from `county.css`. County forecast, place-label, temperature-popup, alert-detail, and multi-zone selector styling remains section-owned.
+- Moved the shared dark weather-page body treatment into `css/styles.css` behind the explicit `site-weather-page` class. Only the 15 existing weather-page consumers receive that class; informational and prototype-only consumers retain their previous base body styling.
+- Kept Tropical's toolbar spacing and Active's page-specific body color explicitly section-owned. Active no longer depends on `tropical.css`; that dependency was already absent at the `9c36ca5` checkpoint.
+- Updated every affected stylesheet reference consistently: `styles.css?v=20260822-base-1`, `components.css?v=20260822-2`, `county.css?v=20260822-shell-1`, `tropical.css?v=20260822-shell-1`, and `active.css?v=20260822-shell-1`.
+- Static/automated: `scripts/validate-site.mjs` passed for 20 HTML, 266 JSON, and 156 local references; 46 Tropical JavaScript tests, two storm-product-state JavaScript tests, six TCV PHP checks, 68 Tropical parser checks, and the Phase 0 source-fixture contract passed. CSS braces and `git diff --check` passed; only expected LF-to-CRLF warnings were reported.
+- Runtime/HTTP: representative homepage, county, multi-zone, Tropical, Active, and all changed stylesheet URLs returned HTTP 200 from the owner-run `http://127.0.0.1:8085/`. Retained fixture `active/cache/nhc_current_storms.json` remained unchanged with `cp012026` and `cp022026`.
+- Controlled browser: desktop `1280x900` and mobile `390x844` checks covered homepage, Bertie, Dare, San Diego, Tropical, and Active; computed styling matched the pre-change baseline except content-driven asynchronous panel height/vertical-position changes. There was no horizontal page overflow. Conditions/Radar/Satellite/Forecast, product selectors, the shared basemap menu, Dare/San Diego zone switching, Tropical basin URL plus Back/Forward state, and representative Active tabs remained functional. Fixed title/tab/subtab metrics and hidden mobile Font Awesome tab icons were confirmed.
+- Browser console/runtime data findings were unrelated to CSS: the owner server returned a 404 for the generated statewide observation cache and the county controller used its existing local-coverage fallback; Active's existing relative tropical-banner cache request also returned HTML instead of JSON. No CSS or interaction exception was observed.
+- Owner smoke for this exact uncommitted follow-up remains open. The owner's earlier all-pages-functional report applies to the committed consolidation through `9c36ca5`, not to this later slice. External-provider freshness and production/deployment checks were not part of this CSS-only local pass.
 
 ## Completed this session
 

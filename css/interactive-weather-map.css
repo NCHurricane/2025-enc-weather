@@ -71,8 +71,8 @@
 }
 
 .weather-map-scrubber-play {
-  width: 2rem;
-  height: 2rem;
+  width: clamp(1.5rem, 2vw, 1.75rem);
+  height: clamp(1rem, 2vw, 1.5rem);
   padding: 0;
   border-radius: 4px;
   flex: 0 0 auto;

@@ -895,7 +895,7 @@
 /* PHASE 5 DARK WEATHER-CENTER SHELL                               */
 /*=================================================================*/
 
-body {
+body.site-weather-page {
     color: #edf6fb;
 }
 

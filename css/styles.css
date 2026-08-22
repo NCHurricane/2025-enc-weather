@@ -154,6 +154,15 @@ body {
     padding-bottom: 15px;
 }
 
+body.site-weather-page {
+    min-width: 0;
+    padding-bottom: 0;
+    background:
+        radial-gradient(circle at 50% 0, rgba(95, 130, 161, 0.2), transparent 38rem),
+        linear-gradient(145deg, #2a3d51 0%, #30485f 54%, #223345 100%);
+    color: #eef5fb;
+}
+
 hr {
     border: 0;
     height: 0;

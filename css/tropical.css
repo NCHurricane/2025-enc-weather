@@ -119,11 +119,11 @@
   white-space: normal;
 }
 
-.tropical-panel-toolbar {
+.tropical-weather-center .tropical-panel-toolbar {
   justify-content: space-between;
 }
 
-.tropical-panel-toolbar .weather-center-toolbar-label {
+.tropical-weather-center .tropical-panel-toolbar .weather-center-toolbar-label {
   min-width: 50%;
 
   font-family: "Montserrat", Arial, sans-serif;
@@ -253,7 +253,7 @@
   white-space: pre-wrap;
 }
 
-.weather-center-map-card .tropical-satellite-controls {
+.tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
   gap: 10px 14px;
 }
 
@@ -323,7 +323,7 @@
     flex: 1 1 0;
   }
 
-  .weather-center-map-card .tropical-satellite-controls {
+  .tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
     display: grid;
     grid-template-columns: 1fr;
   }
@@ -382,7 +382,7 @@
     min-height: calc(var(--weather-center-content-height) - 58px);
   }
 
-  .weather-center-map-card .tropical-satellite-controls {
+  .tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
     grid-template-columns: 1fr;
   }
 }
