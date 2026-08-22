@@ -193,7 +193,7 @@ html.county-alert-modal-open body {
   position: fixed;
   inset: 0;
   width: 95%;
-  max-width: none;
+  max-width: 40vw;
   height: min(88svh, 820px);
   max-height: 88svh;
   margin: auto;
@@ -442,7 +442,213 @@ html.county-alert-modal-open body {
   margin-bottom: 0;
 }
 
+.county-alert-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.42fr);
+  align-items: stretch;
+  gap: 8px;
+}
+
+.county-alert-row,
+.county-alert-row * {
+  box-sizing: border-box;
+}
+
+.county-alert-primary {
+  min-width: 0;
+}
+
+.county-alert-primary > .alert {
+  height: 100%;
+}
+
+.county-hwo-trigger,
+.county-hwo-dialog {
+  --county-hwo-color: #eee8aa;
+}
+
+.county-hwo-trigger {
+  display: grid;
+  min-width: 0;
+  min-height: 54px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(171, 198, 218, 0.46);
+  border-left: 5px solid var(--county-hwo-color);
+  border-radius: 9px;
+  background: #0a1f34;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(4, 10, 16, 0.18);
+}
+
+.county-hwo-trigger:hover,
+.county-hwo-trigger:focus-visible {
+  border-color: #fff200;
+  background: #102f4d;
+}
+
+.county-hwo-trigger:focus-visible {
+  outline: 2px solid #fff200;
+  outline-offset: 2px;
+}
+
+.county-hwo-trigger > i {
+  color: var(--county-hwo-color);
+  font-size: 1.12rem;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+
+.county-hwo-trigger-copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.county-hwo-trigger-copy > span {
+  color: var(--county-hwo-color);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.county-hwo-trigger-copy strong,
+.county-hwo-trigger-copy small,
+.county-hwo-label-long {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.county-hwo-trigger-copy strong {
+  display: block;
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.county-hwo-trigger-copy small {
+  color: #bdd0df;
+  font-size: 0.7rem;
+}
+
+.county-hwo-label-short {
+  display: none;
+}
+
+.county-hwo-trigger-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.county-hwo-trigger-action i {
+  color: var(--county-hwo-color);
+  font-size: 0.65rem;
+}
+
+.county-hwo-panel .county-alert-panel-heading {
+  --county-alert-color: var(--county-hwo-color);
+}
+
+.county-hwo-metadata {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 3px;
+  margin: 0 0 14px;
+}
+
+.county-hwo-metadata > div {
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(171, 198, 218, 0.28);
+  border-radius: 8px;
+  background: #0a1f34;
+}
+
+.county-hwo-metadata dt {
+  margin: 0 0 3px;
+  color: var(--county-hwo-color);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.county-hwo-metadata dd {
+  margin: 0;
+  color: #e7eef4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.county-hwo-stale {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(238, 232, 170, 0.4);
+  border-radius: 8px;
+  background: rgba(238, 232, 170, 0.08);
+  color: #e8eff5;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.county-hwo-stale i {
+  margin-top: 2px;
+  color: var(--county-hwo-color);
+}
+
+.county-hwo-text {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid rgba(171, 198, 218, 0.28);
+  border-radius: 8px;
+  background: #061522;
+  color: #e8eff5;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.county-hwo-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 13px;
+  color: var(--county-hwo-color);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.county-hwo-source:hover,
+.county-hwo-source:focus-visible {
+  color: #fff200;
+}
+
 @media (min-width: 641px) and (max-width: 1024px) {
+  .county-alert-dialog {
+    max-width: none;
+  }
+
   .county-alert-rail {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -454,6 +660,14 @@ html.county-alert-modal-open body {
 }
 
 @media (max-width: 640px) {
+  .county-alert-dialog {
+    max-width: none;
+  }
+
+  .county-alert-row {
+    grid-template-columns: minmax(0, 1fr) minmax(124px, 0.55fr);
+  }
+
   .county-alert-rail {
     display: none;
   }
@@ -558,6 +772,38 @@ html.county-alert-modal-open body {
   .county-alert-description {
     font-size: 0.82rem;
     line-height: 1.48;
+  }
+
+  .county-hwo-trigger {
+    min-height: 62px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    padding: 7px 9px;
+  }
+
+  .county-hwo-trigger-copy > span {
+    font-size: 0.56rem;
+  }
+
+  .county-hwo-trigger-copy strong {
+    font-size: 0.76rem;
+  }
+
+  .county-hwo-trigger-copy small {
+    font-size: 0.62rem;
+  }
+
+  .county-hwo-label-long,
+  .county-hwo-trigger-action {
+    display: none;
+  }
+
+  .county-hwo-label-short {
+    display: inline;
+  }
+
+  .county-hwo-text {
+    font-size: 0.78rem;
   }
 }
 /* CURRENT CONDITIONS */

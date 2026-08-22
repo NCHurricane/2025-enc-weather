@@ -2,6 +2,8 @@
 declare(strict_types=1);
 error_reporting(E_ALL);
 
+require_once dirname(__DIR__, 2) . '/api/hwo_products.php';
+
 /**
  * NWS API/ATOM Alert Script - cache_alerts.php
  * Fetches NWS API alerts and caches them as JSON.
@@ -211,6 +213,12 @@ try {
     if (!$config) {
         throw new Exception("Failed to parse config.json");
     }
+
+    $forecastOfficeId = strtoupper((string) ($config['forecastOffice']['id'] ?? ''));
+    $forecastOfficeName = (string) ($config['forecastOffice']['name'] ?? $forecastOfficeId);
+    $hwoProduct = $forecastOfficeId !== ''
+        ? nch_hwo_fetch_latest_product($forecastOfficeId, $userAgent)
+        : nch_hwo_unavailable('', 'No forecast office is configured');
     
     $countyName = $config['county']['name'] ?? 'Unknown';
     $isMultiZone = $config['county']['multiZone'] ?? false;
@@ -237,7 +245,12 @@ try {
             $result = [
                 'generated' => gmdate('Y-m-d\TH:i:s\Z'),
                 'zone' => $zoneConfig['forecast'] ?? null,
-                'alerts' => $alerts
+                'alerts' => $alerts,
+                'outlook' => nch_hwo_outlook_for_zone(
+                    $hwoProduct,
+                    (string) ($zoneConfig['forecast'] ?? ''),
+                    $forecastOfficeName
+                )
             ];
             
             // Write zone-specific file
@@ -268,7 +281,12 @@ try {
         $result = [
             'generated' => gmdate('Y-m-d\TH:i:s\Z'),
             'zone' => $forecastZone,
-            'alerts' => $alerts
+            'alerts' => $alerts,
+            'outlook' => nch_hwo_outlook_for_zone(
+                $hwoProduct,
+                (string) $forecastZone,
+                $forecastOfficeName
+            )
         ];
         
         // Write single file

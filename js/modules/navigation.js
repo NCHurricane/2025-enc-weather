@@ -26,19 +26,18 @@ export const NavigationModule = {
           { text: "Martin", href: "counties/martin/index.html" },
           { text: "Pitt", href: "counties/pitt/index.html" },
           { text: "Tyrrell", href: "counties/tyrrell/index.html" },
-          { text: "Washington", href: "counties/washington/index.html" }
+          { text: "Washington", href: "counties/washington/index.html" },
+          { text: "Non-NC Counties",
+            href: "#",
+            hasSubmenu: true,
+            submenu: [
+              { text: "San Diego", href: "counties/san-diego/?zone=coastal" },
+            ]
+          }
         ]
       },
       { text: "Tropical", href: "tropical.html?basin=atl" },
-      {
-        text: "Other Markets",
-        href: "#",
-        hasSubmenu: true,
-        submenu: [
-          { text: "San Diego", href: "counties/san-diego/?zone=coastal" }
-        ]
-      },
-      { text: "Case Study", href: "about.html" },
+      { text: "Case Study", href: "about.html" }
     ]
   },
 
@@ -63,22 +62,22 @@ export const NavigationModule = {
       : logo.text;
     const logoAriaLabel = logo.ariaLabel || (wordmarkText ? `${wordmarkText} home` : 'Home');
 
-    const menuHTML = menuItems.map((item, index) => {
-      if (item.hasSubmenu) {
-        const submenuId = `nav-submenu-${index}`;
-        const submenuHTML = item.submenu.map(subItem =>
-          `<li><a href="${basePath}${subItem.href}">${subItem.text}</a></li>`
-        ).join('');
-
+    const renderMenuItems = (items, parentPath = []) => items.map((item, index) => {
+      const itemPath = [...parentPath, index];
+      if (item.hasSubmenu && Array.isArray(item.submenu)) {
+        const submenuId = `nav-submenu-${itemPath.join('-')}`;
+        const nestedClass = parentPath.length ? ' submenu-nested' : '';
         return `
           <li class="has-submenu">
             <button type="button" class="submenu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="${submenuId}">${item.text}</button>
-            <ul class="submenu" id="${submenuId}">${submenuHTML}</ul>
+            <ul class="submenu${nestedClass}" id="${submenuId}">${renderMenuItems(item.submenu, itemPath)}</ul>
           </li>
         `;
       }
       return `<li><a href="${basePath}${item.href}">${item.text}</a></li>`;
     }).join('');
+
+    const menuHTML = renderMenuItems(menuItems);
 
     return `
       <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -188,9 +187,9 @@ export const NavigationModule = {
 
   closeSubmenus(except = null) {
     document.querySelectorAll('.nav-menu .has-submenu').forEach(item => {
-      if (item === except) return;
+      if (except && (item === except || item.contains(except))) return;
       item.classList.remove('submenu-active');
-      item.querySelector('.submenu-toggle')?.setAttribute('aria-expanded', 'false');
+      item.querySelector(':scope > .submenu-toggle')?.setAttribute('aria-expanded', 'false');
     });
   },
 

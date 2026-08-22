@@ -2,16 +2,16 @@
 
 Updated: 2026-08-22
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: the current shared checkpoint is `9c36ca5`. A user-authorized, uncommitted CSS ownership follow-up now moves the shared weather-center shell and scoped weather-page base styling out of `county.css`; details and validation are recorded below. There is no pending county product phase. Do not commit or deploy without explicit user authorization.
+Status: the current committed checkpoint is `ca89d62`. The user-authorized Hazardous Weather Outlook integration and nested county-navigation refinement described below are implemented and validated but remain uncommitted. There is no additional authorized county product phase. Do not commit or deploy without explicit user authorization.
 
 ## Resume order
 
 1. Read the tracked repository-root `AGENTS.md`, then apply any additional user-supplied session instructions.
 2. Read this document completely.
 3. Run `git status --short` and `git log -3 --oneline` before editing.
-4. Confirm the current shared checkpoint is still `9c36ca5 More refactoring and considating of the css files.` on `main` and matches `origin/main`.
-5. Preserve the current task-owned CSS/HTML/handoff changes described below and any unrelated user work.
-6. There is no pending county product phase in this plan. Continue the CSS consolidation only from the user's next explicit requirement. Treat `counties/data/nc-current.json` as generated runtime data, do not commit it, and do not deploy unless separately requested.
+4. Confirm the current committed checkpoint is still `ca89d62 More fixes for css and a couple of bugs found in county scripts` before reconciling the uncommitted HWO slice.
+5. Preserve the current task-owned HWO/cache/UI/test/handoff and nested-navigation changes described below, along with any unrelated user work.
+6. There is no additional authorized county product phase in this plan. Treat `counties/data/nc-current.json`, county weather output, and the shared HWO office cache as generated runtime data; do not commit or deploy them.
 
 ## Current checkpoint
 
@@ -23,7 +23,30 @@ The current checkpoint is `6d14cb2`. It replaces the statewide cache's original 
 
 Commit `9e3ecb6` adds the shared 2026-08-20 editorial city-priority workflow in `js/data/map-city-favorites.json` instead of modifying `us-cities-all.json` or `satellite-city-labels.json`. Records scoped to `county` or `homepage` bypass their normal rank threshold at `minZoom` and take collision priority while retaining configured home-location priority. Greenville currently uses `tropical` and `homepage`; no record currently uses `county`. The owner confirmed this scheme and the homepage integration are working correctly.
 
-## 2026-08-22 shared CSS ownership follow-up (uncommitted)
+## 2026-08-22 Hazardous Weather Outlook integration (uncommitted)
+
+- Added `counties/api/hwo_products.php` for the official `api.weather.gov/products/types/HWO/locations/{office}` and product-detail workflow. It uses the configured county forecast office, a shared five-minute office cache, an exclusive lock, atomic JSON publication, exact HWO/office identity checks, and last-known-good fallback. TLS verification stays enabled and the runtime must provide a trusted CA bundle.
+- The parser expands compressed, wrapped UGC groups such as `NCZ013>017-030>032`, matches the exact active forecast zone, selects only that HWO section, derives the UGC purge time across month boundaries, and exposes current, stale, expired, empty, unavailable, and not-applicable states.
+- All nine county `cache_alerts.php` publishers now add an `outlook` object to their existing zone JSON. The original `alerts` array is unchanged and remains the sole authority for active-alert counts, alert dialogs, homepage warning coloring, and map overlays.
+- Standard and multi-zone county controllers render a compact Hazardous Weather Outlook control beside the existing alert element. The control is emitted only for a current or still-valid last-known-good outlook; otherwise no HWO row wrapper exists and the alert element uses the full available width. Clicking the HWO control opens the same centered modal component used for alerts, with issued/valid times, office, exact zone/area, escaped official text, stale notice when applicable, and a validated official NWS product link. Alert counts, selectors, and CAP-alert semantics remain unchanged.
+- Updated all ten live/prototype county HTML consumers and all nine module wrappers with `20260822-hwo-2` cache keys for the current UI assets. The unchanged HWO-aware county data modules retain their `20260822-hwo-1` import keys.
+- Preserved two concurrent user-owned CSS edits made during this refinement: removal of the shared no-alert font-size override and a `40vw` desktop cap on the existing alert dialog. The HWO inherits that same desktop dialog width. A scoped county-dialog override retains the existing 95%-width behavior at tablet and mobile sizes so neither alert nor HWO content collapses to 40% of a narrow viewport.
+- Deterministic/static: `scripts/tests/hwo-product-test.php` passed 20 UGC, section-isolation, freshness, and month-rollover assertions. PHP syntax passed for the helper, test, and all nine alert publishers. JavaScript syntax passed for both data paths, both controllers, `countyAlerts.js`, and all nine wrappers. `scripts/validate-site.mjs` passed 20 HTML files, 267 JSON files, and 156 local references. `git diff --check` passed with expected LF-to-CRLF warnings only.
+- Live runtime/API, 2026-08-22 around 17:23 UTC: with the machine's trusted Git CA bundle supplied to PHP, MHX correctly selected Pitt `NCZ044` and Northern Outer Banks `NCZ203`; AKQ correctly expanded its compressed group and selected Bertie `NCZ030`. SGX returned a legitimate empty HWO product list. The live probe used ignored `test/output/hwo-live` output and did not alter tracked county fixtures.
+- Controlled browser for the current `hwo-2` UI: a disposable test page exercised no-active-alert plus HWO, one deterministic active alert plus HWO, and no-HWO states at an actual `1280x720` viewport and a `390x844` iframe viewport. Issued outlooks stayed beside the alert element; no-HWO alerts measured exactly the full container width. Alert and HWO controls opened their respective centered dialogs. After the concurrent dialog-width edit, the HWO matched the shared 40%-width desktop dialog and the responsive override retained 95% width at mobile; both remained centered with zero horizontal overflow. Close and Escape cleared scroll locking and restored focus, and metadata/text/source rendering passed. The live Bertie no-HWO state also retained full width, and a fresh live-page tab had no console errors. The disposable iframe workflow recorded three unattributed `MutationObserver` errors without a source URL; they were not reproduced on the live page. Synthetic Enter/Space activation did not open the native HWO button in this browser-control surface; the owner subsequently confirmed that keyboard activation works. Disposable fixture files were removed after validation.
+- The owner reported that the preceding disclosure-based HWO smoke passed before requesting this layout refinement and confirmed keyboard activation for the current HWO button on 2026-08-22. Other owner smoke for the current side-by-side/modal refinement, deployment, production scheduler/cache publication, and production-provider checks remain open. Nothing was staged, committed, pushed, deployed, or deleted in this slice.
+
+## 2026-08-22 nested county navigation refinement (uncommitted)
+
+- Kept San Diego under `Counties` > `Non-NC Counties` and changed the shared navigation renderer to support nested submenu data recursively. Submenu parents are native buttons, so selecting `Non-NC Counties` no longer follows its placeholder `href="#"` or changes the page URL.
+- Opening the nested submenu preserves the active `Counties` ancestor. Desktop displays San Diego in a right-hand flyout; the hamburger layout displays it inline with an additional indent. The nested control has its own `aria-controls`/`aria-expanded` state, and the mobile active/hover state retains readable dark text on the yellow background.
+- Restored the unrelated top-level `Tropical` and `Case Study` entries that had been removed while relocating San Diego. The former `Other Markets` top-level group remains removed as intended.
+- Updated all 18 navigation-module consumers to `navigation.js?v=20260822-nested-nav-1` and all 20 shared-style consumers to `styles.css?v=20260822-nav-2`.
+- Static/automated validation passed: JavaScript syntax, CSS brace balance, site validation across 20 HTML files and local references, focused cache-reference searches, and `git diff --check`.
+- Controlled browser at desktop `1280x720` confirmed that opening both submenu levels retained the homepage URL and displayed the flyout without horizontal overflow; selecting San Diego reached `/counties/san-diego/?zone=coastal`. A mobile `390x844` check confirmed the hamburger, both expanded ancestors, readable labels, nested indentation, the coastal San Diego destination, and zero horizontal overflow. The browser console contained no navigation errors or warnings. Synthetic Enter did not invoke native button activation in the browser-control surface. The owner subsequently reported on 2026-08-22 that all requested navigation checks passed; this closes the owner-smoke gate without broadening it to deployment or production evidence.
+- The disposable mobile wrapper used for validation was removed. Nothing was staged, committed, pushed, deployed, or generated for retention.
+
+## 2026-08-22 shared CSS ownership follow-up (committed at `ca89d62`)
 
 - Starting from clean shared checkpoint `9c36ca5`, moved the shared weather-center container, control-row, selector, status, map-shell, note, and responsive rules from `counties/css/county.css` into `css/components.css`.
 - Removed superseded legacy Radar/Satellite control and select rules plus two dead weather-center selectors from `county.css`. County forecast, place-label, temperature-popup, alert-detail, and multi-zone selector styling remains section-owned.
@@ -34,7 +57,7 @@ Commit `9e3ecb6` adds the shared 2026-08-20 editorial city-priority workflow in 
 - Runtime/HTTP: representative homepage, county, multi-zone, Tropical, Active, and all changed stylesheet URLs returned HTTP 200 from the owner-run `http://127.0.0.1:8085/`. Retained fixture `active/cache/nhc_current_storms.json` remained unchanged with `cp012026` and `cp022026`.
 - Controlled browser: desktop `1280x900` and mobile `390x844` checks covered homepage, Bertie, Dare, San Diego, Tropical, and Active; computed styling matched the pre-change baseline except content-driven asynchronous panel height/vertical-position changes. There was no horizontal page overflow. Conditions/Radar/Satellite/Forecast, product selectors, the shared basemap menu, Dare/San Diego zone switching, Tropical basin URL plus Back/Forward state, and representative Active tabs remained functional. Fixed title/tab/subtab metrics and hidden mobile Font Awesome tab icons were confirmed.
 - Browser console/runtime data findings were unrelated to CSS: the owner server returned a 404 for the generated statewide observation cache and the county controller used its existing local-coverage fallback; Active's existing relative tropical-banner cache request also returned HTML instead of JSON. No CSS or interaction exception was observed.
-- Owner smoke for this exact uncommitted follow-up remains open. The owner's earlier all-pages-functional report applies to the committed consolidation through `9c36ca5`, not to this later slice. External-provider freshness and production/deployment checks were not part of this CSS-only local pass.
+- Owner smoke for this CSS follow-up was still open when its validation record was written. External-provider freshness and production/deployment checks were not part of that CSS-only local pass.
 
 ## Completed this session
 

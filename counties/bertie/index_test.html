@@ -41,8 +41,8 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="../../css/styles.css?v=20260822-base-1" />
-      <link rel="stylesheet" href="../css/county.css?v=20260822-shell-1" />
+      <link rel="stylesheet" href="../../css/styles.css?v=20260822-nav-2" />
+      <link rel="stylesheet" href="../css/county.css?v=20260822-hwo-2" />
       <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260816-2" />
       <link rel="stylesheet" href="../../css/components.css?v=20260822-2" />
 
@@ -97,7 +97,7 @@
             <h1 class="main-title">Bertie County</h1>
          </header>
 
-         <section class="alert-container weather-center-alerts" aria-label="Current alerts">
+         <section class="alert-container weather-center-alerts" aria-label="Current alerts and Hazardous Weather Outlook">
             <div id="alerts"></div>
          </section>
 
@@ -492,7 +492,7 @@
 
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <script src="js/countyApp.js" type="module"></script>
+      <script src="js/countyApp.js?v=20260822-hwo-2" type="module"></script>
       <script src="../js/weatherMaps.js?v=20260821-basemap-menu-2" type="module"></script>
       <script src="../js/weatherCenter.js?v=20260821-basemap-menu-2" type="module"></script>
 
@@ -519,7 +519,7 @@
       </script>
 
       <script type="module">
-        import { NavigationModule } from '../../js/modules/navigation.js?v=20260821-phase4-1';
+        import { NavigationModule } from '../../js/modules/navigation.js?v=20260822-nested-nav-1';
 
          document.addEventListener('DOMContentLoaded', () => {
             NavigationModule.navData.logo = {

@@ -1,6 +1,6 @@
 // Wrapper: Beaufort County single-zone initializer
-import { initializePage } from '../../js/countyApp.js';
-import * as countyData from '../../js/countyData.js';
+import { initializePage } from '../../js/countyApp.js?v=20260822-hwo-2';
+import * as countyData from '../../js/countyData.js?v=20260822-hwo-1';
 import { initMeteogram } from '../../js/meteogram.js';
 
 initializePage({ ...countyData, initMeteogram });

@@ -432,7 +432,11 @@ export async function getAlerts() {
   const r = await fetch('./data/alerts.json', { cache: 'no-store' });
   if (!r.ok) throw new Error('Failed to load alerts.json');
   const j = await r.json();
-  return { status: 'ok', list: Array.isArray(j.alerts) ? j.alerts : [] };
+  return {
+    status: 'ok',
+    list: Array.isArray(j.alerts) ? j.alerts : [],
+    outlook: j.outlook && typeof j.outlook === 'object' ? j.outlook : null,
+  };
 }
 export async function getAFD() {
   const r = await fetch('./data/discussion.json', { cache: 'no-store' });

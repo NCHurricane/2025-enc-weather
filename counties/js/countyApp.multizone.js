@@ -9,7 +9,11 @@
 // }
 // ========================
 
-import { closeCountyAlertDialog, renderCountyAlerts } from './countyAlerts.js';
+import {
+    closeCountyAlertDialog,
+    renderCountyAlerts,
+    renderCountyOutlook,
+} from './countyAlerts.js?v=20260822-hwo-2';
 
 // Alert Colors and Priorities
 const warningColors = {
@@ -700,6 +704,7 @@ async function renderAlerts() {
             return;
         }
         let list = Array.isArray(a.list) ? a.list : [];
+        const container = document.querySelector(SEL.alerts.container);
 
         if (list.length === 0) {
             setHTML(
@@ -711,13 +716,14 @@ async function renderAlerts() {
                             <b>NO ACTIVE ALERTS</b></span>
                     </div>
                 </div>
-                `
+            `
             );
+            renderCountyOutlook({ container, outlook: a.outlook, formatTime: fmtTimeLocal });
             return;
         }
 
         const sortedAlerts = renderCountyAlerts({
-            container: document.querySelector(SEL.alerts.container),
+            container,
             alerts: list,
             warningColors,
             warningPriorities,
@@ -731,6 +737,7 @@ async function renderAlerts() {
                 priority: warningPriorities[a.event || a.type || a.headline] || 999,
             }))
         );
+        renderCountyOutlook({ container, outlook: a.outlook, formatTime: fmtTimeLocal });
     } catch (e) {
         console.warn('[countyApp] alerts load failed', e);
     }

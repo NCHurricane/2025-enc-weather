@@ -406,6 +406,7 @@ export async function getAlerts() {
     return {
       status: "ok",
       list: Array.isArray(data.alerts) ? data.alerts : [],
+      outlook: data.outlook && typeof data.outlook === "object" ? data.outlook : null,
     };
   } catch (error) {
     console.error("[countyData] Error fetching alerts:", error);
