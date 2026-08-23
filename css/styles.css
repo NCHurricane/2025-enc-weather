@@ -42,7 +42,7 @@
 
     /* Shared component tokens */
     --component-title-color: #fff;
-    --component-title-font-size: 2rem;
+    --component-title-font-size: clamp(1.8rem, 4vw, 3rem);
     --component-title-font-weight: 700;
     --component-title-letter-spacing: -0.025em;
     --component-title-line-height: 1.05;

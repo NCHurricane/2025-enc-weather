@@ -2336,7 +2336,7 @@ canvas#meteogramChart {
   min-width: 112px;
   padding: 8px 14px;
   border: 1px solid rgba(164, 190, 211, 0.52);
-  border-radius: 999px;
+  border-radius: 10px;
   background: #0a1f34;
   color: #dce7ef;
   font-size: 0.76rem;
