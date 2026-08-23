@@ -2,7 +2,7 @@
 
 Updated: 2026-08-22
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Phases 0 through 4 are implemented. Phase 4 compatibility routes and navigation were committed in `2a60674`. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency work through `e350e15`. The 2026-08-22 reconciliation and deterministic closeout work now includes immutable AL/EP/CP fixtures, a bounded Active-page router, exact advisory/map identity rejection, issued/not-issued/partial product states, page-level warning/surge/forecast popups, desktop/mobile browser coverage, and a current CP satellite regression. The shared Tropical map now uses SVG vectors so paths in lower warning and surge panes remain pointer-accessible. Phase 5 behavior has the required local evidence, but formal closeout remains open because a concurrent user-owned working-tree edit reintroduced a static Active skip link and blocks the site validator; owner smoke of the new deterministic Active scenarios also remains open. `git diff --check` is green after the county note cleanup removed the trailing-space line. Phase 6 archive support remains open, and Phase 7 consolidation has not begun. This document does not authorize staging, committing, pushing, deployment, Phase 6, or Phase 7 work.
+Status: Phases 0 through 4 are implemented. Phase 4 compatibility routes and navigation were committed in `2a60674`. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through the current tree. Phase 5 is complete locally: deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and the redundant `active-map-status-row` presentation plus its direct CSS/JavaScript wiring are removed and guarded. Live owner smoke for issued warning/surge interaction is explicitly deferred until an active system has those products; this is a time-dependent external gate, not a remaining local implementation gap. Phase 6 archive support remains open, and Phase 7 consolidation has not begun. This document does not authorize staging, committing, pushing, deployment, Phase 6, or Phase 7 work.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -22,6 +22,7 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 - The reconciliation and authorized satellite-reliability edits are this handoff; the shared weather engine, satellite provider, and fallback-dialog modules; the Tropical, Active, homepage, and county satellite controllers; shared fallback CSS; focused site guards and tests; and the affected module/stylesheet cache-busters. Do not absorb unrelated county/shared-map work into a Phase 5 implementation patch.
 - At the current `c542123` checkpoint, `main`, `origin/main`, and `HEAD` matched and the working tree was clean. The previously concurrent satellite, Active, county, shared-style, and font changes are committed; the skip-link closeout began from that clean boundary.
 - The deterministic Phase 5 closeout began from a clean `e350e15` checkpoint. During validation, separate user-owned edits appeared across Active, Tropical, homepage, county, shared-map CSS, and satellite files. This slice changes only the immutable fixture/router/test surface, the shared Tropical SVG renderer and its cache-busters, and this handoff. It does not absorb or rewrite the concurrent edits.
+- The final Active presentation closeout began at committed checkpoint `60ec8f8` with pre-existing handoff-only changes. It removes the duplicate static skip link and user-authorized map status row from the current Active shell, removes only their direct current/legacy controller and CSS wiring, updates the adjacent validator contract and cache-busters, and preserves all runtime/generated storm data.
 - `active/cache/nhc_current_storms.json`, generated tropical-map packages, storm directories, county output, and ignored test output are runtime or retained fixture state. Do not rewrite, delete, or commit them opportunistically.
 - The banner/Outlook source follow-up touches only the legacy initialization hunk in `active/index.html`, the shared Outlook sanitizer in `active/api/tropical_map_lib.php`, a self-contained all-basin format test under `scripts/tests/`, the adjacent site-validator guard, and this handoff. It does not alter the concurrent satellite implementation. A later user-authorized `overview --basin=all` run republished the three ignored/runtime overview packages; they remain outside the source-change and commit boundary.
 
@@ -34,20 +35,13 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 | 2: shared Leaflet engine | Implemented | `js/modules/tropicalMapEngine.js` owns overview/storm modes, named layers, failure states, generation cancellation, popups, and date-line-safe rendering. |
 | 3: unified overview | Complete through `9e3ecb6` | `tropical.html` owns URL-addressable `atl`, `epac`, and `cpac` views with Overview, Satellite, Graphics, and Text Products. |
 | 4: compatibility/navigation | Implemented in `2a60674` | `tropical_at.html` and `tropical_ep.html` are accessible compatibility entries; navigation, sitemap, `.htaccess`, and site validation were updated. |
-| 5: active shell/detailed map | Required deterministic implementation and local page coverage complete; formal closeout blocked by the concurrent Active skip-link regression and owner smoke | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The shared vector renderer is SVG so stacked warning/surge panes remain clickable. Resolve the concurrent duplicate Active skip link, rerun the site validator, and obtain owner smoke before calling the phase complete. |
+| 5: active shell/detailed map | Complete locally; live issued-hazard owner smoke deferred | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The duplicate skip link and redundant status row are removed and guarded. The owner cannot exercise issued warning/surge products until an eligible storm exists, so that time-dependent live smoke remains explicitly deferred. |
 | 6: archive support | Open | `active/js/storm.js` still requires an exact storm match in the current-storm feed before loading local advisory data. The storm package builder also publishes `stormState: "live"`. |
 | 7: consolidation | Not begun | No duplicate warning, surge, track/cone, radii, graphics, or text presentation may be removed without parity evidence and owner approval. |
 
-## Best next course: Phase 5 reconciliation and closeout
+## Best next course: Phase 6 authorization gate
 
-The next bounded task should be an evidence-first Phase 5 audit, not new Phase 6 implementation.
-
-1. Inventory the committed Phase 5 surface from `7d125fa`: Active shell, tab ownership, detailed map, satellite mode, storm packages, product states, Central Pacific writers, and preserved legacy interfaces.
-2. Compare the current working tree against `7c46f80` and separate later Active/Tropical map-consistency work from unrelated county/shared-map changes.
-3. Trace every shared-module consumer before altering `tropicalMapEngine.js`, `tropicalCityLabels.js`, reference overlays, satellite code, or shared CSS.
-4. Reconcile the actual implementation with the Phase 5 exit criteria below and record each validation category separately.
-5. Fix only defects explicitly included in the authorized closeout slice. Do not absorb Phase 6 archive behavior or Phase 7 removals.
-6. Update this handoff with exact evidence and remaining gates. If Phase 5 passes, request explicit authorization before Phase 6.
+Phase 5 is complete locally. Do not begin Phase 6 from this handoff alone; request explicit user authorization for the archive-support boundary below.
 
 ## Phase 5 closeout criteria
 
@@ -55,7 +49,7 @@ The next bounded task should be an evidence-first Phase 5 audit, not new Phase 6
 
 - A validated current-storm fixture loads the Active shell and detailed map for an exact `AL`, `EP`, or `CP` ID.
 - Current position, past/best track, forecast track and points, cone, watches/warnings, surge warnings, and 34/50/64-knot wind radii expose truthful issued/not-issued/unavailable states.
-- The map and satellite modes retain one page-owned lifecycle, bounded frame behavior, cancellation, correct storm/basin framing, basemap control, timestamps, legend, and NOAA STAR fallback.
+- The map and satellite modes retain one page-owned lifecycle, bounded frame behavior, cancellation, correct storm/basin framing, basemap control, legend, and NOAA STAR fallback. The user-authorized Active status/timestamp row is intentionally absent.
 - Existing text advisories, graphics languages/product tabs, radii tables, official links, and generated DOM hooks remain functional.
 - Overview-only behavior remains basin-based; storm/floater targeting remains Active-only.
 - Central Pacific geometry and labels remain date-line safe without duplicated worlds, markers, or city labels.
@@ -90,6 +84,7 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
 - Active banner and Outlook follow-up: PHP syntax passed for the map library and new format test, JavaScript syntax passed for the site validator, the parser/publication suite retained its 68 passing checks, the new self-contained Outlook test passed six basin-specific line-break and non-duplication checks, the 59-test Tropical/shared-map suite passed, the Phase 0 fixture contract passed, the site validator passed the same 20 HTML, 268 JSON, and 156-reference inventory, and `git diff --check` passed.
 - Overview hidden-basin viewport follow-up: JavaScript syntax passed for the four affected modules and the new regression test. The focused hidden-map test passed, the full Tropical/shared-map suite passed 60 tests, the site validator passed the same 20 HTML, 268 JSON, and 156-reference inventory, and `git diff --check` passed.
 - Active skip-link closeout: the static duplicate was removed, the site validator now requires zero Active-owned and exactly one navigation-owned skip link, JavaScript syntax passed for the validator, the site validator passed the same 20 HTML, 268 JSON, and 156-reference inventory, and `git diff --check` passed.
+- Final Active presentation closeout: the static duplicate skip link and `active-map-status-row` DOM were removed with their current/legacy JavaScript wiring and dedicated CSS. The validator now guards against reintroducing the row or its wiring. The focused Tropical/Active suite passed 59 tests; syntax passed for all 70 tracked JavaScript files and lint passed for all 69 tracked PHP files; the site validator passed 20 HTML files, 296 JSON files, and 156 local references; and `git diff --check` passed.
 
 ### Fixture, runtime, and HTTP/API
 
@@ -130,6 +125,7 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
 - Shared-engine regression passed: Tropical Overview rendered SVG paths, and Atlantic Overview -> Eastern Pacific -> Satellite -> Atlantic -> Overview restored the Atlantic basin preset at z4 with no horizontal overflow or new console output.
 - Repository validation is not fully green in the current mixed working tree. The focused 59-test Tropical/Active suite, all 37 fixture parses, all 69 PHP lints, all 70 JavaScript syntax checks, and the existing PHP parser/product suites passed. `node scripts/validate-site.mjs` fails because a concurrent user-owned edit reintroduced the static Active skip link, while navigation also injects its owned link. The county map-status/note cleanup removed its adjacent trailing-space line and `git diff --check` now passes.
 - Map-status/note cleanup removed the retired Tropical status/note DOM dependencies and their Tropical-only CSS without changing the map engine, source selection, lifecycle, or fallback behavior. Desktop and mobile checks at `1280x900` and `390x844` confirmed Tropical Overview NHC source time, Tropical Satellite provider/time/frame status, and Active detailed-map NHC source time plus GOES-West Clean IR time/frame status with no clipping, horizontal overflow, console errors, or warnings.
+- Final Active presentation closeout at `1280x900` and `390x844` confirmed zero status-row/status/timestamp nodes, exactly one navigation-owned skip link, 62 storm vector paths, working map/satellite switching, Clean IR at 12/12 frames with loaded GOES-West tiles, intact legend and layer controls, no horizontal overflow, and no new console error or warning. This intentionally supersedes the earlier Active status-row presentation without changing Tropical, homepage, or county status UI.
 
 ### Owner, external source, and production
 
@@ -144,18 +140,19 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
 - Live provider probes on 2026-08-22 returned HTTP `200` and CORS for a GIBS GOES-East Clean IR WMTS tile at `2026-08-23T00:20:00Z`, the RealEarth time API, and a current RealEarth GOES-19 Clean IR tile at `20260823.010020`. These probes establish the contracts at that time only.
 - Owner follow-up after the WMTS/RealEarth/NOAA STAR changes reported, "All test passed." The exact pages, device, and viewport were not supplied, so this closes the requested satellite owner re-smoke only at that report's granularity.
 - The separate non-satellite issue was then identified as Tropical Overview losing its configured basin viewport when a basin changed from Satellite, Graphics, or Text Products. The deferred hidden-map camera correction above has deterministic and controlled-browser evidence. Owner follow-up reported, "that seemed to fix the issue"; the exact basin/subtab repetitions, device, and viewport were not supplied, so the claim is retained at that granularity.
-- Owner smoke of the new deterministic AL/EP/CP Active-page scenarios and the newly enabled warning/surge path interactions has not yet been reported.
+- Owner follow-up after the map-status/note cleanup reported, "Everything seems to pass." No exact pages, devices, or viewport sizes were supplied, so this closes only the recent map-status/note owner check at that report's granularity.
+- Owner report: there are currently no active systems with watches or warnings, so live owner smoke of issued warning/surge path interactions is deferred until an eligible storm is active. Deterministic fixture and controlled-browser evidence remains separate and complete.
 - Deployment/production: not attempted or established. Production PHP extensions, cache freshness, scheduler state, upload state, and production browser behavior remain open.
 
 ## Smallest coherent Phase 5 closeout slice
 
 Keep this separate from Phase 6 archive behavior and Phase 7 presentation removal.
 
-1. Reopened by concurrent work: committed `e350e15` contained only the navigation-owned skip link, but a separate working-tree edit reintroduced the static link in `active/index.html`. Resolve that overlap without disturbing the script-owned storm DOM hooks before formal closeout.
+1. Complete: the Active shell again contains only the navigation-owned skip link, and the site validator guards that ownership.
 2. Complete: the site validator fails if Active owns a static skip link or the shared navigation does not own exactly one. The guard against restarting the unused `/active/active/cache/` banner request remains.
 3. Complete: immutable, non-production AL, EP, and CP current-storm/advisory/map fixtures plus a bounded test router/harness are under `scripts/tests/`; no generated/runtime package was edited.
 4. Complete locally: AL, EP, and CP Active-page scenarios now cover issued and not-issued warnings/surge, partial/unavailable products, exact-ID/advisory rejection, map and warning popups, desktop/mobile layout, console, and HTTP behavior.
-5. Complete locally: the current CP map/satellite and shared Tropical Overview regressions passed. `git diff --check` is green. Before formal Phase 5 closeout, resolve the concurrent duplicate Active skip link, rerun the site validator, and record owner smoke of the new Active scenarios. Do not begin Phase 6 without explicit authorization after those gates pass.
+5. Complete locally: the current CP map/satellite and shared Tropical Overview regressions passed, the redundant Active status row is removed, the site validator and `git diff --check` are green, and live issued-hazard owner smoke is explicitly deferred. Do not begin Phase 6 without explicit authorization.
 
 ## Phase 6 boundary
 
@@ -209,7 +206,7 @@ Continue the NCHurricane tropical-map work in K:\Web Design\NCHurricane 2025.
 
 Read AGENTS.md and docs/tropical-map-next-session-plan.md completely, then run `git status --short --branch` and `git log -8 --oneline`. Preserve every existing working-tree change. Do not stage, commit, push, deploy, edit generated/runtime data, or begin a new phase unless I explicitly authorize it.
 
-The remaining Phase 5 task is closeout only. Preserve the completed immutable AL/EP/CP fixtures, bounded Active router, SVG popup correction, map-status cleanup, and recorded local browser evidence. Resolve or coordinate the concurrent user-owned duplicate static skip link in `active/index.html`, then rerun `node scripts/validate-site.mjs`; `git diff --check` currently passes. Record owner smoke of the deterministic Active scenarios. Do not edit `active/cache/nhc_current_storms.json`, generated tropical-map packages, retained ignored output, or production/runtime state. Keep static/automated, fixture/runtime/API, controlled-browser, owner, external-source, and deployment evidence separate.
+Phase 5 is complete locally. Preserve the immutable AL/EP/CP fixtures, bounded Active router, SVG popup correction, duplicate-skip-link guard, user-authorized Active status-row removal, and recorded browser evidence. Live owner smoke for issued warning/surge products is deferred until an eligible storm is active. Do not edit `active/cache/nhc_current_storms.json`, generated tropical-map packages, retained ignored output, or production/runtime state.
 
 Do not begin Phase 6 archive support or Phase 7 consolidation from the handoff alone.
 ```

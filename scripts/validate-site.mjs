@@ -209,7 +209,6 @@ try {
 const activePage = await readFile(path.join(root, 'active', 'index.html'), 'utf8').catch(() => '');
 for (const required of [
   'id="active-storm-map"',
-  'id="active-storm-map-status"',
   'data-storm-layer="bestTrack"',
   'data-storm-layer="surgeWarnings"',
   'data-storm-layer="windRadii34"',
@@ -217,7 +216,6 @@ for (const required of [
   'data-active-tab-group="nhc"',
   'data-active-tab-group="wind"',
   'id="active-map-imagery-source"',
-  'id="active-satellite-timestamp"',
   'id="active-satellite-frame-scrubber"',
   'id="active-satellite-frame-indicator"',
   'id="key-messages-section"',
@@ -242,6 +240,9 @@ const navigationSkipLinks = navigation.match(/\bclass=["'][^"']*\bskip-link\b[^"
 if (activeStaticSkipLinks.length !== 0 || navigationSkipLinks.length !== 1) {
   errors.push('active/index.html: Active shell must use exactly one navigation-owned skip link');
 }
+if (/active-map-status-row|active-storm-map-status|active-satellite-timestamp/.test(activePage)) {
+  errors.push('active/index.html: retired Active map status row must not remain');
+}
 
 const activeCss = await readFile(path.join(root, 'active', 'css', 'active.css'), 'utf8').catch(() => '');
 const retiredActiveImageRule = activeCss.match(
@@ -250,6 +251,9 @@ const retiredActiveImageRule = activeCss.match(
 if (/\.is-satellite-fallback\s+#active-storm-map\s*\{[^}]*visibility\s*:\s*hidden/is.test(activeCss)
     || !/display\s*:\s*none/i.test(retiredActiveImageRule)) {
   errors.push('active/css/active.css: satellite fallback must preserve the map and keep the retired image inset hidden');
+}
+if (/\.active-map-status-row|\.active-satellite-timestamp/.test(activeCss)) {
+  errors.push('active/css/active.css: retired Active map status-row styling must not remain');
 }
 
 const stormController = await readFile(path.join(root, 'active', 'js', 'activeStormMap.js'), 'utf8').catch(() => '');
@@ -260,6 +264,9 @@ if (!stormController.includes('mode: \'storm\'')
     || !stormController.includes('SatelliteFallbackDialog')
     || !stormController.includes('animationUrl: this.floaterUrl(productKey)')) {
   errors.push('active/js/activeStormMap.js: detailed mode, shared satellite composition, or click-to-load floater fallback is missing');
+}
+if (/active-storm-map-status|active-satellite-timestamp|this\.timestamp/.test(stormController)) {
+  errors.push('active/js/activeStormMap.js: retired Active map status-row wiring must not remain');
 }
 
 const satelliteSources = await readFile(path.join(root, 'js', 'modules', 'satelliteTileSources.js'), 'utf8').catch(() => '');

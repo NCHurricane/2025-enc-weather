@@ -43,7 +43,7 @@
         <link rel="stylesheet" href="../counties/css/county.css?v=20260823-map-status-1" />
         <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260823-map-status-1" />
         <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
-        <link rel="stylesheet" href="./css/active.css?v=20260822-satellite-fallback-2" />
+        <link rel="stylesheet" href="./css/active.css?v=20260823-status-row-removal-1" />
         <link rel="stylesheet" href="./css/storm-graphics.css?v=20260822-tabs-1" />
         <link rel="stylesheet" href="../css/components.css?v=20260822-2" />
 
@@ -85,7 +85,6 @@
     </head>
 
     <body class="site-weather-page">
-        <a class="skip-link" href="#main-content">Skip to main content</a>
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
@@ -198,8 +197,7 @@
 
                             <div class="interactive-weather-map-shell">
                                 <div id="active-storm-map" class="interactive-weather-map" role="region"
-                                    aria-label="Detailed active tropical cyclone map"
-                                    aria-describedby="active-storm-map-status"></div>
+                                    aria-label="Detailed active tropical cyclone map"></div>
                                 <div id="active-satellite-image-container" class="active-satellite-image-container"
                                     hidden>
                                     <img id="active-satellite-image" class="active-satellite-image" alt="" />
@@ -232,15 +230,6 @@
                                     </div>
                                 </div>
 
-                            <div class="active-map-status-row">
-                                <p id="active-storm-map-status" class="tropical-map-status"
-                                    role="status" aria-live="polite">
-                                    Select this tab to load the detailed storm map.
-                                </p>
-                                <p id="active-satellite-timestamp" class="active-satellite-timestamp">
-                                    Storm map imagery
-                                </p>
-                            </div>
                             <aside id="active-satellite-legend" class="active-map-satellite-legend"
                                 aria-label="Satellite imagery legend" hidden>
                                 <span>Satellite:</span>
@@ -467,7 +456,7 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
         <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
-        <script type="module" src="./js/activeStormMap.js?v=20260823-map-status-1"></script>
+        <script type="module" src="./js/activeStormMap.js?v=20260823-status-row-removal-1"></script>
         <script type="module" src="./js/storm.js?v=20260821-product-states-2"></script>
         <script type="module" src="./js/storm_text.js?v=20260821-product-states-1"></script>
 

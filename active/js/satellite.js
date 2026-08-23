@@ -24,7 +24,6 @@ export function initSatellite(options = {}) {
         containerId: options.containerId || 'active-satellite-image-container',
         loadingId: options.loadingId || 'active-satellite-loading',
         errorId: options.errorId || 'active-satellite-error',
-        timestampId: options.timestampId || 'active-satellite-timestamp',
     });
     mod.init();
     return mod;
@@ -52,7 +51,6 @@ class SatelliteModule {
         this.container = null;
         this.loading = null;
         this.error = null;
-        this.timestamp = null;
 
         this.onPlayPause = this.onPlayPause.bind(this);
     }
@@ -64,7 +62,6 @@ class SatelliteModule {
         this.container = document.getElementById(this.cfg.containerId);
         this.loading = document.getElementById(this.cfg.loadingId);
         this.error = document.getElementById(this.cfg.errorId);
-        this.timestamp = document.getElementById(this.cfg.timestampId);
 
         if (!this.stormId) {
             console.warn('[active-satellite] No storm ID found in URL, aborting init.');
@@ -180,26 +177,6 @@ class SatelliteModule {
         if (this.error) this.error.style.display = 'none';
     }
 
-    updateTimestamp() {
-        if (!this.timestamp) return;
-        const productConfig = this.products[this.currentProduct];
-        const sectorName = productConfig ? productConfig.name : this.currentProduct.toUpperCase();
-
-        if (this.isAnimating) {
-            this.timestamp.textContent = `${sectorName} - Animated Loop`;
-            return;
-        }
-        const now = new Date();
-        const txt = now.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        });
-        this.timestamp.textContent = `${sectorName} - ${txt} (latest)`;
-    }
-
     load() {
         const product = this.currentProduct;
 
@@ -218,7 +195,6 @@ class SatelliteModule {
 
             this.hideLoading();
             this.showImage();
-            this.updateTimestamp();
         };
         test.onerror = () => {
             console.error('[satellite] failed to load image:', url);

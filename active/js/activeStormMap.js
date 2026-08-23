@@ -1,7 +1,6 @@
 import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-  formatWeatherTime,
 } from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260822-san-diego-cities-3';
@@ -85,7 +84,6 @@ export class ActiveStormMapController {
     this.scrubberOutput = documentRef?.getElementById?.('active-satellite-frame-indicator');
     this.loading = documentRef?.getElementById?.('active-satellite-loading');
     this.error = documentRef?.getElementById?.('active-satellite-error');
-    this.timestamp = documentRef?.getElementById?.('active-satellite-timestamp');
     this.legend = documentRef?.getElementById?.('active-satellite-legend');
     this.legendTitle = documentRef?.getElementById?.('active-satellite-legend-title');
     this.fallback = documentRef?.getElementById?.('active-satellite-image-container');
@@ -159,7 +157,6 @@ export class ActiveStormMapController {
     this.engine ||= new TropicalMapEngine({
       mode: 'storm',
       container: 'active-storm-map',
-      status: 'active-storm-map-status',
       basin: this.basin,
       leaflet: this.windowRef.L,
       documentRef: this.documentRef,
@@ -254,13 +251,6 @@ export class ActiveStormMapController {
           error,
         );
       },
-      onFrame: ({ time, index, count, source }) => {
-        if (this.timestamp) {
-          this.timestamp.textContent = `${source.label} · ${formatWeatherTime(time)}${
-            count ? ` · Frame ${index + 1} of ${count}` : ''
-          }`;
-        }
-      },
       onPlayStateChange: (playing) => this.syncPlayButton(playing),
     });
     this.satelliteMap.ensureMap();
@@ -302,7 +292,6 @@ export class ActiveStormMapController {
     if (productKey === 'map') {
       this.satelliteMap?.setVisible(false);
       this.syncSatelliteUi(false);
-      if (this.timestamp) this.timestamp.textContent = 'Storm map imagery';
       return true;
     }
     if (!this.engine?.map || !this.mapPanelActive) return false;
@@ -343,9 +332,6 @@ export class ActiveStormMapController {
       animationUrl: this.floaterUrl(productKey),
       alt: `${this.startedStormId} ${this.imageryLabel()} animated storm floater from NOAA STAR`,
     }) || false;
-    if (this.timestamp) {
-      this.timestamp.textContent = 'Satellite tiles unavailable · NOAA STAR floater animation available on request';
-    }
     this.setSatelliteBusy(false);
     this.syncPlayButton(false);
     if (this.playButton) this.playButton.disabled = true;

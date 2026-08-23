@@ -416,7 +416,7 @@
   color: var(--component-subtab-inactive-color);
   cursor: pointer;
   font-family: var(--font-heading);
-  font-size: var(--component-subtab-font-size);
+  font-size: clamp(0.65rem, 1.5vw, 0.75rem);
   font-weight: 650;
   line-height: var(--component-subtab-line-height);
   text-align: center;
@@ -715,7 +715,6 @@
     justify-content: center;
     color: var(--component-subtab-inactive-color);
     content: attr(data-short-label);
-    font-size: inherit;
     font-weight: inherit;
     line-height: inherit;
     text-indent: 0;

@@ -465,12 +465,6 @@
     align-items: center;
     padding-bottom: 1em;
 }
-.active-satellite-timestamp {
-    font-size: clamp(0.7rem, 2.5vw, 1rem);
-    color: var(--color-primary);
-    font-weight: 600;
-    width: 100%;
-}
 .active-satellite-loading {
     display: flex;
     align-items: center;
@@ -524,7 +518,6 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
-.active-satellite-timestamp,
 .image-timestamp {
     position: relative;
     text-align: center;
@@ -1344,33 +1337,6 @@ body.site-weather-page {
     box-shadow: 0 6px 18px rgba(2, 8, 14, 0.38);
 }
 
-.active-map-status-row {
-    display: flex;
-    min-height: 42px;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 7px 18px;
-    padding: 8px 12px;
-    border-top: 1px solid rgba(177, 201, 220, 0.2);
-    background: #0b2238;
-}
-
-.active-map-status-row .tropical-map-status,
-.active-map-status-row .active-satellite-timestamp {
-    position: static;
-    width: auto;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #c7d6e1;
-    font-family: var(--font-heading, 'Montserrat', sans serif);
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-align: left;
-}
-
 .active-map-satellite-legend {
     display: flex;
     align-items: center;
@@ -1614,11 +1580,6 @@ body.site-weather-page {
     .active-module .active-storm-map-section .interactive-weather-map-shell,
     .active-module #active-storm-map {
         min-height: 460px;
-    }
-
-    .active-map-status-row {
-        align-items: flex-start;
-        flex-direction: column;
     }
 
     .active-module--nhc .active-module-panel,
