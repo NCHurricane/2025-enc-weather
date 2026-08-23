@@ -204,6 +204,11 @@ if (activePage.includes('src="./js/satellite.js')) {
 if (/tropical-banner(?:-ep)?\.js|initTropicalBanner(?:EP)?/i.test(activePage)) {
   errors.push('active/index.html: unused legacy tropical banner initialization must not run in the Active shell');
 }
+const activeStaticSkipLinks = activePage.match(/\bclass=["'][^"']*\bskip-link\b[^"']*["']/gi) || [];
+const navigationSkipLinks = navigation.match(/\bclass=["'][^"']*\bskip-link\b[^"']*["']/gi) || [];
+if (activeStaticSkipLinks.length !== 0 || navigationSkipLinks.length !== 1) {
+  errors.push('active/index.html: Active shell must use exactly one navigation-owned skip link');
+}
 
 const activeCss = await readFile(path.join(root, 'active', 'css', 'active.css'), 'utf8').catch(() => '');
 const retiredActiveImageRule = activeCss.match(
