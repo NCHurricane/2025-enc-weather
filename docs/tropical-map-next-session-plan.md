@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
-Updated: 2026-08-22
+Updated: 2026-08-23
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Phases 0 through 4 are implemented. Phase 4 compatibility routes and navigation were committed in `2a60674`. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through the current tree. Phase 5 is complete locally: deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and the redundant `active-map-status-row` presentation plus its direct CSS/JavaScript wiring are removed and guarded. Live owner smoke for issued warning/surge interaction is explicitly deferred until an active system has those products; this is a time-dependent external gate, not a remaining local implementation gap. Phase 6 archive support remains open, and Phase 7 consolidation has not begun. This document does not authorize staging, committing, pushing, deployment, Phase 6, or Phase 7 work.
+Status: Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Phase 6 application-source removal remains. This document does not authorize staging, committing, pushing, deployment, destructive file cleanup, or a presentation removal.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -13,7 +13,7 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 3. Run `git status --short --branch` and `git log -8 --oneline`.
 4. Preserve all existing working-tree changes. Do not infer phase completion from an uncommitted file.
 5. Inspect the Phase 4 commit `2a60674`, the Phase 5 implementation commit `7d125fa`, and later commits only as needed to determine current ownership.
-6. Do not begin Phase 6 or remove a legacy presentation without explicit user authorization.
+6. Do not add an archive workflow or remove a legacy presentation without explicit user authorization.
 
 ## Current repository boundary
 
@@ -25,6 +25,7 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 - The final Active presentation closeout began at committed checkpoint `60ec8f8` with pre-existing handoff-only changes. It removes the duplicate static skip link and user-authorized map status row from the current Active shell, removes only their direct current/legacy controller and CSS wiring, updates the adjacent validator contract and cache-busters, and preserves all runtime/generated storm data.
 - `active/cache/nhc_current_storms.json`, generated tropical-map packages, storm directories, county output, and ignored test output are runtime or retained fixture state. Do not rewrite, delete, or commit them opportunistically.
 - The banner/Outlook source follow-up touches only the legacy initialization hunk in `active/index.html`, the shared Outlook sanitizer in `active/api/tropical_map_lib.php`, a self-contained all-basin format test under `scripts/tests/`, the adjacent site-validator guard, and this handoff. It does not alter the concurrent satellite implementation. A later user-authorized `overview --basin=all` run republished the three ignored/runtime overview packages; they remain outside the source-change and commit boundary.
+- The final Phase 6 source boundary is handoff-only. The attempted Summary-preview removal was fully reverted: `active/index.html`, `active/css/active.css`, `active/js/activeStormWorkspace.js`, and `scripts/validate-site.mjs` match their committed baseline. All Active presentations, cache-busters, map/satellite behavior, fixtures, ignored/generated storm data, and runtime state are preserved.
 
 ## Phase status
 
@@ -36,12 +37,40 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 | 3: unified overview | Complete through `9e3ecb6` | `tropical.html` owns URL-addressable `atl`, `epac`, and `cpac` views with Overview, Satellite, Graphics, and Text Products. |
 | 4: compatibility/navigation | Implemented in `2a60674` | `tropical_at.html` and `tropical_ep.html` are accessible compatibility entries; navigation, sitemap, `.htaccess`, and site validation were updated. |
 | 5: active shell/detailed map | Complete locally; live issued-hazard owner smoke deferred | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The duplicate skip link and redundant status row are removed and guarded. The owner cannot exercise issued warning/surge products until an eligible storm exists, so that time-dependent live smoke remains explicitly deferred. |
-| 6: archive support | Open | `active/js/storm.js` still requires an exact storm match in the current-storm feed before loading local advisory data. The storm package builder also publishes `stormState: "live"`. |
-| 7: consolidation | Not begun | No duplicate warning, surge, track/cone, radii, graphics, or text presentation may be removed without parity evidence and owner approval. |
+| 6: presentation consolidation | Complete locally; retain all presentations | The audit found the Summary five-day preview resolves to the same product as the Track & Cone English five-day tab, but the owner corrected the brief removal request and chose to retain its at-a-glance Summary workflow. No application-source removal remains. |
 
-## Best next course: Phase 6 authorization gate
+## Current roadmap boundary
 
-Phase 5 is complete locally. Do not begin Phase 6 from this handoff alone; request explicit user authorization for the archive-support boundary below.
+Phases 5 and 6 are complete locally. Archive support is not part of the product roadmap and must not be implemented. No further Tropical phase or presentation removal is authorized by this handoff.
+
+## Phase 6 parity audit and final owner decision: 2026-08-23
+
+Preservation boundary: the audit's final outcome is retain-all. The attempted Summary-preview removal was fully reverted before staging or commit, so Phase 6 leaves Active application behavior and validator contracts unchanged. It does not change the map, alert, graphics, radii, or text behavior; the immutable AL/EP/CP fixtures; `active/cache/nhc_current_storms.json`; ignored/generated storm packages and imagery; or production/runtime state.
+
+| Surface | Leaflet detailed map provides | Existing presentation adds | Audit result |
+| --- | --- | --- | --- |
+| Watches and warnings | Combined NHC GIS warning geometry with type/description popups alongside the track, cone, surge, and radii layers. | The Alerts view uses the TCV-derived zone package, a hazard-specific map, and labeled state/zone lists. It exposes zone membership that the detailed-map package and popup do not. | Not redundant; retain unless a later authorized integration preserves the zone list and its separate source semantics. |
+| Storm surge alerts | Combined NHC surge-warning geometry and description popups in storm context. | The Alerts view separates surge from wind and provides the TCV-derived zone map plus labeled state/zone lists. | Not redundant; retain unless parity is deliberately added elsewhere first. |
+| Track and cone | Interactive current/past/forecast vectors, forecast-point valid times and intensity, the cone, and simultaneous hazard/radii context. | Official 3-day and 5-day graphics, English/Espanol/Francais variants, Key Messages, and experimental products. These remain recognizable official products and add language/product coverage beyond the map. | Not redundant; retain. |
+| Wind radii | Georeferenced 34/50/64-knot overlays with forecast-hour and valid-time popups in storm context. | The Radii view selects Now and forecast hours, switches individual/all thresholds, draws a storm-relative compass, and reports exact NE/SE/SW/NW nautical-mile values. | Not redundant; retain. |
+| Graphics and text | No full replacement. | Full advisory/forecast/discussion/wind-probability text; wind analysis/history/arrival/probability graphics; surge/rain graphics; and official-language products. | Unique information; retain. |
+| Summary five-day preview | The map supplies an interactive forecast track and cone. | The Summary preview and the Track & Cone English five-day tab resolve to the same `5day_cone_no_line_and_wind.png` local asset with the same NHC five-day remote fallback. The Summary placement remains useful as an at-a-glance workflow. | Retain by final owner decision. |
+
+Final owner decision:
+
+1. Retain all current presentations, including the Summary five-day preview and its Track & Cone action.
+2. The brief removal was fully reverted before staging or commit; no Active HTML, CSS, JavaScript, validator, or cache-buster diff remains from it.
+3. No other presentation removal is authorized.
+
+Current Phase 6 evidence:
+
+- Static/code audit traced the current consumers in `active/index.html`, `active/js/activeStormWorkspace.js`, `active/js/activeStormMap.js`, `active/js/ww-maps.js`, `active/js/radii-visualization.js`, `active/js/storm-graphics.js`, `active/js/storm_text.js`, and `js/modules/tropicalMapEngine.js`.
+- Deterministic desktop browser at `1280x900`: issued `AL052025` exposed enabled Leaflet warning/surge layers and separate Alerts tabs with `SC / Coastal Colleton` labeled as Tropical Storm Warning and Storm Surge Warning. Not-issued `CP012026` exposed enabled past/forecast/cone/radii layers, disabled warning/surge layers, Now/3h/12h/24h/36h radii selection, and exact current quadrant values. No browser console errors or warnings were recorded.
+- Deterministic mobile browser at `390x844`: the same CP radii hours and AL wind/surge state/zone lists remained present with no horizontal page overflow and no browser console errors or warnings.
+- These fixture checks establish local presentation parity only. They do not establish a live issued-hazard owner smoke, current external-provider freshness, deployment, or production behavior.
+- Revert static/automated: `active/index.html`, `active/css/active.css`, `active/js/activeStormWorkspace.js`, and `scripts/validate-site.mjs` match their committed baseline; syntax passed for the workspace controller and validator; the current Tropical/shared-map suite passed 60 tests; and the site validator passed 20 HTML files, 296 JSON files, and 156 local references.
+- Revert desktop browser at `1280x900`: deterministic `CP012026` restored the two-column Summary preview DOM, fallback loader, unavailable-image state, and Track & Cone action with no horizontal overflow. The retained fixture had no resolvable local or current NHC five-day image, so the explicit empty state appeared truthfully. Activating the action added `nhcView=track`, selected and revealed the Track & Cone panel, and restored focus to `nhc-tab-track`.
+- Revert mobile browser at `390x844`: the restored preview DOM remained mounted but the existing responsive rule hid its forecast container, the page had no horizontal overflow, and no console errors or warnings were recorded. This confirms the committed mobile contract rather than introducing a new mobile presentation.
 
 ## Phase 5 closeout criteria
 
@@ -142,30 +171,19 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
 - The separate non-satellite issue was then identified as Tropical Overview losing its configured basin viewport when a basin changed from Satellite, Graphics, or Text Products. The deferred hidden-map camera correction above has deterministic and controlled-browser evidence. Owner follow-up reported, "that seemed to fix the issue"; the exact basin/subtab repetitions, device, and viewport were not supplied, so the claim is retained at that granularity.
 - Owner follow-up after the map-status/note cleanup reported, "Everything seems to pass." No exact pages, devices, or viewport sizes were supplied, so this closes only the recent map-status/note owner check at that report's granularity.
 - Owner report: there are currently no active systems with watches or warnings, so live owner smoke of issued warning/surge path interactions is deferred until an eligible storm is active. Deterministic fixture and controlled-browser evidence remains separate and complete.
+- Final Active closeout owner report: "The active map looks great. No errors." No exact page URL, device, or viewport was supplied, so the acceptance is retained at that granularity.
+- Product decision: the owner removed archive support from the roadmap and stated that the website will no longer have an archive element. Active remains a current-storm-only public workflow.
 - Deployment/production: not attempted or established. Production PHP extensions, cache freshness, scheduler state, upload state, and production browser behavior remain open.
 
 ## Smallest coherent Phase 5 closeout slice
 
-Keep this separate from Phase 6 archive behavior and Phase 7 presentation removal.
+This local closeout is complete. Phase 6 is also complete with the retain-all owner decision recorded above.
 
 1. Complete: the Active shell again contains only the navigation-owned skip link, and the site validator guards that ownership.
 2. Complete: the site validator fails if Active owns a static skip link or the shared navigation does not own exactly one. The guard against restarting the unused `/active/active/cache/` banner request remains.
 3. Complete: immutable, non-production AL, EP, and CP current-storm/advisory/map fixtures plus a bounded test router/harness are under `scripts/tests/`; no generated/runtime package was edited.
 4. Complete locally: AL, EP, and CP Active-page scenarios now cover issued and not-issued warnings/surge, partial/unavailable products, exact-ID/advisory rejection, map and warning popups, desktop/mobile layout, console, and HTTP behavior.
-5. Complete locally: the current CP map/satellite and shared Tropical Overview regressions passed, the redundant Active status row is removed, the site validator and `git diff --check` are green, and live issued-hazard owner smoke is explicitly deferred. Do not begin Phase 6 without explicit authorization.
-
-## Phase 6 boundary
-
-Archive support is a separate authorization gate. Its target remains:
-
-1. Validate `?storm=` against `^(AL|EP|CP)\d{6}$`.
-2. Load the exact local advisory, text, graphics, and map manifests before deciding availability.
-3. Require every available identity to match the requested ATCF ID and advisory.
-4. Use the current-storm feed only to label the valid package `live` or `archive`, not as the gate that permits local loading.
-5. Render a valid retained archive when it is absent from the live feed.
-6. Fail closed to 404 for invalid IDs, identity mismatches, or missing required local state.
-
-Do not edit `active/cache/nhc_current_storms.json` to simulate archive support.
+5. Complete locally: the current CP map/satellite and shared Tropical Overview regressions passed, the redundant Active status row is removed, the site validator and `git diff --check` are green, and live issued-hazard owner smoke is explicitly deferred.
 
 ## Durable product contracts
 
@@ -178,7 +196,8 @@ Do not edit `active/cache/nhc_current_storms.json` to simulate archive support.
 - Use one map instance per page, named layer owners, generation/abort protection, escaped accessible popups, source timestamps, and explicit loading/empty/stale/partial/unavailable states.
 - Normalize and split date-line geometry; never substitute one storm/basin/advisory for another.
 - Retain last-known-good data on bounded refresh failure and publish generated packages atomically.
-- Preserve archived storm files, current text/graphics/language behavior, official links, and script-owned IDs until replacement parity is accepted.
+- Active is a current-storm-only public workflow. Do not add an archive loader, archive selector, archive route, or public archive state. Retained storm files may remain as non-public fixtures/history and are not deletion targets without separate destructive-cleanup authorization.
+- Preserve current text/graphics/language behavior, official links, and script-owned IDs until replacement parity is accepted.
 
 ## Current official source/runtime contract
 
@@ -206,7 +225,7 @@ Continue the NCHurricane tropical-map work in K:\Web Design\NCHurricane 2025.
 
 Read AGENTS.md and docs/tropical-map-next-session-plan.md completely, then run `git status --short --branch` and `git log -8 --oneline`. Preserve every existing working-tree change. Do not stage, commit, push, deploy, edit generated/runtime data, or begin a new phase unless I explicitly authorize it.
 
-Phase 5 is complete locally. Preserve the immutable AL/EP/CP fixtures, bounded Active router, SVG popup correction, duplicate-skip-link guard, user-authorized Active status-row removal, and recorded browser evidence. Live owner smoke for issued warning/surge products is deferred until an eligible storm is active. Do not edit `active/cache/nhc_current_storms.json`, generated tropical-map packages, retained ignored output, or production/runtime state.
+Phase 5 is complete locally at committed checkpoint `385b52f`. Preserve the immutable AL/EP/CP fixtures, bounded Active router, SVG popup correction, duplicate-skip-link guard, user-authorized Active status-row removal, and recorded browser evidence. The owner accepted the Active map with no errors. Live owner smoke for issued warning/surge products is deferred until an eligible storm is active. Active remains current-storm-only; do not add an archive loader, selector, route, or archive state. Do not edit `active/cache/nhc_current_storms.json`, generated tropical-map packages, retained ignored output, or production/runtime state.
 
-Do not begin Phase 6 archive support or Phase 7 consolidation from the handoff alone.
+Phase 6 presentation consolidation is complete locally with a retain-all owner decision. Preserve the alert, track/cone, radii, graphics, text, and Summary five-day preview surfaces, including the preview's existing fallback loader, responsive behavior, and Track & Cone action. Do not remove a presentation or begin a new Tropical phase without explicit authorization.
 ```
