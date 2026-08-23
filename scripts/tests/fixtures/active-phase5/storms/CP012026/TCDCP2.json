@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1787353701,
+        "cached_at_iso": "2026-08-21T23:08:21+00:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "lastBuildDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "title": "Central North Pacific Hurricane Lala Discussion Number 38",
+            "description": "Central Pacific Hurricane Center - Discussion for Central North Pacific wallet 2",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Central North Pacific Hurricane Lala Discussion Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Central North Pacific Hurricane Lala Discussion Number 38",
+                "description": [],
+                "pubDate": "Fri, 21 Aug 2026 20:34:02 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/HFOTCDCP2.shtml",
+                "guid": "202608212034",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTPA42 PHFO 212033\nTCDCP2\n \nHurricane Lala Discussion Number  38\nNWS Central Pacific Hurricane Center Honolulu HI   CP012026\nIssued by NWS National Hurricane Center Miami FL\n1100 AM HST Fri Aug 21 2026\n \nThe combined influence of strong southwesterly vertical wind shear \nand intrusions of dry air is more clearly evident on infrared and \nvisible satellite imagery. An earlier microwave pass also indicates \nthe cyclone vortex is tilted in response to the strong shear. The \nsubjective Dvorak estimates from HFO and JTWC are both T4.5\/77 kt, \nwith objective satellite intensity estimates near 80 kt. Based on \nthese data, the analyzed intensity for this advisory is 80 kt.\n \nLala is again moving at a slightly faster forward speed toward the \nnorth-northeast at 030\/12. The overall track forecast philosophy has \nnot changed, however the long-range track will be more sensitive \nthan usual to errors at early forecast hours given the geometry of \nthe track. By Saturday, a quick turn to the north and then the \nnorthwest is expected as the trough exits to the east and a \nmid-level ridge builds just south of the Aleutian Islands. Lala will \nthen decelerate slightly as the ridge remains the primary steering \nfeature through the remainder of the forecast period. The track \nforecast is once again adjusted slightly to the right of the \nprevious forecast, mainly due to the current motion towards the \nnorth-northeast. The new track forecast is a blend of the \ninterpolated previous forecast (OFCI) and the HCCA and TCVN aids.\n\nEven though southwesterly shear is forecast to subside during the \nnext 18-24 h, sea surface temperatures (SSTs) will cool gradually as \nLala gains latitude, and thus the current weakening trend will \ncontinue. Cooling upper tropospheric temperatures could compensate \nsomewhat for the cooler SSTs, allowing Lala to maintain deep \nconvection and weaken at a more gradual pace. The intensity forecast \nremains on the higher side of the guidance envelope, and is largely \nunchanged from the previous advisory.\n\nFORECAST POSITIONS AND MAX WINDS\n \nINIT  21\/2100Z 28.6N 170.4W   80 KT  90 MPH\n 12H  22\/0600Z 29.9N 171.0W   75 KT  85 MPH\n 24H  22\/1800Z 31.0N 171.9W   70 KT  80 MPH\n 36H  23\/0600Z 31.9N 173.0W   65 KT  75 MPH\n 48H  23\/1800Z 32.6N 173.9W   60 KT  70 MPH\n 60H  24\/0600Z 33.2N 174.6W   55 KT  65 MPH\n 72H  24\/1800Z 33.8N 175.3W   50 KT  60 MPH\n 96H  25\/1800Z 35.4N 177.0W   50 KT  60 MPH\n120H  26\/1800Z 37.3N 178.5W   45 KT  50 MPH\n \n$$\nForecaster Mahoney\/Kelly"
+}

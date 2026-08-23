@@ -1,0 +1,28 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -72,
+                    24.8
+                ]
+            },
+            "properties": {
+                "product": "current-position",
+                "stormId": "AL052025",
+                "name": "Erin",
+                "classification": "HU",
+                "intensityKnots": 100,
+                "pressureMillibars": 955,
+                "movementDirectionDegrees": 325,
+                "movementSpeedMph": 7,
+                "advisoryNumber": "032",
+                "sourceIssueTime": "2025-08-19T09:00:00Z",
+                "detailUrl": "active/?storm=AL052025"
+            }
+        }
+    ]
+}

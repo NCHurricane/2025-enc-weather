@@ -1,0 +1,28 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -170.4,
+                    28.6
+                ]
+            },
+            "properties": {
+                "product": "current-position",
+                "stormId": "CP012026",
+                "name": "Lala",
+                "classification": "HU",
+                "intensityKnots": 80,
+                "pressureMillibars": 974,
+                "movementDirectionDegrees": 30,
+                "movementSpeedMph": 14,
+                "advisoryNumber": "038",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "detailUrl": "active/?storm=CP012026"
+            }
+        }
+    ]
+}

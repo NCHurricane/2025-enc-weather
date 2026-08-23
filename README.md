@@ -493,7 +493,6 @@ County scripts run at different intervals based on how frequently the data chang
 │   ├── Fira_Code/
 │   ├── Montserrat/
 │   ├── Roboto/
-│   └── Saira/
 │
 └── test/                           # Development and testing files
     ├── cron                        # Example cron configuration

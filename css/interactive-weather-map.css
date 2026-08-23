@@ -48,7 +48,7 @@
   background: rgba(3, 24, 39, 0.94);
   box-shadow: 0 5px 16px rgba(0, 0, 0, 0.34);
   color: #fff;
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.74rem;
   line-height: 1.35;
   text-align: center;
@@ -161,7 +161,7 @@ html.satellite-imagery-modal-open body {
 
 .satellite-imagery-dialog-status {
   margin: 2rem auto;
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.85rem;
 }
 
@@ -189,7 +189,7 @@ html.satellite-imagery-modal-open body {
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.78);
   color: #fff;
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -205,7 +205,7 @@ html.satellite-imagery-modal-open body {
   padding: 8px 12px;
   background: rgba(3, 24, 39, 0.96);
   color: var(--color-text-light);
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
 }
 
@@ -259,7 +259,7 @@ html.satellite-imagery-modal-open body {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(3, 24, 39, 0.96);
   color: var(--color-text-light);
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
 }
 
 .weather-map-legend[hidden] {
@@ -331,7 +331,7 @@ html.satellite-imagery-modal-open body {
   padding: 8px 12px;
   background: rgba(3, 24, 39, 0.92);
   color: var(--color-text-light);
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   line-height: 1.4;
   text-align: center;
@@ -354,7 +354,8 @@ html.satellite-imagery-modal-open body {
 }
 
 .interactive-weather-map .leaflet-control-attribution {
-  font-size: 9px;
+  font-size: clamp(6px, 1vw, 10px);
+  font-weight: 600;
 }
 
 .interactive-weather-map .leaflet-control-zoom a {
@@ -400,6 +401,8 @@ html.satellite-imagery-modal-open body {
 
   .weather-map-timestamp {
     font-size: 0.62rem;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .satellite-tile-fallback-message {

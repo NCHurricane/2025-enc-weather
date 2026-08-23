@@ -1,0 +1,43 @@
+{
+    "schemaVersion": "1.0.0",
+    "kind": "storm-text-products",
+    "stormId": "CP012026",
+    "generatedAt": "2026-08-21T23:08:20+00:00",
+    "products": {
+        "TCP": {
+            "state": "available",
+            "required": true,
+            "file": "TCPCP2.json",
+            "sourceUrl": "https://www.nhc.noaa.gov/xml/TCPCP2.xml",
+            "httpStatus": 200
+        },
+        "TCM": {
+            "state": "available",
+            "required": true,
+            "file": "TCMCP2.json",
+            "sourceUrl": "https://www.nhc.noaa.gov/xml/TCMCP2.xml",
+            "httpStatus": 200
+        },
+        "TCD": {
+            "state": "available",
+            "required": true,
+            "file": "TCDCP2.json",
+            "sourceUrl": "https://www.nhc.noaa.gov/xml/TCDCP2.xml",
+            "httpStatus": 200
+        },
+        "PWS": {
+            "state": "available",
+            "required": true,
+            "file": "PWSCP2.json",
+            "sourceUrl": "https://www.nhc.noaa.gov/xml/PWSCP2.xml",
+            "httpStatus": 200
+        },
+        "TCU": {
+            "state": "available",
+            "required": false,
+            "file": "TCUCP2.json",
+            "sourceUrl": "https://www.nhc.noaa.gov/xml/TCUCP2.xml",
+            "httpStatus": 200
+        }
+    }
+}

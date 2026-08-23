@@ -609,7 +609,7 @@ export class TropicalMapEngine {
       maxBounds: view.maxBounds,
       maxBoundsViscosity: 0.75,
       worldCopyJump: false,
-      preferCanvas: true,
+      preferCanvas: false,
     });
     this.mapInstanceCount += 1;
 

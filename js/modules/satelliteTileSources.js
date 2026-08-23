@@ -84,7 +84,7 @@ export function createGibsWmtsSatelliteSource({
     tileUrl: (frameTime) => (
       `${NASA_GIBS_WMTS_URL}/${layer}/default/${encodeURIComponent(frameTime)}/${matrixSet}/{z}/{y}/{x}.png`
     ),
-    label: `NASA Worldview GOES-${canonicalPlatform} ${productLabel}`,
+    label: `GOES-${canonicalPlatform} ${productLabel}`,
     attribution: 'NASA EOSDIS GIBS/Worldview',
     maxNativeZoom: Number.isInteger(maxNativeZoom) ? maxNativeZoom : undefined,
     tileTimeoutMs: 12000,

@@ -904,8 +904,8 @@ class CountyTemperatureViewer {
       (left, right) => Date.parse(right) - Date.parse(left),
     )[0];
     this.timestamp.textContent = newestObservation
-      ? `${freshCount} of ${validStationCount} sites fresh · Latest ${formatWeatherTime(newestObservation)}`
-      : `${validStationCount} configured sites · Observation times unavailable`;
+      ? `NWS observations · Latest ${formatWeatherTime(newestObservation)} · ${freshCount} of ${validStationCount} sites fresh`
+      : `NWS observations · Observation times unavailable · ${validStationCount} configured sites`;
     this.reconcileStationMarkers();
   }
 }

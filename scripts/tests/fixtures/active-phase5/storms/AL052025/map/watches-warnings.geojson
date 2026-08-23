@@ -1,0 +1,353 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -76.67,
+                        34.69
+                    ],
+                    [
+                        -76.53,
+                        34.6
+                    ],
+                    [
+                        -76,
+                        35.06
+                    ],
+                    [
+                        -75.75,
+                        35.19
+                    ],
+                    [
+                        -75.53,
+                        35.22
+                    ],
+                    [
+                        -75.53,
+                        35.77
+                    ],
+                    [
+                        -75.77,
+                        36.23
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -75.63,
+                        35.83
+                    ],
+                    [
+                        -76.15,
+                        35.35
+                    ],
+                    [
+                        -76.44,
+                        35.36
+                    ],
+                    [
+                        -76.68,
+                        35
+                    ],
+                    [
+                        -76.18,
+                        35.03
+                    ],
+                    [
+                        -75.54,
+                        35.28
+                    ],
+                    [
+                        -75.47,
+                        35.6
+                    ],
+                    [
+                        -75.63,
+                        35.83
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -75.75,
+                        24.73
+                    ],
+                    [
+                        -75.33,
+                        24.07
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -74.46,
+                        24.19
+                    ],
+                    [
+                        -74.54,
+                        23.9
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -75,
+                        23.67
+                    ],
+                    [
+                        -74.73,
+                        23.69
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -75.37,
+                        23.73
+                    ],
+                    [
+                        -74.83,
+                        22.81
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -75.5,
+                        23.4
+                    ],
+                    [
+                        -76.13,
+                        23.68
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Watch",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -74.39,
+                        22.85
+                    ],
+                    [
+                        -73.82,
+                        22.62
+                    ],
+                    [
+                        -74.3,
+                        22.09
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Warning",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -73.18,
+                        22.44
+                    ],
+                    [
+                        -72.69,
+                        22.3
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Warning",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -72.95,
+                        21.61
+                    ],
+                    [
+                        -73.09,
+                        21.05
+                    ],
+                    [
+                        -73.74,
+                        21.06
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Warning",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -72.54,
+                        21.62
+                    ],
+                    [
+                        -72.03,
+                        21.96
+                    ],
+                    [
+                        -71.43,
+                        21.6
+                    ],
+                    [
+                        -71.74,
+                        21.25
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Warning",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -71.22,
+                        21.28
+                    ],
+                    [
+                        -71.1,
+                        21.54
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "watches-warnings",
+                "stormId": "AL052025",
+                "advisoryNumber": "031a",
+                "warningType": "Tropical Storm Warning",
+                "sourceIssueTime": "2025-08-19T06:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/AL052025_031Aadv_WW.kmz"
+            }
+        }
+    ]
+}

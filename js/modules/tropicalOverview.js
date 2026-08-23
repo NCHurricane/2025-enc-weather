@@ -1,8 +1,8 @@
 import { WEATHER_BASEMAPS } from './interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
 import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260822-san-diego-cities-3';
-import { TropicalMapEngine } from './tropicalMapEngine.js?v=20260822-hidden-basin-view-1';
+import { TropicalMapEngine } from './tropicalMapEngine.js?v=20260822-svg-popups-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
-import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260822-hidden-basin-view-1';
+import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260823-map-status-1';
 
 export const TROPICAL_BASINS = Object.freeze(['atl', 'epac', 'cpac']);
 
@@ -208,7 +208,6 @@ export class TropicalOverviewController {
     if (!this.documentRef || !this.windowRef || this.tabs.length === 0) return false;
     this.engine = new TropicalMapEngine({
       container: 'tropical-map',
-      status: 'tropical-map-status',
       basin: basinFromUrl(this.windowRef.location.href),
       leaflet: this.windowRef.L,
       documentRef: this.documentRef,

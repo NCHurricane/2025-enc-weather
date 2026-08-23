@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342718,
+        "cached_at_iso": "2025-10-13T04:05:18-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Thu, 09 Oct 2025 22:35:09 +0000",
+            "lastBuildDate": "Thu, 09 Oct 2025 22:35:09 +0000",
+            "title": "Eastern North Pacific Post-Tropical Cyclone Octave Forecast\/Advisory Number 38",
+            "description": "National Hurricane Center - Forecast\/Advisory for Eastern North Pacific wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Forecast\/Advisory Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Forecast\/Advisory Number 38",
+                "description": [],
+                "pubDate": "Thu, 09 Oct 2025 14:37:16 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCMEP5.shtml",
+                "guid": "202510091437",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTPZ25 KNHC 091437\nTCMEP5\n \nPOST-TROPICAL CYCLONE OCTAVE FORECAST\/ADVISORY NUMBER  38\nNWS NATIONAL HURRICANE CENTER MIAMI FL       EP152025\n1500 UTC THU OCT 09 2025\n \nPOST-TROPICAL CYCLONE CENTER LOCATED NEAR 17.7N 110.5W AT 09\/1500Z\nPOSITION ACCURATE WITHIN  20 NM\n \nPRESENT MOVEMENT TOWARD THE EAST-NORTHEAST OR  65 DEGREES AT  15 KT\n \nESTIMATED MINIMUM CENTRAL PRESSURE 1006 MB\nMAX SUSTAINED WINDS  30 KT WITH GUSTS TO  40 KT.\n4 M SEAS.... 30NE  60SE  30SW  15NW.\nWINDS AND SEAS VARY GREATLY IN EACH QUADRANT.  RADII IN NAUTICAL\nMILES ARE THE LARGEST RADII EXPECTED ANYWHERE IN THAT QUADRANT.\n \nREPEAT...CENTER LOCATED NEAR 17.7N 110.5W AT 09\/1500Z\nAT 09\/1200Z CENTER WAS LOCATED NEAR 17.6N 111.0W\n \nFORECAST VALID 10\/0000Z...DISSIPATED\n \nREQUEST FOR 3 HOURLY SHIP REPORTS WITHIN 300 MILES OF 17.7N 110.5W\n \nTHIS IS THE LAST FORECAST\/ADVISORY ISSUED BY THE NATIONAL HURRICANE \nCENTER ON THIS SYSTEM. FOR ADDITIONAL INFORMATION ON THE REMNANT LOW \nPLEASE SEE HIGH SEAS FORECASTS ISSUED BY THE NATIONAL WEATHER \nSERVICE...UNDER AWIPS HEADER NFDHSFEPI AND WMO HEADER FZPN02 KWBC.\n\n$$\nFORECASTER KELLY"
+}

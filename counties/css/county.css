@@ -1197,7 +1197,7 @@ canvas#meteogramChart {
   border-radius: var(--border-radius);
   color: var(--color-text);
   display: none;
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 1rem;
   font-weight: 500;
   margin-top: 15px;
@@ -1291,8 +1291,7 @@ canvas#meteogramChart {
   color: white;
   padding: 5px 10px;
   border-radius: 3px;
-  font-family: "Fira_Code", monospace;
-  font-size: 0.8rem;
+  font-family: var(--font-mono), monospace;
 }
 
 .radar-loading,
@@ -1301,7 +1300,7 @@ canvas#meteogramChart {
 .satellite-error {
   padding: 30px 20px;
   text-align: center;
-  font-family: "Fira_Code", monospace;
+  font-family: var(--font-mono), monospace;
   min-height: 150px;
   display: flex;
   flex-direction: column;
@@ -2287,8 +2286,7 @@ canvas#meteogramChart {
 }
 
 @media (max-width: 600px) {
-  .temperature-station-details:not([hidden]) + .weather-map-note,
-  .interactive-weather-map-shell:has(.temperature-station-details:not([hidden])) + .weather-map-note {
+  .temperature-station-details:not([hidden]) + .weather-map-note {
     display: none;
   }
 

@@ -1,0 +1,79 @@
+{
+  "activeStorms": [
+    {
+      "id": "al052025",
+      "binNumber": "AT5",
+      "name": "Erin",
+      "classification": "HU",
+      "intensity": "100",
+      "pressure": "955",
+      "latitude": "24.8N",
+      "longitude": "72.0W",
+      "latitudeNumeric": 24.8,
+      "longitudeNumeric": -72.0,
+      "movementDir": 325,
+      "movementSpeed": 7,
+      "lastUpdate": "2025-08-19T09:00:00Z",
+      "publicAdvisory": {
+        "advNum": "032",
+        "issuance": "2025-08-19T09:00:00Z",
+        "url": "https://www.nhc.noaa.gov/text/MIATCPAT5.shtml"
+      },
+      "forecastGraphics": {
+        "advNum": "032",
+        "issuance": "2025-08-19T09:00:00Z",
+        "url": "https://www.nhc.noaa.gov/graphics_at5.shtml"
+      }
+    },
+    {
+      "id": "ep152025",
+      "binNumber": "EP5",
+      "name": "Octave",
+      "classification": "PT",
+      "intensity": "30",
+      "pressure": "1006",
+      "latitude": "17.7N",
+      "longitude": "110.5W",
+      "latitudeNumeric": 17.7,
+      "longitudeNumeric": -110.5,
+      "movementDir": 65,
+      "movementSpeed": 17,
+      "lastUpdate": "2025-10-09T15:00:00Z",
+      "publicAdvisory": {
+        "advNum": "038",
+        "issuance": "2025-10-09T15:00:00Z",
+        "url": "https://www.nhc.noaa.gov/text/MIATCPEP5.shtml"
+      },
+      "forecastGraphics": {
+        "advNum": "038",
+        "issuance": "2025-10-09T15:00:00Z",
+        "url": "https://www.nhc.noaa.gov/graphics_ep5.shtml"
+      }
+    },
+    {
+      "id": "cp012026",
+      "binNumber": "CP2",
+      "name": "Lala",
+      "classification": "HU",
+      "intensity": "80",
+      "pressure": "974",
+      "latitude": "28.6N",
+      "longitude": "170.4W",
+      "latitudeNumeric": 28.6,
+      "longitudeNumeric": -170.4,
+      "movementDir": 30,
+      "movementSpeed": 14,
+      "lastUpdate": "2026-08-21T21:00:00Z",
+      "publicAdvisory": {
+        "advNum": "038",
+        "issuance": "2026-08-21T21:00:00Z",
+        "url": "https://www.nhc.noaa.gov/text/HFOTCPCP2.shtml"
+      },
+      "forecastGraphics": {
+        "advNum": "038",
+        "issuance": "2026-08-21T21:00:00Z",
+        "url": "https://www.nhc.noaa.gov/graphics_cp2.shtml"
+      }
+    }
+  ]
+}

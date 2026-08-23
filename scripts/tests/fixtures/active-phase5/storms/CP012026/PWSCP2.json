@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1787353701,
+        "cached_at_iso": "2026-08-21T23:08:21+00:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "lastBuildDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "title": "Central North Pacific Hurricane Lala Wind Speed Probabilities Number 38",
+            "description": "Central Pacific Hurricane Center - Wind Speed Probabilities for Central North Pacific wallet 2",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Central North Pacific Hurricane Lala Wind Speed Probabilities Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Central North Pacific Hurricane Lala Wind Speed Probabilities Number 38",
+                "description": [],
+                "pubDate": "Fri, 21 Aug 2026 20:33:02 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/HFOPWSCP2.shtml",
+                "guid": "202608212033",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "<pre>000\nFOPA12 PHFO 212032\nPWSCP2\n                                                                    \nHURRICANE LALA WIND SPEED PROBABILITIES NUMBER  38                  \nNWS CENTRAL PACIFIC HURRICANE CENTER HONOLULU HI   CP012026         \nISSUED BY NWS NATIONAL HURRICANE CENTER MIAMI FL                    \n2100 UTC FRI AUG 21 2026                                            \n                                                                    \nAT 2100Z THE CENTER OF HURRICANE LALA WAS LOCATED NEAR LATITUDE 28.6\nNORTH...LONGITUDE 170.4 WEST WITH MAXIMUM SUSTAINED WINDS NEAR 80   \nKTS...90 MPH...150 KM\/H.                                            \n                                                                    \nZ INDICATES COORDINATED UNIVERSAL TIME (GREENWICH)                  \n   PACIFIC  DAYLIGHT TIME (PDT)...SUBTRACT 7 HOURS FROM Z TIME      \n   HAWAIIAN STANDARD TIME (HST)...SUBTRACT 10 HOURS FROM Z TIME     \n                                                                    \nWIND SPEED PROBABILITY TABLE FOR SPECIFIC LOCATIONS                 \n                                                                    \nCHANCES OF SUSTAINED (1-MINUTE AVERAGE) WIND SPEEDS OF AT LEAST     \n   ...34 KT (39 MPH... 63 KM\/H)...                                  \n   ...50 KT (58 MPH... 93 KM\/H)...                                  \n   ...64 KT (74 MPH...119 KM\/H)...                                  \nFOR LOCATIONS AND TIME PERIODS DURING THE NEXT 5 DAYS               \n                                                                    \nPROBABILITIES FOR LOCATIONS ARE GIVEN AS OP(CP) WHERE               \n    OP  IS THE PROBABILITY OF THE EVENT BEGINNING DURING            \n        AN INDIVIDUAL TIME PERIOD (ONSET PROBABILITY)               \n   (CP) IS THE PROBABILITY OF THE EVENT OCCURRING BETWEEN           \n        18Z FRI AND THE FORECAST HOUR (CUMULATIVE PROBABILITY)      \n                                                                    \nPROBABILITIES ARE GIVEN IN PERCENT                                  \nX INDICATES PROBABILITIES LESS THAN 1 PERCENT                       \nPROBABILITIES FOR 34 KT AND 50 KT ARE SHOWN AT A GIVEN LOCATION WHEN\nTHE 5-DAY CUMULATIVE PROBABILITY IS AT LEAST 3 PERCENT.             \nPROBABILITIES FOR 34...50...64 KT SHOWN WHEN THE 5-DAY              \n64-KT CUMULATIVE PROBABILITY IS AT LEAST 1 PERCENT.                 \n\n  - - - - WIND SPEED PROBABILITIES FOR SELECTED LOCATIONS - - - -   \n                                                                    \n               FROM    FROM    FROM    FROM    FROM    FROM    FROM \n  TIME       18Z FRI 06Z SAT 18Z SAT 06Z SUN 18Z SUN 18Z MON 18Z TUE\nPERIODS         TO      TO      TO      TO      TO      TO      TO  \n             06Z SAT 18Z SAT 06Z SUN 18Z SUN 18Z MON 18Z TUE 18Z WED\n                                                                    \nFORECAST HOUR    (12)   (24)    (36)    (48)    (72)    (96)   (120)\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \nLOCATION       KT                                                   \n                                                                    \n30N 170W       34 99   X(99)   X(99)   X(99)   X(99)   X(99)   X(99)\n30N 170W       50 61   1(62)   X(62)   X(62)   X(62)   X(62)   X(62)\n30N 170W       64  7   1( 8)   X( 8)   X( 8)   X( 8)   X( 8)   X( 8)\n \n35N 170W       34  X   1( 1)   1( 2)   2( 4)   X( 4)   X( 4)   X( 4)\n \n30N 175W       34  X   4( 4)   3( 7)   1( 8)   1( 9)   X( 9)   X( 9)\n \n35N 175W       34  X   1( 1)   2( 3)  11(14)  27(41)  12(53)   1(54)\n35N 175W       50  X   X( X)   X( X)   1( 1)   7( 8)   6(14)   X(14)\n35N 175W       64  X   X( X)   X( X)   X( X)   3( 3)   1( 4)   X( 4)\n \n40N 175W       34  X   X( X)   X( X)   X( X)   X( X)   1( 1)   2( 3)\n \n$$                                                                  \nFORECASTER MAHONEY\/KELLY<\/pre>"
+}

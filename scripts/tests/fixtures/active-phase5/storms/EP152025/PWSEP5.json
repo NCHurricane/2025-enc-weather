@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342718,
+        "cached_at_iso": "2025-10-13T04:05:18-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Thu, 09 Oct 2025 22:37:44 +0000",
+            "lastBuildDate": "Thu, 09 Oct 2025 22:37:44 +0000",
+            "title": "Eastern North Pacific Post-Tropical Cyclone Octave Wind Speed Probabilities Number 38",
+            "description": "National Hurricane Center - Wind Speed Probabilities for Eastern North Pacific wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Wind Speed Probabilities Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Wind Speed Probabilities Number 38",
+                "description": [],
+                "pubDate": "Thu, 09 Oct 2025 14:37:47 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIAPWSEP5.shtml",
+                "guid": "202510091437",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "<pre>000\nFOPZ15 KNHC 091437\nPWSEP5\n                                                                    \nPOST-TROPICAL CYCLONE OCTAVE WIND SPEED PROBABILITIES NUMBER  38    \nNWS NATIONAL HURRICANE CENTER MIAMI FL       EP152025               \n1500 UTC THU OCT 09 2025                                            \n                                                                    \nAT 1500Z THE CENTER OF POST-TROPICAL CYCLONE OCTAVE WAS LOCATED NEAR\nLATITUDE 17.7 NORTH...LONGITUDE 110.5 WEST WITH MAXIMUM SUSTAINED   \nWINDS NEAR 30 KTS...35 MPH...55 KM\/H.                               \n                                                                    \nZ INDICATES COORDINATED UNIVERSAL TIME (GREENWICH)                  \n   PACIFIC  DAYLIGHT TIME (PDT)...SUBTRACT 7 HOURS FROM Z TIME      \n   HAWAIIAN STANDARD TIME (HST)...SUBTRACT 10 HOURS FROM Z TIME     \n                                                                    \nWIND SPEED PROBABILITY TABLE FOR SPECIFIC LOCATIONS                 \n                                                                    \nCHANCES OF SUSTAINED (1-MINUTE AVERAGE) WIND SPEEDS OF AT LEAST     \n   ...34 KT (39 MPH... 63 KM\/H)...                                  \n   ...50 KT (58 MPH... 93 KM\/H)...                                  \n   ...64 KT (74 MPH...119 KM\/H)...                                  \nFOR LOCATIONS AND TIME PERIODS DURING THE NEXT 5 DAYS               \n                                                                    \nPROBABILITIES FOR LOCATIONS ARE GIVEN AS OP(CP) WHERE               \n    OP  IS THE PROBABILITY OF THE EVENT BEGINNING DURING            \n        AN INDIVIDUAL TIME PERIOD (ONSET PROBABILITY)               \n   (CP) IS THE PROBABILITY OF THE EVENT OCCURRING BETWEEN           \n        12Z THU AND THE FORECAST HOUR (CUMULATIVE PROBABILITY)      \n                                                                    \nPROBABILITIES ARE GIVEN IN PERCENT                                  \nX INDICATES PROBABILITIES LESS THAN 1 PERCENT                       \nPROBABILITIES FOR 34 KT AND 50 KT ARE SHOWN AT A GIVEN LOCATION WHEN\nTHE 5-DAY CUMULATIVE PROBABILITY IS AT LEAST 3 PERCENT.             \nPROBABILITIES FOR 34...50...64 KT SHOWN WHEN THE 5-DAY              \n64-KT CUMULATIVE PROBABILITY IS AT LEAST 1 PERCENT.                 \n\n  - - - - WIND SPEED PROBABILITIES FOR SELECTED LOCATIONS - - - -   \n                                                                    \n               FROM    FROM    FROM    FROM    FROM    FROM    FROM \n  TIME       12Z THU 00Z FRI 12Z FRI 00Z SAT 12Z SAT 12Z SUN 12Z MON\nPERIODS         TO      TO      TO      TO      TO      TO      TO  \n             00Z FRI 12Z FRI 00Z SAT 12Z SAT 12Z SUN 12Z MON 12Z TUE\n                                                                    \nFORECAST HOUR    (12)   (24)    (36)    (48)    (72)    (96)   (120)\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \nLOCATION       KT                                                   \n\n...THERE IS NO OFFICIAL FORECAST FOR THIS DATE\/TIME...\nAND THEREFORE NO WIND SPEED PROBABILITIES CAN BE CALCULATED...\n\n$$                                                                  \nFORECASTER KELLY<\/pre>"
+}

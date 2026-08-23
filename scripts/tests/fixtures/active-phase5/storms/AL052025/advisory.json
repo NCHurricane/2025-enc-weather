@@ -1,0 +1,30 @@
+{
+  "atcfID": "AL052025",
+  "generated": "2026-08-22T00:00:00Z",
+  "messageTimeUTC": "2025-08-19T09:00:00Z",
+  "messageTimeLocal": "Aug 19 5:00 AM AST",
+  "messageTimeUTC_formatted": "Aug 19 9:00 AM UTC",
+  "messageType": "routine advisory",
+  "advisoryNumber": 32,
+  "systemType": "hurricane",
+  "systemName": "erin",
+  "systemSaffirSimpsonCategory": "category 3",
+  "loc": {
+    "lat": 24.8,
+    "lon": -72.0,
+    "latText": "24.8N",
+    "lonText": "72.0W"
+  },
+  "intensity": {
+    "mph": 115,
+    "kts": 100,
+    "mb": 955
+  },
+  "motion": {
+    "direction": "nnw or 325 degrees",
+    "speed": {
+      "mph": 7
+    }
+  },
+  "geo": []
+}

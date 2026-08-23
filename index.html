@@ -38,8 +38,8 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
    <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
    <link rel="stylesheet" href="css/styles.css?v=20260822-nav-2" />
-   <link rel="stylesheet" href="counties/css/county.css?v=20260822-shell-1" />
-   <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260822-satellite-fallback-1" />
+   <link rel="stylesheet" href="counties/css/county.css?v=20260823-map-status-1" />
+   <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823-map-status-1" />
    <link rel="stylesheet" href="css/home.css?v=20260817-4" />
    <link rel="stylesheet" href="css/components.css?v=20260822-2" />
    <script type="application/ld+json">
@@ -159,8 +159,6 @@
                      </div>
                      <aside id="temperature-station-details" class="temperature-station-details" role="dialog"
                         aria-modal="false" aria-label="Selected station details" aria-live="polite" hidden></aside>
-                     <p class="weather-map-note">Select a station for observed conditions or an outlined county for its
-                        local weather page.</p>
                   </div>
                </div>
             </div>
@@ -221,8 +219,6 @@
                            <p id="radar-legend-description" class="weather-map-legend-description"></p>
                         </div>
                      </aside>
-                     <p id="radar-map-note" class="weather-map-note">Open this section to load the latest NOAA radar
-                        map.</p>
                   </div>
                </div>
             </section>
@@ -284,8 +280,6 @@
                            <p id="satellite-legend-description" class="weather-map-legend-description"></p>
                         </div>
                      </aside>
-                     <p id="satellite-map-note" class="weather-map-note">Open this section to load the latest NOAA
-                        satellite map.</p>
                   </div>
                </div>
             </section>
@@ -319,8 +313,8 @@
    </footer>
 
    <script type="module" src="js/modules/homeMapOverlays.js?v=20260817-home10"></script>
-   <script type="module" src="counties/js/weatherMaps.js?v=20260822-satellite-fallback-6"></script>
-   <script type="module" src="counties/js/weatherCenter.js?v=20260822-weather-engine-4"></script>
+   <script type="module" src="counties/js/weatherMaps.js?v=20260823-map-status-1"></script>
+   <script type="module" src="counties/js/weatherCenter.js?v=20260823-map-status-1"></script>
    <script type="module">
       import { NavigationModule } from './js/modules/navigation.js?v=20260822-nested-nav-1';
       NavigationModule.navData.logo = {

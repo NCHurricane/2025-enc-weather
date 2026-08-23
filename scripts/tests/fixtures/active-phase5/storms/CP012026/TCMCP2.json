@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1787353700,
+        "cached_at_iso": "2026-08-21T23:08:20+00:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "lastBuildDate": "Fri, 21 Aug 2026 23:04:46 +0000",
+            "title": "Central North Pacific Hurricane Lala Forecast\/Advisory Number 38",
+            "description": "Central Pacific Hurricane Center - Forecast\/Advisory for Central North Pacific wallet 2",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Central North Pacific Hurricane Lala Forecast\/Advisory Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Central North Pacific Hurricane Lala Forecast\/Advisory Number 38",
+                "description": [],
+                "pubDate": "Fri, 21 Aug 2026 20:32:32 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/HFOTCMCP2.shtml",
+                "guid": "202608212032",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTPA22 PHFO 212032\nTCMCP2\n \nHURRICANE LALA FORECAST\/ADVISORY NUMBER  38\nNWS CENTRAL PACIFIC HURRICANE CENTER HONOLULU HI   CP012026\nISSUED BY NWS NATIONAL HURRICANE CENTER MIAMI FL\n2100 UTC FRI AUG 21 2026\n \nHURRICANE CENTER LOCATED NEAR 28.6N 170.4W AT 21\/2100Z\nPOSITION ACCURATE WITHIN  30 NM\n \nPRESENT MOVEMENT TOWARD THE NORTH-NORTHEAST OR  30 DEGREES AT  12 KT\n \nESTIMATED MINIMUM CENTRAL PRESSURE  974 MB\nMAX SUSTAINED WINDS  80 KT WITH GUSTS TO 100 KT.\n64 KT....... 40NE  40SE  30SW  35NW.\n50 KT....... 70NE  70SE  60SW  70NW.\n34 KT.......140NE 140SE 120SW 120NW.\n4 M SEAS....210NE 150SE 120SW 210NW.\nWINDS AND SEAS VARY GREATLY IN EACH QUADRANT.  RADII IN NAUTICAL\nMILES ARE THE LARGEST RADII EXPECTED ANYWHERE IN THAT QUADRANT.\n \nREPEAT...CENTER LOCATED NEAR 28.6N 170.4W AT 21\/2100Z\nAT 21\/1800Z CENTER WAS LOCATED NEAR 28.1N 170.7W\n \nFORECAST VALID 22\/0600Z 29.9N 171.0W\nMAX WIND  75 KT...GUSTS  90 KT.\n64 KT... 40NE  40SE  30SW  30NW.\n50 KT... 80NE  75SE  60SW  70NW.\n34 KT...160NE 140SE 120SW 130NW.\n \nFORECAST VALID 22\/1800Z 31.0N 171.9W\nMAX WIND  70 KT...GUSTS  85 KT.\n64 KT... 35NE  35SE  25SW  30NW.\n50 KT... 75NE  75SE  60SW  65NW.\n34 KT...160NE 140SE 125SW 150NW.\n \nFORECAST VALID 23\/0600Z 31.9N 173.0W\nMAX WIND  65 KT...GUSTS  80 KT.\n64 KT... 30NE  25SE  10SW  15NW.\n50 KT... 70NE  65SE  50SW  55NW.\n34 KT...140NE 125SE 120SW 140NW.\n \nFORECAST VALID 23\/1800Z 32.6N 173.9W\nMAX WIND  60 KT...GUSTS  75 KT.\n50 KT... 55NE  50SE  40SW  45NW.\n34 KT...135NE 120SE 100SW 130NW.\n \nFORECAST VALID 24\/0600Z 33.2N 174.6W\nMAX WIND  55 KT...GUSTS  65 KT.\n50 KT... 40NE  30SE  20SW  30NW.\n34 KT...130NE 130SE 100SW 110NW.\n \nFORECAST VALID 24\/1800Z 33.8N 175.3W\nMAX WIND  50 KT...GUSTS  60 KT.\n50 KT... 40NE  30SE   0SW  20NW.\n34 KT...130NE 105SE  70SW 110NW.\n \nEXTENDED OUTLOOK. NOTE...ERRORS FOR TRACK HAVE AVERAGED NEAR 150 NM\nON DAY 4 AND 200 NM ON DAY 5...AND FOR INTENSITY NEAR 20 KT EACH DAY\n \nOUTLOOK VALID 25\/1800Z 35.4N 177.0W\nMAX WIND  50 KT...GUSTS  60 KT.\n50 KT... 30NE  30SE  10SW  10NW.\n34 KT...120NE 100SE  50SW  80NW.\n \nOUTLOOK VALID 26\/1800Z 37.3N 178.5W\nMAX WIND  45 KT...GUSTS  55 KT.\n34 KT...100NE  80SE  40SW  60NW.\n \nREQUEST FOR 3 HOURLY SHIP REPORTS WITHIN 300 MILES OF 28.6N 170.4W\n \nNEXT ADVISORY AT 22\/0300Z\n \n$$\nFORECASTER MAHONEY\/KELLY"
+}

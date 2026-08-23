@@ -1,0 +1,279 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -170.4,
+                        28.6
+                    ],
+                    [
+                        -171,
+                        29.9
+                    ],
+                    [
+                        -171.9,
+                        31
+                    ],
+                    [
+                        -173,
+                        31.9
+                    ],
+                    [
+                        -173.9,
+                        32.6
+                    ],
+                    [
+                        -174.6,
+                        33.2
+                    ],
+                    [
+                        -175.3,
+                        33.8
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "forecast-track",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -170.4,
+                        28.6
+                    ],
+                    [
+                        -171,
+                        29.9
+                    ],
+                    [
+                        -171.9,
+                        31
+                    ],
+                    [
+                        -173,
+                        31.9
+                    ],
+                    [
+                        -173.9,
+                        32.6
+                    ],
+                    [
+                        -174.6,
+                        33.2
+                    ],
+                    [
+                        -175.3,
+                        33.8
+                    ],
+                    [
+                        -177,
+                        35.4
+                    ],
+                    [
+                        -178.5,
+                        37.3
+                    ]
+                ]
+            },
+            "properties": {
+                "product": "forecast-track",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -170.4,
+                    28.6
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 0,
+                "validTime": "2026-08-21T21:00:00Z",
+                "intensityKnots": 80,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171,
+                    29.9
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 12,
+                "validTime": "2026-08-22T09:00:00Z",
+                "intensityKnots": 75,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171.9,
+                    31
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 24,
+                "validTime": "2026-08-22T21:00:00Z",
+                "intensityKnots": 70,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -173,
+                    31.9
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 36,
+                "validTime": "2026-08-23T09:00:00Z",
+                "intensityKnots": 65,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -173.9,
+                    32.6
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 48,
+                "validTime": "2026-08-23T21:00:00Z",
+                "intensityKnots": 60,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -174.6,
+                    33.2
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 60,
+                "validTime": "2026-08-24T09:00:00Z",
+                "intensityKnots": 55,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -175.3,
+                    33.8
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 72,
+                "validTime": "2026-08-24T21:00:00Z",
+                "intensityKnots": 50,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -177,
+                    35.4
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 96,
+                "validTime": "2026-08-25T21:00:00Z",
+                "intensityKnots": 50,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -178.5,
+                    37.3
+                ]
+            },
+            "properties": {
+                "product": "forecast-point",
+                "stormId": "CP012026",
+                "advisoryNumber": "038",
+                "forecastHour": 120,
+                "validTime": "2026-08-26T21:00:00Z",
+                "intensityKnots": 45,
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/storm_graphics/api/CP012026_038adv_TRACK.kmz"
+            }
+        }
+    ]
+}

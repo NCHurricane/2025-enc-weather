@@ -2,7 +2,7 @@
 
 Updated: 2026-08-22
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the current committed checkpoint is `7c46f80`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, and nested county navigation are implemented in the committed history described below. There is no additional authorized county product phase. The next county task should be reconciliation and closeout of current working-tree changes, not a new feature family. Do not stage, commit, push, deploy, or change generated/runtime data without explicit authorization.
+Status: the current committed checkpoint is `7c46f80`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, and nested county navigation are implemented in the committed history described below. The current uncommitted map-status slice identifies the NWS Conditions source, preserves source/time/frame status for Radar and Satellite after removal of their old notes, and keeps the station instruction only on the nine live county index pages. There is no additional authorized county product phase. The next county task should be reconciliation and closeout of current working-tree changes, not a new feature family. Do not stage, commit, push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -20,6 +20,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - At this documentation cleanup, `HEAD`, `main`, and `origin/main` are `7c46f80`.
 - Before the cleanup began, the working tree already contained user-owned changes in all nine county pages, the Bertie prototype, county CSS/controllers, shared CSS, homepage/map modules, Tropical/Active modules, and an untracked `js/modules/mapBoundaryOverlays.js`.
 - Those changes are not classified by this handoff. Audit and separate them before modifying or staging any overlapping file.
+- The 2026-08-22 map-status slice changes only the status/note paths, the CSS needed to keep full mobile status text readable, matching asset cache-busters, and the site contract guard. It preserves concurrent font, attribution, Tropical SVG, satellite-provider, Active, fixture, and documentation work.
 - `counties/data/*-current.json`, county weather output, shared HWO office cache, logs, and `test/output/` are generated/runtime artifacts. Do not delete, rewrite, or commit them as documentation cleanup.
 
 ## Committed checkpoints
@@ -63,12 +64,15 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 ### Interactive maps and presentation
 
 - Preserve station order, zones, provider/product selectors, fallback order, county backgrounds, maps, frame counts, playback/pause, scrubbers, legends, boundary behavior, basemaps, meteograms, and responsive layout.
+- Homepage and live county Conditions maps identify `NWS observations` with the latest observation time and freshness count. Radar and Satellite retain provider, frame time, and `Frame n of n`; mobile timestamp overlays wrap instead of clipping those fields.
+- `weather-map-note` remains only for the live county Conditions instruction. Removed Radar, Satellite, homepage, Tropical, and prototype notes are not runtime dependencies, and CSS contains no selectors scoped only to those retired notes.
 - Preserve the current retained ready-layer animation behavior; readiness timing alone is not an equivalent replacement.
 - Shared weather-center structure belongs in shared components; county forecast, place-label, temperature-popup, alert-detail, and multi-zone rules remain county-owned.
 - The Bertie prototype remains a prototype. Do not promote it to a live page without explicit authorization.
 
 ## Open gates and known limitations
 
+- The map-status slice passed JavaScript syntax checks, 14 focused Tropical/Active tests, `git diff --check`, and controlled browser checks at `1280x900` and `390x844` on the homepage, Beaufort, Dare, San Diego, Tropical, and Active. Conditions/Radar/Satellite status text was present and unclipped, map widths stayed bounded, and the exercised console had no errors or warnings. The site validator's new map-status/note guards passed, but the repository-level command remains blocked by the concurrent static skip link in `active/index.html`.
 - Navigation owner smoke passed for the committed nested desktop/mobile workflow.
 - The owner confirmed keyboard activation for the current HWO button and previously accepted the disclosure treatment. The archived record does not contain a later owner acceptance for every side-by-side/modal refinement; treat that narrower visual owner gate as open unless the owner explicitly confirms it.
 - The shared CSS follow-up has controlled-browser evidence in the archive, but its historical record says owner smoke was still open. Do not silently promote controlled-browser evidence to owner acceptance.

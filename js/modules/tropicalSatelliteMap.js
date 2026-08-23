@@ -13,7 +13,7 @@ import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260822-hidden-basin-view-1';
+} from './tropicalMapEngine.js?v=20260822-svg-popups-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
@@ -230,7 +230,6 @@ export class TropicalSatelliteMap {
     this.legendScaleMin = resolveElement(documentRef, 'tropical-satellite-legend-scale-min');
     this.legendScaleMax = resolveElement(documentRef, 'tropical-satellite-legend-scale-max');
     this.legendDescription = resolveElement(documentRef, 'tropical-satellite-legend-description');
-    this.note = resolveElement(documentRef, 'tropical-satellite-note');
     this.sourceLink = resolveElement(documentRef, 'tropical-satellite-link');
     this.mapShell = this.mapElement?.closest?.('.interactive-weather-map-shell') || null;
   }
@@ -300,7 +299,7 @@ export class TropicalSatelliteMap {
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => this.setBusy(busy),
       onError: (error) => {
-        if (error) this.showFallback('Satellite map tiles are unavailable.');
+        if (error) this.showFallback();
       },
       onSourceFallback: ({ failedSource, nextSource, error }) => {
         console.warn(
@@ -341,9 +340,6 @@ export class TropicalSatelliteMap {
   updateViewport() {
     const target = this.currentTarget();
     if (!target) return;
-    if (this.note) {
-      this.note.textContent = `View centered on ${target.label} using the configured basin satellite view.`;
-    }
     this.mapElement?.setAttribute?.('aria-label', `Interactive satellite map centered on ${target.label}`);
     if (!this.map) return;
     const leafletMap = this.map.ensureMap();
@@ -442,7 +438,7 @@ export class TropicalSatelliteMap {
     if (busy && this.error) this.error.hidden = true;
   }
 
-  showFallback(message) {
+  showFallback() {
     if (!this.active) return false;
     this.map?.stop();
     this.map?.setVisible(false);
@@ -452,9 +448,6 @@ export class TropicalSatelliteMap {
     if (this.mapElement) this.mapElement.hidden = false;
     if (this.fallback) this.fallback.hidden = true;
     this.fallbackImage?.removeAttribute?.('src');
-    if (this.note) {
-      this.note.textContent = `${message} Use the map message to view the NOAA STAR animation.`;
-    }
     this.syncPlayButton(false);
     if (this.playButton) this.playButton.disabled = true;
     this.setBusy(false);
@@ -488,7 +481,7 @@ export class TropicalSatelliteMap {
       try {
         await this.map.showLatest();
       } catch {
-        this.showFallback('Satellite map tiles are unavailable.');
+        this.showFallback();
       }
       return;
     }
@@ -508,7 +501,7 @@ export class TropicalSatelliteMap {
     this.active = true;
     this.windowRef.setTimeout(() => {
       if (this.fallbackMode) {
-        this.showFallback('Satellite map tiles are unavailable.');
+        this.showFallback();
       } else if (
         !this.map
         || this.loadedBasin !== this.basin

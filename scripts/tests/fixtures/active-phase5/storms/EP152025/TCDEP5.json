@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342718,
+        "cached_at_iso": "2025-10-13T04:05:18-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Thu, 09 Oct 2025 22:37:55 +0000",
+            "lastBuildDate": "Thu, 09 Oct 2025 22:37:55 +0000",
+            "title": "Eastern North Pacific Post-Tropical Cyclone Octave Discussion Number 38",
+            "description": "National Hurricane Center - Discussion for Eastern North Pacific wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Discussion Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Discussion Number 38",
+                "description": [],
+                "pubDate": "Thu, 09 Oct 2025 14:38:17 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCDEP5.shtml",
+                "guid": "202510091438",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTPZ45 KNHC 091438\nTCDEP5\n \nPost-Tropical Cyclone Octave Discussion Number  38\nNWS National Hurricane Center Miami FL       EP152025\n800 AM MST Thu Oct 09 2025\n \nOctave's low-level center has become exposed due to increasing wind \nshear. The small area of convection that the system had produced \novernight has collapsed. Given the wind shear, Octave is not \nforecast to regain convection and thus is designated as a remnant \nlow with an initial intensity of 30 kt. The center of Octave has \nalready become a little more ragged on satellite imagery and the \nsystem is expected to open up into a trough and dissipate later \ntoday.\n \nThis is the last public advisory issued by the National Hurricane\nCenter on this system.  For additional information on the remnant\nlow please see High Seas Forecasts issued by the National Weather\nService, under AWIPS header NFDHSFEPI, WMO header FZPN02 KWBC, and\non the web at ocean.weather.gov\/shtml\/NFDHSFEPI.php\n\nFORECAST POSITIONS AND MAX WINDS\n \nINIT  09\/1500Z 17.7N 110.5W   30 KT  35 MPH...POST-TROPICAL\n 12H  10\/0000Z...DISSIPATED\n \n$$\nForecaster Kelly"
+}

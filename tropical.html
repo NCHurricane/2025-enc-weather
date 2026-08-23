@@ -52,10 +52,10 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="counties/css/county.css?v=20260822-shell-1" />
-    <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260822-satellite-fallback-1" />
+    <link rel="stylesheet" href="counties/css/county.css?v=20260823-map-status-1" />
+    <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823-map-status-1" />
     <link rel="stylesheet" href="css/tropical-map-engine.css?v=20260819-7" />
-    <link rel="stylesheet" href="css/tropical.css?v=20260822-shell-1" />
+    <link rel="stylesheet" href="css/tropical.css?v=20260823-map-status-1" />
     <link rel="stylesheet" href="css/components.css?v=20260822-2" />
 
     <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
@@ -132,7 +132,6 @@
                   <div id="tropical-map-timestamp" class="weather-map-timestamp"></div>
                 </div>
                 <div id="tropical-mobile-legend" class="tropical-mobile-legend" aria-live="polite"></div>
-                <p id="tropical-map-status" class="weather-map-note tropical-map-status" role="status" aria-live="polite">Loading the Atlantic tropical map.</p>
               </div>
             </section>
 
@@ -213,7 +212,6 @@
                   </div>
                 </aside>
 
-                <p id="tropical-satellite-note" class="weather-map-note">The basin view will load when this tab is selected.</p>
                 <a id="tropical-satellite-link" class="tropical-action tropical-satellite-link" href="https://www.star.nesdis.noaa.gov/" target="_blank" rel="noopener">View at NOAA STAR</a>
               </div>
             </section>
@@ -239,7 +237,7 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script type="module" src="js/modules/tropicalOverview.js?v=20260822-hidden-basin-view-1"></script>
+    <script type="module" src="js/modules/tropicalOverview.js?v=20260823-map-status-1"></script>
     <script type="module">
       import { NavigationModule } from './js/modules/navigation.js?v=20260822-nested-nav-1';
 

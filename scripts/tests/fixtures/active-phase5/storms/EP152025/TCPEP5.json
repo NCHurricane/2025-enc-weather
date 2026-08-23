@@ -1,0 +1,41 @@
+{
+    "metadata": {
+        "cached_at": 1760342717,
+        "cached_at_iso": "2025-10-13T04:05:17-04:00",
+        "format": "xml_converted",
+        "has_text_content": true
+    },
+    "data": {
+        "@attributes": {
+            "version": "2.0"
+        },
+        "channel": {
+            "pubDate": "Thu, 09 Oct 2025 22:35:09 +0000",
+            "lastBuildDate": "Thu, 09 Oct 2025 22:35:09 +0000",
+            "title": "Eastern North Pacific Post-Tropical Cyclone Octave Advisory Number 38",
+            "description": "National Hurricane Center - Public Advisory for Eastern North Pacific wallet 5",
+            "link": "https:\/\/www.nhc.noaa.gov\/",
+            "copyright": "none",
+            "managingEditor": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "language": "en-us",
+            "webMaster": "nhcwebmaster@noaa.gov (nhcwebmaster)",
+            "image": {
+                "url": "https:\/\/www.nhc.noaa.gov\/gifs\/xml_logo_nhc.gif",
+                "link": "https:\/\/www.nhc.noaa.gov\/",
+                "description": "NOAA logo",
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Advisory Number 38",
+                "width": "95",
+                "height": "45"
+            },
+            "item": {
+                "title": "Eastern North Pacific Post-Tropical Cyclone Octave Advisory Number 38",
+                "description": [],
+                "pubDate": "Thu, 09 Oct 2025 14:37:16 +0000",
+                "link": "https:\/\/www.nhc.noaa.gov\/text\/MIATCPEP5.shtml",
+                "guid": "202510091437",
+                "author": "nhcwebmaster@noaa.gov (nhcwebmaster)"
+            }
+        }
+    },
+    "text_content": "000\nWTPZ35 KNHC 091437\nTCPEP5\n \nBULLETIN\nPost-Tropical Cyclone Octave Advisory Number  38\nNWS National Hurricane Center Miami FL       EP152025\n800 AM MST Thu Oct 09 2025\n \n...OCTAVE BECOMES A POST-TROPICAL CYCLONE...\n...THIS IS THE LAST NHC ADVISORY...\n\nSUMMARY OF 800 AM MST...1500 UTC...INFORMATION\n----------------------------------------------\nLOCATION...17.7N 110.5W\nABOUT 360 MI...580 KM S OF THE SOUTHERN TIP OF BAJA CALIFORNIA\nMAXIMUM SUSTAINED WINDS...35 MPH...55 KM\/H\nPRESENT MOVEMENT...ENE OR 65 DEGREES AT 17 MPH...28 KM\/H\nMINIMUM CENTRAL PRESSURE...1006 MB...29.71 INCHES\n\nWATCHES AND WARNINGS\n--------------------\nThere are no coastal watches or warnings in effect.\n\nDISCUSSION AND OUTLOOK\n----------------------\nAt 800 AM MST (1500 UTC), the center of Post-Tropical Cyclone Octave\nwas located near latitude 17.7 North, longitude 110.5 West. The\npost-tropical cyclone is moving toward the east-northeast near 17\nmph (28 km\/h). This motion will continue until the system  \ndissipates into an open trough later today.\n \nMaximum sustained winds have decreased to near 35 mph (55 km\/h) \nwith higher gusts. The system is expected to continue to weaken and \ndissipate into an open trough later today.\n\nThe estimated minimum central pressure is 1006 mb (29.71 inches).\n\nHAZARDS AFFECTING LAND\n----------------------\nNone.\n\nNEXT ADVISORY\n-------------\nThis is the last public advisory issued by the National Hurricane \nCenter on this system.For additional information on the remnant low \nplease see High Seas Forecasts issued by the National Weather \nService, under AWIPS header NFDHSFEPI, WMO header FZPN02 KWBC, and \non the web at ocean.weather.gov\/shtml\/NFDHSFEPI.php\n\n$$\nForecaster Kelly"
+}

@@ -1,0 +1,869 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.5
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 10",
+                "description": "DB INVEST (CP012026) 0000 UTC AUG 10 Storm Location: 14.5 N, -137.3 W Min Sea Level Pressure: 1007 mb; 29.73 in Hg Maxium Intensity: 20 knots; 23 mph; 37 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.5
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 10",
+                "description": "DB INVEST (CP012026) 0600 UTC AUG 10 Storm Location: 14.5 N, -137.3 W Min Sea Level Pressure: 1007 mb; 29.73 in Hg Maxium Intensity: 20 knots; 23 mph; 37 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.6
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 10",
+                "description": "DB INVEST (CP012026) 1200 UTC AUG 10 Storm Location: 14.6 N, -137.3 W Min Sea Level Pressure: 1006 mb; 29.70 in Hg Maxium Intensity: 20 knots; 23 mph; 37 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.7
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 10",
+                "description": "DB INVEST (CP012026) 1800 UTC AUG 10 Storm Location: 14.7 N, -137.3 W Min Sea Level Pressure: 1006 mb; 29.70 in Hg Maxium Intensity: 20 knots; 23 mph; 37 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 11",
+                "description": "DB INVEST (CP012026) 0000 UTC AUG 11 Storm Location: 14.8 N, -137.3 W Min Sea Level Pressure: 1006 mb; 29.70 in Hg Maxium Intensity: 20 knots; 23 mph; 37 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.3,
+                    14.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 11",
+                "description": "DB INVEST (CP012026) 0600 UTC AUG 11 Storm Location: 14.8 N, -137.3 W Min Sea Level Pressure: 1006 mb; 29.70 in Hg Maxium Intensity: 25 knots; 29 mph; 46 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.4,
+                    14.9
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 11",
+                "description": "DB INVEST (CP012026) 1200 UTC AUG 11 Storm Location: 14.9 N, -137.4 W Min Sea Level Pressure: 1006 mb; 29.70 in Hg Maxium Intensity: 25 knots; 29 mph; 46 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -137.6,
+                    15
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 11",
+                "description": "DB INVEST (CP012026) 1800 UTC AUG 11 Storm Location: 15.0 N, -137.6 W Min Sea Level Pressure: 1004 mb; 29.64 in Hg Maxium Intensity: 30 knots; 35 mph; 56 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -139.4,
+                    15.1
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 12",
+                "description": "LO INVEST (CP012026) 0000 UTC AUG 12 Storm Location: 15.1 N, -139.4 W Min Sea Level Pressure: 1003 mb; 29.61 in Hg Maxium Intensity: 30 knots; 35 mph; 56 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -140.4,
+                    15
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 12",
+                "description": "LO INVEST (CP012026) 0600 UTC AUG 12 Storm Location: 15.0 N, -140.4 W Min Sea Level Pressure: 1003 mb; 29.61 in Hg Maxium Intensity: 30 knots; 35 mph; 56 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -141.4,
+                    14.9
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 12",
+                "description": "LO ONE (CP012026) 1200 UTC AUG 12 Storm Location: 14.9 N, -141.4 W Min Sea Level Pressure: 1003 mb; 29.61 in Hg Maxium Intensity: 30 knots; 35 mph; 56 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -142.2,
+                    14.7
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 12",
+                "description": "LO ONE (CP012026) 1800 UTC AUG 12 Storm Location: 14.7 N, -142.2 W Min Sea Level Pressure: 1003 mb; 29.61 in Hg Maxium Intensity: 35 knots; 40 mph; 65 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -143.1,
+                    14.7
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 13",
+                "description": "LO ONE (CP012026) 0000 UTC AUG 13 Storm Location: 14.7 N, -143.1 W Min Sea Level Pressure: 1002 mb; 29.58 in Hg Maxium Intensity: 35 knots; 40 mph; 65 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -144.1,
+                    14.7
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 13",
+                "description": "LO ONE (CP012026) 0600 UTC AUG 13 Storm Location: 14.7 N, -144.1 W Min Sea Level Pressure: 1002 mb; 29.58 in Hg Maxium Intensity: 35 knots; 40 mph; 65 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -145,
+                    14.9
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 13",
+                "description": "TS LALA (CP012026) 1200 UTC AUG 13 Storm Location: 14.9 N, -145.0 W Min Sea Level Pressure: 1001 mb; 29.55 in Hg Maxium Intensity: 35 knots; 40 mph; 65 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -145.7,
+                    15.2
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 13",
+                "description": "TS LALA (CP012026) 1800 UTC AUG 13 Storm Location: 15.2 N, -145.7 W Min Sea Level Pressure: 1000 mb; 29.53 in Hg Maxium Intensity: 40 knots; 46 mph; 74 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -147,
+                    16
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 14",
+                "description": "TS LALA (CP012026) 0000 UTC AUG 14 Storm Location: 16.0 N, -147.0 W Min Sea Level Pressure: 999 mb; 29.50 in Hg Maxium Intensity: 45 knots; 52 mph; 83 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -147.9,
+                    16.2
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 14",
+                "description": "TS LALA (CP012026) 0600 UTC AUG 14 Storm Location: 16.2 N, -147.9 W Min Sea Level Pressure: 997 mb; 29.44 in Hg Maxium Intensity: 50 knots; 58 mph; 93 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -149,
+                    16.5
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 14",
+                "description": "TS LALA (CP012026) 1200 UTC AUG 14 Storm Location: 16.5 N, -149.0 W Min Sea Level Pressure: 997 mb; 29.44 in Hg Maxium Intensity: 50 knots; 58 mph; 93 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -150.3,
+                    17
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 14",
+                "description": "TS LALA (CP012026) 1800 UTC AUG 14 Storm Location: 17.0 N, -150.3 W Min Sea Level Pressure: 997 mb; 29.44 in Hg Maxium Intensity: 50 knots; 58 mph; 93 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -151.9,
+                    17.4
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 15",
+                "description": "TS LALA (CP012026) 0000 UTC AUG 15 Storm Location: 17.4 N, -151.9 W Min Sea Level Pressure: 995 mb; 29.38 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -153,
+                    17.6
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 15",
+                "description": "TS LALA (CP012026) 0600 UTC AUG 15 Storm Location: 17.6 N, -153.0 W Min Sea Level Pressure: 991 mb; 29.26 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -154.1,
+                    17.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 15",
+                "description": "TS LALA (CP012026) 1200 UTC AUG 15 Storm Location: 17.8 N, -154.1 W Min Sea Level Pressure: 991 mb; 29.26 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -155,
+                    17.9
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 15",
+                "description": "HU LALA (CP012026) 1800 UTC AUG 15 Storm Location: 17.9 N, -155.0 W Min Sea Level Pressure: 988 mb; 29.17 in Hg Maxium Intensity: 65 knots; 75 mph; 120 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -155.7,
+                    18.3
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 16",
+                "description": "HU LALA (CP012026) 0000 UTC AUG 16 Storm Location: 18.3 N, -155.7 W Min Sea Level Pressure: 988 mb; 29.17 in Hg Maxium Intensity: 65 knots; 75 mph; 120 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -156.5,
+                    19.1
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 16",
+                "description": "HU LALA (CP012026) 0600 UTC AUG 16 Storm Location: 19.1 N, -156.5 W Min Sea Level Pressure: 988 mb; 29.17 in Hg Maxium Intensity: 65 knots; 75 mph; 120 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -157.6,
+                    19.9
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 16",
+                "description": "TS LALA (CP012026) 1200 UTC AUG 16 Storm Location: 19.9 N, -157.6 W Min Sea Level Pressure: 991 mb; 29.26 in Hg Maxium Intensity: 60 knots; 69 mph; 111 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -158.8,
+                    20.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 16",
+                "description": "TS LALA (CP012026) 1800 UTC AUG 16 Storm Location: 20.8 N, -158.8 W Min Sea Level Pressure: 994 mb; 29.35 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -160.8,
+                    20.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 17",
+                "description": "TS LALA (CP012026) 0000 UTC AUG 17 Storm Location: 20.8 N, -160.8 W Min Sea Level Pressure: 994 mb; 29.35 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -162,
+                    20.6
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 17",
+                "description": "TS LALA (CP012026) 0600 UTC AUG 17 Storm Location: 20.6 N, -162.0 W Min Sea Level Pressure: 997 mb; 29.44 in Hg Maxium Intensity: 50 knots; 58 mph; 93 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -162.9,
+                    20.5
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 17",
+                "description": "TS LALA (CP012026) 1200 UTC AUG 17 Storm Location: 20.5 N, -162.9 W Min Sea Level Pressure: 997 mb; 29.44 in Hg Maxium Intensity: 50 knots; 58 mph; 93 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -163.9,
+                    20.4
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 17",
+                "description": "TS LALA (CP012026) 1800 UTC AUG 17 Storm Location: 20.4 N, -163.9 W Min Sea Level Pressure: 994 mb; 29.35 in Hg Maxium Intensity: 55 knots; 63 mph; 102 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -165,
+                    20.3
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 18",
+                "description": "TS LALA (CP012026) 0000 UTC AUG 18 Storm Location: 20.3 N, -165.0 W Min Sea Level Pressure: 992 mb; 29.29 in Hg Maxium Intensity: 60 knots; 69 mph; 111 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -165.8,
+                    20.4
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 18",
+                "description": "HU LALA (CP012026) 0600 UTC AUG 18 Storm Location: 20.4 N, -165.8 W Min Sea Level Pressure: 989 mb; 29.20 in Hg Maxium Intensity: 65 knots; 75 mph; 120 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -166.7,
+                    20.3
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 18",
+                "description": "HU LALA (CP012026) 1200 UTC AUG 18 Storm Location: 20.3 N, -166.7 W Min Sea Level Pressure: 985 mb; 29.08 in Hg Maxium Intensity: 70 knots; 81 mph; 130 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -167.7,
+                    20.3
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 18",
+                "description": "HU LALA (CP012026) 1800 UTC AUG 18 Storm Location: 20.3 N, -167.7 W Min Sea Level Pressure: 974 mb; 28.76 in Hg Maxium Intensity: 85 knots; 98 mph; 157 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -168.5,
+                    20.5
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 19",
+                "description": "HU LALA (CP012026) 0000 UTC AUG 19 Storm Location: 20.5 N, -168.5 W Min Sea Level Pressure: 960 mb; 28.34 in Hg Maxium Intensity: 100 knots; 115 mph; 185 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -169.3,
+                    20.7
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 19",
+                "description": "HU LALA (CP012026) 0600 UTC AUG 19 Storm Location: 20.7 N, -169.3 W Min Sea Level Pressure: 947 mb; 27.96 in Hg Maxium Intensity: 115 knots; 132 mph; 213 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -169.9,
+                    21
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 19",
+                "description": "HU LALA (CP012026) 1200 UTC AUG 19 Storm Location: 21.0 N, -169.9 W Min Sea Level Pressure: 953 mb; 28.14 in Hg Maxium Intensity: 110 knots; 127 mph; 204 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -170.7,
+                    21.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 19",
+                "description": "HU LALA (CP012026) 1800 UTC AUG 19 Storm Location: 21.8 N, -170.7 W Min Sea Level Pressure: 956 mb; 28.23 in Hg Maxium Intensity: 105 knots; 121 mph; 194 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171.3,
+                    22.4
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 20",
+                "description": "HU LALA (CP012026) 0000 UTC AUG 20 Storm Location: 22.4 N, -171.3 W Min Sea Level Pressure: 959 mb; 28.31 in Hg Maxium Intensity: 100 knots; 115 mph; 185 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171.8,
+                    23.1
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 20",
+                "description": "HU LALA (CP012026) 0600 UTC AUG 20 Storm Location: 23.1 N, -171.8 W Min Sea Level Pressure: 963 mb; 28.43 in Hg Maxium Intensity: 95 knots; 109 mph; 176 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -172,
+                    23.8
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 20",
+                "description": "HU LALA (CP012026) 1200 UTC AUG 20 Storm Location: 23.8 N, -172.0 W Min Sea Level Pressure: 972 mb; 28.70 in Hg Maxium Intensity: 80 knots; 92 mph; 148 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -172.3,
+                    24.6
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 20",
+                "description": "HU LALA (CP012026) 1800 UTC AUG 20 Storm Location: 24.6 N, -172.3 W Min Sea Level Pressure: 973 mb; 28.73 in Hg Maxium Intensity: 80 knots; 92 mph; 148 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -172.2,
+                    25.4
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0000 UTC AUG 21",
+                "description": "HU LALA (CP012026) 0000 UTC AUG 21 Storm Location: 25.4 N, -172.2 W Min Sea Level Pressure: 974 mb; 28.76 in Hg Maxium Intensity: 80 knots; 92 mph; 148 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171.9,
+                    26.1
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "0600 UTC AUG 21",
+                "description": "HU LALA (CP012026) 0600 UTC AUG 21 Storm Location: 26.1 N, -171.9 W Min Sea Level Pressure: 974 mb; 28.76 in Hg Maxium Intensity: 80 knots; 92 mph; 148 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -171.3,
+                    27
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1200 UTC AUG 21",
+                "description": "HU LALA (CP012026) 1200 UTC AUG 21 Storm Location: 27.0 N, -171.3 W Min Sea Level Pressure: 970 mb; 28.64 in Hg Maxium Intensity: 85 knots; 98 mph; 157 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -170.7,
+                    28.1
+                ]
+            },
+            "properties": {
+                "product": "past-position",
+                "stormId": "CP012026",
+                "label": "1800 UTC AUG 21",
+                "description": "HU LALA (CP012026) 1800 UTC AUG 21 Storm Location: 28.1 N, -170.7 W Min Sea Level Pressure: 974 mb; 28.76 in Hg Maxium Intensity: 80 knots; 92 mph; 148 kph",
+                "sourceIssueTime": "2026-08-21T21:00:00Z",
+                "sourceUrl": "https://www.nhc.noaa.gov/gis/best_track/cp012026_best_track.kmz"
+            }
+        }
+    ]
+}

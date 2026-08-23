@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-110.5, 17.7]
+      },
+      "properties": {
+        "product": "current-position",
+        "stormId": "EP152025",
+        "name": "Octave",
+        "classification": "PT",
+        "intensityKnots": 30,
+        "pressureMillibars": 1006,
+        "movementDirectionDegrees": 65,
+        "movementSpeedMph": 17,
+        "advisoryNumber": "038",
+        "sourceIssueTime": "2025-10-09T15:00:00Z",
+        "detailUrl": "active/?storm=EP152025"
+      }
+    }
+  ]
+}

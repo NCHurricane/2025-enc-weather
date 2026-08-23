@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "storm-text-products",
+  "stormId": "AL052025",
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "products": {
+    "TCP": { "state": "unavailable", "required": true, "file": null },
+    "TCM": { "state": "unavailable", "required": true, "file": null },
+    "TCD": { "state": "unavailable", "required": true, "file": null },
+    "PWS": { "state": "unavailable", "required": true, "file": null },
+    "TCU": { "state": "not-issued", "required": false, "file": null },
+    "TAS": { "state": "not-issued", "required": false, "file": null },
+    "TDS": { "state": "not-issued", "required": false, "file": null },
+    "TUS": { "state": "not-issued", "required": false, "file": null }
+  }
+}

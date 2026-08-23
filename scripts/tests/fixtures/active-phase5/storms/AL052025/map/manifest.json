@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "tropical-storm-map",
+  "stormId": "AL052025",
+  "stormState": "live",
+  "advisoryNumber": "032",
+  "sourceIssueTime": "2025-08-19T09:00:00Z",
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "state": "partial",
+  "products": {
+    "currentPosition": { "state": "fresh", "file": "current-position.geojson" },
+    "forecastTrack": { "state": "unavailable", "file": null },
+    "cone": { "state": "unavailable", "file": null },
+    "watchesWarnings": { "state": "fresh", "file": "watches-warnings.geojson" },
+    "bestTrack": { "state": "unavailable", "file": null },
+    "surgeWarnings": { "state": "fresh", "file": "surge-warnings.geojson" },
+    "windRadii": { "state": "unavailable", "file": null }
+  },
+  "sources": [],
+  "errors": [
+    "Fixture intentionally omits track, cone, best-track, and wind-radii products."
+  ]
+}

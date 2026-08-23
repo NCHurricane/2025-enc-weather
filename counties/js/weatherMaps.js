@@ -247,7 +247,6 @@ class CountyRadarViewer {
       image: document.getElementById('radar-legend-image'),
       description: document.getElementById('radar-legend-description'),
     };
-    this.note = document.getElementById('radar-map-note');
     this.map = null;
     this.initialized = false;
     this.fallbackMode = false;
@@ -304,7 +303,7 @@ class CountyRadarViewer {
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => setBusy(this.loading, this.error, busy),
       onError: (error) => {
-        if (error) this.showFallback('Interactive radar is unavailable; showing the standard NWS image.');
+        if (error) this.showFallback();
       },
       onFrame: ({ time, index, count, source }) => {
         this.timestamp.textContent = `${source.label} · ${formatWeatherTime(time)}${
@@ -460,7 +459,6 @@ class CountyRadarViewer {
     this.fallback.hidden = true;
     this.mapElement.hidden = false;
     hideError(this.error);
-    this.note.textContent = ' ';
     const source = this.sourceConfig();
     setWeatherLegend(this.legendElements, source.legend);
 
@@ -482,13 +480,12 @@ class CountyRadarViewer {
     return `${baseUrl}${station}_${suffix}.gif`;
   }
 
-  async showFallback(message) {
+  async showFallback() {
     this.map?.stop();
     this.map?.setScrubberVisible(false);
     this.fallbackMode = true;
     this.mapElement.hidden = true;
     this.fallback.hidden = false;
-    this.note.textContent = message;
     setPlayButton(this.playButton, this.fallbackPlaying, 'radar');
     setBusy(this.loading, this.error, true);
 
@@ -514,7 +511,7 @@ class CountyRadarViewer {
   async togglePlayback() {
     if (this.fallbackMode) {
       this.fallbackPlaying = !this.fallbackPlaying;
-      await this.showFallback(this.note.textContent);
+      await this.showFallback();
       return;
     }
 
@@ -523,7 +520,7 @@ class CountyRadarViewer {
       try {
         await this.map.showLatest();
       } catch (error) {
-        await this.showFallback('Interactive radar is unavailable; showing the standard NWS image.');
+        await this.showFallback();
       }
       return;
     }
@@ -581,7 +578,6 @@ class CountySatelliteViewer {
       scaleMax: document.getElementById('satellite-legend-scale-max'),
       description: document.getElementById('satellite-legend-description'),
     };
-    this.note = document.getElementById('satellite-map-note');
     this.mapShell = this.mapElement?.closest('.interactive-weather-map-shell') || null;
     this.map = null;
     this.fallbackDialog = null;
@@ -627,7 +623,7 @@ class CountySatelliteViewer {
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => setBusy(this.loading, this.error, busy),
       onError: (error) => {
-        if (error) this.showFallback('Satellite map tiles are unavailable.');
+        if (error) this.showFallback();
       },
       onSourceFallback: ({ failedSource, nextSource, error }) => {
         console.warn(
@@ -733,8 +729,6 @@ class CountySatelliteViewer {
     if (this.mapElement) this.mapElement.hidden = false;
     this.playButton.disabled = false;
     hideError(this.error);
-    this.note.textContent =
-      source.note || ' ';
     setWeatherLegend(this.legendElements, source.legend);
 
     try {
@@ -753,7 +747,7 @@ class CountySatelliteViewer {
     return `${baseUrl}${satelliteName}-${satelliteSector.toUpperCase()}-${fallbackProduct}-1000x1000.gif`;
   }
 
-  showFallback(message) {
+  showFallback() {
     this.map?.stop();
     this.map?.setVisible(false);
     this.map?.setScrubberVisible(false);
@@ -762,7 +756,6 @@ class CountySatelliteViewer {
     if (this.mapElement) this.mapElement.hidden = false;
     if (this.fallback) this.fallback.hidden = true;
     this.fallbackImage?.removeAttribute?.('src');
-    this.note.textContent = `${message} Use the map message to view the NOAA STAR animation.`;
     setPlayButton(this.playButton, false, 'satellite');
     this.playButton.disabled = true;
     setBusy(this.loading, this.error, false);
@@ -790,7 +783,7 @@ class CountySatelliteViewer {
       try {
         await this.map.showLatest();
       } catch (error) {
-        this.showFallback('Satellite map tiles are unavailable.');
+        this.showFallback();
       }
       return;
     }
@@ -810,7 +803,7 @@ class CountySatelliteViewer {
     window.setTimeout(() => {
       const hasInteractiveProduct = Boolean(SATELLITE_LAYERS[this.productSelect.value]);
       if (this.fallbackMode) {
-        this.showFallback('Satellite map tiles are unavailable.');
+        this.showFallback();
       } else if (hasInteractiveProduct && (!this.map || Date.now() - this.lastAttemptAt >= 240000)) {
         this.loadSource();
       }

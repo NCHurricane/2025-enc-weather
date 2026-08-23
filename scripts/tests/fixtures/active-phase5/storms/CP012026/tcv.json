@@ -1,0 +1,10 @@
+{
+    "stormId": "CP012026",
+    "state": "cancelled",
+    "reason": "all-local-watches-warnings-ended",
+    "source": "https://forecast.weather.gov/product.php?site=HFO&issuedby=HFO&product=TCV&format=TXT&version=1&glossary=0",
+    "sourceAdvisory": "19A",
+    "sourceIssued": "801 PM HST",
+    "tcv": null,
+    "zones": []
+}

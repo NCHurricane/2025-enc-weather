@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "id": "AL052025",
+    "name": "Erin",
+    "advisory": "032",
+    "created": "2025-08-19T09:00:00Z"
+  },
+  "current": {
+    "validTime": "2025-08-19T09:00:00Z",
+    "lat": 24.8,
+    "lon": -72.0,
+    "motion": {
+      "dir": 325,
+      "speedMph": 7
+    },
+    "wind": {
+      "maxKt": 100
+    },
+    "pressureMillibars": 955,
+    "type": "hurricane"
+  }
+}

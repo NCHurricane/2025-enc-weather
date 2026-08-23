@@ -79,6 +79,37 @@ for (const file of files) {
     errors.push(`${relative}: duplicate id "${id}"`);
   }
 
+  const isHomeWeatherMap = relative === 'index.html';
+  const isCountyWeatherMap = /^counties\/[^/]+\/index\.html$/.test(relative);
+  if (isHomeWeatherMap || isCountyWeatherMap) {
+    for (const requiredId of [
+      'temperature-timestamp',
+      'radar-timestamp',
+      'radar-frame-indicator',
+      'satellite-timestamp',
+      'satellite-frame-indicator',
+    ]) {
+      if (!ids.includes(requiredId)) {
+        errors.push(`${relative}: weather map status contract is missing #${requiredId}`);
+      }
+    }
+  }
+  if (isCountyWeatherMap
+      && !activeHtml.includes('Select a station marker for details. Scroll to zoom, or use the map controls.')) {
+    errors.push(`${relative}: county Conditions map instructions are missing`);
+  }
+  if (relative === 'tropical.html') {
+    for (const requiredId of [
+      'tropical-map-timestamp',
+      'tropical-satellite-timestamp',
+      'tropical-satellite-frame-indicator',
+    ]) {
+      if (!ids.includes(requiredId)) {
+        errors.push(`${relative}: Tropical map status contract is missing #${requiredId}`);
+      }
+    }
+  }
+
   for (const match of activeHtml.matchAll(/\s(?:href|src|data-src)=["']([^"']+)["']/gi)) {
     const target = localTarget(file, match[1]);
     if (!target) continue;
@@ -186,7 +217,9 @@ for (const required of [
   'data-active-tab-group="nhc"',
   'data-active-tab-group="wind"',
   'id="active-map-imagery-source"',
+  'id="active-satellite-timestamp"',
   'id="active-satellite-frame-scrubber"',
+  'id="active-satellite-frame-indicator"',
   'id="key-messages-section"',
   'activeStormMap.js?v=',
   'activeStormWorkspace.js?v=',
@@ -245,6 +278,7 @@ if (!satelliteFallbackDialog.includes("this.image.src = this.config.animationUrl
 
 const tropicalSatelliteController = await readFile(path.join(root, 'js', 'modules', 'tropicalSatelliteMap.js'), 'utf8').catch(() => '');
 const countyWeatherMaps = await readFile(path.join(root, 'counties', 'js', 'weatherMaps.js'), 'utf8').catch(() => '');
+const countyWeatherCenter = await readFile(path.join(root, 'counties', 'js', 'weatherCenter.js'), 'utf8').catch(() => '');
 for (const [file, source] of [
   ['tropicalSatelliteMap.js', tropicalSatelliteController],
   ['counties/js/weatherMaps.js', countyWeatherMaps],
@@ -254,6 +288,12 @@ for (const [file, source] of [
       || !source.includes('SatelliteFallbackDialog')) {
     errors.push(`${file}: shared satellite provider or click-to-load fallback composition is missing`);
   }
+}
+if (/\b(?:radar|satellite)-map-note\b/.test(countyWeatherMaps)) {
+  errors.push('counties/js/weatherMaps.js: removed Radar/Satellite map notes must not remain runtime dependencies');
+}
+if (!countyWeatherCenter.includes('NWS observations · Latest')) {
+  errors.push('counties/js/weatherCenter.js: Conditions map status must identify its observation source');
 }
 
 const workspaceController = await readFile(path.join(root, 'active', 'js', 'activeStormWorkspace.js'), 'utf8').catch(() => '');

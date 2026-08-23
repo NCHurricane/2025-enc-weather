@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "tropical-storm-map",
+  "stormId": "CP012026",
+  "stormState": "live",
+  "advisoryNumber": "038",
+  "sourceIssueTime": "2026-08-21T21:00:00Z",
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "state": "fresh",
+  "products": {
+    "currentPosition": { "state": "fresh", "file": "current-position.geojson" },
+    "forecastTrack": { "state": "fresh", "file": "forecast-track.geojson" },
+    "cone": { "state": "fresh", "file": "cone.geojson" },
+    "watchesWarnings": { "state": "not-issued", "file": null },
+    "bestTrack": { "state": "fresh", "file": "best-track.geojson" },
+    "surgeWarnings": { "state": "not-issued", "file": null },
+    "windRadii": { "state": "fresh", "file": "wind-radii.geojson" }
+  },
+  "sources": [],
+  "errors": []
+}

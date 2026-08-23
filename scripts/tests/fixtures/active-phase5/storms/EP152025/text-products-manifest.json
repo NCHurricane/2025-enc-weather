@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "storm-text-products",
+  "stormId": "EP152025",
+  "generatedAt": "2026-08-22T00:00:00Z",
+  "products": {
+    "TCP": { "state": "available", "required": true, "file": "TCPEP5.json" },
+    "TCM": { "state": "available", "required": true, "file": "TCMEP5.json" },
+    "TCD": { "state": "available", "required": true, "file": "TCDEP5.json" },
+    "PWS": { "state": "available", "required": true, "file": "PWSEP5.json" },
+    "TCU": { "state": "not-issued", "required": false, "file": null }
+  }
+}
