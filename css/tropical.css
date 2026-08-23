@@ -1,5 +1,5 @@
 .tropical-weather-center .weather-center-map-card {
-  --weather-center-content-height: clamp(480px, calc(100svh - 350px), 500px);
+  --weather-center-content-height: clamp(380px, calc(100svh - 400px), 600px);
 }
 
 .visually-hidden {
@@ -101,13 +101,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 8px;
-  margin: 3em 0 0;
+  margin: 1em 0 0;
 }
 
 .tropical-current-systems .county-alert-chip {
   width: 100%;
   box-sizing: border-box;
   text-decoration: none;
+  border-color: var(--color-accent);
+  background-color: var(--color-alert);
+  font-weight: 500;
 }
 
 .tropical-current-systems .county-alert-chip-copy {
@@ -117,6 +120,7 @@
 .tropical-current-systems .county-alert-chip-copy strong,
 .tropical-current-systems .county-alert-chip-copy span {
   white-space: normal;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
 }
 
 .tropical-weather-center .tropical-panel-toolbar {
@@ -328,7 +332,11 @@
 
 @media (max-width: 680px) {
   .tropical-system-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(auto, 1fr));
+  }
+
+  .tropical-system-grid > :only-child {
+    grid-column: 1 / -1;
   }
 
   .leaflet-control.tropical-map-legend {

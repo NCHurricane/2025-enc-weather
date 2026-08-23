@@ -6,6 +6,58 @@
 
 import { initAnalytics } from './analytics.js?v=20260812-ga4';
 
+const COUNTY_BREADCRUMB_LABELS = new Map([
+  ['beaufort', 'Beaufort County'],
+  ['bertie', 'Bertie County'],
+  ['dare', 'Dare County'],
+  ['hyde', 'Hyde County'],
+  ['martin', 'Martin County'],
+  ['pitt', 'Pitt County'],
+  ['san-diego', 'San Diego County'],
+  ['tyrrell', 'Tyrrell County'],
+  ['washington', 'Washington County'],
+]);
+
+/**
+ * Resolve the stable site hierarchy without treating query-string UI state as a page.
+ * @param {string} pathname
+ * @returns {Array<{text: string, href?: string}>}
+ */
+export function breadcrumbItemsForPath(pathname = '') {
+  const normalizedPath = String(pathname).replace(/\\/g, '/').replace(/\/+$/, '') || '/';
+  const countyMatch = normalizedPath.match(/\/counties\/([^/]+)(?:\/index(?:_test)?\.html)?$/i);
+
+  if (countyMatch) {
+    const countyLabel = COUNTY_BREADCRUMB_LABELS.get(countyMatch[1].toLowerCase());
+    if (!countyLabel) return [];
+    return [
+      { text: 'Home', href: 'index.html' },
+      { text: 'Counties' },
+      { text: countyLabel },
+    ];
+  }
+
+  if (/\/active(?:\/index\.html)?$/i.test(normalizedPath)) {
+    return [
+      { text: 'Home', href: 'index.html' },
+      { text: 'Tropical', href: 'tropical.html?basin=atl' },
+      { text: 'Active Storms' },
+    ];
+  }
+
+  const routes = [
+    [/\/tropical(?:\.html)?$/i, 'Tropical'],
+    [/\/about(?:\.html)?$/i, 'Case Study'],
+    [/\/privacy(?:\.html)?$/i, 'Privacy'],
+    [/\/accessibility(?:\.html)?$/i, 'Accessibility'],
+    [/\/404(?:\.html)?$/i, 'Page Not Found'],
+  ];
+  const route = routes.find(([pattern]) => pattern.test(normalizedPath));
+  if (route) return [{ text: 'Home', href: 'index.html' }, { text: route[1] }];
+
+  return [];
+}
+
 export const NavigationModule = {
   navData: {
     logo: {
@@ -38,7 +90,31 @@ export const NavigationModule = {
       },
       { text: "Tropical", href: "tropical.html?basin=atl" },
       { text: "Case Study", href: "about.html" }
-    ]
+    ],
+    breadcrumbs: null,
+  },
+
+  getBreadcrumbItems(pathname = globalThis.location?.pathname || '') {
+    return Array.isArray(this.navData.breadcrumbs)
+      ? this.navData.breadcrumbs
+      : breadcrumbItemsForPath(pathname);
+  },
+
+  generateBreadcrumbs(basePath = '', items = this.getBreadcrumbItems()) {
+    if (!items.length) return '';
+
+    const itemMarkup = items.map((item, index) => {
+      const isCurrent = index === items.length - 1;
+      const content = item.href && !isCurrent
+        ? `<a href="${basePath}${item.href}">${item.text}</a>`
+        : `<span${isCurrent ? ' aria-current="page"' : ''}>${item.text}</span>`;
+      return `<li class="breadcrumb-item">${content}</li>`;
+    }).join('');
+
+    return `
+        <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+          <ol class="breadcrumb-list">${itemMarkup}</ol>
+        </nav>`;
   },
 
   /**
@@ -46,7 +122,7 @@ export const NavigationModule = {
    * @param {string} basePath - Base path for relative links (e.g., './', '../../')
    * @returns {string} Complete header HTML
    */
-  generateNavigation(basePath = '') {
+  generateNavigation(basePath = '', breadcrumbItems = this.getBreadcrumbItems()) {
     const { logo, menuItems } = this.navData;
     const hasStructuredWordmark = logo.textBefore || logo.iconClass || logo.textAfter;
     const structuredWordmark = hasStructuredWordmark
@@ -93,6 +169,7 @@ export const NavigationModule = {
             <i class="fa-solid fa-bars" aria-hidden="true"></i>
           </button>
         </div>
+        ${this.generateBreadcrumbs(basePath, breadcrumbItems)}
       </header>
     `;
   },
@@ -104,7 +181,9 @@ export const NavigationModule = {
   init(basePath = '') {
     const headerElement = document.querySelector('header');
     if (headerElement) {
-      headerElement.outerHTML = this.generateNavigation(basePath);
+      const breadcrumbItems = this.getBreadcrumbItems();
+      headerElement.outerHTML = this.generateNavigation(basePath, breadcrumbItems);
+      document.body.classList.toggle('has-breadcrumbs', breadcrumbItems.length > 0);
       const main = document.querySelector('main');
       if (main && !main.id) main.id = 'main-content';
       this.bindEvents();

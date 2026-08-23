@@ -73,7 +73,7 @@
 }
 
 .weather-center-map-card {
-  --weather-center-content-height: clamp(480px, calc(100svh - 350px), 650px);
+  --weather-center-content-height: clamp(400px, calc(100svh - 450px), 600px);
   min-width: 0;
   overflow: hidden;
   padding: 0;
@@ -94,7 +94,7 @@
 
 @media (min-width: 1200px) and (min-aspect-ratio: 4 / 3) {
   .weather-center-map-card {
-    --weather-center-content-height: clamp(280px, calc(100svh - 490px), 650px);
+    --weather-center-content-height: clamp(280px, calc(100svh - 390px), 700px);
   }
 }
 

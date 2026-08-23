@@ -1,6 +1,6 @@
 # County UI: Current Handoff
 
-Updated: 2026-08-22
+Updated: 2026-08-23
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: the current committed checkpoint is `7c46f80`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, and nested county navigation are implemented in the committed history described below. The current uncommitted map-status slice identifies the NWS Conditions source, preserves source/time/frame status for Radar and Satellite after removal of their old notes, and keeps the station instruction only on the nine live county index pages. There is no additional authorized county product phase. The next county task should be reconciliation and closeout of current working-tree changes, not a new feature family. Do not stage, commit, push, deploy, or change generated/runtime data without explicit authorization.
 
@@ -69,6 +69,15 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Preserve the current retained ready-layer animation behavior; readiness timing alone is not an equivalent replacement.
 - Shared weather-center structure belongs in shared components; county forecast, place-label, temperature-popup, alert-detail, and multi-zone rules remain county-owned.
 - The Bertie prototype remains a prototype. Do not promote it to a live page without explicit authorization.
+
+## Shared header breadcrumb follow-up: 2026-08-23
+
+- The user-authorized shared navigation follow-up adds a visible, transparent second header row on interior pages while leaving the homepage unchanged. County pages render `Home > Counties > {County}`; `Counties` remains a truthful non-link category because the site has no Counties landing page.
+- Breadcrumbs represent stable page hierarchy only. Dare, Hyde, and San Diego zone query/localStorage state remains owned by the county controllers and does not create or change breadcrumb levels.
+- The shared route resolver fails closed for unknown pages, uses an accessible `Breadcrumb` navigation landmark and ordered list, marks the current page with `aria-current="page"`, and gives links a 24-pixel minimum height. All 20 shared stylesheet/navigation consumers use the matching `20260823-breadcrumbs-1` cache key.
+- Static/automated: JavaScript syntax passed; six focused breadcrumb route tests passed; the site validator passed 20 HTML files, 307 JSON files, and 156 local references; and `git diff --check` passed before this documentation update.
+- Local HTTP/browser: the versioned stylesheet and navigation module returned `200`. Dare at `1280x900` and `390x844` showed the intended trail with no horizontal overflow; the mobile header left a visible gap before the heading, and the menu opened below the full two-row header, closed with Escape, and restored hamburger focus. Home navigation removed the breadcrumb, and browser Back restored the Dare URL and trail. Tropical, Active, and Accessibility representative pages also had correct trails, no horizontal overflow, and no captured console errors or warnings at both viewport sizes.
+- Owner smoke, deployment, and production behavior remain open. The breadcrumb follow-up did not change county zones, data, alerts/HWO, Conditions, maps, forecasts, generated/runtime files, or provider contracts.
 
 ## Open gates and known limitations
 

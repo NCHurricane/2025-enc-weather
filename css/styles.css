@@ -416,6 +416,76 @@ main.container {
     color: var(--color-accent);
 }
 
+.breadcrumb-bar {
+    display: flex;
+    box-sizing: border-box;
+    min-height: 30px;
+    align-items: center;
+    padding: 0 clamp(20px, 3.3vw, 64px) 3px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgb(16 42 67);
+}
+
+.breadcrumb-list {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.breadcrumb-item {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    color: rgba(238, 245, 251, 0.7);
+    font-family: var(--font-primary);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.015em;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: '\203a';
+    margin: 0 9px;
+    color: rgba(255, 242, 0, 0.58);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.breadcrumb-item a {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    padding: 0 4px;
+    margin: 0 -4px;
+    border-radius: 4px;
+    color: #f1f6fa;
+    text-decoration: underline;
+    text-decoration-color: rgba(241, 246, 250, 0.42);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.breadcrumb-item a:hover,
+.breadcrumb-item a:focus-visible {
+    color: var(--color-accent);
+    text-decoration-color: currentColor;
+}
+
+.breadcrumb-item [aria-current='page'] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.has-breadcrumbs main.container,
+body.info-page.has-breadcrumbs .info-main {
+    padding-top: clamp(104px, 11vw, 116px);
+}
+
 .nav-menu {
     list-style: none;
     display: flex;
@@ -1126,6 +1196,24 @@ main.container {
 
     .header-container .site-wordmark {
         font-size: 0.9rem;
+    }
+
+    .breadcrumb-bar {
+        min-height: 28px;
+        padding: 0 14px 3px;
+    }
+
+    .breadcrumb-item {
+        font-size: 0.72rem;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        margin: 0 7px;
+    }
+
+    body.has-breadcrumbs main.container,
+    body.info-page.has-breadcrumbs .info-main {
+        padding-top: 108px;
     }
 
     main.container {

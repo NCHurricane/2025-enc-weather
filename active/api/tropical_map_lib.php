@@ -437,8 +437,15 @@ final class TropicalMapLib
                 if (!is_numeric($probability) || (int) $probability < 0 || (int) $probability > 100) {
                     throw new TropicalMapException("Invalid probability for disturbance {$id}");
                 }
-                $category = ucfirst(strtolower(trim((string) ($disturbance['risk_level'] ?? ''))));
-                if (!in_array($category, ['Low', 'Medium', 'High'], true)) {
+                $riskLevel = strtolower(trim((string) ($disturbance['risk_level'] ?? '')));
+                $category = match ($riskLevel) {
+                    'low' => 'Low',
+                    'medium' => 'Medium',
+                    'high' => 'High',
+                    'nearzero' => (int) $probability === 0 ? 'Low' : null,
+                    default => null,
+                };
+                if ($category === null) {
                     throw new TropicalMapException("Invalid risk category for disturbance {$id}");
                 }
                 $disturbances[$id] ??= [

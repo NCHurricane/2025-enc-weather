@@ -45,7 +45,7 @@
     <link rel="dns-prefetch" href="//kit.fontawesome.com" />
     <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin />
 
-    <link rel="stylesheet" href="css/styles.css?v=20260822-nav-2" />
+    <link rel="stylesheet" href="css/styles.css?v=20260823-breadcrumbs-1" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -73,6 +73,22 @@
         }
       }
     </script>
+            <style>
+            body.site-weather-page {
+                background: linear-gradient(rgba(103, 103, 103, 0.7), rgba(103, 103, 103, 0.7)),
+                    url(../images/isabel_bg.webp);
+                background-attachment: fixed;
+                background-position: center top;
+                background-size: cover;
+            }
+            .main-title, .main-title-active {
+                font-size: clamp(1.8rem, 4vw, 3rem);
+                font-weight: 800;
+                text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.98);
+                color: gold;
+            }
+
+        </style>
   </head>
 
   <body class="site-weather-page">
@@ -239,7 +255,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module" src="js/modules/tropicalOverview.js?v=20260823-map-status-1"></script>
     <script type="module">
-      import { NavigationModule } from './js/modules/navigation.js?v=20260822-nested-nav-1';
+      import { NavigationModule } from './js/modules/navigation.js?v=20260823-breadcrumbs-1';
 
       NavigationModule.navData.logo = {
         textBefore: 'NCHurric',
