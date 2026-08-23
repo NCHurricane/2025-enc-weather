@@ -145,7 +145,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading, 'Montserrat', sans serif);
   font-size: 0.88rem;
   font-weight: 600;
 }
@@ -681,7 +681,7 @@
 
   .active-module-tabs {
     grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .weather-center-tabs .weather-center-tab,
@@ -727,12 +727,26 @@
   }
 
   #main-content .active-storm-workspace :is(
-    .text-tabs,
-    .radii-hour-controls,
     .radii-controls
   ) {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+    #main-content .active-storm-workspace :is(
+    .text-tabs
+  ) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+    #main-content .active-storm-workspace :is(
+    .radii-hour-controls
+  ) {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
   }
 

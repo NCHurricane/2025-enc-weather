@@ -2,17 +2,21 @@ import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
   formatWeatherTime,
-} from './interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+} from './interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+import { SatelliteFallbackDialog } from './satelliteFallbackDialog.js?v=20260822-2';
+import {
+  createGibsWmtsSatelliteSource,
+  withRealEarthFallback,
+} from './satelliteTileSources.js?v=20260822-2';
 import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260822-san-diego-cities-3';
 import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260822-border-cities-1';
+} from './tropicalMapEngine.js?v=20260822-hidden-basin-view-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
-const NASA_GIBS_URL = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi';
 
 function satelliteBasinView(basin, source) {
   const overviewView = TROPICAL_BASIN_VIEWS[basin];
@@ -54,6 +58,7 @@ export const TROPICAL_SATELLITE_PRODUCTS = Object.freeze({
   GEOCOLOR: Object.freeze({
     label: 'GeoColor',
     gibsLayer: 'ABI_GeoColor',
+    gibsMatrixSet: 'GoogleMapsCompatible_Level7',
     legend: Object.freeze({ title: 'GeoColor' }),
   }),
   '02': Object.freeze({
@@ -83,6 +88,7 @@ export const TROPICAL_SATELLITE_PRODUCTS = Object.freeze({
   CLEAN_IR: Object.freeze({
     label: 'Clean IR',
     gibsLayer: 'ABI_Band13_Clean_Infrared',
+    gibsMatrixSet: 'GoogleMapsCompatible_Level6',
     fallbackProduct: '13',
     legend: Object.freeze({
       title: 'Clean IR',
@@ -137,25 +143,41 @@ export function tropicalSatelliteTargets(_packageData, basin) {
 }
 
 export function tropicalSatelliteSource(basin, productKey) {
-  const view = TROPICAL_SATELLITE_BASIN_VIEWS[basin] || TROPICAL_SATELLITE_BASIN_VIEWS.atl;
-  const product = TROPICAL_SATELLITE_PRODUCTS[productKey]
-    || TROPICAL_SATELLITE_PRODUCTS.GEOCOLOR;
+  const basinKey = TROPICAL_SATELLITE_BASIN_VIEWS[basin] ? basin : 'atl';
+  const view = TROPICAL_SATELLITE_BASIN_VIEWS[basinKey];
+  const selectedProductKey = TROPICAL_SATELLITE_PRODUCTS[productKey] ? productKey : 'GEOCOLOR';
+  const product = TROPICAL_SATELLITE_PRODUCTS[selectedProductKey];
   if (product.gibsLayer) {
-    return {
-      wmsUrl: NASA_GIBS_URL,
-      layer: `GOES-${view.platform}_${product.gibsLayer}`,
-      label: `NASA Worldview GOES-${view.platform} ${product.label}`,
-      attribution: 'NASA EOSDIS GIBS/Worldview',
-      product,
-    };
+    return createGibsWmtsSatelliteSource({
+      platform: view.platform,
+      gibsLayer: product.gibsLayer,
+      matrixSet: product.gibsMatrixSet,
+      productKey: selectedProductKey,
+      productLabel: product.label,
+      context: {
+        basin: basinKey,
+        platform: view.platform,
+        satelliteName: view.satelliteName,
+        product,
+      },
+    });
   }
-  return {
+  return withRealEarthFallback({
     wmsUrl: NOWCOAST_SATELLITE_URL,
     layer: product.layer,
     label: `GOES ${product.label}`,
     attribution: 'NOAA/NESDIS nowCOAST',
-    product,
-  };
+  }, {
+    platform: view.platform,
+    productKey: selectedProductKey,
+    productLabel: product.label,
+    context: {
+      basin: basinKey,
+      platform: view.platform,
+      satelliteName: view.satelliteName,
+      product,
+    },
+  });
 }
 
 export function tropicalSatelliteFallbackUrl({ basin, productKey, playing = false }) {
@@ -173,15 +195,6 @@ function resolveElement(documentRef, value) {
   return typeof value === 'string' ? documentRef?.getElementById?.(value) : value;
 }
 
-function preloadImage(windowRef, url) {
-  return new Promise((resolve, reject) => {
-    const probe = new windowRef.Image();
-    probe.onload = () => resolve(true);
-    probe.onerror = () => reject(new Error('NOAA STAR satellite image failed to load'));
-    probe.src = url;
-  });
-}
-
 export class TropicalSatelliteMap {
   constructor({ documentRef = globalThis.document, windowRef = globalThis.window } = {}) {
     this.documentRef = documentRef;
@@ -192,10 +205,12 @@ export class TropicalSatelliteMap {
     this.fallbackMode = false;
     this.fallbackPlaying = false;
     this.lastLoadAt = 0;
+    this.loadedBasin = null;
     this.loadGeneration = 0;
     this.fallbackGeneration = 0;
     this.map = null;
     this.cityLabels = null;
+    this.fallbackDialog = null;
 
     this.productSelect = resolveElement(documentRef, 'tropical-satellite-product');
     this.playButton = resolveElement(documentRef, 'tropical-satellite-play-pause');
@@ -217,6 +232,7 @@ export class TropicalSatelliteMap {
     this.legendDescription = resolveElement(documentRef, 'tropical-satellite-legend-description');
     this.note = resolveElement(documentRef, 'tropical-satellite-note');
     this.sourceLink = resolveElement(documentRef, 'tropical-satellite-link');
+    this.mapShell = this.mapElement?.closest?.('.interactive-weather-map-shell') || null;
   }
 
   init() {
@@ -231,10 +247,23 @@ export class TropicalSatelliteMap {
 
   setContext(basin, _packageData) {
     const nextBasin = TROPICAL_SATELLITE_BASIN_VIEWS[basin] ? basin : 'atl';
+    const basinChanged = nextBasin !== this.basin;
+    if (basinChanged) {
+      this.fallbackGeneration += 1;
+      this.fallbackMode = false;
+      this.fallbackPlaying = false;
+      this.map?.setVisible(false);
+      this.fallbackDialog?.hide();
+      if (this.fallback) this.fallback.hidden = true;
+      if (this.mapElement) this.mapElement.hidden = false;
+      if (this.timestamp) {
+        this.timestamp.textContent = `Loading ${TROPICAL_SATELLITE_BASIN_VIEWS[nextBasin].satelliteName} imagery…`;
+      }
+    }
     this.basin = nextBasin;
     this.targets = tropicalSatelliteTargets(null, this.basin);
     this.updateViewport();
-    if (this.active) this.loadSource();
+    if (this.active && basinChanged) this.loadSource();
   }
 
   currentTarget() {
@@ -271,7 +300,13 @@ export class TropicalSatelliteMap {
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => this.setBusy(busy),
       onError: (error) => {
-        if (error) this.showFallback('Interactive satellite is unavailable; showing NOAA STAR imagery.');
+        if (error) this.showFallback('Satellite map tiles are unavailable.');
+      },
+      onSourceFallback: ({ failedSource, nextSource, error }) => {
+        console.warn(
+          `[tropical-satellite-map] ${failedSource?.label || 'Primary imagery'} failed; trying ${nextSource?.label || 'fallback imagery'}:`,
+          error,
+        );
       },
       onFrame: ({ time, index, count, source }) => {
         if (this.timestamp) {
@@ -291,6 +326,16 @@ export class TropicalSatelliteMap {
     });
     this.updateViewport();
     return this.map;
+  }
+
+  ensureFallbackDialog() {
+    if (!this.fallbackDialog && this.mapShell) {
+      this.fallbackDialog = new SatelliteFallbackDialog({
+        mapShell: this.mapShell,
+        documentRef: this.documentRef,
+      });
+    }
+    return this.fallbackDialog;
   }
 
   updateViewport() {
@@ -355,18 +400,26 @@ export class TropicalSatelliteMap {
     if (!this.active) return false;
     const generation = ++this.loadGeneration;
     this.fallbackGeneration += 1;
-    const source = tropicalSatelliteSource(this.basin, this.productSelect.value);
+    const requestedBasin = this.basin;
+    const source = tropicalSatelliteSource(requestedBasin, this.productSelect.value);
     this.lastLoadAt = Date.now();
     this.fallbackMode = false;
     this.fallbackPlaying = false;
-    this.fallback.hidden = true;
-    this.mapElement.hidden = false;
+    this.fallbackDialog?.hide();
+    if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
+    if (this.mapElement) this.mapElement.hidden = false;
+    if (this.playButton) this.playButton.disabled = false;
     if (this.error) this.error.hidden = true;
     this.renderLegend(source);
     this.updateSourceLink();
     try {
-      await this.ensureMap().setSource(source);
-      if (generation !== this.loadGeneration) return false;
+      const satelliteMap = this.ensureMap();
+      const loaded = await satelliteMap.setSource(source);
+      if (!loaded || generation !== this.loadGeneration || requestedBasin !== this.basin) return false;
+      this.loadedBasin = requestedBasin;
+      satelliteMap.setVisible(true);
+      this.fallbackDialog?.hide();
       this.updateViewport();
       return true;
     } catch (error) {
@@ -389,44 +442,45 @@ export class TropicalSatelliteMap {
     if (busy && this.error) this.error.hidden = true;
   }
 
-  async showFallback(message) {
-    if (!this.active || !this.fallback || !this.fallbackImage) return false;
+  showFallback(message) {
+    if (!this.active) return false;
     this.map?.stop();
+    this.map?.setVisible(false);
     this.map?.setScrubberVisible(false);
     this.fallbackMode = true;
-    this.mapElement.hidden = true;
-    this.fallback.hidden = false;
-    if (this.note) this.note.textContent = message;
-    this.syncPlayButton(this.fallbackPlaying);
-    this.setBusy(true);
-    const target = this.currentTarget();
-    const generation = ++this.fallbackGeneration;
-    try {
-      const url = tropicalSatelliteFallbackUrl({
-        basin: this.basin,
-        target,
-        productKey: this.productSelect.value,
-        playing: this.fallbackPlaying,
-      });
-      await preloadImage(this.windowRef, url);
-      if (!this.active || generation !== this.fallbackGeneration) return false;
-      this.fallbackImage.src = url;
-      this.fallbackImage.alt = `${target.label} ${this.productSelect.options[this.productSelect.selectedIndex]?.text || 'satellite'} ${this.fallbackPlaying ? 'animation' : 'image'}`;
-      if (this.timestamp) this.timestamp.textContent = `NOAA STAR image · ${this.fallbackPlaying ? 'Animated loop' : 'Latest image'}`;
-      if (this.error) this.error.hidden = true;
-      return true;
-    } catch (error) {
-      if (generation === this.fallbackGeneration && this.error) this.error.hidden = false;
-      return false;
-    } finally {
-      if (generation === this.fallbackGeneration) this.setBusy(false);
+    this.fallbackPlaying = false;
+    if (this.mapElement) this.mapElement.hidden = false;
+    if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
+    if (this.note) {
+      this.note.textContent = `${message} Use the map message to view the NOAA STAR animation.`;
     }
+    this.syncPlayButton(false);
+    if (this.playButton) this.playButton.disabled = true;
+    this.setBusy(false);
+    const target = this.currentTarget();
+    const productLabel = this.productSelect.options[this.productSelect.selectedIndex]?.text
+      || 'satellite';
+    const shown = this.ensureFallbackDialog()?.show({
+      message: 'Satellite map tiles are unavailable.',
+      title: `${target.label} NOAA STAR satellite animation`,
+      animationUrl: tropicalSatelliteFallbackUrl({
+        basin: this.basin,
+        productKey: this.productSelect.value,
+        playing: true,
+      }),
+      alt: `${target.label} ${productLabel} animated satellite loop from NOAA STAR`,
+    }) || false;
+    if (this.timestamp) {
+      this.timestamp.textContent = 'Satellite tiles unavailable · NOAA STAR animation available on request';
+    }
+    if (this.error) this.error.hidden = true;
+    return shown;
   }
 
   async togglePlayback() {
     if (this.fallbackMode) {
-      this.fallbackPlaying = !this.fallbackPlaying;
-      await this.showFallback(this.note?.textContent || 'Showing NOAA STAR imagery.');
+      this.fallbackDialog?.open();
       return;
     }
     if (this.map?.playing) {
@@ -434,7 +488,7 @@ export class TropicalSatelliteMap {
       try {
         await this.map.showLatest();
       } catch {
-        await this.showFallback('Interactive satellite is unavailable; showing NOAA STAR imagery.');
+        this.showFallback('Satellite map tiles are unavailable.');
       }
       return;
     }
@@ -454,8 +508,12 @@ export class TropicalSatelliteMap {
     this.active = true;
     this.windowRef.setTimeout(() => {
       if (this.fallbackMode) {
-        this.showFallback(this.note?.textContent || 'Showing NOAA STAR imagery.');
-      } else if (!this.map || Date.now() - this.lastLoadAt >= 240000) this.loadSource();
+        this.showFallback('Satellite map tiles are unavailable.');
+      } else if (
+        !this.map
+        || this.loadedBasin !== this.basin
+        || Date.now() - this.lastLoadAt >= 240000
+      ) this.loadSource();
       else {
         this.map.setVisible(true);
         this.updateViewport();
@@ -468,6 +526,7 @@ export class TropicalSatelliteMap {
     this.loadGeneration += 1;
     this.fallbackGeneration += 1;
     this.map?.setVisible(false);
+    this.fallbackDialog?.hide();
     this.fallbackPlaying = false;
     this.syncPlayButton(false);
   }

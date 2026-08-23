@@ -1474,10 +1474,13 @@ final class TropicalMapLib
 
     private static function sanitizeOfficialHtml(string $html): string
     {
+        $html = preg_replace('/<br\s*\/?\s*>/i', "\n", $html) ?? $html;
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/\R/', "\n", $text) ?? $text;
         $text = preg_replace('/[\t ]+/', ' ', $text) ?? $text;
         $text = preg_replace('/\R{3,}/', "\n\n", $text) ?? $text;
-        return nl2br(htmlspecialchars(trim($text), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), false);
+        $escaped = htmlspecialchars(trim($text), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return str_replace("\n", '<br>', $escaped);
     }
 
     private static function outlookDetailsText(mixed $details): string

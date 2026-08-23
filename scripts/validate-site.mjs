@@ -201,13 +201,54 @@ if (activePage.includes('id="glass-distortion"') || !activePage.includes('id="ma
 if (activePage.includes('src="./js/satellite.js')) {
   errors.push('active/index.html: standalone satellite controller must not compete with the combined map controller');
 }
+if (/tropical-banner(?:-ep)?\.js|initTropicalBanner(?:EP)?/i.test(activePage)) {
+  errors.push('active/index.html: unused legacy tropical banner initialization must not run in the Active shell');
+}
+
+const activeCss = await readFile(path.join(root, 'active', 'css', 'active.css'), 'utf8').catch(() => '');
+const retiredActiveImageRule = activeCss.match(
+  /\.active-storm-map-section\s+\.active-satellite-image-container\s*\{[^}]*}/is,
+)?.[0] || '';
+if (/\.is-satellite-fallback\s+#active-storm-map\s*\{[^}]*visibility\s*:\s*hidden/is.test(activeCss)
+    || !/display\s*:\s*none/i.test(retiredActiveImageRule)) {
+  errors.push('active/css/active.css: satellite fallback must preserve the map and keep the retired image inset hidden');
+}
 
 const stormController = await readFile(path.join(root, 'active', 'js', 'activeStormMap.js'), 'utf8').catch(() => '');
 if (!stormController.includes('mode: \'storm\'')
     || !stormController.includes('./storms/${encodeURIComponent(normalized)}/map/manifest.json')
     || !stormController.includes('mapInstance: this.engine.map')
-    || !stormController.includes('tropicalSatelliteSource')) {
-  errors.push('active/js/activeStormMap.js: detailed mode, exact-storm URL, or shared satellite-map composition is missing');
+    || !stormController.includes('tropicalSatelliteSource')
+    || !stormController.includes('SatelliteFallbackDialog')
+    || !stormController.includes('animationUrl: this.floaterUrl(productKey)')) {
+  errors.push('active/js/activeStormMap.js: detailed mode, shared satellite composition, or click-to-load floater fallback is missing');
+}
+
+const satelliteSources = await readFile(path.join(root, 'js', 'modules', 'satelliteTileSources.js'), 'utf8').catch(() => '');
+if (!satelliteSources.includes('/wmts/epsg3857/best')
+    || !satelliteSources.includes('fallbackSources: [')
+    || !satelliteSources.includes('realearth.ssec.wisc.edu/tiles')) {
+  errors.push('satelliteTileSources.js: GIBS WMTS primary or RealEarth tile fallback contract is missing');
+}
+
+const satelliteFallbackDialog = await readFile(path.join(root, 'js', 'modules', 'satelliteFallbackDialog.js'), 'utf8').catch(() => '');
+if (!satelliteFallbackDialog.includes("this.image.src = this.config.animationUrl")
+    || !satelliteFallbackDialog.includes("this.image.removeAttribute('src')")
+    || !satelliteFallbackDialog.includes('this.dialog.showModal()')) {
+  errors.push('satelliteFallbackDialog.js: NOAA STAR animation must load only after the dialog is opened');
+}
+
+const tropicalSatelliteController = await readFile(path.join(root, 'js', 'modules', 'tropicalSatelliteMap.js'), 'utf8').catch(() => '');
+const countyWeatherMaps = await readFile(path.join(root, 'counties', 'js', 'weatherMaps.js'), 'utf8').catch(() => '');
+for (const [file, source] of [
+  ['tropicalSatelliteMap.js', tropicalSatelliteController],
+  ['counties/js/weatherMaps.js', countyWeatherMaps],
+]) {
+  if (!source.includes('createGibsWmtsSatelliteSource')
+      || !source.includes('withRealEarthFallback')
+      || !source.includes('SatelliteFallbackDialog')) {
+    errors.push(`${file}: shared satellite provider or click-to-load fallback composition is missing`);
+  }
 }
 
 const workspaceController = await readFile(path.join(root, 'active', 'js', 'activeStormWorkspace.js'), 'utf8').catch(() => '');

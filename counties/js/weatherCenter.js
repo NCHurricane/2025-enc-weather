@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,

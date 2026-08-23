@@ -828,7 +828,7 @@ html.county-alert-modal-open body {
 }
 
 .weather-desc .desc {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
   text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
   font-weight: 700;
   font-size: 1.8rem;
@@ -836,7 +836,7 @@ html.county-alert-modal-open body {
 }
 
 .weather-desc .details p {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
   text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
   color: var(--color-accent);
   font-weight: 600;
@@ -937,7 +937,7 @@ html.county-alert-modal-open body {
 
 /* Property references with data attributes */
 [id^="current-"] strong {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
   font-weight: bold;
   color: var(--color-text-light);
 }
@@ -949,7 +949,7 @@ html.county-alert-modal-open body {
 #current-location,
 #current-obs-time {
   color: var(--color-accent);
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
   font-size: 0.8rem;
   text-transform: uppercase;
 }
@@ -1074,7 +1074,7 @@ html.county-alert-modal-open body {
 }
 
 .detailed-forecast {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.5;
@@ -1700,9 +1700,9 @@ canvas#meteogramChart {
   overflow: visible;
   color: #f4f8fb;
   font-family: var(--font-heading);
-  font-size: 0.7rem;
+  font-size: clamp(0.7rem, 0.6rem + 0.25vw, 0.9rem);
   font-style: normal;
-  font-weight: 650;
+  font-weight: 800;
   letter-spacing: 0.01em;
   line-height: 1;
   text-align: center;
@@ -1717,7 +1717,6 @@ canvas#meteogramChart {
 
 .weather-center-map-card .weather-place-label.is-major span {
   color: #fff;
-  font-size: 0.78rem;
   font-weight: 800;
 }
 
@@ -1799,7 +1798,7 @@ canvas#meteogramChart {
   position: relative;
   min-width: 0;
   color: #eef5fb;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: var(--font-heading), sans serif;
 }
 
 .temperature-popup h3 {
@@ -1885,7 +1884,7 @@ canvas#meteogramChart {
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.06);
   color: #d5e1ea;
-  font: 1.3rem/1 "Roboto", Arial, sans-serif;
+  font: 1.3rem/1 var(--font-heading), sans serif;
   cursor: pointer;
   place-items: center;
 }

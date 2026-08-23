@@ -122,7 +122,7 @@
 .tropical-leaflet-popup .leaflet-popup-content {
   width: min(17.5rem, calc(100vw - 5rem)) !important;
   margin: 1rem 1.1rem 1.1rem;
-  font-family: var(--font-primary, "Roboto", Arial, sans-serif);
+  font-family: var(--font-heading, 'Montserrat', sans serif);
 }
 
 .tropical-leaflet-popup .leaflet-popup-close-button {
@@ -133,7 +133,7 @@
   border: 1px solid transparent;
   border-radius: 0.45rem;
   color: #c7d7e3;
-  font: 1.45rem/1.65rem var(--font-primary, "Roboto", Arial, sans-serif);
+  font: 1.45rem/1.65rem var(--font-heading, 'Montserrat', sans serif);
   transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 

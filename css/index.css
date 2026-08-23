@@ -399,7 +399,7 @@ html {
 
 .marker-label {
     text-transform: uppercase;
-    font-family: 'Roboto', Arial, sans-serif;
+    font-family: var(--font-heading, 'Montserrat', sans serif);
     font-size: 1.5rem;
     padding-top: 10px;
     font-weight: 800;

@@ -2,14 +2,15 @@ import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260822-san-diego-cities-3';
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260822-border-cities-1';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260822-hidden-basin-view-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260822-map-borders-1';
 import {
   TROPICAL_SATELLITE_PRODUCTS,
   tropicalSatelliteSource,
-} from '../../js/modules/tropicalSatelliteMap.js?v=20260822-map-consistency-3';
+} from '../../js/modules/tropicalSatelliteMap.js?v=20260822-hidden-basin-view-1';
 
 const LAYER_PRODUCT = Object.freeze({
   currentPosition: 'currentPosition',
@@ -89,6 +90,7 @@ export class ActiveStormMapController {
     this.legendTitle = documentRef?.getElementById?.('active-satellite-legend-title');
     this.fallback = documentRef?.getElementById?.('active-satellite-image-container');
     this.fallbackImage = documentRef?.getElementById?.('active-satellite-image');
+    this.fallbackDialog = null;
     this.startedStormId = null;
     this.pendingStormId = null;
     this.pendingStormCenter = null;
@@ -240,7 +242,18 @@ export class ActiveStormMapController {
       scrubberOutput: this.scrubberOutput,
       requireCtrlForWheelZoom: false,
       onLoading: (busy) => this.setSatelliteBusy(busy),
-      onError: () => {},
+      onError: (error) => {
+        const productKey = this.imageryValue();
+        if (error && productKey !== 'map') {
+          this.showFloaterFallback(productKey, this.imageryGeneration);
+        }
+      },
+      onSourceFallback: ({ failedSource, nextSource, error }) => {
+        console.warn(
+          `[active-storm-map] ${failedSource?.label || 'Primary imagery'} failed; trying ${nextSource?.label || 'fallback imagery'}:`,
+          error,
+        );
+      },
       onFrame: ({ time, index, count, source }) => {
         if (this.timestamp) {
           this.timestamp.textContent = `${source.label} · ${formatWeatherTime(time)}${
@@ -252,6 +265,16 @@ export class ActiveStormMapController {
     });
     this.satelliteMap.ensureMap();
     return this.satelliteMap;
+  }
+
+  ensureFallbackDialog() {
+    if (!this.fallbackDialog && this.mapShell) {
+      this.fallbackDialog = new SatelliteFallbackDialog({
+        mapShell: this.mapShell,
+        documentRef: this.documentRef,
+      });
+    }
+    return this.fallbackDialog;
   }
 
   imageryValue() {
@@ -275,6 +298,7 @@ export class ActiveStormMapController {
     this.fallbackMode = false;
     this.fallbackPlaying = false;
     this.restoreInteractiveMap();
+    if (this.playButton) this.playButton.disabled = false;
     if (productKey === 'map') {
       this.satelliteMap?.setVisible(false);
       this.syncSatelliteUi(false);
@@ -294,55 +318,46 @@ export class ActiveStormMapController {
       return loaded;
     } catch (error) {
       if (generation !== this.imageryGeneration) return false;
-      console.warn('[active-storm-map] Interactive satellite unavailable; using floater fallback:', error);
+      console.warn('[active-storm-map] Interactive satellite tiles unavailable; offering floater animation:', error);
       return this.showFloaterFallback(productKey, generation);
     }
   }
 
-  floaterUrl(productKey, playing) {
+  floaterUrl(productKey) {
     const product = FLOATER_PRODUCTS[productKey] || 'GEOCOLOR';
     const base = `https://cdn.star.nesdis.noaa.gov/FLOATER/${this.startedStormId}/${product}`;
-    return playing
-      ? `${base}/${this.startedStormId}-${product}-1000x1000.gif`
-      : `${base}/1000x1000.jpg`;
+    return `${base}/${this.startedStormId}-${product}-1000x1000.gif`;
   }
 
   showFloaterFallback(productKey, generation = ++this.imageryGeneration) {
-    if (!this.fallback || !this.fallbackImage || !this.startedStormId) return false;
+    if (!this.startedStormId || generation !== this.imageryGeneration) return false;
     this.satelliteMap?.setVisible(false);
+    this.satelliteMap?.setScrubberVisible(false);
     this.fallbackMode = true;
-    this.setSatelliteBusy(true);
-    const url = this.floaterUrl(productKey, this.fallbackPlaying);
-    return new Promise((resolve) => {
-      const probe = new this.windowRef.Image();
-      probe.onload = () => {
-        if (generation !== this.imageryGeneration) return resolve(false);
-        this.fallbackImage.src = url;
-        this.fallbackImage.alt = `${this.startedStormId} ${this.imageryLabel()} ${this.fallbackPlaying ? 'animated loop' : 'latest image'}`;
-        this.fallback.hidden = false;
-        this.mapShell?.classList.add('is-satellite-fallback');
-        if (this.timestamp) {
-          this.timestamp.textContent = `NOAA STAR storm floater · ${this.fallbackPlaying ? 'Animated loop' : 'Latest image'}`;
-        }
-        this.setSatelliteBusy(false);
-        this.syncPlayButton(this.fallbackPlaying);
-        resolve(true);
-      };
-      probe.onerror = () => {
-        if (generation === this.imageryGeneration) {
-          this.setSatelliteBusy(false);
-          this.restoreInteractiveMap();
-          if (this.error) this.error.hidden = false;
-        }
-        resolve(false);
-      };
-      probe.src = url;
-    });
+    this.fallbackPlaying = false;
+    if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
+    const shown = this.ensureFallbackDialog()?.show({
+      message: 'Satellite map tiles are unavailable.',
+      title: `${this.startedStormId} NOAA STAR storm floater`,
+      animationUrl: this.floaterUrl(productKey),
+      alt: `${this.startedStormId} ${this.imageryLabel()} animated storm floater from NOAA STAR`,
+    }) || false;
+    if (this.timestamp) {
+      this.timestamp.textContent = 'Satellite tiles unavailable · NOAA STAR floater animation available on request';
+    }
+    this.setSatelliteBusy(false);
+    this.syncPlayButton(false);
+    if (this.playButton) this.playButton.disabled = true;
+    if (this.error) this.error.hidden = true;
+    return shown;
   }
 
   restoreInteractiveMap() {
     this.mapShell?.classList.remove('is-satellite-fallback');
+    this.fallbackDialog?.hide();
     if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
     if (this.error) this.error.hidden = true;
   }
 
@@ -350,8 +365,7 @@ export class ActiveStormMapController {
     const productKey = this.imageryValue();
     if (productKey === 'map') return;
     if (this.fallbackMode) {
-      this.fallbackPlaying = !this.fallbackPlaying;
-      await this.showFloaterFallback(productKey);
+      this.fallbackDialog?.open();
       return;
     }
     if (this.satelliteMap?.playing) {
@@ -413,6 +427,8 @@ export class ActiveStormMapController {
     this.playButton?.removeEventListener('click', this.handlePlayback);
     this.cityLabels?.destroy?.();
     this.cityLabels = null;
+    this.fallbackDialog?.destroy();
+    this.fallbackDialog = null;
     this.satelliteMap?.destroy();
     this.satelliteMap = null;
     this.engine?.destroy();

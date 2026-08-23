@@ -251,6 +251,47 @@ export async function fetchWmsTimes(wmsUrl, layerName, { signal } = {}) {
   return Array.from(new Set(frames)).sort((left, right) => Date.parse(left) - Date.parse(right));
 }
 
+function parseRealEarthTime(value) {
+  const match = String(value || '').match(
+    /^(\d{4})(\d{2})(\d{2})[.T_-]?(\d{2})(\d{2})(\d{2})$/,
+  );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second] = match;
+  const iso = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
+  return Number.isNaN(Date.parse(iso)) ? null : iso;
+}
+
+export async function fetchRealEarthTimes(productId, {
+  signal,
+  timesUrl = 'https://realearth.ssec.wisc.edu/api/times',
+} = {}) {
+  const url = new URL(timesUrl);
+  url.searchParams.set('products', productId);
+  const response = await fetch(url, { signal });
+  if (!response.ok) throw new Error(`RealEarth times request failed (${response.status})`);
+
+  const payload = await response.json();
+  const values = payload?.[productId];
+  if (!Array.isArray(values)) throw new Error(`RealEarth times were unavailable for ${productId}`);
+
+  return Array.from(new Set(values.map(parseRealEarthTime).filter(Boolean)))
+    .sort((left, right) => Date.parse(left) - Date.parse(right));
+}
+
+async function fetchSourceTimes(source, { signal } = {}) {
+  if (source.timeSource === 'realearth') {
+    return fetchRealEarthTimes(source.productId, {
+      signal,
+      timesUrl: source.timesUrl,
+    });
+  }
+  return fetchWmsTimes(
+    source.timesWmsUrl || source.wmsUrl,
+    source.timesLayer || source.layer,
+    { signal },
+  );
+}
+
 export function formatWeatherTime(value) {
   if (!value) return 'Latest available';
 
@@ -291,6 +332,7 @@ export class InteractiveWeatherMap {
     scrubberOutput = null,
     onLoading = () => {},
     onError = () => {},
+    onSourceFallback = () => {},
     onFrame = () => {},
     onPlayStateChange = () => {},
   }) {
@@ -321,6 +363,7 @@ export class InteractiveWeatherMap {
     this.scrubberContainer = this.scrubber?.closest('.weather-map-scrubber') || null;
     this.onLoading = onLoading;
     this.onError = onError;
+    this.onSourceFallback = onSourceFallback;
     this.onFrame = onFrame;
     this.onPlayStateChange = onPlayStateChange;
 
@@ -331,6 +374,9 @@ export class InteractiveWeatherMap {
     this.basemapLayerControl = null;
     this.referenceLayers = [];
     this.source = null;
+    this.sourceCandidates = [];
+    this.sourceCandidateIndex = -1;
+    this.lastSourceError = null;
     this.frames = [];
     this.frameIndex = -1;
     this.weatherLayer = null;
@@ -561,7 +607,7 @@ export class InteractiveWeatherMap {
     const index = Number.parseInt(this.scrubber?.value, 10);
     if (!Number.isInteger(index)) return;
 
-    this.showFrame(index, { preservePlayback: true }).catch((error) => this.onError(error));
+    this.showFrame(index, { preservePlayback: true }).catch(() => {});
   }
 
   syncScrubber(visible = true) {
@@ -597,38 +643,109 @@ export class InteractiveWeatherMap {
     const token = this.sourceToken;
 
     this.capabilitiesController?.abort();
-    this.capabilitiesController = new AbortController();
     this.onError(null);
     this.onLoading(true);
+    this.lastSourceError = null;
+    this.sourceCandidates = [source, ...(source.fallbackSources || [])].map((candidate) => {
+      const { fallbackSources: _fallbackSources, ...normalized } = candidate;
+      return normalized;
+    });
+    this.sourceCandidateIndex = -1;
 
     this.ensureMap();
     this.map.invalidateSize(false);
 
-    try {
-      const availableFrames = await fetchWmsTimes(source.wmsUrl, source.layer, {
-        signal: this.capabilitiesController.signal,
-      });
-
-      if (token !== this.sourceToken) return false;
-
-      this.source = source;
-      this.frames = availableFrames.slice(-this.maxFrames);
-      this.frameIndex = this.frames.length ? this.frames.length - 1 : -1;
-      await this.displayFrame(this.frameIndex >= 0 ? this.frames[this.frameIndex] : null);
-
-      if (token !== this.sourceToken) return false;
-      this.onLoading(false);
-      return true;
-    } catch (error) {
-      if (error.name === 'AbortError' || token !== this.sourceToken) return false;
-      this.onLoading(false);
-      this.onError(error);
-      throw error;
+    for (let index = 0; index < this.sourceCandidates.length; index += 1) {
+      try {
+        const loaded = await this.activateSourceCandidate(index, token);
+        if (token !== this.sourceToken) return false;
+        if (loaded) {
+          this.onLoading(false);
+          return true;
+        }
+      } catch (error) {
+        if (error.name === 'AbortError' || token !== this.sourceToken) return false;
+        this.lastSourceError = error;
+        const nextSource = this.sourceCandidates[index + 1];
+        if (nextSource) {
+          this.onSourceFallback({
+            error,
+            failedSource: this.sourceCandidates[index],
+            nextSource,
+          });
+        }
+      }
     }
+
+    const error = this.lastSourceError || new Error('No weather map source was available');
+    this.onLoading(false);
+    this.onError(error);
+    throw error;
+  }
+
+  async activateSourceCandidate(index, token = this.sourceToken) {
+    const source = this.sourceCandidates[index];
+    if (!source) return false;
+
+    this.capabilitiesController?.abort();
+    this.capabilitiesController = new AbortController();
+    const availableFrames = await fetchSourceTimes(source, {
+      signal: this.capabilitiesController.signal,
+    });
+    if (token !== this.sourceToken) return false;
+    if (source.timeSource === 'realearth' && availableFrames.length === 0) {
+      throw new Error(`RealEarth published no frames for ${source.productId}`);
+    }
+
+    this.source = source;
+    this.frames = availableFrames.slice(-this.maxFrames);
+    this.frameIndex = this.frames.length ? this.frames.length - 1 : -1;
+    this.syncScrubber(this.frames.length > 0);
+    const loaded = await this.renderWeatherFrame(
+      this.frameIndex >= 0 ? this.frames[this.frameIndex] : null,
+    );
+    if (!loaded || token !== this.sourceToken) return false;
+    this.sourceCandidateIndex = index;
+    return true;
+  }
+
+  async activateNextSource(error) {
+    const token = this.sourceToken;
+    let lastError = error;
+    this.onLoading(true);
+
+    for (
+      let index = Math.max(0, this.sourceCandidateIndex + 1);
+      index < this.sourceCandidates.length;
+      index += 1
+    ) {
+      const nextSource = this.sourceCandidates[index];
+      this.onSourceFallback({
+        error: lastError,
+        failedSource: this.source,
+        nextSource,
+      });
+      try {
+        const loaded = await this.activateSourceCandidate(index, token);
+        if (loaded) {
+          this.onLoading(false);
+          return true;
+        }
+      } catch (candidateError) {
+        if (candidateError.name === 'AbortError' || token !== this.sourceToken) return false;
+        lastError = candidateError;
+      }
+    }
+
+    this.lastSourceError = lastError;
+    this.onLoading(false);
+    this.onError(lastError);
+    return false;
   }
 
   weatherLayerKey(time) {
-    return `${this.source.wmsUrl}\u0000${this.source.layer}\u0000${time || 'latest'}`;
+    const sourceKey = this.source.id || this.source.wmsUrl || String(this.source.tileUrl);
+    return `${sourceKey}\u0000${this.source.layer || this.source.productId || ''}\u0000${time || 'latest'}`;
   }
 
   trimWeatherLayerPool() {
@@ -655,24 +772,42 @@ export class InteractiveWeatherMap {
     });
   }
 
-  displayFrame(time) {
+  async displayFrame(time) {
+    try {
+      return await this.renderWeatherFrame(time);
+    } catch (error) {
+      const recovered = await this.activateNextSource(error);
+      if (recovered) return true;
+      throw this.lastSourceError || error;
+    }
+  }
+
+  renderWeatherFrame(time) {
     if (!this.source || !this.map) {
       return Promise.reject(new Error('Weather map source has not been configured'));
     }
 
     this.displayToken += 1;
     const token = this.displayToken;
-    const options = {
-      layers: this.source.layer,
-      format: 'image/png',
-      transparent: true,
-      version: '1.3.0',
+    const commonOptions = {
       opacity: 0,
       attribution: this.source.attribution || 'NOAA/NWS',
       pane: this.dataPane,
     };
-
-    if (time) options.time = time;
+    const options = this.source.type === 'xyz'
+      ? {
+          ...commonOptions,
+          maxNativeZoom: this.source.maxNativeZoom,
+          noWrap: Boolean(this.source.noWrap),
+        }
+      : {
+          ...commonOptions,
+          layers: this.source.layer,
+          format: 'image/png',
+          transparent: true,
+          version: '1.3.0',
+          ...(time ? { time } : {}),
+        };
 
     return new Promise((resolve, reject) => {
       const frameKey = this.weatherLayerKey(time);
@@ -680,7 +815,9 @@ export class InteractiveWeatherMap {
       const isNewLayer = !record;
 
       if (!record) {
-        const layer = window.L.tileLayer.wms(this.source.wmsUrl, options);
+        const layer = this.source.type === 'xyz'
+          ? window.L.tileLayer(this.source.tileUrl(time), options)
+          : window.L.tileLayer.wms(this.source.wmsUrl, options);
         record = {
           layer,
           ready: false,
@@ -818,7 +955,7 @@ export class InteractiveWeatherMap {
 
       timeoutId = window.setTimeout(() => {
         finish(new Error('Weather map tiles timed out'));
-      }, 20000);
+      }, this.source.tileTimeoutMs || 20000);
 
       if (!this.map.hasLayer(layer)) layer.addTo(this.map);
       if (!isNewLayer && record.ready) {
@@ -893,7 +1030,6 @@ export class InteractiveWeatherMap {
       this.playTimer = window.setTimeout(() => this.playCurrentFrame(), this.frameDelayMs);
     } catch (error) {
       this.stop();
-      this.onError(error);
     }
   }
 

@@ -1,4 +1,4 @@
-import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
 
 const DEFAULT_BASEMAP_URL =
   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
@@ -566,6 +566,7 @@ export class TropicalMapEngine {
     this.onStatus = onStatus;
     this.activeBasin = assertBasin(basin);
     this.compactLayout = null;
+    this.pendingBasinView = false;
 
     this.map = null;
     this.basemapLayer = null;
@@ -851,10 +852,18 @@ export class TropicalMapEngine {
     const view = TROPICAL_BASIN_VIEWS[this.activeBasin];
     this.container?.setAttribute('aria-label', `${view.label} tropical weather map`);
     if (!this.map || !move) return view;
+    if (
+      Number(this.container?.clientWidth) <= 0
+      || Number(this.container?.clientHeight) <= 0
+    ) {
+      this.pendingBasinView = true;
+      return view;
+    }
 
     // Leaflet enforces new max bounds immediately. Release the previous basin's
     // bounds before crossing oceans so its current center cannot be constrained
     // into an intermediate wrapped view.
+    this.pendingBasinView = false;
     this.map.setMaxBounds?.(null);
     this.map.setView(view.center, this.zoomForView(view), { animate: false });
     this.map.setMaxBounds?.(view.maxBounds);
@@ -1270,7 +1279,11 @@ export class TropicalMapEngine {
 
   setVisible(visible) {
     if (visible && this.map) {
-      this.windowRef?.setTimeout?.(() => this.map?.invalidateSize?.({ pan: false }), 0);
+      this.windowRef?.setTimeout?.(() => {
+        if (!this.map) return;
+        this.map.invalidateSize?.({ pan: false });
+        if (this.pendingBasinView) this.setBasin(this.activeBasin);
+      }, 0);
     }
   }
 
@@ -1288,6 +1301,7 @@ export class TropicalMapEngine {
     this.basemapLayerControl = null;
     this.zoomIndicator = null;
     this.renderedBasin = null;
+    this.pendingBasinView = false;
     this.renderedStormId = null;
     this.layerGroups.clear();
     this.overviewCache.clear();

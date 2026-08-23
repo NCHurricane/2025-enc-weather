@@ -1,7 +1,12 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260821-basemap-menu-2';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
+import {
+  createGibsWmtsSatelliteSource,
+  withRealEarthFallback,
+} from '../../js/modules/satelliteTileSources.js?v=20260822-2';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
@@ -11,7 +16,6 @@ import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260822-san-
 
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
-const NASA_GIBS_URL = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi';
 const NCEP_CONUS_PRECIP_TYPE_URL =
   'https://opengeo.ncep.noaa.gov/geoserver/conus/conus_pcpn_typ/ows';
 const NOWCOAST_RADAR_LEGEND_URL =
@@ -67,10 +71,9 @@ function isRegionalRadarStation(station) {
 
 const SATELLITE_LAYERS = {
   GEOCOLOR: {
-    wmsUrl: NASA_GIBS_URL,
-    layer: 'GOES-East_ABI_GeoColor',
-    label: 'NASA Worldview GOES-East GeoColor',
-    attribution: 'NASA EOSDIS GIBS/Worldview',
+    gibsLayer: 'ABI_GeoColor',
+    gibsMatrixSet: 'GoogleMapsCompatible_Level7',
+    productLabel: 'GeoColor',
     legend: {
       title: 'GeoColor',
     },
@@ -78,6 +81,7 @@ const SATELLITE_LAYERS = {
   '02': {
     layer: 'goes_visible_imagery',
     label: 'GOES Visible',
+    productLabel: 'Visible',
     legend: {
       title: 'Visible',
       scale: { min: '0', max: '255', colors: ['#000000', '#ffffff'] },
@@ -86,6 +90,7 @@ const SATELLITE_LAYERS = {
   '07': {
     layer: 'goes_shortwave_imagery',
     label: 'GOES Shortwave IR',
+    productLabel: 'Shortwave IR',
     legend: {
       title: 'Shortwave IR',
       scale: { min: '0', max: '100', colors: ['#ffffff', '#000000'] },
@@ -94,16 +99,16 @@ const SATELLITE_LAYERS = {
   '13': {
     layer: 'goes_longwave_imagery',
     label: 'GOES Longwave IR',
+    productLabel: 'Longwave IR',
     legend: {
       title: 'Longwave IR',
       scale: { min: '0', max: '255', colors: ['#ffffff', '#000000'] },
     },
   },
   CLEAN_IR: {
-    wmsUrl: NASA_GIBS_URL,
-    layer: 'GOES-East_ABI_Band13_Clean_Infrared',
-    label: 'NASA Worldview GOES-East Clean IR',
-    attribution: 'NASA EOSDIS GIBS/Worldview',
+    gibsLayer: 'ABI_Band13_Clean_Infrared',
+    gibsMatrixSet: 'GoogleMapsCompatible_Level6',
+    productLabel: 'Clean IR',
     fallbackProduct: '13',
     legend: {
       title: 'Clean IR',
@@ -131,6 +136,7 @@ const SATELLITE_LAYERS = {
   '08': {
     layer: 'goes_water_vapor_imagery',
     label: 'GOES Water Vapor',
+    productLabel: 'Water Vapor',
     legend: {
       title: 'Water Vapor',
       scale: { min: '0', max: '63', colors: ['#ffffff', '#000000'] },
@@ -576,7 +582,9 @@ class CountySatelliteViewer {
       description: document.getElementById('satellite-legend-description'),
     };
     this.note = document.getElementById('satellite-map-note');
+    this.mapShell = this.mapElement?.closest('.interactive-weather-map-shell') || null;
     this.map = null;
+    this.fallbackDialog = null;
     this.fallbackMode = false;
     this.fallbackPlaying = false;
     this.lastAttemptAt = 0;
@@ -619,7 +627,13 @@ class CountySatelliteViewer {
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => setBusy(this.loading, this.error, busy),
       onError: (error) => {
-        if (error) this.showFallback('Interactive satellite is unavailable; showing NOAA STAR imagery.');
+        if (error) this.showFallback('Satellite map tiles are unavailable.');
+      },
+      onSourceFallback: ({ failedSource, nextSource, error }) => {
+        console.warn(
+          `[county-weather-map] ${failedSource?.label || 'Primary imagery'} failed; trying ${nextSource?.label || 'fallback imagery'}:`,
+          error,
+        );
       },
       onFrame: ({ time, index, count, source }) => {
         this.timestamp.textContent = `${source.label} · ${formatWeatherTime(time)}${
@@ -637,6 +651,16 @@ class CountySatelliteViewer {
     return this.map;
   }
 
+  ensureFallbackDialog() {
+    if (!this.fallbackDialog && this.mapShell) {
+      this.fallbackDialog = new SatelliteFallbackDialog({
+        mapShell: this.mapShell,
+        documentRef: document,
+      });
+    }
+    return this.fallbackDialog;
+  }
+
   async ensureContext() {
     if (!this.context) this.context = await loadWeatherPageContext();
     return this.context;
@@ -645,23 +669,33 @@ class CountySatelliteViewer {
   sourceConfig(product) {
     const base = SATELLITE_LAYERS[product];
     if (!base) return null;
-    if (this.mapConfig.satellitePlatform !== 'West') return base;
-
-    if (product === 'GEOCOLOR') {
-      return {
-        ...base,
-        layer: 'GOES-West_ABI_GeoColor',
-        label: 'NASA Worldview GOES-West GeoColor',
-      };
+    const platform = this.mapConfig.satellitePlatform === 'West' ? 'West' : 'East';
+    const context = {
+      legend: base.legend,
+      note: base.note,
+      fallbackProduct: base.fallbackProduct,
+    };
+    if (base.gibsLayer) {
+      return createGibsWmtsSatelliteSource({
+        platform,
+        gibsLayer: base.gibsLayer,
+        matrixSet: base.gibsMatrixSet,
+        productKey: product,
+        productLabel: base.productLabel,
+        context,
+      });
     }
-    if (product === 'CLEAN_IR') {
-      return {
-        ...base,
-        layer: 'GOES-West_ABI_Band13_Clean_Infrared',
-        label: 'NASA Worldview GOES-West Clean IR',
-      };
-    }
-    return base;
+    return withRealEarthFallback({
+      wmsUrl: NOWCOAST_SATELLITE_URL,
+      layer: base.layer,
+      label: base.label,
+      attribution: 'NOAA/NESDIS nowCOAST',
+    }, {
+      platform,
+      productKey: product,
+      productLabel: base.productLabel,
+      context,
+    });
   }
 
   async handleZoneChange() {
@@ -693,22 +727,21 @@ class CountySatelliteViewer {
     this.fallbackPlaying = false;
 
     this.fallbackMode = false;
-    this.fallback.hidden = true;
-    this.mapElement.hidden = false;
+    this.fallbackDialog?.hide();
+    if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
+    if (this.mapElement) this.mapElement.hidden = false;
+    this.playButton.disabled = false;
     hideError(this.error);
     this.note.textContent =
       source.note || ' ';
     setWeatherLegend(this.legendElements, source.legend);
 
     try {
-      await this.ensureMap().setSource({
-        wmsUrl: source.wmsUrl || NOWCOAST_SATELLITE_URL,
-        layer: source.layer,
-        label: source.label,
-        attribution: source.attribution || 'NOAA/NESDIS nowCOAST',
-      });
+      const loaded = await this.ensureMap().setSource(source);
+      if (loaded) this.fallbackDialog?.hide();
     } catch (error) {
-      console.warn('[county-weather-map] Satellite WMS failed:', error);
+      console.warn('[county-weather-map] Satellite tile sources failed:', error);
     }
   }
 
@@ -717,43 +750,38 @@ class CountySatelliteViewer {
     const fallbackProduct = this.sourceConfig(product)?.fallbackProduct || product;
     const { satelliteName, satelliteSector } = this.mapConfig;
     const baseUrl = `https://cdn.star.nesdis.noaa.gov/${satelliteName}/ABI/SECTOR/${satelliteSector}/${fallbackProduct}/`;
-    return this.fallbackPlaying
-      ? `${baseUrl}${satelliteName}-${satelliteSector.toUpperCase()}-${fallbackProduct}-1000x1000.gif`
-      : `${baseUrl}2000x2000.jpg`;
+    return `${baseUrl}${satelliteName}-${satelliteSector.toUpperCase()}-${fallbackProduct}-1000x1000.gif`;
   }
 
-  async showFallback(message) {
+  showFallback(message) {
     this.map?.stop();
+    this.map?.setVisible(false);
     this.map?.setScrubberVisible(false);
     this.fallbackMode = true;
-    this.mapElement.hidden = true;
-    this.fallback.hidden = false;
-    this.note.textContent = message;
-    setPlayButton(this.playButton, this.fallbackPlaying, 'satellite');
-    setBusy(this.loading, this.error, true);
-
-    try {
-      const productLabel = this.productSelect.options[this.productSelect.selectedIndex]?.text || '';
-      await preloadImage(
-        this.fallbackImage,
-        this.fallbackUrl(),
-        `${this.mapConfig.satelliteName} ${productLabel} ${this.fallbackPlaying ? 'animated loop' : 'latest image'} - ${this.mapConfig.satelliteRegion}`,
-      );
-      hideError(this.error);
-      this.timestamp.textContent = `NOAA STAR image · ${
-        this.fallbackPlaying ? 'Animated loop' : 'Latest image'
-      }`;
-    } catch (error) {
-      showError(this.error, 'The interactive service and NOAA STAR image are both unavailable.');
-    } finally {
-      setBusy(this.loading, this.error, false);
-    }
+    this.fallbackPlaying = false;
+    if (this.mapElement) this.mapElement.hidden = false;
+    if (this.fallback) this.fallback.hidden = true;
+    this.fallbackImage?.removeAttribute?.('src');
+    this.note.textContent = `${message} Use the map message to view the NOAA STAR animation.`;
+    setPlayButton(this.playButton, false, 'satellite');
+    this.playButton.disabled = true;
+    setBusy(this.loading, this.error, false);
+    const productLabel = this.productSelect.options[this.productSelect.selectedIndex]?.text
+      || 'satellite';
+    const shown = this.ensureFallbackDialog()?.show({
+      message: 'Satellite map tiles are unavailable.',
+      title: `${this.mapConfig.satelliteRegion} NOAA STAR satellite animation`,
+      animationUrl: this.fallbackUrl(),
+      alt: `${this.mapConfig.satelliteName} ${productLabel} animated satellite loop for ${this.mapConfig.satelliteRegion}`,
+    }) || false;
+    hideError(this.error);
+    this.timestamp.textContent = 'Satellite tiles unavailable · NOAA STAR animation available on request';
+    return shown;
   }
 
   async togglePlayback() {
     if (this.fallbackMode) {
-      this.fallbackPlaying = !this.fallbackPlaying;
-      await this.showFallback(this.note.textContent);
+      this.fallbackDialog?.open();
       return;
     }
 
@@ -762,7 +790,7 @@ class CountySatelliteViewer {
       try {
         await this.map.showLatest();
       } catch (error) {
-        await this.showFallback('Interactive satellite is unavailable; showing NOAA STAR imagery.');
+        this.showFallback('Satellite map tiles are unavailable.');
       }
       return;
     }
@@ -773,17 +801,17 @@ class CountySatelliteViewer {
   handleVisibility() {
     if (!this.toggle.checked) {
       this.map?.setVisible(false);
+      this.fallbackDialog?.hide();
       this.fallbackPlaying = false;
-      if (this.fallbackMode && this.fallbackImage.src.includes('.gif')) {
-        this.fallbackImage.src = this.fallbackUrl();
-      }
       setPlayButton(this.playButton, false, 'satellite');
       return;
     }
 
     window.setTimeout(() => {
       const hasInteractiveProduct = Boolean(SATELLITE_LAYERS[this.productSelect.value]);
-      if (hasInteractiveProduct && (!this.map || Date.now() - this.lastAttemptAt >= 240000)) {
+      if (this.fallbackMode) {
+        this.showFallback('Satellite map tiles are unavailable.');
+      } else if (hasInteractiveProduct && (!this.map || Date.now() - this.lastAttemptAt >= 240000)) {
         this.loadSource();
       }
       else this.map?.setVisible(true);
@@ -793,9 +821,6 @@ class CountySatelliteViewer {
   pause() {
     this.map?.stop();
     this.fallbackPlaying = false;
-    if (this.fallbackMode && this.fallbackImage.src.includes('.gif')) {
-      this.fallbackImage.src = this.fallbackUrl();
-    }
     setPlayButton(this.playButton, false, 'satellite');
   }
 }

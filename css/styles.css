@@ -35,7 +35,7 @@
     --border-radius: 8px;
 
     /* Fonts */
-    --font-primary: 'Roboto', Arial, sans-serif;
+    --font-primary: 'Inter', sans-serif;
     --font-heading: 'Montserrat', sans-serif;
     --font-mono: 'Fira Code', monospace;
     --font-active: 'Saira', sans-serif;
@@ -138,6 +138,23 @@
     font-style: normal;
     font-display: swap;
 }
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter/Inter-VariableFont_opsz\,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'InterItalic';
+    src: url('../fonts/Inter/Inter-Italic-VariableFont_opsz\,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
 html {
     scroll-behavior: smooth;
 }

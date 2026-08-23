@@ -192,7 +192,7 @@ class RadiiDrawer {
       canvasHalf - RADII_CONFIG.LABEL_SAFE_PAD
     );
 
-    ctx.font = `bold ${devPxFromCss(13)}px Roboto, Arial, sans-serif`;
+    ctx.font = `bold ${devPxFromCss(16)}px Montserrat, sans-serif`;
     ctx.lineWidth = 1 * devicePixelRatioSafe();
     ctx.fillStyle = "rgba(255,255,255,0.95)";
     ctx.textAlign = "center";
@@ -211,7 +211,7 @@ class RadiiDrawer {
       )
     );
 
-    ctx.font = `bold ${devPxFromCss(9)}px Roboto, Arial, sans-serif`;
+    ctx.font = `bold ${devPxFromCss(11)}px Montserrat, sans-serif`;
     ctx.lineWidth = 1 * devicePixelRatioSafe();
     ctx.fillStyle = "rgba(255,255,255,0.55)";
 
@@ -323,7 +323,7 @@ class RadiiDrawer {
 
     // Style Vertex Labels
     if (this.activeWind !== "all") {
-      ctx.font = `bold ${devPxFromCss(11)}px Roboto, Arial, sans-serif`;
+      ctx.font = `bold ${devPxFromCss(14)}px Montserrat, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 1 * devicePixelRatioSafe();
