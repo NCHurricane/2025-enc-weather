@@ -115,9 +115,8 @@ requests that action. If staging is authorized, stage only the task's hunks.
   basics (active systems, tracks/cones, and areas of interest); `/active` owns
   granular storm-specific layers, products, and controls.
 - Preserve URL-addressable Atlantic, Eastern Pacific, and Central Pacific basin
-  state and compatibility behavior. Do not remove `tropical_at.html` or
-  `tropical_ep.html`; they are accessible compatibility entries and server
-  redirect targets.
+  state and the server-owned redirects from the retired `tropical_at` and
+  `tropical_ep` paths to the canonical Tropical basin query.
 - Preserve the tropical `NCHurric` + hurricane icon + `ne` wordmark and its
   accessible `NCHurricane home` label.
 - The overview Satellite view is basin-only. Do not center it on or select a

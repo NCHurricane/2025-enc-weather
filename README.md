@@ -386,8 +386,7 @@ County scripts run at different intervals based on how frequently the data chang
 ```
 .
 ├── index.html                      # Home page with interactive county map
-├── tropical_at.html                # Atlantic compatibility entry
-├── tropical_ep.html                # Eastern Pacific compatibility entry
+├── tropical.html                   # Canonical URL-addressable Tropical overview
 ├── 404.html                        # Custom 404 error page
 │
 ├── active/                         # Tropical storm data and processing
@@ -518,14 +517,14 @@ County scripts run at different intervals based on how frequently the data chang
 
 -   **Modern Browser**: Chrome, Firefox, Safari, or Edge (IE not supported)
 -   **JavaScript**: Must be enabled for all functionality
--   **Internet Connection**: Required for CDN libraries (D3.js, Leaflet, Chart.js, Font Awesome)
+-   **Internet Connection**: Required for live weather/map data and remaining CDN libraries (D3.js, Chart.js, Font Awesome)
 
 ### External Dependencies
 
-All external libraries are loaded via CDN (no npm/package.json):
+Third-party libraries require no local package installation (no npm/package.json):
 
 -   **D3.js v7**: `https://d3js.org/d3.v7.min.js`
--   **Leaflet 1.9.4**: `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js`
+-   **Leaflet 1.9.4**: self-hosted under `vendor/leaflet/1.9.4/`; see its `PROVENANCE.md` for source and checksums
 -   **Chart.js**: `https://cdn.jsdelivr.net/npm/chart.js`
 -   **Font Awesome 6**: `https://kit.fontawesome.com/...`
 

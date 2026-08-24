@@ -4,7 +4,7 @@
 // Handles dynamic generation of header navigation and events
 // =============================
 
-import { initAnalytics } from './analytics.js?v=20260812-ga4';
+import { initAnalytics } from './analytics.js?v=20260824-phase3-1';
 
 const COUNTY_BREADCRUMB_LABELS = new Map([
   ['beaufort', 'Beaufort County'],
@@ -356,10 +356,6 @@ export const NavigationModule = {
       sync();
     });
 
-    document.querySelectorAll('section.section-title > div:first-child').forEach(title => {
-      title.setAttribute('role', 'heading');
-      title.setAttribute('aria-level', '2');
-    });
   },
 
   panelIdForInput(inputId) {

@@ -1,18 +1,16 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 
-import {
-  initTropicalCompatibility,
-  tropicalCompatibilityTarget,
-} from '../js/modules/tropicalCompatibility.js';
 import { validateTropicalStormManifest } from '../js/modules/tropicalMapEngine.js';
+import { leafletContract, phase2Contract, phase3Contract } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
 const excludedDirectories = new Set(['.git', 'node_modules', 'logs', 'output']);
-const excludedFiles = new Set(['index_update.html']);
 const errors = [];
 const counts = { html: 0, json: 0, references: 0 };
+const htmlByRelativePath = new Map();
 
 async function walk(directory) {
   const files = [];
@@ -20,7 +18,7 @@ async function walk(directory) {
     if (entry.isDirectory() && excludedDirectories.has(entry.name)) continue;
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) files.push(...await walk(absolute));
-    else if (!excludedFiles.has(entry.name)) files.push(absolute);
+    else files.push(absolute);
   }
   return files;
 }
@@ -65,6 +63,7 @@ for (const file of files) {
   counts.html += 1;
   const html = await readFile(file, 'utf8');
   const activeHtml = html.replace(/<!--[\s\S]*?-->/g, '');
+  htmlByRelativePath.set(relative, activeHtml);
 
   for (const match of activeHtml.matchAll(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     try {
@@ -120,6 +119,384 @@ for (const file of files) {
   }
 }
 
+const cleanReference = reference => reference.split('#')[0].split('?')[0];
+const htmlReferences = html => [...html.matchAll(/\s(?:href|src)=['"]([^'"]+)['"]/gi)]
+  .map(match => cleanReference(match[1]));
+const stylesheetReferences = html => [...html.matchAll(/<link\b[^>]*>/gi)]
+  .filter(match => /\brel=['"]stylesheet['"]/i.test(match[0]))
+  .map(match => match[0].match(/\bhref=['"]([^'"]+)['"]/i)?.[1])
+  .filter(Boolean)
+  .map(cleanReference);
+const stylesheetHrefs = html => [...html.matchAll(/<link\b[^>]*>/gi)]
+  .filter(match => /\brel=['"]stylesheet['"]/i.test(match[0]))
+  .map(match => match[0].match(/\bhref=['"]([^'"]+)['"]/i)?.[1])
+  .filter(Boolean);
+const tagsForReference = (html, tagName, attribute, reference) => [...html.matchAll(
+  new RegExp(`<${tagName}\\b[^>]*>`, 'gi'),
+)].filter(match => cleanReference(
+  match[0].match(new RegExp(`\\b${attribute}=['"]([^'"]+)['"]`, 'i'))?.[1] || '',
+) === reference);
+
+const expectedLeafletConsumers = new Set(leafletContract.consumers.map(consumer => consumer.file));
+const actualLeafletConsumers = new Set();
+for (const [relative, html] of htmlByRelativePath) {
+  if (/\b(?:href|src)=['"](?:https?:)?\/\/[^'"]*leaflet[^'"]*['"]/i.test(html)) {
+    errors.push(`${relative}: remote Leaflet reference is forbidden`);
+  }
+  if (htmlReferences(html).some(reference => /vendor\/leaflet\/1\.9\.4\/leaflet\.(?:css|js)$/.test(reference))) {
+    actualLeafletConsumers.add(relative);
+  }
+}
+
+for (const consumer of leafletContract.consumers) {
+  const html = htmlByRelativePath.get(consumer.file);
+  if (!html) {
+    errors.push(`${consumer.file}: expected Leaflet consumer is missing from validation`);
+    continue;
+  }
+
+  const cssTags = tagsForReference(html, 'link', 'href', consumer.css);
+  const jsTags = tagsForReference(html, 'script', 'src', consumer.js);
+  if (cssTags.length !== 1) {
+    errors.push(`${consumer.file}: expected exactly one local Leaflet stylesheet reference`);
+  } else if (!cssTags[0][0].includes(`integrity="${leafletContract.cssIntegrity}"`)) {
+    errors.push(`${consumer.file}: local Leaflet stylesheet integrity hash is missing or incorrect`);
+  }
+  if (jsTags.length !== 1) {
+    errors.push(`${consumer.file}: expected exactly one local Leaflet script reference`);
+  } else if (!jsTags[0][0].includes(`integrity="${leafletContract.jsIntegrity}"`)) {
+    errors.push(`${consumer.file}: local Leaflet script integrity hash is missing or incorrect`);
+  }
+
+  const stylesheets = stylesheetReferences(html);
+  const positions = consumer.stylesheetOrder.map(reference => stylesheets.indexOf(reference));
+  if (positions.some(position => position === -1)
+      || positions.some((position, index) => index > 0 && position <= positions[index - 1])) {
+    errors.push(`${consumer.file}: stylesheets do not follow the approved Phase 1 pre-layer order`);
+  }
+}
+
+for (const consumer of actualLeafletConsumers) {
+  if (!expectedLeafletConsumers.has(consumer)) {
+    errors.push(`${consumer}: undeclared local Leaflet consumer; update the CSS ownership contract`);
+  }
+}
+for (const consumer of expectedLeafletConsumers) {
+  if (!actualLeafletConsumers.has(consumer)) {
+    errors.push(`${consumer}: missing its declared local Leaflet dependency`);
+  }
+}
+
+const phase2HtmlByRelativePath = new Map(htmlByRelativePath);
+for (const page of phase2Contract.pages) {
+  if (!phase2HtmlByRelativePath.has(page.file)) {
+    const html = await readFile(path.join(root, ...page.file.split('/')), 'utf8').catch(() => '');
+    phase2HtmlByRelativePath.set(page.file, html.replace(/<!--[\s\S]*?-->/g, ''));
+  }
+}
+
+const openingTags = html => [...html.matchAll(/<([a-z][a-z0-9-]*)\b[^>]*>/gi)].map(match => ({
+  name: match[1].toLowerCase(),
+  source: match[0],
+  classes: new Set(
+    (match[0].match(/\bclass=['"]([^'"]*)['"]/i)?.[1] || '').split(/\s+/).filter(Boolean),
+  ),
+}));
+
+for (const page of phase3Contract.pages) {
+  const html = phase2HtmlByRelativePath.get(page.file) || '';
+  const tags = openingTags(html);
+  const h1Tags = tags.filter(tag => tag.name === 'h1');
+  if (h1Tags.length !== 1) {
+    errors.push(`${page.file}: Phase 3 requires exactly one semantic h1`);
+  } else {
+    for (const requiredClass of page.title) {
+      if (!h1Tags[0].classes.has(requiredClass)) {
+        errors.push(`${page.file}: Phase 3 page title is missing .${requiredClass}`);
+      }
+    }
+  }
+
+  const pageHeader = tags.find(tag => page.header.every(requiredClass => tag.classes.has(requiredClass)));
+  if (!pageHeader) {
+    errors.push(`${page.file}: Phase 3 page header is missing ${page.header.map(value => `.${value}`).join('')}`);
+  }
+
+  for (const requiredClass of page.requiredClasses || []) {
+    if (!tags.some(tag => tag.classes.has(requiredClass))) {
+      errors.push(`${page.file}: Phase 3 text-role contract is missing .${requiredClass}`);
+    }
+  }
+
+  let previousHeadingLevel = 0;
+  for (const tag of tags.filter(candidate => /^h[1-6]$/.test(candidate.name))) {
+    const level = Number(tag.name.slice(1));
+    if (previousHeadingLevel && level > previousHeadingLevel + 1) {
+      errors.push(`${page.file}: semantic heading order skips from h${previousHeadingLevel} to h${level}`);
+    }
+    previousHeadingLevel = level;
+    const requiredClass = phase3Contract.headingClasses[tag.name];
+    if (requiredClass && !tag.classes.has(requiredClass)) {
+      errors.push(`${page.file}: ${tag.name} must use the Phase 3 .${requiredClass} role`);
+    }
+  }
+
+  if (tags.some(tag => /\brole=['"]heading['"]/i.test(tag.source))) {
+    errors.push(`${page.file}: native semantic headings must replace static role=heading markup`);
+  }
+
+  if (page.forecastHeading) {
+    const forecastHeading = tags.find(tag => tag.name === 'h2' && /\bid=['"]forecast-heading['"]/i.test(tag.source));
+    const forecastRegion = tags.find(tag => /\bid=['"]forecast['"]/i.test(tag.source));
+    if (!forecastHeading || !forecastRegion
+        || !/\baria-labelledby=['"]forecast-heading['"]/i.test(forecastRegion.source)) {
+      errors.push(`${page.file}: county forecast region must use the explicit #forecast-heading h2`);
+    }
+  }
+}
+
+for (const relative of phase3Contract.inlineTitleStylePages) {
+  const html = phase2HtmlByRelativePath.get(relative) || '';
+  if (/<style\b/i.test(html)) {
+    errors.push(`${relative}: Phase 3 title presentation must not remain in an inline style block`);
+  }
+}
+
+const classTokensForTag = (html, tagName) => {
+  const tag = html.match(new RegExp(`<${tagName}\\b[^>]*>`, 'i'))?.[0] || '';
+  const classes = tag.match(/\bclass=['"]([^'"]*)['"]/i)?.[1] || '';
+  return { tag, classes: new Set(classes.split(/\s+/).filter(Boolean)) };
+};
+
+for (const page of phase2Contract.pages) {
+  const html = phase2HtmlByRelativePath.get(page.file) || '';
+  if (!html) {
+    errors.push(`${page.file}: expected Phase 2 page consumer is missing`);
+    continue;
+  }
+
+  const body = classTokensForTag(html, 'body');
+  const main = classTokensForTag(html, 'main');
+  for (const requiredClass of page.body) {
+    if (!body.classes.has(requiredClass)) {
+      errors.push(`${page.file}: Phase 2 body root is missing .${requiredClass}`);
+    }
+  }
+  for (const requiredClass of page.main) {
+    if (!main.classes.has(requiredClass)) {
+      errors.push(`${page.file}: Phase 2 page shell is missing .${requiredClass}`);
+    }
+  }
+  for (const requiredAttribute of page.bodyAttributes || []) {
+    if (!new RegExp(`\\s${requiredAttribute}(?:\\s|=|>)`, 'i').test(body.tag)) {
+      errors.push(`${page.file}: Phase 2 body hook is missing ${requiredAttribute}`);
+    }
+  }
+
+  for (const match of html.matchAll(/\bclass=['"]([^'"]*)['"]/gi)) {
+    const classes = new Set(match[1].split(/\s+/).filter(Boolean));
+    for (const retiredClass of phase2Contract.retiredClasses) {
+      if (classes.has(retiredClass)) {
+        errors.push(`${page.file}: retired Phase 2 class .${retiredClass} remains`);
+      }
+    }
+  }
+}
+
+for (const retiredFile of phase2Contract.retiredFiles) {
+  try {
+    await stat(path.join(root, ...retiredFile.split('/')));
+    errors.push(`${retiredFile}: retired owner-directed resource must remain removed`);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      errors.push(`${retiredFile}: could not verify retired resource state (${error.message})`);
+    }
+  }
+}
+
+const repositoryReference = (documentRelative, reference) => {
+  const documentPath = path.join(root, ...documentRelative.split('/'));
+  const target = localTarget(documentPath, reference);
+  return target ? path.relative(root, target).replaceAll('\\', '/') : null;
+};
+const referenceVersion = reference => new URLSearchParams(
+  reference.split('#')[0].split('?')[1] || '',
+).get('v');
+
+const actualNavigationConsumers = new Set();
+for (const [relative, html] of phase2HtmlByRelativePath) {
+  const references = [...html.matchAll(/\bfrom\s+['"]([^'"]*navigation\.js(?:\?[^'"]*)?)['"]/gi)]
+    .map(match => match[1]);
+  if (references.length > 0) actualNavigationConsumers.add(relative);
+  if (!phase3Contract.navigation.consumers.includes(relative)) continue;
+  if (references.length !== 1
+      || repositoryReference(relative, references[0]) !== phase3Contract.navigation.script
+      || referenceVersion(references[0]) !== phase3Contract.navigation.version) {
+    errors.push(`${relative}: NavigationModule must use the Phase 3 cache version`);
+  }
+}
+for (const consumer of actualNavigationConsumers) {
+  if (!phase3Contract.navigation.consumers.includes(consumer)) {
+    errors.push(`${consumer}: undeclared Phase 3 NavigationModule consumer`);
+  }
+}
+for (const consumer of phase3Contract.navigation.consumers) {
+  if (!actualNavigationConsumers.has(consumer)) {
+    errors.push(`${consumer}: missing declared Phase 3 NavigationModule dependency`);
+  }
+}
+
+for (const sourceContract of phase3Contract.dynamicHeadingSources) {
+  const source = await readFile(path.join(root, ...sourceContract.file.split('/')), 'utf8').catch(() => '');
+  for (const required of sourceContract.required) {
+    if (!source.includes(required)) {
+      errors.push(`${sourceContract.file}: missing Phase 3 dynamic heading role ${required}`);
+    }
+  }
+}
+
+const phase3NavigationSource = await readFile(
+  path.join(root, ...phase3Contract.navigation.script.split('/')),
+  'utf8',
+).catch(() => '');
+for (const forbidden of phase3Contract.forbiddenNavigationPatterns) {
+  if (phase3NavigationSource.includes(forbidden)) {
+    errors.push(`${phase3Contract.navigation.script}: retired structural heading enhancement remains`);
+  }
+}
+
+for (const dependency of phase3Contract.scriptDependencies) {
+  const source = phase2HtmlByRelativePath.get(dependency.consumer)
+    || await readFile(path.join(root, ...dependency.consumer.split('/')), 'utf8').catch(() => '');
+  const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*)['"]([^'"]+)['"]/gi)]
+    .map(match => match[1])
+    .filter(reference => repositoryReference(dependency.consumer, reference) === dependency.target);
+  if (references.length !== 1 || referenceVersion(references[0]) !== phase3Contract.version) {
+    errors.push(`${dependency.consumer}: ${dependency.target} must use the Phase 3 cache version`);
+  }
+}
+
+for (const [stylesheet, contract] of Object.entries(phase2Contract.stylesheets)) {
+  const expectedConsumers = new Set(contract.consumers);
+  const actualConsumers = new Set();
+  for (const [relative, html] of phase2HtmlByRelativePath) {
+    const references = stylesheetHrefs(html).filter(
+      reference => repositoryReference(relative, reference) === stylesheet,
+    );
+    if (references.length > 0) actualConsumers.add(relative);
+    if (expectedConsumers.has(relative)) {
+      if (references.length !== 1) {
+        errors.push(`${relative}: expected exactly one Phase 2 ${stylesheet} reference`);
+      } else if (referenceVersion(references[0]) !== contract.version) {
+        errors.push(`${relative}: ${stylesheet} must use cache version ${contract.version}`);
+      }
+    }
+  }
+  for (const consumer of actualConsumers) {
+    if (!expectedConsumers.has(consumer)) {
+      errors.push(`${consumer}: undeclared Phase 2 ${stylesheet} consumer`);
+    }
+  }
+  for (const consumer of expectedConsumers) {
+    if (!actualConsumers.has(consumer)) {
+      errors.push(`${consumer}: missing declared Phase 2 ${stylesheet} dependency`);
+    }
+  }
+}
+
+const globalStyles = await readFile(path.join(root, 'css', 'styles.css'), 'utf8').catch(() => '');
+for (const token of phase2Contract.requiredGlobalTokens) {
+  if (!globalStyles.includes(`${token}:`)) {
+    errors.push(`css/styles.css: missing required Phase 2 token ${token}`);
+  }
+}
+
+for (const stylesheet of Object.keys(phase2Contract.stylesheets)) {
+  const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
+  for (const token of phase2Contract.retiredTokens) {
+    if (css.includes(token)) {
+      errors.push(`${stylesheet}: retired Phase 2 token ${token} remains`);
+    }
+  }
+}
+
+for (const stylesheet of phase2Contract.ownershipStylesheets) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const retiredClass of phase2Contract.retiredClasses) {
+    const escaped = retiredClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`\\.${escaped}(?![A-Za-z0-9_-])`).test(css)) {
+      errors.push(`${stylesheet}: retired Phase 2 selector .${retiredClass} remains`);
+    }
+  }
+}
+
+const phase2ActiveCss = await readFile(path.join(root, 'active', 'css', 'active.css'), 'utf8').catch(() => '');
+if (/(^|[}\s])\s*:root\s*\{/m.test(phase2ActiveCss.replace(/\/\*[\s\S]*?\*\//g, ''))) {
+  errors.push('active/css/active.css: page-only variables must be owned by .site-page--active, not :root');
+}
+
+const activeHookHtml = phase2HtmlByRelativePath.get(phase2Contract.activeHook.page) || '';
+const activeHookReferences = [...activeHookHtml.matchAll(/<script\b[^>]*>/gi)]
+  .map(match => match[0].match(/\bsrc=['"]([^'"]+)['"]/i)?.[1])
+  .filter(reference => reference
+    && repositoryReference(phase2Contract.activeHook.page, reference) === phase2Contract.activeHook.script);
+if (activeHookReferences.length !== 1
+    || referenceVersion(activeHookReferences[0]) !== phase2Contract.activeHook.version) {
+  errors.push(`${phase2Contract.activeHook.page}: Active page hook script cache version is stale or missing`);
+}
+const activeHookScript = await readFile(
+  path.join(root, ...phase2Contract.activeHook.script.split('/')),
+  'utf8',
+).catch(() => '');
+if (!activeHookScript.includes(`querySelector('[${phase2Contract.activeHook.attribute}]')`)
+    || activeHookScript.includes('getComputedStyle(document.documentElement)')) {
+  errors.push(`${phase2Contract.activeHook.script}: Active CSS variables must use the data-active-page hook`);
+}
+
+for (const [asset, expectedHash] of Object.entries(leafletContract.assets)) {
+  const assetPath = path.join(root, leafletContract.vendorRoot, ...asset.split('/'));
+  try {
+    const hash = createHash('sha256').update(await readFile(assetPath)).digest('hex');
+    if (hash !== expectedHash) {
+      errors.push(`${leafletContract.vendorRoot}/${asset}: Leaflet vendor checksum mismatch`);
+    }
+  } catch (error) {
+    errors.push(`${leafletContract.vendorRoot}/${asset}: missing Leaflet vendor asset (${error.message})`);
+  }
+}
+
+const leafletCss = await readFile(
+  path.join(root, leafletContract.vendorRoot, 'leaflet.css'),
+  'utf8',
+).catch(() => '');
+for (const imageReference of ['images/layers.png', 'images/layers-2x.png', 'images/marker-icon.png']) {
+  if (!leafletCss.includes(`url(${imageReference})`)) {
+    errors.push(`${leafletContract.vendorRoot}/leaflet.css: missing relative ${imageReference} reference`);
+  }
+}
+const leafletJs = await readFile(
+  path.join(root, leafletContract.vendorRoot, 'leaflet.js'),
+  'utf8',
+).catch(() => '');
+if (!leafletJs.includes('//# sourceMappingURL=leaflet.js.map')) {
+  errors.push(`${leafletContract.vendorRoot}/leaflet.js: source map reference is missing`);
+}
+const leafletProvenance = await readFile(
+  path.join(root, leafletContract.vendorRoot, 'PROVENANCE.md'),
+  'utf8',
+).catch(() => '');
+for (const required of [
+  `Version: ${leafletContract.version}`,
+  leafletContract.sourceUrl,
+  leafletContract.sourceSha256,
+  leafletContract.license,
+]) {
+  if (!leafletProvenance.includes(required)) {
+    errors.push(`${leafletContract.vendorRoot}/PROVENANCE.md: missing ${required}`);
+  }
+}
+
 const robots = await readFile(path.join(root, 'robots.txt'), 'utf8').catch(() => '');
 if (!robots.includes('Sitemap: https://nchurricane.com/sitemap.xml')) {
   errors.push('robots.txt: production sitemap declaration missing');
@@ -144,41 +521,6 @@ const htaccess = await readFile(path.join(root, '.htaccess'), 'utf8').catch(() =
 for (const [legacy, basin] of [['tropical_at', 'atl'], ['tropical_ep', 'epac']]) {
   const rule = `RewriteRule ^${legacy}(?:\\.html)?$ https://nchurricane.com/tropical?basin=${basin} [L,R=301,NE]`;
   if (!htaccess.includes(rule)) errors.push(`.htaccess: missing ${legacy} compatibility redirect`);
-}
-
-const targetChecks = [
-  [
-    tropicalCompatibilityTarget('http://127.0.0.1:8086/tropical_at.html?source=legacy#map', 'atl'),
-    '/tropical.html?source=legacy&basin=atl#map',
-    'Atlantic compatibility URL state',
-  ],
-  [
-    tropicalCompatibilityTarget('https://nchurricane.com/tropical_ep.html?basin=atl', 'epac'),
-    '/tropical.html?basin=epac',
-    'Eastern Pacific compatibility basin',
-  ],
-  [
-    tropicalCompatibilityTarget('https://nchurricane.com/tropical_at.html', 'cpac'),
-    '',
-    'unsupported compatibility basin',
-  ],
-];
-for (const [actual, expected, label] of targetChecks) {
-  if (actual !== expected) errors.push(`tropicalCompatibility.js: incorrect ${label}`);
-}
-
-const replacements = [];
-const initialized = initTropicalCompatibility({
-  documentRef: { body: { dataset: { tropicalCompatibilityBasin: 'epac' } } },
-  windowRef: {
-    location: {
-      href: 'https://nchurricane.com/tropical_ep.html?source=bookmark#overview',
-      replace: (url) => replacements.push(url),
-    },
-  },
-});
-if (!initialized || replacements.length !== 1 || replacements[0] !== '/tropical.html?source=bookmark&basin=epac#overview') {
-  errors.push('tropicalCompatibility.js: compatibility navigation must replace browser history');
 }
 
 const stormManifest = {
@@ -221,7 +563,7 @@ for (const required of [
   'id="key-messages-section"',
   'activeStormMap.js?v=',
   'activeStormWorkspace.js?v=',
-  'leaflet@1.9.4/dist/leaflet.js',
+  '../vendor/leaflet/1.9.4/leaflet.js',
   'ariaLabel: \'NCHurricane home\'',
 ]) {
   if (!activePage.includes(required)) errors.push(`active/index.html: missing Phase 5 contract ${required}`);
@@ -370,39 +712,7 @@ if (!mtcswaFetcher.includes("$basin === 'CP'") || !mtcswaFetcher.includes("'Cent
   errors.push('active/api/mtcswa_fetcher.php: Central Pacific storm routing is missing');
 }
 
-for (const [filename, basin, label] of [
-  ['tropical_at.html', 'atl', 'Atlantic'],
-  ['tropical_ep.html', 'epac', 'Eastern Pacific'],
-]) {
-  const html = await readFile(path.join(root, filename), 'utf8').catch(() => '');
-  if (html.length >= 10000) errors.push(`${filename}: compatibility entry should remain minimal`);
-  if (!html.includes('<meta name="robots" content="noindex, follow" />')) {
-    errors.push(`${filename}: compatibility entry must not be independently indexed`);
-  }
-  if (!html.includes('<link rel="canonical" href="https://nchurricane.com/tropical" />')
-      || !html.includes('<meta property="og:url" content="https://nchurricane.com/tropical" />')) {
-    errors.push(`${filename}: canonical and Open Graph URLs must use the unified Tropical route`);
-  }
-  if (!html.includes(`data-tropical-compatibility-basin="${basin}"`)
-      || !html.includes(`href="tropical.html?basin=${basin}"`)) {
-    errors.push(`${filename}: compatibility basin and visible fallback link do not match`);
-  }
-  if (!html.includes('<a class="skip-link" href="#main-content">Skip to main content</a>')
-      || !html.includes('aria-label="NCHurricane home"')
-      || !/site-wordmark-name">NCHurric<[\s\S]*fa-solid fa-hurricane[\s\S]*site-wordmark-wx">ne</.test(html)) {
-    errors.push(`${filename}: accessible skip link or Tropical wordmark is missing`);
-  }
-  if (!html.includes(`Continue to ${label} Tropical Weather`)) {
-    errors.push(`${filename}: accessible fallback label is missing`);
-  }
-  if (!html.includes('tropicalCompatibility.js?v=')
-      || /http-equiv="refresh"|active\/js\/tropical(?:_ep)?\.js|tropical-banner(?:-ep)?\.js/i.test(html)) {
-    errors.push(`${filename}: compatibility navigation must use only the shared replace helper`);
-  }
-}
-
 for (const file of files.filter(file => file.endsWith('.html'))) {
-  if (['tropical_at.html', 'tropical_ep.html'].includes(path.basename(file))) continue;
   const html = await readFile(file, 'utf8');
   if (/href=["'][^"']*tropical_(?:at|ep)(?:\.html)?/i.test(html)) {
     errors.push(`${path.relative(root, file).replaceAll('\\', '/')}: legacy Tropical internal link remains`);

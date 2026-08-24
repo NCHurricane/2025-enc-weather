@@ -6,7 +6,15 @@
 /*-----------------------------------------------------------------*/
 /* BASE & ROOT STYLES                                              */
 /*-----------------------------------------------------------------*/
-:root {
+.site-page--active {
+    --page-title-color: gold;
+    --page-title-weight: 800;
+    --page-title-shadow: 4px 4px 0 rgba(0, 0, 0, 0.98);
+    background:
+        linear-gradient(rgba(103, 103, 103, 0.7), rgba(103, 103, 103, 0.7)),
+        url('../../images/milton_bg.webp') center / cover fixed;
+    color: #edf6fb;
+
     /* Map Label Priorities (1-10 scale) */
     --map-label-priority-1: 9;
     --map-label-priority-2: 9.4;
@@ -33,11 +41,6 @@
 
     /* Base visibility for map labels */
     --map-label-min-priority: 5;
-}
-
-.container {
-    width: var(--site-main-width);
-    max-width: 2000px;
 }
 
 .glass {
@@ -86,8 +89,8 @@
 .text-products-container,
 .notfound-container {
     color: var(--color-text-light);
-    margin: var(--margin-section);
-    padding: var(--padding-section);
+    margin: var(--section-margin);
+    padding: var(--section-padding);
 }
 
 .section-title-active {
@@ -626,8 +629,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding: var(--padding-section);
-    border-radius: var(--border-radius);
+    padding: var(--section-padding);
+    border-radius: var(--radius-md);
 }
 .radii-compass {
     position: relative;
@@ -706,9 +709,9 @@
         display: grid;
         grid-auto-flow: column;
         grid-auto-columns: 1fr;
-        gap: var(--margin-section);
-        margin-top: var(--margin-section);
-        margin-bottom: var(--margin-section);
+        gap: var(--layout-gap);
+        margin-top: var(--space-5);
+        margin-bottom: var(--space-5);
     }
     .ww-layout-container > section {
         margin: 0;
@@ -742,7 +745,7 @@
 
 @media (max-width: 900px) {
     /* Adjust map label visibility */
-    :root {
+    .site-page--active {
         --map-label-min-priority: 3;
         --map-label-priority-1: 8;
         --map-label-priority-2: 8.3;
@@ -762,7 +765,7 @@
 /*-----------------------------------------------------------------*/
 @media (max-width: 768px) {
     /* Adjust map label visibility */
-    :root {
+    .site-page--active {
         --map-label-min-priority: 8;
     }
 
@@ -786,9 +789,6 @@
 /* Mobile (Small)                                                  */
 /*-----------------------------------------------------------------*/
 @media (max-width: 640px) {
-    #storm-id {
-        display: none;
-    }
     .ov-info-line .ov-label {
         margin-bottom: 0.1rem;
     }
@@ -888,17 +888,8 @@
 /* PHASE 5 DARK WEATHER-CENTER SHELL                               */
 /*=================================================================*/
 
-body.site-weather-page {
-    color: #edf6fb;
-}
-
-.container {
-    width: min(var(--site-main-width), calc(100% - 24px));
-    max-width: 1600px;
-    padding-bottom: clamp(32px, 5vw, 72px);
-}
-
-.main-title-active {
+.page-header--active {
+    margin: 0 0 14px;
     text-align: center;
 }
 
@@ -1066,10 +1057,6 @@ body.site-weather-page {
 }
 
 @media (max-width: 680px) {
-    .container {
-        width: min(100% - 14px, 1600px);
-    }
-
     .active-storm-map-section .interactive-weather-map-shell,
     #active-storm-map {
         min-height: 390px;
@@ -1489,7 +1476,7 @@ body.site-weather-page {
     display: none !important;
 }
 
-.active-module-heading {
+.active-module__heading {
     display: flex;
     min-height: 58px;
     align-items: center;
@@ -1499,11 +1486,11 @@ body.site-weather-page {
     background: #0a1f34;
 }
 
-.active-module-heading i {
+.active-module__heading i {
     color: #fff200;
 }
 
-.active-module-heading h2 {
+.active-module__title {
     margin: 0;
     color: #fff;
     font-family: var(--font-heading, "Montserrat", sans-serif);
@@ -1594,12 +1581,13 @@ body.site-weather-page {
 /* SITE TYPOGRAPHY & CONTROL ALIGNMENT                              */
 /*=================================================================*/
 
-.main-title-active #storm-id {
+.page-title--active .page-title__meta {
     margin-left: 0.4rem;
-    color: #bfcfdb;
-    font-size: 0.55em;
+    color: #fff;
+    font-size: clamp(0.8rem, 2vw, 1.5rem);
     font-weight: 650;
     letter-spacing: 0.035em;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.98);
 }
 
 .section-title-active {
@@ -1757,8 +1745,10 @@ body.site-weather-page {
 }
 
 @media (max-width: 680px) {
-    .main-title-active #storm-id {
+    .page-title--active .page-title__meta {
+        display: block;
         margin-left: 0;
+        margin-top: 0.15rem;
     }
 
     #overview-v2 .ov-info-line {

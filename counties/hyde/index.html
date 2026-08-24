@@ -33,17 +33,17 @@
       <meta name="twitter:image" content="https://nchurricane.com/images/county/2025-OG-Card-Hyde.webp" />
 
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      <link rel="stylesheet" href="../../vendor/leaflet/1.9.4/leaflet.css"
          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      <script src="../../vendor/leaflet/1.9.4/leaflet.js"
          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-    <link rel="stylesheet" href="../../css/styles.css?v=20260823-breadcrumbs-1" />
-      <link rel="stylesheet" href="../css/county.css?v=20260823-map-status-1" />
+      <link rel="stylesheet" href="../../css/styles.css?v=20260824-phase3-1" />
+      <link rel="stylesheet" href="../../css/components.css?v=20260824-phase3-1" />
       <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260823-map-status-1" />
-      <link rel="stylesheet" href="../../css/components.css?v=20260822-2" />
+      <link rel="stylesheet" href="../css/county.css?v=20260824-phase3-1" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -106,13 +106,13 @@
         </script>
    </head>
 
-   <body class="site-weather-page">
+   <body class="site-page site-page--county site-page--county-multizone">
       <!-- Navigation will be dynamically generated here -->
       <header class="header"></header>
 
-      <main class="container" id="main-content" data-county-weather-center data-city-labels-url="../bertie/data/us-cities-all.json?v=20260822-all-us-1" data-satellite-name="GOES19" data-satellite-sector="eus" data-satellite-region="Eastern US" data-satellite-platform="East" data-radar-regional-precip-type="false">
-         <header class="weather-center-heading">
-            <h1 class="main-title">Hyde County</h1>
+      <main class="page-shell" id="main-content" data-county-weather-center data-city-labels-url="../bertie/data/us-cities-all.json?v=20260822-all-us-1" data-satellite-name="GOES19" data-satellite-sector="eus" data-satellite-region="Eastern US" data-satellite-platform="East" data-radar-regional-precip-type="false">
+         <header class="page-header page-header--weather">
+            <h1 class="page-title page-title--weather page-title--county">Hyde County</h1>
          </header>
 
          <div class="zone-selector" id="zone-selector">
@@ -377,13 +377,13 @@
 
                   <div class="weather-center-forecast-content">
                      <section id="forecast-panel-seven-day"
-                        class="forecast-container section-title weather-center-forecast-panel" role="tabpanel"
+                        class="forecast-container weather-center-forecast-panel" role="tabpanel"
                         aria-labelledby="forecast-tab-seven-day" data-forecast-panel="seven-day">
-                        <div id="forecast-heading" class="weather-center-forecast-source-title">
+                        <h2 id="forecast-heading" class="section-heading weather-center-forecast-source-title">
                            <i class="fa-solid fa-temperature-full fa-xl fontawesome-icon" aria-hidden="true"></i>
                            Current Forecast
-                        </div>
-                        <div id="forecast" role="region" aria-live="polite"></div>
+                        </h2>
+                        <div id="forecast" role="region" aria-labelledby="forecast-heading" aria-live="polite"></div>
                      </section>
 
                      <section id="forecast-panel-detailed" class="detailed-container weather-center-forecast-panel"
@@ -511,7 +511,7 @@
 
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <script src="js/countyApp.js?v=20260822-hwo-2" type="module"></script>
+      <script src="js/countyApp.js?v=20260824-phase3-1" type="module"></script>
       <script src="../js/weatherMaps.js?v=20260823-map-status-1" type="module"></script>
       <script src="../js/weatherCenter.js?v=20260823-map-status-1" type="module"></script>
 
@@ -538,7 +538,7 @@
       </script>
 
       <script type="module">
-      import { NavigationModule } from '../../js/modules/navigation.js?v=20260823-breadcrumbs-1';
+        import { NavigationModule } from '../../js/modules/navigation.js?v=20260824-phase3-1';
 
       document.addEventListener('DOMContentLoaded', () => {
         NavigationModule.navData.logo = {

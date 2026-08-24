@@ -32,8 +32,9 @@
             content="This page isn't available. Visit the homepage for current weather updates." />
         <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
-        <link rel="stylesheet" href="./css/styles.css?v=20260823-breadcrumbs-1" />
-        <link rel="stylesheet" href="./css/info.css?v=20260817-1" />
+        <link rel="stylesheet" href="./css/styles.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="./css/components.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="./css/info.css?v=20260824-phase3-1" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
 
@@ -63,23 +64,23 @@
         </script>
     </head>
 
-    <body class="info-page">
+    <body class="site-page site-page--info site-page--not-found">
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
-        <main class="info-main" id="main-content">
-            <header class="info-page-heading">
-                <p class="eyebrow">Page not found</p>
-                <h1>404</h1>
-                <p>The forecast you requested is not available at this address.</p>
+        <main class="page-shell page-shell--info info-main" id="main-content">
+            <header class="page-header page-header--info">
+                <p class="text-role text-role--eyebrow">Page not found</p>
+                <h1 class="page-title page-title--info page-title--not-found">404</h1>
+                <p class="page-header__summary text-role text-role--helper">The forecast you requested is not available at this address.</p>
             </header>
 
             <!-- Single panel, same “section container” look as other pages -->
             <section class="notfound-container" aria-labelledby="notfound-title">
-                <div id="notfound-title" class="notfound-title">
+                <h2 id="notfound-title" class="section-heading section-heading--not-found">
                     <i class="fa-solid fa-signs-post" aria-hidden="true"></i>This page
                     has moved or does not exist
-                </div>
+                </h2>
 
                 <figure class="evac-figure">
                     <p class="notfound-subtitle muted">
@@ -137,7 +138,7 @@
         </footer>
 
         <script type="module">
-            import { NavigationModule } from './js/modules/navigation.js?v=20260823-breadcrumbs-1';
+        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase3-1';
 
             document.addEventListener('DOMContentLoaded', () => {
                 NavigationModule.navData.logo = {

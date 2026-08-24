@@ -144,7 +144,7 @@ function renderConsentPrompt(measurementId, options = {}) {
   panel.setAttribute('tabindex', '-1');
   panel.innerHTML = `
     <div class="analytics-consent-copy">
-      <h2 id="analytics-consent-title">Optional analytics</h2>
+      <h2 id="analytics-consent-title" class="section-heading analytics-consent__title">Optional analytics</h2>
       <p>May we use Google Analytics to understand site usage and improve NCHurricane.com? Advertising personalization and Google Signals remain disabled. <a href="/privacy.html">Read the privacy notice</a>.</p>
       ${currentChoice ? `<p class="analytics-consent-current">Current choice: <strong>${currentChoice === CONSENT_GRANTED ? 'Allowed' : 'Declined'}</strong></p>` : ''}
     </div>

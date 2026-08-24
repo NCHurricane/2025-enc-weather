@@ -94,6 +94,18 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
+The separately authorized sitemap-wide CSS Phase 3 changed only County title,
+forecast-heading, text-role, stylesheet ownership and versioned dependency
+markup. It preserved zone selectors, URL/localStorage ownership, data paths,
+stations, alerts, maps and generated output. Its controlled-browser pass found
+one unresolved pre-existing lifecycle defect: after San Diego stores the zone
+value `coastal`, opening Dare without an explicit zone query requests
+`counties/dare/data/coastal/current.json`, `forecast.json`, and `alerts.json`;
+all three return `404` rather than normalizing to an allowed Dare zone. Valid
+explicit Dare/Hyde/San Diego zone URLs passed the CSS/heading/overflow gate with
+no console warnings or errors. This finding is evidence for a future bounded
+County lifecycle fix, not authorization to implement it during CSS Phase 3.
+
 1. Inventory the current county/shared-map working-tree diff against `7c46f80` without editing it.
 2. Separate county-owned changes from Active/Tropical map-consistency, shared boundary, city-label, homepage, CSS, and unrelated work.
 3. Identify the user-authorized slice and its preservation boundary before making further changes.

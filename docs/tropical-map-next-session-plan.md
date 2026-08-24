@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
-Updated: 2026-08-23
+Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Phase 6 application-source removal remains. This document does not authorize staging, committing, pushing, deployment, destructive file cleanup, or a presentation removal.
+Status: Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Phase 6 application-source removal remains. This document does not authorize staging, committing, pushing, deployment, destructive file cleanup, or another presentation removal.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -36,13 +36,44 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 | 1: normalized packages | Implemented | `active/api/tropical_map_lib.php` and `active/api/tropical_map_builder.php` publish validated overview and storm packages atomically. |
 | 2: shared Leaflet engine | Implemented | `js/modules/tropicalMapEngine.js` owns overview/storm modes, named layers, failure states, generation cancellation, popups, and date-line-safe rendering. |
 | 3: unified overview | Complete through `9e3ecb6` | `tropical.html` owns URL-addressable `atl`, `epac`, and `cpac` views with Overview, Satellite, Graphics, and Text Products. |
-| 4: compatibility/navigation | Implemented in `2a60674` | `tropical_at.html` and `tropical_ep.html` are accessible compatibility entries; navigation, sitemap, `.htaccess`, and site validation were updated. |
+| 4: compatibility/navigation | Static entries retired locally by owner direction | `tropical_at.html` and `tropical_ep.html` plus their dedicated client helper are removed. Existing `.htaccess` 301 redirects preserve extensionless and `.html` Atlantic/Eastern Pacific bookmarks by sending them to canonical basin query state. |
 | 5: active shell/detailed map | Complete locally; live issued-hazard owner smoke deferred | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The duplicate skip link and redundant status row are removed and guarded. The owner cannot exercise issued warning/surge products until an eligible storm exists, so that time-dependent live smoke remains explicitly deferred. |
 | 6: presentation consolidation | Complete locally; retain all presentations | The audit found the Summary five-day preview resolves to the same product as the Track & Cone English five-day tab, but the owner corrected the brief removal request and chose to retain its at-a-glance Summary workflow. No application-source removal remains. |
 
 ## Current roadmap boundary
 
 Phases 5 and 6 are complete locally. Archive support is not part of the product roadmap and must not be implemented. No further Tropical phase or presentation removal is authorized by this handoff.
+
+The separately authorized sitemap-wide CSS Phase 3 changed only Tropical and
+Active title/heading presentation and shared ownership. The two inline title
+style blocks were removed; the Tropical gold title remains family-owned; Active
+retains the `#storm-title` and `#storm-id` hooks, with the designation visible
+on a separate bounded mobile line; and the Surge/Rain heading uses the shared
+semantic role plus its Active BEM element class. No Tropical/Active map,
+satellite, product, tab, layer, URL, source, cache, fixture, or generated-data
+behavior changed. Controlled browser at `1280x900`, `390x844`, `1920x1080`,
+and a 640px-wide reflow equivalent showed no title clipping or document
+overflow for `EP092026`; map UI remains reserved for CSS Wave B.
+
+## Static compatibility-page retirement: 2026-08-24
+
+By explicit owner direction, `tropical_at.html` and `tropical_ep.html` are
+removed together with their now-orphaned client redirect helper and
+compatibility-only CSS. `index_update.html` and its dedicated stylesheet are
+also retired in the same bounded cleanup. The existing `.htaccess` 301 rules
+remain the sole owners of both extensionless and `.html` Tropical legacy paths.
+
+The ownership contract and validator now guard all five retired files against
+accidental restoration and still require both production redirect rules.
+JavaScript syntax passed, all 73 JavaScript tests passed, the site validator
+passed 18 HTML files, 307 JSON files, and 162 local references, and
+`git diff --check` passed. Direct browser checks confirmed canonical Atlantic
+and Eastern Pacific state, Back/Forward, one shell, no document overflow, and
+no console errors at `1280x720`. A same-origin `390x844` iframe check confirmed
+the mobile shell/map/selection/overflow state but produced one iframe-only
+`MutationObserver` error that did not reproduce in direct canonical tabs. The
+local PHP server does not execute `.htaccess`; production redirect behavior is
+therefore still an owner/deployment verification item.
 
 ## Phase 6 parity audit and final owner decision: 2026-08-23
 
@@ -189,7 +220,7 @@ This local closeout is complete. Phase 6 is also complete with the retain-all ow
 ## Durable product contracts
 
 - The Tropical overview shows basin basics: active systems, simplified track/cone, and outlook areas. Active owns granular storm layers and controls.
-- Preserve `tropical_at.html` and `tropical_ep.html` as accessible compatibility entries and server redirect targets.
+- Preserve the server-owned redirects from the retired `tropical_at` and `tropical_ep` paths to canonical Atlantic and Eastern Pacific basin state; do not restore duplicate HTML compatibility pages.
 - Preserve the Tropical `NCHurric` + hurricane icon + `ne` wordmark and accessible `NCHurricane home` label.
 - Overview Satellite remains basin-only, defaults to Clean IR, and uses the configured basin sector for the click-to-load NOAA STAR animation after both tile sources fail.
 - Shared code exposes engines/utilities; page controllers own page lifecycle.

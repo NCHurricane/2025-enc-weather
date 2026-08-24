@@ -1,7 +1,3 @@
-.container {
-  max-width: 1200px;
-}
-
 /*--------------------*/
 /* COUNTY PAGE STYLES */
 /*--------------------*/
@@ -20,7 +16,7 @@
   background-color: var(--color-primary);
   color: var(--color-text-light);
   border: 2px solid var(--color-primary);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   padding: 12px;
   font-size: 0.9rem;
   font-weight: bold;
@@ -242,7 +238,7 @@ html.county-alert-modal-open body {
   text-transform: uppercase;
 }
 
-.county-alert-dialog-header h2 {
+.county-alert-dialog__title {
   margin: 0;
   color: #fff;
   font-size: 1.3rem;
@@ -356,7 +352,7 @@ html.county-alert-modal-open body {
   font-size: 1.25rem;
 }
 
-.county-alert-panel-heading h3 {
+.county-alert-panel__title {
   margin: 0;
   color: #fff;
   font-size: 1rem;
@@ -746,7 +742,7 @@ html.county-alert-modal-open body {
     padding: 14px 14px 11px;
   }
 
-  .county-alert-dialog-header h2 {
+  .county-alert-dialog__title {
     font-size: 1.08rem;
   }
 
@@ -820,7 +816,7 @@ html.county-alert-modal-open body {
 }
 
 .weather-desc {
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   color: var(--color-text-light);
   background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
   padding: 0 10px 10px 20px;
@@ -848,7 +844,7 @@ html.county-alert-modal-open body {
   text-shadow: 3px 2px 1px rgba(0, 0, 0, 1);
   font-family: "Montserrat", Arial, sans-serif;
   font-size: 4rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   font-weight: bold;
   margin: 0;
 }
@@ -1047,7 +1043,7 @@ html.county-alert-modal-open body {
 /* DETAILED FORECAST */
 .detailed-item {
   background-color: rgb(233, 233, 233);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   margin-top: 10px;
   padding: 15px;
@@ -1097,7 +1093,7 @@ html.county-alert-modal-open body {
 .meteogram-content {
   text-align: center;
   display: none;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
 }
 
 .meteogram-tab-labels {
@@ -1109,7 +1105,7 @@ html.county-alert-modal-open body {
 
 .meteogram-tab {
   background-color: var(--color-primary);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   color: var(--color-text-light);
   cursor: pointer;
   font-size: 0.8rem;
@@ -1130,7 +1126,7 @@ html.county-alert-modal-open body {
   display: block;
   background-color: var(--color-text-light);
   padding: 15px;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   min-height: 400px;
 }
 
@@ -1194,7 +1190,7 @@ canvas#meteogramChart {
 /* AFD SECTION */
 .afd-content {
   background-color: var(--color-text-light);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   display: none;
   font-family: var(--font-mono), monospace;
@@ -1211,7 +1207,7 @@ canvas#meteogramChart {
 .radar-content,
 .satellite-content {
   background: var(--gradient-header);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   margin-top: 10px;
   padding: 5px 0;
   color: var(--color-text);
@@ -1941,7 +1937,17 @@ canvas#meteogramChart {
   display: none !important;
 }
 
-.weather-center-forecast-source-title,
+.weather-center-forecast-source-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .weather-center-forecast-panel > .detailed-title,
 .weather-center-forecast-panel > .meteogram-title,
 .weather-center-forecast-panel > .afd-title {
@@ -2326,13 +2332,13 @@ canvas#meteogramChart {
 }
 
 /* Multi-zone selectors integrated with the weather-center shell. */
-.weather-center-heading + .zone-selector {
+.page-header--weather + .zone-selector {
   justify-content: center;
   gap: 8px;
   margin: -2px 0 14px;
 }
 
-.weather-center-heading + .zone-selector .zone-btn {
+.page-header--weather + .zone-selector .zone-btn {
   min-width: 112px;
   padding: 8px 14px;
   border: 1px solid rgba(164, 190, 211, 0.52);
@@ -2343,38 +2349,38 @@ canvas#meteogramChart {
   letter-spacing: 0.02em;
 }
 
-.weather-center-heading + .zone-selector .zone-btn:hover,
-.weather-center-heading + .zone-selector .zone-btn:focus-visible {
+.page-header--weather + .zone-selector .zone-btn:hover,
+.page-header--weather + .zone-selector .zone-btn:focus-visible {
   border-color: #fff200;
   background: #102f4d;
   color: #fff;
 }
 
-.weather-center-heading + .zone-selector .zone-btn:focus-visible {
+.page-header--weather + .zone-selector .zone-btn:focus-visible {
   outline: 2px solid #fff200;
   outline-offset: 2px;
 }
 
-.weather-center-heading + .zone-selector .zone-btn.active {
+.page-header--weather + .zone-selector .zone-btn.active {
   border-color: #fff200;
   background: #fff200;
   color: #071b2e;
 }
 
-.weather-center-heading + .zone-selector .zone-btn:disabled {
+.page-header--weather + .zone-selector .zone-btn:disabled {
   cursor: wait;
   opacity: 0.65;
 }
 
 @media (max-width: 768px) {
-  .weather-center-heading + .zone-selector {
+  .page-header--weather + .zone-selector {
     width: 100%;
     max-width: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 0 0 10px;
   }
 
-  .weather-center-heading + .zone-selector .zone-btn {
+  .page-header--weather + .zone-selector .zone-btn {
     box-sizing: border-box;
     min-width: 0;
     width: 100%;

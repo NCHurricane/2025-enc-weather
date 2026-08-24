@@ -6,11 +6,11 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.home-weather-center .weather-center-heading {
+.home-weather-center .page-header--weather {
   margin-bottom: 18px;
 }
 
-.home-weather-center .weather-center-heading p {
+.home-weather-center .page-header--weather p {
   margin: 8px auto 0;
   color: #c7d7e3;
   font-size: clamp(0.7rem, 1.4vw, 1rem);
@@ -239,7 +239,7 @@
     --weather-center-content-height: 430px;
   }
 
-  .home-weather-center .weather-center-heading p {
+  .home-weather-center .page-header--weather p {
     max-width: 34rem;
   }
 }

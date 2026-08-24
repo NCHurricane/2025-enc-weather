@@ -37,15 +37,15 @@
         <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin />
         <link rel="dns-prefetch" href="//kit.fontawesome.com" />
 
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        <link rel="stylesheet" href="../vendor/leaflet/1.9.4/leaflet.css"
             integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <link rel="stylesheet" href="../css/styles.css?v=20260823-breadcrumbs-1" />
-        <link rel="stylesheet" href="../counties/css/county.css?v=20260823-map-status-1" />
+        <link rel="stylesheet" href="../css/styles.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="../css/components.css?v=20260824-phase3-1" />
         <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260823-map-status-1" />
         <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
-        <link rel="stylesheet" href="./css/active.css?v=20260823-status-row-removal-1" />
+        <link rel="stylesheet" href="../counties/css/county.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="./css/active.css?v=20260824-phase3-1" />
         <link rel="stylesheet" href="./css/storm-graphics.css?v=20260822-tabs-1" />
-        <link rel="stylesheet" href="../css/components.css?v=20260822-2" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
@@ -82,37 +82,19 @@
                     }
                 ]
                 </script>
-        <style>
-            body.site-weather-page {
-                background: linear-gradient(rgba(103, 103, 103, 0.7), rgba(103, 103, 103, 0.7)),
-                    url(../images/milton_bg.webp);
-                background-attachment: fixed;
-                background-position: center;
-                background-size: cover;
-            }
-            .main-title, .main-title-active {
-                font-size: clamp(1.2rem, 4vw, 3rem);
-                font-weight: 800;
-                text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.98);
-                color: gold;
-            }
-            .main-title-active #storm-id {
-                font-size: clamp(0.8rem, 2vw, 1.5rem);
-                text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.98);
-                color: rgb(255, 255, 255);
-            }
-        </style>
     </head>
 
-    <body class="site-weather-page">
+    <body class="site-page site-page--active" data-active-page>
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
-        <main class="container" id="main-content">
-            <h1 class="main-title-active">
-                <span id="storm-title">Loading name...</span>
-                <span id="storm-id">...and designation</span>
-            </h1>
+        <main class="page-shell" id="main-content">
+            <header class="page-header page-header--active">
+                <h1 class="page-title page-title--weather page-title--active">
+                    <span id="storm-title">Loading name...</span>
+                    <span id="storm-id" class="page-title__meta">...and designation</span>
+                </h1>
+            </header>
 
             <div class="active-storm-workspace">
                 <section class="active-module active-module--storm" aria-label="Storm overview and map">
@@ -143,7 +125,7 @@
                         aria-hidden="false">
                         <div class="active-summary-layout">
                             <div class="storm-header-container">
-                                <h2 class="sr-only" id="storm-header-title">Latest storm information</h2>
+                                <h2 class="section-heading sr-only" id="storm-header-title">Latest storm information</h2>
                                 <div class="storm-header-section" id="storm-header-section">
                                     <div class="storm-header">
                                         <div id="overview-v2"></div>
@@ -418,9 +400,9 @@
 
                 <section class="active-module active-module--surge-rain"
                     aria-labelledby="surge-rain-title">
-                    <header class="active-module-heading">
+                    <header class="active-module__heading">
                         <i class="fa-solid fa-cloud-rain" aria-hidden="true"></i>
-                        <h2 id="surge-rain-title">Surge &amp; Rain Products</h2>
+                        <h2 id="surge-rain-title" class="section-heading active-module__title">Surge &amp; Rain Products</h2>
                     </header>
                     <div class="active-module-panel surge-rain-container">
                         <div class="surge-rain-section" id="surge-rain-section"></div>
@@ -472,7 +454,7 @@
             </div>
         </footer>
 
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        <script src="../vendor/leaflet/1.9.4/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
         <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
@@ -480,10 +462,10 @@
         <script type="module" src="./js/storm.js?v=20260821-product-states-2"></script>
         <script type="module" src="./js/storm_text.js?v=20260821-product-states-1"></script>
 
-        <script type="module" src="./js/ww-maps.js?v=20260822-weather-engine-3" defer></script>
+        <script type="module" src="./js/ww-maps.js?v=20260824-phase2-1" defer></script>
 
         <script type="module">
-        import { NavigationModule } from '../js/modules/navigation.js?v=20260823-breadcrumbs-1';
+        import { NavigationModule } from '../js/modules/navigation.js?v=20260824-phase3-1';
 
             document.addEventListener('DOMContentLoaded', () => {
                 NavigationModule.navData.logo = {

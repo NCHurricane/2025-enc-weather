@@ -2,8 +2,163 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: approved planning direction; implementation has not started  
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup completed locally; Phase 4 is not authorized
+
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
+
+## Current implementation status
+
+The owner approved the Phase 0 ownership ledger and authorized Phase 1 on
+2026-08-24. Phase 1 is complete in the local working tree:
+
+- The exact npm-published Leaflet 1.9.4 runtime previously served by unpkg is
+  self-hosted under `vendor/leaflet/1.9.4/`, with its BSD-2-Clause license,
+  source archive SHA-256, per-file checksums, and provenance.
+- All 14 consumers use the local versioned assets: 12 public map routes, the
+  Bertie prototype, and the ignored Tropical Phase 2 harness.
+- The temporary pre-layer order is normalized to vendor, global, shared
+  components, shared map, shared engine where applicable, then family CSS.
+- `scripts/css-ownership-contract.mjs` records the current dependency and order
+  contract. `scripts/validate-site.mjs` rejects remote or undeclared Leaflet
+  consumers, validates integrity attributes and vendor hashes, and enforces the
+  approved order.
+- Static checks passed: both changed JavaScript files pass `node --check`, all
+  50 Tropical/shared-map tests pass, the site validator passes 20 HTML files,
+  307 JSON files, and 184 local references, and `git diff --check` passes.
+- Local HTTP checks returned `200` with the expected MIME type and byte length
+  for Leaflet CSS, JavaScript, source map, and all five images.
+- Desktop controlled-browser checks covered Home, Tropical, every live County,
+  the Bertie prototype, the ignored harness, and Active using the retained exact
+  `EP092026` state. Mobile checks covered Home, Tropical, a standard County,
+  multi-zone County, San Diego, and Active. Maps, controls, attribution,
+  basin/zone/product switching, local paths, stylesheet order, and document
+  overflow were checked. The exercised Home, Tropical, and Active console
+  warning/error logs were empty. `/active/` without a storm parameter retained
+  its expected no-storm 404 behavior.
+
+The owner subsequently authorized Wave A Phase 2. Phase 2 is complete in the
+local working tree:
+
+- `styles.css` now owns the demonstrated color/surface, type, spacing, radius,
+  shadow, border, motion, content-width, interaction-size and z-index tokens.
+  The misleading breakpoint custom properties and the vague legacy
+  section/shell/radius tokens were removed rather than aliased.
+- At the time of Phase 2 validation, the 15 sitemap routes plus the
+  dependency-required `404.html`, Tropical compatibility pair, Bertie prototype
+  and `index_update.html` used
+  `.site-page` family roots and one `.page-shell`. The retired `.container`,
+  `.site-weather-page` and `.info-page` roots have no compatibility aliases.
+- Home, County and Tropical retain the demonstrated 1200px maximum content
+  measure; Active retains its 1600px maximum and narrower mobile gutter; Info
+  retains its wider fluid reading surface. The shared breadcrumb offset is
+  116px on desktop and 108px on mobile, while no-breadcrumb Home/legacy pages
+  retain their 95px/85px rhythm.
+- Active map-label variables moved from global `:root` to
+  `.site-page--active`. `active/js/ww-maps.js` now reads them through the
+  dedicated `data-active-page` hook; desktop/mobile values remained `13` and
+  `11` for priority 10 under the retained `EP092026` fixture.
+- `scripts/css-ownership-contract.mjs` and `scripts/validate-site.mjs` now
+  enforce Phase 2 page roots, shell classes, affected cache versions, retired
+  classes/tokens, global token presence and the Active data hook.
+- Static checks passed: all three changed JavaScript files pass `node --check`,
+  all 73 repository JavaScript tests pass, the site validator passes 20 HTML
+  files, 307 JSON files and 184 local references, focused retired-selector and
+  cache-version searches are clean, and `git diff --check` passes.
+- Local HTTP checks returned `200` for all 20 page/dependency consumers and all
+  seven changed CSS/JavaScript assets.
+- A temporary same-origin responsive harness exercised all 20 consumers at true
+  `1280x900` and `390x844` browsing-context viewports. All 40 cases had one
+  shell and zero document-level horizontal overflow. Desktop Home/Active and
+  mobile Home were visually inspected. A further 42-case representative sweep
+  covered Home, standard County, multi-zone County, San Diego, Tropical,
+  deterministic Active and Info at widths 320, 360, 430, 768, 1024 and 1440;
+  every case retained one shell and zero document-level overflow. Clean Home,
+  Tropical, deterministic Active, Dare and Info console checks had no warnings
+  or errors. The
+  then-existing dependency-only `index_update.html` retained its pre-existing
+  `Container not found for NCCountyMap` console error; Phase 2 did not alter its
+  controller contract. The temporary harness was removed after validation.
+
+The owner then separately authorized removal of `index_update.html`,
+`tropical_at.html`, and `tropical_ep.html`. That cleanup is complete locally:
+
+- The three HTML files, the now-orphaned `css/index.css`, the compatibility-only
+  `js/modules/tropicalCompatibility.js`, and the compatibility-only Tropical CSS
+  block are removed.
+- Existing `.htaccess` 301 redirects continue to map both extensionless and
+  `.html` Atlantic/Eastern Pacific legacy paths to the canonical `/tropical`
+  basin query. Old bookmarks therefore remain supported without maintaining
+  duplicate HTML resources.
+- The current Phase 2 machine contract covers 17 tracked consumers: the 15
+  sitemap routes, `404.html`, and the Bertie prototype. The ignored Tropical
+  harness remains a Phase 1 Leaflet dependency consumer.
+- The validator also guards the five retired files against accidental
+  restoration while continuing to require both production 301 rules.
+- Historical Phase 1-2 validation counts above describe the pre-cleanup test
+  runs and have not been rewritten as current evidence.
+- Cleanup validation: syntax passed for the validator and ownership contract;
+  all 73 JavaScript tests passed; the site validator passed 18 HTML files, 307
+  JSON files, and 162 local references; and `git diff --check` passed.
+- Local HTTP returned `200` for canonical Atlantic and Eastern Pacific Tropical
+  state and `404` for the two retired dedicated assets. The PHP development
+  server does not execute `.htaccess`, so it is not evidence for the production
+  redirects.
+- Controlled browser at the available `1280x720` viewport preserved one shell,
+  zero document overflow, the live Leaflet map, basin selection, URL state, and
+  Back/Forward with no console errors. A same-origin `390x844` iframe check
+  confirmed the same shell/map/selection/overflow state; it logged one
+  iframe-only `MutationObserver` error that did not reproduce in either direct
+  canonical tab. Production Apache redirect behavior remains unverified.
+
+The owner then authorized Wave A Phase 3. Phase 3 is complete in the local
+working tree:
+
+- `styles.css` now owns bounded page-title, section-heading, card-heading,
+  helper, metadata and status-role tokens. `components.css` owns the shared
+  `.page-header`, `.page-title`, `.section-heading`, `.card-heading` and
+  `.text-role` presentation; family sheets own only demonstrated variants.
+- All 15 sitemap routes plus `404.html` and the Bertie prototype use one native
+  `h1` with a canonical page-title role. Static `h2` and `h3` content uses the
+  section/card roles without changing semantic levels. County forecast regions
+  now use an explicit `#forecast-heading` `h2`; the Detailed, Meteogram and
+  Discussion labels remain disclosure buttons for Phase 4 rather than being
+  misrepresented as headings.
+- Tropical and Active title presentation moved out of inline `<style>` blocks.
+  Tropical retains its gold branded title. Active retains the `#storm-title`
+  and `#storm-id` script hooks, and the designation is now visible on its own
+  bounded line at narrow widths instead of being hidden below 640px.
+- Dynamic County alert-dialog/card headings and the analytics-consent heading
+  use the same semantic visual roles. Their versioned dependency chains were
+  updated through the County entry modules and shared Navigation module.
+- The legacy title/header aliases and vague text-role classes were removed.
+  `navigation.js` no longer assigns a heading role from the brittle
+  `section.section-title > div:first-child` structure.
+- `scripts/css-ownership-contract.mjs` and `scripts/validate-site.mjs` enforce
+  page/title/header roles, one native `h1`, non-skipping heading order, County
+  forecast labeling, dynamic heading sources, retired classes/tokens, exact
+  stylesheet and JavaScript consumers, and Phase 3 cache versions.
+- Static validation passes: all changed JavaScript parses, all 73 native Node
+  tests pass, the site validator passes 18 HTML files, 307 JSON files and 166
+  local references, focused retired-selector searches are clean, and
+  `git diff --check` passes.
+- Controlled-browser checks covered the 15 sitemap routes, `404.html`, and the
+  Bertie prototype at `1280x900` and `390x844`; representative Home, Tropical,
+  Active, San Diego and About checks also passed at `1920x1080` and at a
+  640px-wide 200%-reflow equivalent. Every checked route had one visible `h1`,
+  no heading-level skip, loaded fonts, bounded long-title wrapping, and zero
+  document-level horizontal overflow. Mobile Home, Active and About were
+  visually inspected. A clean all-route pass using explicit valid multi-zone
+  URLs had no console warnings or errors.
+- Browser validation exposed an unrelated retained County defect: after San
+  Diego stores `coastal`, opening Dare without a zone query requests
+  `counties/dare/data/coastal/{current,forecast,alerts}.json` and receives three
+  `404` responses instead of normalizing to a Dare zone. Phase 3 did not change
+  County URL/local-storage lifecycle; this evidence remains an open County
+  follow-up rather than being absorbed into typography work.
+
+No cascade layer, staging, commit, push, deployment, production-data change, or
+generated/runtime cleanup was performed. Phase 4 requires new explicit
+authorization.
 
 ## Purpose
 
@@ -39,10 +194,10 @@ The visual migration covers only the 15 routes currently listed in `sitemap.xml`
 
 Non-sitemap pages are not redesign targets. They receive only the changes required to keep shared CSS, JavaScript hooks, local Leaflet, navigation, or compatibility behavior working. Known examples include:
 
-- `tropical_at.html`
-- `tropical_ep.html`
 - `counties/bertie/index_test.html`
-- test or compatibility pages discovered by the Phase 0 dependency inventory
+- `404.html`
+- the ignored Tropical Phase 2 harness
+- test or compatibility consumers discovered by dependency inventory
 
 Do not broaden dependency maintenance into a visual redesign or promotion of a prototype.
 
@@ -51,7 +206,7 @@ Do not broaden dependency maintenance into a visual redesign or promotion of a p
 - New product families, weather sources, stations, zones, map layers, or data workflows
 - Frameworks, bundlers, preprocessors, or a new CSS lint dependency
 - A Leaflet major-version upgrade
-- Removal of compatibility routes or script-owned IDs without validated parity and separate approval
+- Removal of server compatibility redirects or script-owned IDs without validated parity and separate approval
 - Production deployment, cron changes, cache maintenance, or generated-data edits
 - Unrelated SEO, metadata, navigation, analytics, marketing, or backend work
 
@@ -274,6 +429,8 @@ Self-hosting removes a third-party runtime dependency, makes the exact productio
 
 #### Phase 2: Tokens, page shell, and vertical rhythm
 
+Implementation status: completed locally on 2026-08-24; Phase 3 was completed later in the same local working tree.
+
 1. Consolidate color, type, spacing, radius, shadow, border, motion, content-width, and z-index tokens in `styles.css`.
 2. Define a shared page shell and the spacing between the full header/breadcrumb region and the first page element.
 3. Add the page-root classes.
@@ -285,6 +442,8 @@ Acceptance: all page families begin at a consistent visual rhythm, with document
 
 #### Phase 3: Titles, headings, labels, and text roles
 
+Implementation status: completed locally on 2026-08-24; Phase 4 remains gated.
+
 1. Define canonical roles such as page title, section title, card title, eyebrow, label, helper text, metadata, and status text.
 2. Apply semantic headings according to document structure and the shared visual classes according to role.
 3. Move Tropical and Active inline title presentation into their page styles or shared modifiers.
@@ -294,6 +453,8 @@ Acceptance: all page families begin at a consistent visual rhythm, with document
 Acceptance: titles and labels are consistent by role, not flattened into one identical style; heading hierarchy and accessible names remain correct.
 
 #### Phase 4: Cards, tabs, selectors, buttons, menus, and dialogs
+
+Implementation status: not authorized.
 
 1. Establish shared component markup and BEM classes.
 2. Move common rules into `components.css`.
@@ -339,7 +500,7 @@ Acceptance: popups fit narrow viewports, do not obscure required controls unnece
 
 #### Phase 7: Remove cross-family dependencies and dead ownership
 
-1. Remove `counties/css/county.css` from Home, Tropical, Active, and compatibility consumers once every required dependency has a shared or correct family owner.
+1. Remove `counties/css/county.css` from Home, Tropical, and Active once every required dependency has a shared or correct family owner.
 2. Move reusable rules out of `home.css`; retain only homepage composition and explicit variants.
 3. Remove migrated duplicate selectors, stale overrides, obsolete inline presentation, and unused legacy class names.
 4. Update JavaScript hooks, tests, cache keys, and validator contracts atomically.
@@ -523,7 +684,7 @@ Durable decisions:
 - Use BEM-style component classes and IDs/data attributes for JavaScript hooks.
 - Do not retain legacy class aliases.
 - Migrate component-by-component but site-wide.
-- Update non-sitemap compatibility pages only when dependency changes require it.
+- Update non-sitemap dependency consumers only when dependency changes require it.
 - Retain `home.css` only for genuinely homepage-specific rules.
 - Self-host unchanged Leaflet 1.9.4 before CSS migration; introduce cascade
   layers only after ownership and load order are stable.

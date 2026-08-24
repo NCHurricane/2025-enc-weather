@@ -1,57 +1,37 @@
-.info-page {
-    min-width: 0;
-    padding-bottom: 0;
-    background:
-        radial-gradient(circle at 50% 0, rgba(95, 130, 161, 0.2), transparent 38rem),
-        linear-gradient(145deg, #2a3d51 0%, #30485f 54%, #223345 100%);
-    color: #eef5fb;
+.site-page--info .header {
+    border-bottom: var(--border-subtle);
+    background: var(--surface-header);
+    box-shadow: var(--shadow-header);
 }
 
-.info-page .header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(14, 21, 29, 0.97);
-    box-shadow: 0 6px 18px rgba(4, 10, 16, 0.25);
-}
-
-.info-page .header-container {
+.site-page--info .header-container {
     box-sizing: border-box;
     max-width: none;
     padding: 13px clamp(20px, 3.3vw, 64px);
 }
 
 .info-main {
-    box-sizing: border-box;
-    width: calc(100% - clamp(32px, 5vw, 96px));
-    max-width: none;
-    min-height: calc(100svh + 1px);
-    margin: 0 auto;
-    padding: clamp(85px, 10vw, 95px) 0 52px;
     font-family: var(--font-primary);
 }
 
-.info-page-heading {
+.page-header--info {
     max-width: 900px;
     margin: 0 auto 18px;
     text-align: center;
 }
 
-.info-page-heading h1,
-.case-study-hero h1 {
-    margin: 0;
-    color: #fff;
-    font-family: var(--font-heading);
-    font-size: clamp(2rem, 3.2vw, 3.15rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.05;
-    text-shadow: none;
+.page-title--info,
+.page-title--case-study {
+    --page-title-size: clamp(2rem, 3.2vw, 3.15rem);
+}
+
+.page-title--info {
     text-transform: uppercase;
 }
 
-.info-page-heading > p:not(.eyebrow),
-.hero-summary {
+.page-header--info > .page-header__summary,
+.page-header__summary--case-study {
     margin: 10px auto 0;
-    color: #c7d7e3;
     font-size: clamp(0.9rem, 1.4vw, 1.04rem);
     line-height: 1.6;
 }
@@ -63,8 +43,8 @@
     margin: 0 0 18px;
     padding: clamp(20px, 3vw, 34px);
     border: 1px solid rgba(164, 190, 211, 0.52);
-    border-radius: 12px;
-    background: rgba(7, 27, 46, 0.96);
+    border-radius: var(--radius-lg);
+    background: var(--surface-panel);
     color: #edf5fa;
     box-shadow: 0 14px 32px rgba(4, 10, 16, 0.24);
 }
@@ -76,46 +56,35 @@
         linear-gradient(135deg, #071b2e, #102f4d);
 }
 
-.case-study-hero h1 {
+.page-title--case-study {
     max-width: 900px;
     text-align: left;
-    text-transform: none;
 }
 
-.hero-summary {
+.page-header__summary--case-study {
     max-width: 820px;
     margin-left: 0;
     font-size: clamp(1rem, 1.8vw, 1.18rem);
 }
 
-.eyebrow {
+.text-role--eyebrow {
     margin: 0 0 8px;
-    color: var(--color-accent);
-    font-family: var(--font-heading);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
 }
 
-.info-panel h1,
-.info-panel h2,
-.case-study-card h3 {
+.info-panel .section-heading,
+.case-study-card .card-heading {
     margin-top: 0;
-    color: #fff;
-    font-family: var(--font-heading);
-    font-weight: 750;
 }
 
-.info-panel h2 {
+.info-panel .section-heading {
     margin: 1.7em 0 0.55em;
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(177, 201, 220, 0.25);
     font-size: clamp(1.2rem, 2vw, 1.55rem);
 }
 
-.info-panel > h2:first-child,
-.info-panel .eyebrow + h2 {
+.info-panel > .section-heading:first-child,
+.info-panel .text-role--eyebrow + .section-heading {
     margin-top: 0;
 }
 
@@ -146,7 +115,7 @@
     background: #0a1f34;
 }
 
-.case-study-card h3 {
+.case-study-card .card-heading {
     margin-bottom: 7px;
 }
 
@@ -191,12 +160,6 @@
 
 .metrics-period {
     margin-bottom: 0;
-}
-
-.metrics-note,
-.info-updated {
-    color: #afc3d2 !important;
-    font-size: 0.82rem;
 }
 
 .metrics-note {
@@ -246,14 +209,11 @@
     text-align: center;
 }
 
-.notfound-title {
-    color: #fff;
-    font-family: var(--font-heading);
-    font-size: clamp(1.15rem, 2.3vw, 1.65rem);
-    font-weight: 750;
+.section-heading--not-found {
+    margin: 0;
 }
 
-.notfound-title i {
+.section-heading--not-found i {
     margin-right: 8px;
     color: var(--color-accent);
 }
@@ -275,16 +235,11 @@
     object-fit: contain;
 }
 
-.info-page .footer {
+.site-page--info .footer {
     margin-top: 0;
 }
 
 @media (max-width: 720px) {
-    .info-main {
-        width: calc(100% - 24px);
-        padding-top: 85px;
-    }
-
     .case-study-grid,
     .measurement-grid,
     .traffic-metrics {

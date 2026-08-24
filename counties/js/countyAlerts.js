@@ -135,7 +135,7 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
           <header class="county-alert-dialog-header">
             <div>
               <span>Forecast outlook</span>
-              <h2 id="county-hwo-dialog-title">Hazardous Weather Outlook</h2>
+              <h2 id="county-hwo-dialog-title" class="section-heading county-alert-dialog__title">Hazardous Weather Outlook</h2>
             </div>
             <button type="button" class="county-alert-dialog-close" data-county-hwo-close aria-label="Close Hazardous Weather Outlook">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -147,7 +147,7 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
               <header class="county-alert-panel-heading">
                 <i class="fa-solid fa-cloud-bolt" aria-hidden="true"></i>
                 <div>
-                  <h3>Hazardous Weather Outlook</h3>
+                  <h3 class="card-heading county-alert-panel__title">Hazardous Weather Outlook</h3>
                   ${issued ? `<p>Issued ${escapeHTML(issued)}</p>` : ''}
                 </div>
               </header>
@@ -375,7 +375,7 @@ export function renderCountyAlerts({
           <header class="county-alert-panel-heading">
             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             <div>
-              <h3>${entry.eventLabel}</h3>
+              <h3 class="card-heading county-alert-panel__title">${entry.eventLabel}</h3>
               ${entry.expiresLabel ? `<p>Until ${entry.expiresLabel}</p>` : ''}
             </div>
           </header>
@@ -431,7 +431,7 @@ export function renderCountyAlerts({
           <header class="county-alert-dialog-header">
             <div>
               <span>Current alerts</span>
-              <h2 id="county-alert-dialog-title">${countLabel}</h2>
+              <h2 id="county-alert-dialog-title" class="section-heading county-alert-dialog__title">${countLabel}</h2>
             </div>
             <button type="button" class="county-alert-dialog-close" data-county-alert-close aria-label="Close alerts">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>

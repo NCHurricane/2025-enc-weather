@@ -1,24 +1,76 @@
-/* Shared presentation for page titles, tabs, weather-center shell, and map menus. */
+/* Shared presentation for typography, tabs, weather-center shell, and map menus. */
 
-.weather-center-heading {
+.page-header {
+  min-width: 0;
+}
+
+.page-header--weather {
   margin: 0 0 14px;
   text-align: center;
 }
 
-.main-title,
-.main-title-active {
-  color: var(--component-title-color);
+.page-title {
+  margin: 0;
+  color: var(--page-title-color);
   font-family: var(--font-heading);
-  font-size: var(--component-title-font-size);
-  font-weight: var(--component-title-font-weight);
-  letter-spacing: var(--component-title-letter-spacing);
-  line-height: var(--component-title-line-height);
-  text-shadow: none;
+  font-size: var(--page-title-size);
+  font-weight: var(--page-title-weight);
+  letter-spacing: var(--page-title-tracking);
+  line-height: var(--page-title-leading);
+  overflow-wrap: break-word;
+  text-shadow: var(--page-title-shadow);
+  text-wrap: balance;
+}
+
+.page-title--weather {
   text-transform: uppercase;
 }
 
-.weather-center-heading .main-title {
+.page-header__summary {
+  max-width: 58rem;
   margin: 0;
+}
+
+.section-heading,
+.card-heading {
+  color: #fff;
+  font-family: var(--font-heading);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.section-heading {
+  font-size: var(--section-heading-size);
+  font-weight: 750;
+  line-height: var(--section-heading-leading);
+}
+
+.card-heading {
+  font-size: var(--card-heading-size);
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.text-role--eyebrow {
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.text-role--helper {
+  color: var(--text-helper-color);
+}
+
+.text-role--meta {
+  color: var(--text-meta-color);
+  font-size: 0.82rem;
+}
+
+.text-role--status {
+  color: var(--text-helper-color);
 }
 
 .weather-center-layout {

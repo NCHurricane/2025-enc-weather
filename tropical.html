@@ -45,18 +45,18 @@
     <link rel="dns-prefetch" href="//kit.fontawesome.com" />
     <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin />
 
-    <link rel="stylesheet" href="css/styles.css?v=20260823-breadcrumbs-1" />
     <link
       rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      href="vendor/leaflet/1.9.4/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="counties/css/county.css?v=20260823-map-status-1" />
+    <link rel="stylesheet" href="css/styles.css?v=20260824-phase3-1" />
+    <link rel="stylesheet" href="css/components.css?v=20260824-phase3-1" />
     <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823-map-status-1" />
     <link rel="stylesheet" href="css/tropical-map-engine.css?v=20260819-7" />
-    <link rel="stylesheet" href="css/tropical.css?v=20260823-map-status-1" />
-    <link rel="stylesheet" href="css/components.css?v=20260822-2" />
+    <link rel="stylesheet" href="counties/css/county.css?v=20260824-phase3-1" />
+    <link rel="stylesheet" href="css/tropical.css?v=20260824-phase3-1" />
 
     <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
     <script type="application/ld+json">
@@ -73,34 +73,18 @@
         }
       }
     </script>
-            <style>
-            body.site-weather-page {
-                background: linear-gradient(rgba(103, 103, 103, 0.7), rgba(103, 103, 103, 0.7)),
-                    url(images/isabel_bg.webp);
-                background-attachment: fixed;
-                background-position: top;
-                background-size: cover;
-            }
-            .main-title, .main-title-active {
-                font-size: clamp(1.2rem, 4vw, 3rem);
-                font-weight: 800;
-                text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.98);
-                color: gold;
-            }
-
-        </style>
   </head>
 
-  <body class="site-weather-page">
+  <body class="site-page site-page--tropical site-page--tropical-overview">
     <header class="header"></header>
 
-    <main id="main-content" class="container tropical-weather-center">
-      <header class="weather-center-heading">
-        <h1 id="basin-heading" class="main-title">Atlantic Tropical Weather</h1>
+    <main id="main-content" class="page-shell tropical-weather-center">
+      <header class="page-header page-header--weather">
+        <h1 id="basin-heading" class="page-title page-title--weather page-title--tropical">Atlantic Tropical Weather</h1>
       </header>
 
       <section class="alert-container weather-center-alerts tropical-current-systems" aria-labelledby="active-systems-heading">
-        <h2 id="active-systems-heading" class="visually-hidden">Current Systems</h2>
+        <h2 id="active-systems-heading" class="section-heading visually-hidden">Current Systems</h2>
         <div id="active-systems-summary" aria-live="polite">
           <div class="alert">
             <div class="alert-none">
@@ -168,7 +152,7 @@
             <section id="tropical-panel-products" class="weather-center-panel" role="tabpanel" aria-labelledby="tropical-tab-products" data-tropical-panel="products" hidden>
               <div id="supporting-text-tabs" class="weather-center-condition-tabs tropical-product-tabs" role="tablist" aria-label="Tropical text product"></div>
               <div class="tropical-product-panel">
-                <h2 id="supporting-text-title">Atlantic Outlook</h2>
+                <h2 id="supporting-text-title" class="section-heading section-heading--tropical-product">Atlantic Outlook</h2>
                 <pre id="supporting-text-content" class="tropical-text-content">Waiting for the selected basin package…</pre>
                 <a id="supporting-text-link" class="tropical-action" href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener" hidden>View official text source</a>
               </div>
@@ -252,10 +236,10 @@
       </div>
     </footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="vendor/leaflet/1.9.4/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module" src="js/modules/tropicalOverview.js?v=20260823-map-status-1"></script>
     <script type="module">
-      import { NavigationModule } from './js/modules/navigation.js?v=20260823-breadcrumbs-1';
+        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase3-1';
 
       NavigationModule.navData.logo = {
         textBefore: 'NCHurric',

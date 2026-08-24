@@ -62,7 +62,7 @@ import {
 //
 // Steps To Change Filtering Behavior Quickly:
 //   A) To hide low priorities <5 on phones: set in CSS @media(max-width: X){
-//        :root { --map-label-min-priority: 5; }
+//        [data-active-page] { --map-label-min-priority: 5; }
 //      }
 //   B) To reveal a subset only after zooming in: raise each place's `minZoom`.
 //   C) To emphasize certain priorities: increase their CSS font sizes or colors.
@@ -150,11 +150,16 @@ let _labelFontCache = null;
 let _labelFontCacheWidth = 0;
 let _labelColorCache = null;
 
+function activePageStyle() {
+  const activePage = document.querySelector('[data-active-page]');
+  return activePage ? getComputedStyle(activePage) : null;
+}
+
 function readLabelFontSizes() {
-  const rootStyle = getComputedStyle(document.documentElement);
+  const rootStyle = activePageStyle();
   const grab = (n, fallback) => {
     const v = parseFloat(
-      rootStyle.getPropertyValue(`--map-label-priority-${n}`).trim()
+      rootStyle?.getPropertyValue(`--map-label-priority-${n}`).trim()
     );
     return Number.isFinite(v) ? v : fallback;
   };
@@ -168,11 +173,11 @@ function readLabelFontSizes() {
 }
 
 function readLabelColors() {
-  const rootStyle = getComputedStyle(document.documentElement);
+  const rootStyle = activePageStyle();
   const arr = [];
   let last = "#ffffff";
   for (let i = 1; i <= 10; i++) {
-    const raw = rootStyle.getPropertyValue(`--map-label-color-${i}`).trim();
+    const raw = rootStyle?.getPropertyValue(`--map-label-color-${i}`).trim();
     last = raw || last;
     arr[i] = last;
   }
@@ -433,8 +438,8 @@ function drawBasemap(ctx, domain, rect) {
 }
 
 function getMinLabelPriority() {
-  const v = getComputedStyle(document.documentElement)
-    .getPropertyValue("--map-label-min-priority")
+  const v = activePageStyle()
+    ?.getPropertyValue("--map-label-min-priority")
     .trim();
   const n = parseInt(v, 10);
   return Number.isFinite(n) ? Math.min(10, Math.max(1, n)) : 1;
