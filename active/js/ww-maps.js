@@ -3,6 +3,10 @@ import {
   WEATHER_BASEMAPS,
   installBasemapMenuControl,
 } from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
+import {
+  installLeafletPopupShell,
+  installLeafletPopupTrigger,
+} from '../../js/modules/leafletPopupShell.js?v=20260824-phase6-1';
 // ============================================================================
 // Watches & Warnings Maps Module (ww-maps.js)
 // ---------------------------------------------------------------------------
@@ -1020,10 +1024,12 @@ function alertPopup(feature) {
   const properties = feature?.properties || {};
   const key = alertKey(feature);
   const wrapper = document.createElement('div');
-  wrapper.className = 'ww-alert-popup';
+  wrapper.className = 'weather-map-popup__content active-alert-popup';
   const title = document.createElement('strong');
+  title.className = 'active-alert-popup__title';
   title.textContent = labelForKey(key);
   const location = document.createElement('span');
+  location.className = 'active-alert-popup__location';
   location.textContent = [properties.zoneName, properties.state].filter(Boolean).join(', ');
   wrapper.append(title, location);
   return wrapper;
@@ -1040,6 +1046,7 @@ function ensureAlertMap(hazard) {
       zoomControl: true,
       attributionControl: true,
     });
+    installLeafletPopupShell(map);
     map.setView([27, -80], 4, { animate: false });
     const basemapLayers = new Map();
     for (const [id, config] of Object.entries(WEATHER_BASEMAPS)) {
@@ -1094,7 +1101,16 @@ function renderLeafletPanel(hazard) {
         return { color, fillColor: color, weight: 2, opacity: 0.95, fillOpacity: 0.3 };
       },
       onEachFeature: (feature, layer) => {
-        layer.bindPopup(alertPopup(feature), { maxWidth: 280 });
+        const properties = feature?.properties || {};
+        const location = [properties.zoneName, properties.state].filter(Boolean).join(', ');
+        layer.bindPopup(alertPopup(feature), {
+          className: 'weather-map-popup weather-map-popup--active',
+          maxWidth: 280,
+        });
+        installLeafletPopupTrigger(
+          layer,
+          `${labelForKey(alertKey(feature))}${location ? ` for ${location}` : ''} map details`,
+        );
         layer.on({
           mouseover: () => layer.setStyle?.({ weight: 3, fillOpacity: 0.44 }),
           mouseout: () => state.layer?.resetStyle?.(layer),

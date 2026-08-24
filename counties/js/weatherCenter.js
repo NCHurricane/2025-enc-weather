@@ -231,31 +231,41 @@ function addDefinition(row, label, value) {
 function buildPopup(station, cachedStation, ageMinutes, { inline = false, onClose = null } = {}) {
   const data = cachedStation?.data || {};
   const popup = document.createElement('article');
-  popup.className = `temperature-popup${inline ? ' is-inline' : ''}`;
+  popup.className = `weather-map-popup__content observation-popup${inline ? ' observation-popup--inline' : ''}`;
 
   if (inline) {
     const closeButton = document.createElement('button');
-    closeButton.className = 'temperature-popup-inline-close';
+    closeButton.className = 'observation-popup__close';
     closeButton.type = 'button';
+    closeButton.dataset.observationPopupClose = '';
     closeButton.setAttribute('aria-label', 'Close station details');
     closeButton.textContent = '×';
-    if (onClose) closeButton.addEventListener('click', onClose);
+    if (onClose) {
+      closeButton.addEventListener('click', onClose);
+      closeButton.addEventListener('keydown', (event) => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onClose();
+      });
+    }
     popup.append(closeButton);
   }
 
   const heading = document.createElement('h3');
+  heading.className = 'observation-popup__title';
   if (inline) heading.id = 'temperature-station-details-title';
   heading.textContent = station.friendlyName || cachedStation?.name || station.name || station.id;
   popup.append(heading);
 
   const location = document.createElement('p');
-  location.className = 'temperature-popup-location';
+  location.className = 'observation-popup__location';
   location.textContent = `${cachedStation?.name || station.name || 'Observation station'} · ${station.id}`;
   popup.append(location);
 
   const stale = ageMinutes > STATION_MAX_AGE_MINUTES;
   const status = document.createElement('p');
-  status.className = `temperature-popup-status${stale ? ' is-stale' : ''}`;
+  status.className = `observation-popup__status${stale ? ' is-stale' : ''}`;
   status.textContent = cachedStation
     ? stale
       ? 'Stale observation — use with caution'
@@ -264,7 +274,7 @@ function buildPopup(station, cachedStation, ageMinutes, { inline = false, onClos
   popup.append(status);
 
   const values = document.createElement('dl');
-  values.className = 'temperature-popup-grid';
+  values.className = 'observation-popup__grid';
   addDefinition(values, 'Temperature', formatValue(data.temperature, '°F'));
   addDefinition(values, 'Conditions', data.conditions || 'Not reported');
 
@@ -289,7 +299,7 @@ function buildPopup(station, cachedStation, ageMinutes, { inline = false, onClos
 
   const observationTime = cachedStation?.observation?.timestamp;
   const time = document.createElement('p');
-  time.className = 'temperature-popup-time';
+  time.className = 'observation-popup__time';
   time.textContent = observationTime
     ? `${formatWeatherTime(observationTime)} · ${formatAge(ageMinutes)}`
     : 'Observation time unavailable';
@@ -297,7 +307,7 @@ function buildPopup(station, cachedStation, ageMinutes, { inline = false, onClos
 
   if (station.url) {
     const link = document.createElement('a');
-    link.className = 'temperature-popup-link';
+    link.className = 'observation-popup__link';
     link.href = station.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
@@ -424,7 +434,7 @@ class CountyTemperatureViewer {
       if (MOBILE_STATION_DETAILS_QUERY.matches) {
         this.stationDetails.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } else {
-        this.stationDetails.querySelector('.temperature-popup-inline-close')?.focus({
+        this.stationDetails.querySelector('[data-observation-popup-close]')?.focus({
           preventScroll: true,
         });
       }
@@ -627,9 +637,23 @@ class CountyTemperatureViewer {
       title: `${stationName}: ${metric.spoken}`,
       alt: `${stationName} ${fieldConfig.label.toLowerCase()} observation`,
     }).addTo(this.markerLayer);
-    marker.on('click', () => {
+    const openDetails = () => {
       this.handleStationClick(marker, station, cachedStation, ageMinutes);
-    });
+    };
+    const wireKeyboardTrigger = () => {
+      const element = marker.getElement();
+      if (!element || element.hasAttribute('data-observation-popup-trigger')) return;
+      element.setAttribute('data-observation-popup-trigger', '');
+      element.addEventListener('keydown', (event) => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        openDetails();
+      });
+    };
+    marker.on('click', openDetails);
+    marker.on('add', wireKeyboardTrigger);
+    wireKeyboardTrigger();
     this.stationMarkers.set(station.id, marker);
     return marker;
   }

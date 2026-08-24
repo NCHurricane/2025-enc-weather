@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; Phase 6 remains gated
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed locally in `7a32866`; Phase 6 complete locally and owner-accepted; Phase 7 explicitly authorized on 2026-08-24 but not included in the Phase 6 checkpoint
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -255,9 +255,9 @@ Phase 5 is complete and committed in `af8577a`:
 
 The owner subsequently reported, "Ok, visual acceptance passed." No exact
 pages, devices, viewport sizes, or interactions were supplied, so this evidence
-is retained only as overall Phase 5 owner acceptance. Phase 6 has not been
-started or authorized and requires a new explicit authorization before popup
-work begins.
+is retained only as overall Phase 5 owner acceptance. The owner then separately
+authorized Phase 6 on 2026-08-24; the local implementation and validation are
+recorded below. Phase 7 remains gated.
 
 The first GitHub Actions run for `af8577a` exposed two portability defects in
 the validation contract rather than a site regression: the tracked contract
@@ -272,6 +272,72 @@ Node tests, and the site validator pass. The non-vendor staged diff check also
 passes; the two byte-preserved Leaflet files are verified against their declared
 upstream SHA-256 hashes because their intentional CRLF bytes make Git's generic
 whitespace check unsuitable for those exact vendor blobs.
+
+Sitemap CSS Phase 6 is complete in the local working tree at baseline
+`7a32866` and owner-accepted:
+
+- `css/interactive-weather-map.css` now exclusively owns the opt-in
+  `.weather-map-popup` Leaflet wrapper, tip, bounded inline/block size, padding,
+  scrolling, shared text rhythm, 44-pixel close/link targets, focus treatment,
+  and map-feature focus ring. The selectors remain scoped to the Phase 6 block;
+  unrelated Leaflet popups are not changed.
+- Homepage, County, Tropical, and Active popup producers now emit BEM content
+  blocks and elements with no legacy presentation aliases. Homepage and shared
+  Tropical/Active geometry use explicit `data-weather-map-popup-trigger`
+  hooks; County observation markers and the retained inline details panel use
+  `data-observation-popup-trigger` and `data-observation-popup-close` hooks.
+- `js/modules/leafletPopupShell.js` centralizes Leaflet popup close behavior,
+  Enter/Space activation for generated SVG features, and keyboard focus return
+  to the originating feature. County keeps its accepted inline observation
+  details lifecycle rather than being converted into a different Leaflet
+  overlay workflow.
+- Family sheets retain only content differences: the compact Home width and
+  alert content, County observation grid/status/inline close, Tropical product
+  typography/list/link treatment, and Active legacy alert text. Active's
+  detailed engine and alert-map consumers share the same Active shell modifier.
+- `scripts/css-ownership-contract.mjs` and `scripts/validate-site.mjs` enforce
+  one generic owner, family variants, generated source contracts, retired-class
+  absence, all live/compatibility consumers, and the atomic
+  `20260824-phase6-1` dependency versions. The Phase 2 harness now declares its
+  real shared-popup stylesheet dependency.
+- Static/automated validation: all 14 changed JavaScript files pass
+  `node --check`; the full baselines pass for 70 tracked PHP files and 75
+  tracked/task JavaScript files; all 78 focused repository tests pass; the site
+  validator passes 18 HTML files, 307 JSON files, and 167 local references;
+  focused retired-selector searches are clean; and `git diff --check` reports
+  no whitespace errors. The 14 changed-file count includes the two relevant
+  ignored local Tropical test modules; the durable tracked Phase 6 assertion is
+  `scripts/tests/popup-system.test.mjs`.
+- PHP-served HTTP probes returned `200` for Home, Bertie, explicit Dare
+  Hatteras, explicit San Diego Mountains, Atlantic Tropical, the deterministic
+  `AL052025` Active map, and the versioned popup-shell module.
+- Controlled browser at `1280x900` covered Home, Bertie, Dare Hatteras after a
+  zone change, San Diego Mountains after a zone change, Atlantic Tropical, and
+  deterministic `AL052025` Active. Mouse and keyboard opening, mouse and
+  Enter/Space closing, close/link targets, focus rings/restoration, official or
+  page links where present, content scrolling, and horizontal bounds passed.
+  Home's internal County link navigation and Back return also passed. Active
+  popup content has no product link by design; its detailed warning and current
+  position content remained unchanged.
+- The same six page families passed direct `390x844` checks. Every exercised
+  popup/details panel stayed horizontally bounded with zero document or
+  internal horizontal overflow; close and applicable link targets measured at
+  least 44 CSS pixels. Dare retained `?zone=hatteras`, San Diego retained
+  `?zone=mountains`, and the County panels retained their mobile below-map
+  placement.
+- Console warning/error logs were empty for every final page pass. Home,
+  County, and Tropical network checks were clean. The retained Active fixture
+  produced only its known missing text/graphic-product `404`s plus canceled map
+  requests during view changes; the visible unavailable-product state remained
+  truthful and no popup asset failed.
+- No files were staged, committed, pushed, deployed, generated, or deleted;
+  production/generated data and runtime artifacts were not changed. Phase 7
+  dependency removal and Phase 8 cascade layers remain unstarted; Phase 7 is
+  now separately authorized, while Phase 8 still requires authorization.
+- Owner smoke on 2026-08-24: the owner reported exactly, "Ok, smoke passed."
+  No pages, devices, viewport sizes, or individual interactions were supplied,
+  so this is retained as overall Phase 6 owner evidence only. The same message
+  explicitly authorized Phase 7; it did not authorize Phase 8.
 
 ## Purpose
 
@@ -591,7 +657,8 @@ Review the 15 public routes after the general interface migration. Compare again
 #### Phase 5: Map card and shared map controls
 
 Implementation status: completed, owner-accepted, and committed in `af8577a`
-on 2026-08-24. Phase 6 remains gated pending explicit authorization.
+on 2026-08-24. Phase 6 was separately authorized and is complete locally;
+Phase 7 remains gated pending explicit authorization.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.
@@ -603,6 +670,10 @@ on 2026-08-24. Phase 6 remains gated pending explicit authorization.
 Acceptance: identical shared map elements have identical markup, names, and base presentation across families; variants are explicit and local.
 
 #### Phase 6: Popup system
+
+Implementation status: complete locally on 2026-08-24 at baseline `7a32866`;
+owner smoke passed at the reported overall level. Phase 7 is separately
+authorized but is not part of this Phase 6 checkpoint.
 
 Create one shared Leaflet popup shell plus purpose-specific content variants:
 

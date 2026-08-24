@@ -13,7 +13,7 @@ import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260824-phase5-1';
+} from './tropicalMapEngine.js?v=20260824-phase6-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';

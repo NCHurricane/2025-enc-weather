@@ -1296,14 +1296,18 @@
     background: #020817;
 }
 
-.ww-alert-popup {
+.active-alert-popup {
     display: grid;
     gap: 4px;
     font-family: var(--font-heading, 'Montserrat', sans serif);
 }
 
-.ww-alert-popup strong {
+.active-alert-popup__title {
     font-family: var(--font-heading, "Montserrat", sans-serif);
+}
+
+.active-alert-popup__location {
+    color: #b9c9d6;
 }
 
 .ww-textcol {

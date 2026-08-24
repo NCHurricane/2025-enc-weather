@@ -10,6 +10,7 @@ import {
   phase3Contract,
   phase4Contract,
   phase5Contract,
+  phase6Contract,
 } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
@@ -558,8 +559,8 @@ for (const [stylesheet, consumers] of Object.entries(phase5Contract.stylesheets)
     );
     if (references.length > 0) actualConsumers.add(relative);
     if (expectedConsumers.has(relative)
-        && (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.version)) {
-      errors.push(`${relative}: ${stylesheet} must use the Phase 5 cache version`);
+        && (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.stylesheetVersion)) {
+      errors.push(`${relative}: ${stylesheet} must use the current shared-map stylesheet cache version`);
     }
   }
   for (const consumer of actualConsumers) {
@@ -588,14 +589,115 @@ for (const sourceContract of phase5Contract.sourceContracts) {
   }
 }
 
+const phase6VersionedAssetKeys = new Set(
+  phase6Contract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
+);
 for (const dependency of phase5Contract.versionedAssets) {
   const source = phase2HtmlByRelativePath.get(dependency.file)
     || await readFile(path.join(root, ...dependency.file.split('/')), 'utf8').catch(() => '');
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
-  if (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.version) {
-    errors.push(`${dependency.file}: ${dependency.target} must use the Phase 5 cache version`);
+  const expectedVersion = phase6VersionedAssetKeys.has(`${dependency.file}\0${dependency.target}`)
+    ? phase6Contract.version
+    : phase5Contract.version;
+  if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
+    errors.push(`${dependency.file}: ${dependency.target} must use the current shared-map cache version`);
+  }
+}
+
+const phase6OwnerCss = (await readFile(
+  path.join(root, ...phase6Contract.owner.split('/')),
+  'utf8',
+).catch(() => '')).replace(/\/\*[\s\S]*?\*\//g, '');
+for (const selector of phase6Contract.requiredOwnerSelectors) {
+  if (!phase6OwnerCss.includes(selector)) {
+    errors.push(`${phase6Contract.owner}: missing Phase 6 popup owner selector ${selector}`);
+  }
+}
+
+for (const [stylesheet, selectors] of Object.entries(phase6Contract.familyVariantSelectors)) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const selector of selectors) {
+    if (!css.includes(selector)) {
+      errors.push(`${stylesheet}: missing Phase 6 popup content variant ${selector}`);
+    }
+  }
+}
+
+for (const stylesheet of phase6Contract.ownerStylesheets) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const retiredClass of phase6Contract.retiredClasses) {
+    const escaped = retiredClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`\\.${escaped}(?![A-Za-z0-9_-])`).test(css)) {
+      errors.push(`${stylesheet}: retired Phase 6 popup selector .${retiredClass} remains`);
+    }
+  }
+  if (stylesheet !== phase6Contract.owner) {
+    for (const selector of [
+      '.leaflet-popup.weather-map-popup',
+      '.weather-map-popup .leaflet-popup-content-wrapper',
+      '.weather-map-popup .leaflet-popup-content',
+      '.weather-map-popup .leaflet-popup-close-button',
+      '.leaflet-container .weather-map-popup .leaflet-popup-close-button',
+      '.weather-map-popup .leaflet-popup-tip',
+    ]) {
+      if (css.includes(selector)) {
+        errors.push(`${stylesheet}: Phase 6 shared popup shell must be owned only by ${phase6Contract.owner}`);
+      }
+    }
+  }
+}
+
+for (const sourceContract of phase6Contract.sourceContracts) {
+  const source = await readFile(path.join(root, ...sourceContract.file.split('/')), 'utf8').catch(() => '');
+  for (const required of sourceContract.required) {
+    if (!source.includes(required)) {
+      errors.push(`${sourceContract.file}: missing Phase 6 popup source contract ${required}`);
+    }
+  }
+  for (const retiredClass of phase6Contract.retiredClasses) {
+    if (source.includes(retiredClass)) {
+      errors.push(`${sourceContract.file}: retired Phase 6 popup class remains ${retiredClass}`);
+    }
+  }
+}
+
+for (const [stylesheet, consumers] of Object.entries(phase6Contract.stylesheets)) {
+  const expectedConsumers = new Set(consumers);
+  const actualConsumers = new Set();
+  for (const [relative, html] of phase2HtmlByRelativePath) {
+    const references = stylesheetHrefs(html).filter(
+      reference => repositoryReference(relative, reference) === stylesheet,
+    );
+    if (references.length > 0) actualConsumers.add(relative);
+    if (expectedConsumers.has(relative)
+        && (references.length !== 1 || referenceVersion(references[0]) !== phase6Contract.version)) {
+      errors.push(`${relative}: ${stylesheet} must use the Phase 6 cache version`);
+    }
+  }
+  for (const consumer of actualConsumers) {
+    if (!expectedConsumers.has(consumer)) {
+      errors.push(`${consumer}: undeclared Phase 6 ${stylesheet} consumer`);
+    }
+  }
+  for (const consumer of expectedConsumers) {
+    if (!actualConsumers.has(consumer)) {
+      errors.push(`${consumer}: missing declared Phase 6 ${stylesheet} dependency`);
+    }
+  }
+}
+
+for (const dependency of phase6Contract.versionedAssets) {
+  const source = phase2HtmlByRelativePath.get(dependency.file)
+    || await readFile(path.join(root, ...dependency.file.split('/')), 'utf8').catch(() => '');
+  const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
+    .map(match => match[1])
+    .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
+  if (references.length !== 1 || referenceVersion(references[0]) !== phase6Contract.version) {
+    errors.push(`${dependency.file}: ${dependency.target} must use the Phase 6 cache version`);
   }
 }
 

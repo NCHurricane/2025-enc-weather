@@ -81,7 +81,7 @@
 }
 
 .home-map-key-swatch,
-.home-county-popup-alert-swatch {
+.home-popup__alert-swatch {
   width: 13px;
   height: 13px;
   border: 1px solid rgba(255, 255, 255, 0.78);
@@ -142,29 +142,15 @@
   border-top-color: #071b2e !important;
 }
 
-.home-county-leaflet-popup .leaflet-popup-content-wrapper,
-.home-county-leaflet-popup .leaflet-popup-tip {
-  background: #071b2e;
-  color: #edf6fb;
+.weather-map-popup--home {
+  --weather-map-popup-inline-size: min(10.9375rem, 65vw);
 }
 
-.home-county-leaflet-popup .leaflet-popup-content-wrapper {
-  border: 1px solid rgba(180, 205, 223, 0.54);
-  border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
-}
-
-.home-county-leaflet-popup .leaflet-popup-content {
-  width: min(175px, 65vw) !important;
-  margin: 15px;
+.home-popup {
   font-family: var(--font-primary);
 }
 
-.home-county-leaflet-popup .leaflet-popup-content p {
-  margin: 0.5em 0;
-}
-
-.home-county-popup-eyebrow {
+.home-popup__eyebrow {
   margin: 0 0 3px;
   color: #fff200;
   font-size: 0.62rem;
@@ -173,14 +159,14 @@
   text-transform: uppercase;
 }
 
-.home-county-popup h3 {
+.home-popup__title {
   margin: 0 0 5px;
   color: #fff;
   font-family: var(--font-heading);
   font-size: 0.8rem;
 }
 
-.home-county-popup-alerts {
+.home-popup__alerts {
   padding: 8px;
   border-left: 3px solid #fff200;
   border-radius: 5px;
@@ -188,7 +174,7 @@
   font-size: 0.7rem;
 }
 
-.home-county-popup-alerts ul {
+.home-popup__alert-list {
   display: grid;
   gap: 5px;
   margin: 7px 0 0;
@@ -196,21 +182,21 @@
   list-style: none;
 }
 
-.home-county-popup-alerts li {
+.home-popup__alert-item {
   display: flex;
   align-items: center;
   gap: 7px;
 }
 
-.home-county-popup-clear {
+.home-popup__status {
   margin: 0;
   color: #b9d8c4;
   font-size: 0.72rem;
 }
 
-.home-county-popup-link {
+.home-popup__link {
   display: inline-flex;
-  min-height: 20px;
+  min-height: var(--control-target-min, 2.75rem);
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
@@ -223,8 +209,8 @@
   text-decoration: none;
 }
 
-.home-county-popup-link:hover,
-.home-county-popup-link:focus-visible {
+.home-popup__link:hover,
+.home-popup__link:focus-visible {
   background: #fff;
 }
 
@@ -259,21 +245,20 @@
     max-height: none;
     overflow-y: auto;
   }
-  .home-county-leaflet-popup .leaflet-popup-content {
-    width: clamp(165px, 40vw, 170px) !important;
-    margin: 8px;
+  .weather-map-popup--home {
+    --weather-map-popup-inline-size: clamp(10.3125rem, 40vw, 10.625rem);
   }
 
-  .home-county-popup h3 {
+  .home-popup__title {
     margin-bottom: 6px;
     font-size: 0.9rem;
   }
 
-  .home-county-popup-clear {
+  .home-popup__status {
     font-size: 0.68rem;
   }
 
-  .home-county-popup-link {
+  .home-popup__link {
     width: 100%;
     margin-top: 8px;
     padding: 7px 10px;

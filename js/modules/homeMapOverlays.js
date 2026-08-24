@@ -1,4 +1,5 @@
 import { warningColors, warningPriorities } from './warningColors.js?v=20260816-1';
+import { installLeafletPopupShell } from './leafletPopupShell.js?v=20260824-phase6-1';
 
 const ALERT_REFRESH_BUCKET_MS = 5 * 60 * 1000;
 const HOME_ZONES = Object.freeze([
@@ -74,10 +75,10 @@ function primaryAlert(alerts) {
 
 function createCountyPopup(zone, alerts) {
   const popup = document.createElement('section');
-  popup.className = 'home-county-popup';
+  popup.className = 'weather-map-popup__content home-popup';
 
   const eyebrow = document.createElement('p');
-  eyebrow.className = 'home-county-popup-eyebrow';
+  eyebrow.className = 'home-popup__eyebrow';
   eyebrow.textContent = zone.county === zone.label.replace(' County', '')
     ? ''
     : `${zone.county} County zone`;
@@ -86,21 +87,24 @@ function createCountyPopup(zone, alerts) {
   }
 
   const heading = document.createElement('h3');
+  heading.className = 'home-popup__title';
   heading.textContent = zone.label;
   popup.append(heading);
 
   if (alerts.length) {
     const alertSummary = document.createElement('div');
-    alertSummary.className = 'home-county-popup-alerts';
+    alertSummary.className = 'home-popup__alerts';
     const summaryHeading = document.createElement('strong');
     summaryHeading.textContent = `${alerts.length} current alert${alerts.length === 1 ? '' : 's'}`;
     alertSummary.append(summaryHeading);
 
     const list = document.createElement('ul');
+    list.className = 'home-popup__alert-list';
     [...new Set(alerts.map(alertEvent))].forEach((eventName) => {
       const item = document.createElement('li');
+      item.className = 'home-popup__alert-item';
       const swatch = document.createElement('span');
-      swatch.className = 'home-county-popup-alert-swatch';
+      swatch.className = 'home-popup__alert-swatch';
       swatch.style.backgroundColor = warningColors[eventName] || '#dc3545';
       swatch.setAttribute('aria-hidden', 'true');
       item.append(swatch, document.createTextNode(eventName));
@@ -110,13 +114,13 @@ function createCountyPopup(zone, alerts) {
     popup.append(alertSummary);
   } else {
     const status = document.createElement('p');
-    status.className = 'home-county-popup-clear';
+    status.className = 'home-popup__status';
     status.textContent = 'No current alerts or advisories.';
     popup.append(status);
   }
 
   const link = document.createElement('a');
-  link.className = 'home-county-popup-link';
+  link.className = 'home-popup__link';
   link.href = zone.href;
   link.textContent = `Open ${zone.county} County Page`;
   popup.append(link);
@@ -221,6 +225,7 @@ function createMapKey(map, alertsByZone, failedZoneCount, alertLayer) {
 }
 
 async function installHomeOverlays(map) {
+  installLeafletPopupShell(map);
   const [geoJson, alertState] = await Promise.all([
     fetchJson('counties/NC-county-topo.json', 'County geometry'),
     loadAlerts(),
@@ -291,7 +296,7 @@ async function installHomeOverlays(map) {
         sticky: true,
       });
       layer.bindPopup(createCountyPopup(zone, alerts), {
-        className: 'home-county-leaflet-popup',
+        className: 'weather-map-popup weather-map-popup--home',
         maxWidth: 320,
       });
       layer.on('mouseover', () => layer.setStyle(activeStyle));
@@ -302,6 +307,7 @@ async function installHomeOverlays(map) {
           if (!element) return;
           element.setAttribute('tabindex', '0');
           element.setAttribute('role', 'button');
+          element.setAttribute('data-weather-map-popup-trigger', '');
           element.setAttribute(
             'aria-label',
             `${zone.label}. ${alerts.length ? `${alerts.length} current alert${alerts.length === 1 ? '' : 's'}.` : 'No current alerts.'} Open county options.`,

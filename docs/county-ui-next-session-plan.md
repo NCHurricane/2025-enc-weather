@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair described in the preservation boundary is complete; beginning sitemap CSS Phase 6 remains gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`. Sitemap CSS Phase 6 is complete locally and owner-accepted; Phase 7 was explicitly authorized on 2026-08-24 but is not part of the Phase 6 checkpoint. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -26,8 +26,10 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   owner-accepted Phase 4 checkpoint is `1f6b0b1`; and owner-accepted Phase 5 is
   committed as `af8577a`. The bounded CI portability follow-up changes only
   exact harness tracking, vendor-byte attributes, official action versions,
-  and these handoffs. Products, sources, stations, zones, camera/data
-  lifecycle, popup content, and generated/runtime data remain outside it.
+  and these handoffs. The separately authorized Phase 6 popup slice begins at
+  local baseline `7a32866`; it changes popup presentation/hooks and their
+  dependency contracts without changing products, sources, stations, zones,
+  camera/data lifecycle, or generated/runtime data.
 
 ## Committed checkpoints
 
@@ -83,6 +85,42 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   county-owned.
 - The Bertie prototype remains a prototype. Do not promote it to a live page without explicit authorization.
 
+### Sitemap CSS Phase 6 popup closeout: 2026-08-24
+
+- County observation markup now uses the `observation-popup` BEM block and
+  element classes, with `data-observation-popup-trigger` and
+  `data-observation-popup-close` behavior hooks. No `temperature-popup*`
+  presentation alias remains.
+- The accepted County interaction remains an inline station-details panel, not
+  a Leaflet overlay. Standard County, Dare/Hyde multi-zone ownership, and San
+  Diego's local source/zone exceptions remain unchanged. The shared stylesheet
+  supplies only the common popup content rhythm, link target, and map-feature
+  focus treatment; County CSS owns the observation grid, status, and inline
+  close variant.
+- The inline close target is 44 by 44 CSS pixels, has a visible focus ring,
+  closes with mouse or Enter/Space, and restores focus to the originating
+  marker. Generated observation markers now open from Enter/Space as well as
+  pointer activation. The panel no longer creates its prior small internal
+  horizontal overflow.
+- Controlled browser at `1280x900` covered Bertie, Dare Hatteras, and San Diego
+  Mountains; direct `390x844` checks repeated all three. Dare retained
+  `?zone=hatteras`, San Diego retained `?zone=mountains`, all panels and
+  documents had zero horizontal overflow, and applicable NWS links retained
+  `_blank` plus `noopener noreferrer` with at least a 44-pixel target. Final
+  console/network checks were clean for all County cases.
+- Phase-wide evidence: 14 changed JavaScript syntax checks, full 70-file PHP
+  lint and 75-file JavaScript syntax baselines, all 78 focused tests, the site
+  validator at 18 HTML/307 JSON/167 references, focused retired-selector
+  searches, `git diff --check`, and seven PHP-served HTTP probes all pass.
+- No county zone, station, provider, product, alert/HWO, cache, camera,
+  generated/runtime, or prototype-promotion behavior changed. Nothing was
+  staged, committed, pushed, deployed, generated, or deleted.
+- Owner smoke on 2026-08-24: the owner reported exactly, "Ok, smoke passed."
+  No County page, zone, device, viewport, or individual interaction was named,
+  so this closes Phase 6 owner review only at that overall granularity. The
+  same message separately authorized Phase 7 dependency removal, not a new
+  County product phase or Phase 8.
+
 ## Shared header breadcrumb follow-up: 2026-08-23
 
 - The user-authorized shared navigation follow-up adds a visible, transparent second header row on interior pages while leaving the homepage unchanged. County pages render `Home > Counties > {County}`; `Counties` remains a truthful non-link category because the site has no Counties landing page.
@@ -121,8 +159,9 @@ timestamps, status overlays, timelines, legends, basemap menu, markers, and
 city labels to their approved BEM contracts with IDs/`data-*` hooks and no
 legacy aliases. Valid explicit Bertie, Dare, and San Diego routes passed the
 desktop/mobile map, target-size, product/zone switch, loading-state, local
-response, console, and horizontal-overflow gates. Popup content remains frozen
-for Phase 6, which has not been authorized. The owner reported, "Ok, visual
+response, console, and horizontal-overflow gates. The separately authorized
+Phase 6 popup migration is complete locally with the exact evidence above and
+awaits owner review. The owner reported, "Ok, visual
 acceptance passed." No exact County page, device, viewport, or interaction was
 supplied, so the evidence is retained only at the overall Phase 5 level.
 

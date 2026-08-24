@@ -1,4 +1,8 @@
 import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260824-phase5-1';
+import {
+  installLeafletPopupShell,
+  installLeafletPopupTrigger,
+} from './leafletPopupShell.js?v=20260824-phase6-1';
 
 const DEFAULT_BASEMAP_URL =
   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
@@ -247,7 +251,7 @@ function officialSourceLink(value, label = 'View official NHC source') {
   if (!href) {
     return '';
   }
-  return `<p><a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a></p>`;
+  return `<p class="tropical-map-popup__text"><a class="tropical-map-popup__link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a></p>`;
 }
 
 function outlookAreaLabel(value) {
@@ -265,7 +269,7 @@ export function buildTropicalPopup(layerKey, properties = {}) {
     ? String(properties.stormId)
     : null;
   const sourceTime = properties.sourceIssueTime
-    ? `<p class="tropical-popup__time">Issued ${escapeHtml(formatTime(properties.sourceIssueTime))}</p>`
+    ? `<p class="tropical-map-popup__time">Issued ${escapeHtml(formatTime(properties.sourceIssueTime))}</p>`
     : '';
 
   if (layerKey === 'stormPositions') {
@@ -284,9 +288,9 @@ export function buildTropicalPopup(layerKey, properties = {}) {
       ? `<li>Movement: ${Number(properties.movementDirectionDegrees)}° at ${Number(properties.movementSpeedMph)} mph</li>`
       : '';
     const detailLink = stormId
-      ? `<p><a href="active/?storm=${encodeURIComponent(stormId)}">View ${escapeHtml(title)} details</a></p>`
+      ? `<p class="tropical-map-popup__text"><a class="tropical-map-popup__link" href="active/?storm=${encodeURIComponent(stormId)}">View ${escapeHtml(title)} details</a></p>`
       : '';
-    return `<article class="tropical-popup"><h3>${escapeHtml(title)}</h3><ul><li>${classification}${intensity}</li>${pressure}${movement}</ul>${sourceTime}${detailLink}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${escapeHtml(title)}</h3><ul class="tropical-map-popup__list"><li>${classification}${intensity}</li>${pressure}${movement}</ul>${sourceTime}${detailLink}</article>`;
   }
 
   if (layerKey === 'outlookAreas' || layerKey === 'outlookPoints') {
@@ -298,7 +302,7 @@ export function buildTropicalPopup(layerKey, properties = {}) {
     ].join('');
     const areaLabel = outlookAreaLabel(properties.discussionHtml);
     const sourceLink = officialSourceLink(properties.sourceUrl);
-    return `<article class="tropical-popup"><h3>${escapeHtml(areaLabel)}</h3><ul>${chances || '<li>Development chance unavailable</li>'}</ul>${sourceTime}${sourceLink}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${escapeHtml(areaLabel)}</h3><ul class="tropical-map-popup__list">${chances || '<li>Development chance unavailable</li>'}</ul>${sourceTime}${sourceLink}</article>`;
   }
 
   if (layerKey === 'currentPosition') {
@@ -309,7 +313,7 @@ export function buildTropicalPopup(layerKey, properties = {}) {
     const pressure = Number.isFinite(Number(properties.pressureMillibars))
       ? `<li>Pressure: ${Number(properties.pressureMillibars)} mb</li>`
       : '';
-    return `<article class="tropical-popup"><h3>${escapeHtml(title)}</h3><ul>${intensity}${pressure}</ul>${sourceTime}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${escapeHtml(title)}</h3><ul class="tropical-map-popup__list">${intensity}${pressure}</ul>${sourceTime}</article>`;
   }
 
   if (layerKey === 'forecastTrack') {
@@ -320,25 +324,25 @@ export function buildTropicalPopup(layerKey, properties = {}) {
       ? `<li>Maximum wind: ${Number(properties.intensityKnots)} kt</li>`
       : '';
     const validTime = properties.validTime
-      ? `<p class="tropical-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
+      ? `<p class="tropical-map-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
       : sourceTime;
-    return `<article class="tropical-popup"><h3>Forecast track${stormId ? ` for ${escapeHtml(stormId)}` : ''}</h3><ul>${hour}${wind}</ul>${validTime}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">Forecast track${stormId ? ` for ${escapeHtml(stormId)}` : ''}</h3><ul class="tropical-map-popup__list">${hour}${wind}</ul>${validTime}</article>`;
   }
 
   if (layerKey === 'bestTrack') {
     const label = properties.label || 'Past track';
     const description = properties.description
-      ? `<p>${escapeHtml(properties.description)}</p>`
+      ? `<p class="tropical-map-popup__text">${escapeHtml(properties.description)}</p>`
       : '';
-    return `<article class="tropical-popup"><h3>${escapeHtml(label)}</h3>${description}${sourceTime}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${escapeHtml(label)}</h3>${description}${sourceTime}</article>`;
   }
 
   if (layerKey === 'watchesWarnings' || layerKey === 'surgeWarnings') {
     const fallback = layerKey === 'surgeWarnings' ? 'Storm surge alert' : 'Tropical watch / warning';
     const description = properties.description
-      ? `<p>${escapeHtml(properties.description)}</p>`
+      ? `<p class="tropical-map-popup__text">${escapeHtml(properties.description)}</p>`
       : '';
-    return `<article class="tropical-popup"><h3>${escapeHtml(properties.warningType || fallback)}</h3>${description}${sourceTime}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${escapeHtml(properties.warningType || fallback)}</h3>${description}${sourceTime}</article>`;
   }
 
   if (layerKey.startsWith('windRadii')) {
@@ -347,15 +351,38 @@ export function buildTropicalPopup(layerKey, properties = {}) {
       ? `<li>Forecast hour: ${Number(properties.forecastHour)}</li>`
       : '';
     const validTime = properties.validTime
-      ? `<p class="tropical-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
+      ? `<p class="tropical-map-popup__time">Valid ${escapeHtml(formatTime(properties.validTime))}</p>`
       : sourceTime;
-    return `<article class="tropical-popup"><h3>${threshold}-kt wind radii</h3><ul>${hour}</ul>${validTime}</article>`;
+    return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${threshold}-kt wind radii</h3><ul class="tropical-map-popup__list">${hour}</ul>${validTime}</article>`;
   }
 
   const productLabel = layerKey === 'cones' ? 'Forecast cone' : 'Forecast track';
   const stormLabel = stormId ? ` for ${escapeHtml(stormId)}` : '';
   const sourceLink = officialSourceLink(properties.sourceUrl);
-  return `<article class="tropical-popup"><h3>${productLabel}${stormLabel}</h3>${sourceTime}${sourceLink}</article>`;
+  return `<article class="weather-map-popup__content tropical-map-popup"><h3 class="tropical-map-popup__title">${productLabel}${stormLabel}</h3>${sourceTime}${sourceLink}</article>`;
+}
+
+export function tropicalPopupAccessibleLabel(layerKey, properties = {}) {
+  const stormId = /^[A-Z]{2}\d{6}$/.test(String(properties.stormId || ''))
+    ? String(properties.stormId)
+    : '';
+  if (layerKey === 'stormPositions' || layerKey === 'currentPosition') {
+    return `${properties.name || stormId || 'Active storm'} map details`;
+  }
+  if (layerKey === 'outlookAreas' || layerKey === 'outlookPoints') {
+    return `${outlookAreaLabel(properties.discussionHtml)} development outlook`;
+  }
+  if (layerKey === 'watchesWarnings' || layerKey === 'surgeWarnings') {
+    const fallback = layerKey === 'surgeWarnings' ? 'Storm surge alert' : 'Tropical watch or warning';
+    return `${properties.warningType || fallback} map details`;
+  }
+  if (layerKey.startsWith('windRadii')) {
+    const threshold = Number(properties.windThresholdKnots) || Number(layerKey.slice(-2));
+    return `${threshold}-knot wind radii map details`;
+  }
+  if (layerKey === 'bestTrack') return `${properties.label || 'Past track'} map details`;
+  if (layerKey === 'cones' || layerKey === 'cone') return `Forecast cone${stormId ? ` for ${stormId}` : ''} map details`;
+  return `Forecast track${stormId ? ` for ${stormId}` : ''} map details`;
 }
 
 export function validateTropicalOverviewPackage(packageData) {
@@ -611,6 +638,7 @@ export class TropicalMapEngine {
       worldCopyJump: false,
       preferCanvas: false,
     });
+    installLeafletPopupShell(this.map);
     this.mapInstanceCount += 1;
 
     this.installPanes();
@@ -1051,10 +1079,12 @@ export class TropicalMapEngine {
           this.pointStyleForLayer(layerKey, feature?.properties || {}),
         ),
       onEachFeature: (feature, layer) => {
-        layer.bindPopup?.(buildTropicalPopup(layerKey, feature?.properties || {}), {
-          className: 'tropical-leaflet-popup',
+        const properties = feature?.properties || {};
+        layer.bindPopup?.(buildTropicalPopup(layerKey, properties), {
+          className: `weather-map-popup weather-map-popup--${this.mode === 'storm' ? 'active' : 'tropical'}`,
           maxWidth: 320,
         });
+        installLeafletPopupTrigger(layer, tropicalPopupAccessibleLabel(layerKey, properties));
       },
     };
     return this.leaflet.geoJSON(collection, options);

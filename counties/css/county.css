@@ -1027,33 +1027,33 @@ canvas#meteogramChart {
   }
 }
 
-.temperature-popup {
+.observation-popup {
   position: relative;
   min-width: 0;
   color: #eef5fb;
   font-family: var(--font-heading), sans serif;
 }
 
-.temperature-popup h3 {
-  margin: 0 28px 3px 0;
+.observation-popup__title {
+  margin: 0 3rem 3px 0;
   color: #fff;
   font-family: "Montserrat", Arial, sans-serif;
   font-size: 0.92rem;
   line-height: 1.2;
 }
 
-.weather-map-card .temperature-popup p {
+.observation-popup p {
   margin: 0 0 7px;
 }
 
-.temperature-popup-location,
-.temperature-popup-status,
-.temperature-popup-time {
+.observation-popup__location,
+.observation-popup__status,
+.observation-popup__time {
   color: #b9c9d6;
   font-size: 0.7rem;
 }
 
-.temperature-popup-status {
+.observation-popup__status {
   display: inline-flex;
   padding: 3px 7px;
   border: 1px solid rgba(122, 213, 167, 0.34);
@@ -1063,13 +1063,13 @@ canvas#meteogramChart {
   font-weight: 700;
 }
 
-.temperature-popup-status.is-stale {
+.observation-popup__status.is-stale {
   border-color: rgba(255, 185, 123, 0.42);
   background: rgba(154, 75, 19, 0.2);
   color: #ffd2aa;
 }
 
-.temperature-popup-grid {
+.observation-popup__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 3px 12px;
@@ -1081,18 +1081,18 @@ canvas#meteogramChart {
   font-size: 0.76rem;
 }
 
-.temperature-popup-grid dt {
+.observation-popup__grid dt {
   color: #d5e1ea;
   font-weight: 700;
 }
 
-.temperature-popup-grid dd {
+.observation-popup__grid dd {
   margin: 0;
   color: #fff;
   text-align: right;
 }
 
-.weather-map-card .temperature-popup-link {
+.observation-popup__link {
   display: inline-block;
   margin-top: 2px;
   color: #fff200;
@@ -1100,18 +1100,19 @@ canvas#meteogramChart {
   font-weight: 700;
 }
 
-.weather-map-card .temperature-popup-link:hover,
-.weather-map-card .temperature-popup-link:focus-visible {
+.observation-popup__link:hover,
+.observation-popup__link:focus-visible {
   color: #fff;
 }
 
-.temperature-popup-inline-close {
+.observation-popup__close {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 0;
+  right: 0;
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: var(--control-target-min, 2.75rem);
+  height: var(--control-target-min, 2.75rem);
+  box-sizing: border-box;
   padding: 0;
   border: 1px solid rgba(177, 201, 220, 0.34);
   border-radius: 7px;
@@ -1122,11 +1123,15 @@ canvas#meteogramChart {
   place-items: center;
 }
 
-.temperature-popup-inline-close:hover,
-.temperature-popup-inline-close:focus-visible {
+.observation-popup__close:hover,
+.observation-popup__close:focus-visible {
   border-color: #fff200;
   color: #fff200;
-  outline: none;
+}
+
+.observation-popup__close:focus-visible {
+  outline: 2px solid var(--focus-ring-color, #fff200);
+  outline-offset: 2px;
 }
 
 .temperature-station-details {
@@ -1150,7 +1155,7 @@ canvas#meteogramChart {
   }
 }
 
-.temperature-station-details .temperature-popup {
+.temperature-station-details .observation-popup {
   padding: 13px 14px 14px;
 }
 

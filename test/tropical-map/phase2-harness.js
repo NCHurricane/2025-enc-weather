@@ -1,4 +1,4 @@
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260819-14';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260824-phase6-1';
 
 const buttons = Array.from(document.querySelectorAll('[data-basin]'));
 const debug = document.getElementById('harness-debug');
