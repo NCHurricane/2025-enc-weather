@@ -87,6 +87,11 @@ images/county/*.webp
 test/output/
 test/*.json
 test/*
+!test/tropical-map/
+test/tropical-map/*
+!test/tropical-map/phase2-harness.html
+!test/tropical-map/phase2-harness.css
+!test/tropical-map/phase2-harness.js
 
 # Environment files with secrets
 test/.env

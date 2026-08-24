@@ -1,0 +1,2 @@
+# Preserve exact upstream third-party bytes across operating systems.
+vendor/leaflet/1.9.4/** -text

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tropical Map Phase 2 Harness</title>
+    <link
+      rel="stylesheet"
+      href="../../vendor/leaflet/1.9.4/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="../../css/tropical-map-engine.css?v=20260824-phase5-1" />
+    <link rel="stylesheet" href="phase2-harness.css?v=20260819-6" />
+    <script
+      src="../../vendor/leaflet/1.9.4/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </head>
+  <body>
+    <main>
+      <h1>Tropical Map Phase 2 Harness</h1>
+      <p class="harness-intro">
+        This isolated harness verifies the shared Leaflet engine. Switching basins must keep one map
+        instance, replace owned layers, preserve accessible status text, and avoid horizontal overflow.
+      </p>
+
+      <div class="harness-controls" role="group" aria-label="Select a tropical basin">
+        <button type="button" data-basin="atl" aria-pressed="true">Atlantic</button>
+        <button type="button" data-basin="epac" aria-pressed="false">Eastern Pacific</button>
+        <button type="button" data-basin="cpac" aria-pressed="false">Central Pacific</button>
+      </div>
+
+      <section class="harness-card" aria-label="Tropical map test output">
+        <div id="tropical-map"></div>
+        <div class="harness-status">
+          <p id="tropical-map-status" class="tropical-map-status">Preparing the map.</p>
+          <pre id="harness-debug" class="harness-debug" aria-label="Engine state"></pre>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="phase2-harness.js?v=20260819-8"></script>
+  </body>
+</html>

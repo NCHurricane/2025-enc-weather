@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; Phase 5 completed locally and owner-accepted; commit and Phase 6 remain gated
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; Phase 6 remains gated
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -204,7 +204,7 @@ Phase 4 and continuing with Phase 5. Phase 4 was committed as `1f6b0b1`. No
 push, deployment, production-data change, cascade layer, or generated/runtime
 cleanup was performed.
 
-Phase 5 is complete in the local working tree and is not staged or committed:
+Phase 5 is complete and committed in `af8577a`:
 
 - Home, all nine live County pages, the Bertie prototype, Tropical, and Active
   now use the approved `.weather-map-card`, `.map-toolbar`, `.weather-map`,
@@ -255,9 +255,23 @@ Phase 5 is complete in the local working tree and is not staged or committed:
 
 The owner subsequently reported, "Ok, visual acceptance passed." No exact
 pages, devices, viewport sizes, or interactions were supplied, so this evidence
-is retained only as overall Phase 5 owner acceptance. Phase 5 remains unstaged
-and uncommitted. Phase 6 has not been started or authorized and requires a new
-explicit authorization before popup work begins.
+is retained only as overall Phase 5 owner acceptance. Phase 6 has not been
+started or authorized and requires a new explicit authorization before popup
+work begins.
+
+The first GitHub Actions run for `af8577a` exposed two portability defects in
+the validation contract rather than a site regression: the tracked contract
+required an ignored local-only dependency harness, and Git line-ending
+conversion changed the raw hashes of Leaflet's `LICENSE` and `leaflet.css` on
+Linux. The bounded CI follow-up tracks only the three deterministic harness
+assets, preserves exact upstream Leaflet bytes with `.gitattributes`, and moves
+the official checkout/setup-node actions from v4 to v7. It does not change site
+presentation, runtime data, map behavior, or the Phase 6 authorization gate.
+The full 73-file PHP lint and 65-file JavaScript syntax baselines, all 73 focused
+Node tests, and the site validator pass. The non-vendor staged diff check also
+passes; the two byte-preserved Leaflet files are verified against their declared
+upstream SHA-256 hashes because their intentional CRLF bytes make Git's generic
+whitespace check unsuitable for those exact vendor blobs.
 
 ## Purpose
 
@@ -576,8 +590,8 @@ Review the 15 public routes after the general interface migration. Compare again
 
 #### Phase 5: Map card and shared map controls
 
-Implementation status: completed locally and owner-accepted on 2026-08-24;
-not staged or committed. Phase 6 remains gated pending explicit authorization.
+Implementation status: completed, owner-accepted, and committed in `af8577a`
+on 2026-08-24. Phase 6 remains gated pending explicit authorization.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.

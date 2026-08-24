@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the current committed checkpoint is `1f6b0b1`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-4 are implemented in the committed history described below. Shared map UI Phase 5 is complete locally and owner-accepted at the reported overall level; committing it and beginning sitemap CSS Phase 6 remain gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair described in the preservation boundary is complete; beginning sitemap CSS Phase 6 remains gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -23,11 +23,11 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - The 2026-08-22 map-status slice changes only the status/note paths, the CSS needed to keep full mobile status text readable, matching asset cache-busters, and the site contract guard. It preserves concurrent font, attribution, Tropical SVG, satellite-provider, Active, fixture, and documentation work.
 - `counties/data/*-current.json`, county weather output, shared HWO office cache, logs, and `test/output/` are generated/runtime artifacts. Do not delete, rewrite, or commit them as documentation cleanup.
 - The sitemap CSS Phase 1-3 checkpoint is committed as `edc6a50`; the
-  owner-accepted Phase 4 checkpoint is `1f6b0b1`. The current Phase 5 working
-  tree changes shared map presentation classes/ownership, IDs or `data-*`
-  hooks, semantic hidden state, cache versions, validation contracts, and
-  these handoffs. Products, sources, stations, zones, camera/data lifecycle,
-  popup content, and generated/runtime data remain outside this slice.
+  owner-accepted Phase 4 checkpoint is `1f6b0b1`; and owner-accepted Phase 5 is
+  committed as `af8577a`. The bounded CI portability follow-up changes only
+  exact harness tracking, vendor-byte attributes, official action versions,
+  and these handoffs. Products, sources, stations, zones, camera/data
+  lifecycle, popup content, and generated/runtime data remain outside it.
 
 ## Committed checkpoints
 
@@ -41,6 +41,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 | `7c46f80` | Hazardous Weather Outlook integration and nested `Counties` > `Non-NC Counties` navigation, including San Diego, committed. |
 | `edc6a50` | Sitemap CSS architecture Phases 1-3, self-hosted Leaflet 1.9.4, and owner-directed retirement of obsolete static pages/resources. |
 | `1f6b0b1` | Owner-accepted sitemap CSS Phase 4 BEM components, state hooks, accessibility target/focus corrections, and validator ownership guards. |
+| `af8577a` | Owner-accepted sitemap CSS Phase 5 shared map interface plus owner-adjusted condition short labels. |
 
 ## Current durable behavior
 
