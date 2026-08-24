@@ -4,7 +4,7 @@
 // Handles dynamic generation of header navigation and events
 // =============================
 
-import { initAnalytics } from './analytics.js?v=20260824-phase3-1';
+import { initAnalytics } from './analytics.js?v=20260824-phase4-1';
 
 const COUNTY_BREADCRUMB_LABELS = new Map([
   ['beaufort', 'Beaufort County'],
@@ -142,11 +142,11 @@ export const NavigationModule = {
       const itemPath = [...parentPath, index];
       if (item.hasSubmenu && Array.isArray(item.submenu)) {
         const submenuId = `nav-submenu-${itemPath.join('-')}`;
-        const nestedClass = parentPath.length ? ' submenu-nested' : '';
+        const nestedClass = parentPath.length ? ' site-nav__submenu--nested' : '';
         return `
-          <li class="has-submenu">
-            <button type="button" class="submenu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="${submenuId}">${item.text}</button>
-            <ul class="submenu${nestedClass}" id="${submenuId}">${renderMenuItems(item.submenu, itemPath)}</ul>
+          <li class="site-nav__item--has-submenu" data-submenu>
+            <button type="button" class="site-nav__submenu-toggle" data-submenu-toggle aria-haspopup="true" aria-expanded="false" aria-controls="${submenuId}">${item.text}</button>
+            <ul class="site-nav__submenu${nestedClass}" id="${submenuId}">${renderMenuItems(item.submenu, itemPath)}</ul>
           </li>
         `;
       }
@@ -162,10 +162,10 @@ export const NavigationModule = {
           <a href="${basePath}index.html" class="logo-link" aria-label="${logoAriaLabel}">
             ${logoMarkup}
           </a>
-          <nav class="nav" aria-label="Main navigation">
-            <ul class="nav-menu" id="nav-menu">${menuHTML}</ul>
+          <nav class="site-nav" data-site-nav aria-label="Main navigation">
+            <ul class="site-nav__menu" id="nav-menu">${menuHTML}</ul>
           </nav>
-          <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
+          <button class="site-nav__toggle" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
             <i class="fa-solid fa-bars" aria-hidden="true"></i>
           </button>
         </div>
@@ -199,23 +199,23 @@ export const NavigationModule = {
   bindEvents() {
     // Hamburger menu toggle
     const hamburger = document.getElementById('hamburger');
-    const nav = document.querySelector('.nav');
+    const nav = document.querySelector('[data-site-nav]');
 
     if (hamburger && nav) {
       hamburger.addEventListener('click', () => {
-        nav.classList.toggle('active');
+        nav.classList.toggle('is-open');
         const expanded = hamburger.getAttribute('aria-expanded') === 'true';
         hamburger.setAttribute('aria-expanded', String(!expanded));
-        hamburger.classList.toggle('active', !expanded);
+        hamburger.classList.toggle('is-open', !expanded);
       });
     }
 
-    document.querySelectorAll('.nav-menu .submenu-toggle').forEach(button => {
+    document.querySelectorAll('[data-submenu-toggle]').forEach(button => {
       button.addEventListener('click', () => {
         const parent = button.parentElement;
-        const opening = !parent.classList.contains('submenu-active');
+        const opening = !parent.classList.contains('is-open');
         this.closeSubmenus(parent);
-        parent.classList.toggle('submenu-active', opening);
+        parent.classList.toggle('is-open', opening);
         button.setAttribute('aria-expanded', String(opening));
       });
     });
@@ -223,13 +223,13 @@ export const NavigationModule = {
     // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
       if (window.innerWidth <= 768) {
-        const nav = document.querySelector('.nav');
+        const nav = document.querySelector('[data-site-nav]');
         const hamburger = document.getElementById('hamburger');
 
         if (nav && hamburger && !nav.contains(e.target) && !hamburger.contains(e.target)) {
-          nav.classList.remove('active');
+          nav.classList.remove('is-open');
           hamburger.setAttribute('aria-expanded', 'false');
-          hamburger.classList.remove('active');
+          hamburger.classList.remove('is-open');
 
           // Close all submenus
           this.closeSubmenus();
@@ -239,9 +239,9 @@ export const NavigationModule = {
 
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
-      nav?.classList.remove('active');
+      nav?.classList.remove('is-open');
       hamburger?.setAttribute('aria-expanded', 'false');
-      hamburger?.classList.remove('active');
+      hamburger?.classList.remove('is-open');
       this.closeSubmenus();
       hamburger?.focus();
     });
@@ -249,13 +249,13 @@ export const NavigationModule = {
     // Handle window resize
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
-        const nav = document.querySelector('.nav');
+        const nav = document.querySelector('[data-site-nav]');
         const hamburger = document.getElementById('hamburger');
 
         if (nav && hamburger) {
-          nav.classList.remove('active');
+          nav.classList.remove('is-open');
           hamburger.setAttribute('aria-expanded', 'false');
-          hamburger.classList.remove('active');
+          hamburger.classList.remove('is-open');
 
           // Close all submenus
           this.closeSubmenus();
@@ -265,16 +265,17 @@ export const NavigationModule = {
   },
 
   closeSubmenus(except = null) {
-    document.querySelectorAll('.nav-menu .has-submenu').forEach(item => {
+    document.querySelectorAll('[data-submenu]').forEach(item => {
       if (except && (item === except || item.contains(except))) return;
-      item.classList.remove('submenu-active');
-      item.querySelector(':scope > .submenu-toggle')?.setAttribute('aria-expanded', 'false');
+      item.classList.remove('is-open');
+      item.querySelector(':scope > [data-submenu-toggle]')?.setAttribute('aria-expanded', 'false');
     });
   },
 
   enhancePage(basePath) {
     initAnalytics();
     this.enhanceFooter(basePath);
+    this.enhanceBackToTop();
     this.enhanceAccordions();
     this.enhanceTabs();
     this.enhanceExternalLinks();
@@ -286,6 +287,23 @@ export const NavigationModule = {
       this.enhanceExternalLinks();
     });
     observer.observe(document.body, { childList: true, subtree: true });
+  },
+
+  enhanceBackToTop() {
+    const button = document.querySelector('[data-back-to-top]');
+    if (!button || button.dataset.backToTopBound === 'true') return;
+    button.dataset.backToTopBound = 'true';
+
+    const sync = () => {
+      button.hidden = window.scrollY <= 0;
+    };
+
+    window.addEventListener('scroll', sync, { passive: true });
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    sync();
   },
 
   enhanceFooter(basePath) {

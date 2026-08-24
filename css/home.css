@@ -2,7 +2,7 @@
   --weather-center-content-height: clamp(500px, calc(100svh - 330px), 700px);
 }
 
-.home-weather-center .weather-center-tabs {
+.home-weather-center .tabset--weather {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 

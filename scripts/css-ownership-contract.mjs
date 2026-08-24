@@ -162,6 +162,7 @@ const phase2Pages = [
 ];
 
 const phase3Version = '20260824-phase3-1';
+const phase4Version = '20260824-phase4-1';
 const phase3Pages = [
   {
     file: 'index.html',
@@ -246,7 +247,7 @@ export const phase2Contract = Object.freeze({
   stylesheets: Object.freeze(Object.fromEntries(
     Object.entries(phase2Stylesheets).map(([file, consumers]) => [
       file,
-      Object.freeze({ version: phase3Version, consumers: Object.freeze(consumers) }),
+      Object.freeze({ version: phase4Version, consumers: Object.freeze(consumers) }),
     ]),
   )),
   retiredFiles: Object.freeze([
@@ -335,25 +336,26 @@ export const phase2Contract = Object.freeze({
 
 export const phase3Contract = Object.freeze({
   version: phase3Version,
+  assetVersion: phase4Version,
   pages: Object.freeze(phase3Pages),
   headingClasses: Object.freeze({ h2: 'section-heading', h3: 'card-heading' }),
   inlineTitleStylePages: Object.freeze(['tropical.html', 'active/index.html']),
   navigation: Object.freeze({
     script: 'js/modules/navigation.js',
-    version: phase3Version,
+    version: phase4Version,
     consumers: Object.freeze(phase3Pages.map(page => page.file)),
   }),
   dynamicHeadingSources: Object.freeze([
     Object.freeze({
       file: 'counties/js/countyAlerts.js',
       required: Object.freeze([
-        'class="section-heading county-alert-dialog__title"',
+        'class="section-heading alert-dialog__title"',
         'class="card-heading county-alert-panel__title"',
       ]),
     }),
     Object.freeze({
       file: 'js/modules/analytics.js',
-      required: Object.freeze(['class="section-heading analytics-consent__title"']),
+      required: Object.freeze(['class="section-heading consent-dialog__title"']),
     }),
   ]),
   forbiddenNavigationPatterns: Object.freeze([
@@ -369,5 +371,176 @@ export const phase3Contract = Object.freeze({
       consumer: file,
       target: `counties/${file.split('/')[1]}/js/countyApp.js`,
     })),
+  ]),
+});
+
+export const phase4Contract = Object.freeze({
+  version: phase4Version,
+  weatherPages: Object.freeze([
+    'index.html',
+    'tropical.html',
+    'active/index.html',
+    ...countyPages,
+    'counties/bertie/index_test.html',
+  ]),
+  infoCardPages: Object.freeze(['about.html', 'privacy.html', 'accessibility.html', '404.html']),
+  backToTopPages: Object.freeze([
+    'index.html',
+    'tropical.html',
+    ...countyPages,
+    'counties/bertie/index_test.html',
+  ]),
+  multizonePages: Object.freeze([
+    'counties/dare/index.html',
+    'counties/hyde/index.html',
+    'counties/san-diego/index.html',
+  ]),
+  retiredClasses: Object.freeze([
+    'weather-center-tabs',
+    'weather-center-tab',
+    'weather-center-panel',
+    'weather-center-condition-tabs',
+    'weather-center-condition-tab',
+    'weather-center-condition-panel',
+    'weather-center-forecast-tabs',
+    'weather-center-forecast-tab',
+    'active-module-tabs',
+    'active-module-tab',
+    'active-module-panel',
+    'active-alert-tabs',
+    'active-alert-tab',
+    'graphics-tabs',
+    'graphics-tab',
+    'text-tabs',
+    'text-tab',
+    'radii-controls',
+    'radii-btn',
+    'radii-hour-controls',
+    'radii-hour-btn',
+    'zone-btn',
+    'info-main',
+    'info-panel',
+    'case-study-hero',
+    'case-study-grid',
+    'case-study-card',
+    'metric-card',
+    'project-cta',
+    'notfound-container',
+    'notfound-subtitle',
+    'notfound-caption',
+    'notfound-action',
+    'analytics-consent',
+    'analytics-consent-copy',
+    'analytics-consent-current',
+    'analytics-consent-actions',
+    'analytics-consent-button',
+    'analytics-consent-allow',
+    'analytics-consent-decline',
+    'analytics-consent-close',
+    'county-alert-dialog',
+    'county-alert-dialog-shell',
+    'county-alert-dialog-header',
+    'county-alert-dialog-close',
+    'county-alert-selectors',
+    'county-alert-selector',
+    'county-hwo-dialog',
+    'nav',
+    'nav-menu',
+    'submenu-toggle',
+    'submenu',
+    'submenu-nested',
+    'has-submenu',
+    'hamburger',
+  ]),
+  ownershipStylesheets: Object.freeze([
+    'css/styles.css',
+    'css/components.css',
+    'css/home.css',
+    'css/info.css',
+    'css/tropical.css',
+    'counties/css/county.css',
+    'active/css/active.css',
+    'active/css/storm-graphics.css',
+  ]),
+  componentOwner: 'css/components.css',
+  familyStylesheets: Object.freeze([
+    'css/home.css',
+    'css/info.css',
+    'css/tropical.css',
+    'counties/css/county.css',
+    'active/css/active.css',
+    'active/css/storm-graphics.css',
+  ]),
+  requiredComponentSelectors: Object.freeze([
+    '.tabset {',
+    '.tabset__tab {',
+    '.subtabs,',
+    '.subtabs__tab,',
+    '.content-card {',
+    '.button {',
+    '.consent-dialog {',
+    '.alert-dialog {',
+  ]),
+  navigation: Object.freeze({
+    file: 'js/modules/navigation.js',
+    required: Object.freeze([
+      'data-site-nav',
+      'data-submenu-toggle',
+      'data-submenu',
+      "classList.toggle('is-open'",
+      "querySelector('[data-back-to-top]')",
+    ]),
+    forbidden: Object.freeze([
+      "querySelector('.nav')",
+      "querySelectorAll('.nav-menu",
+      "querySelector('.back-to-top')",
+      ".style.display",
+    ]),
+  }),
+  sourceContracts: Object.freeze([
+    Object.freeze({
+      file: 'counties/js/countyApp.multizone.js',
+      required: Object.freeze(["querySelectorAll('[data-zone]')", "classList.add('is-active')"]),
+      forbidden: Object.freeze([".zone-btn", "classList.add('active')"]),
+    }),
+    Object.freeze({
+      file: 'counties/js/countyAlerts.js',
+      required: Object.freeze([
+        'class="alert-dialog alert-dialog--county',
+        'data-county-alert-dialog',
+        'data-alert-dialog-body',
+        'rememberDialogOpener(dialog,',
+        'restoreDialogOpener(dialog)',
+      ]),
+      forbidden: Object.freeze(['class="county-alert-dialog', 'class="county-alert-selector', "querySelector('.county-alert-dialog')"]),
+    }),
+    Object.freeze({
+      file: 'js/modules/analytics.js',
+      required: Object.freeze(["panel.className = 'consent-dialog'", 'class="consent-dialog__button']),
+      forbidden: Object.freeze(["panel.className = 'analytics-consent'", 'class="analytics-consent']),
+    }),
+    Object.freeze({
+      file: 'active/js/storm-graphics.js',
+      required: Object.freeze(['class="subtabs subtabs--graphics', "querySelectorAll('[data-tab]')"]),
+      forbidden: Object.freeze(['class="graphics-tab', "classList.add('active')"]),
+    }),
+    Object.freeze({
+      file: 'active/js/storm_text.js',
+      required: Object.freeze(['class="subtabs subtabs--text', "querySelectorAll('[data-product]')"]),
+      forbidden: Object.freeze(['class="text-tab', "classList.toggle('active'"]),
+    }),
+    Object.freeze({
+      file: 'active/js/radii-visualization.js',
+      required: Object.freeze(['subtabs subtabs--radii', "querySelectorAll(\"[data-wind]\")", 'btn.hidden =']),
+      forbidden: Object.freeze(['radii-btn', 'radii-hour-btn', '.style.display']),
+    }),
+  ]),
+  versionedAssets: Object.freeze([
+    Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/css/storm-graphics.css' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/js/storm.js' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/js/storm_text.js' }),
+    Object.freeze({ file: 'active/js/storm.js', target: 'active/js/storm-graphics.js' }),
+    Object.freeze({ file: 'active/js/storm.js', target: 'active/js/radii-visualization.js' }),
   ]),
 });

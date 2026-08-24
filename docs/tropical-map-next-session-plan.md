@@ -44,16 +44,21 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 
 Phases 5 and 6 are complete locally. Archive support is not part of the product roadmap and must not be implemented. No further Tropical phase or presentation removal is authorized by this handoff.
 
-The separately authorized sitemap-wide CSS Phase 3 changed only Tropical and
-Active title/heading presentation and shared ownership. The two inline title
-style blocks were removed; the Tropical gold title remains family-owned; Active
-retains the `#storm-title` and `#storm-id` hooks, with the designation visible
-on a separate bounded mobile line; and the Surge/Rain heading uses the shared
-semantic role plus its Active BEM element class. No Tropical/Active map,
-satellite, product, tab, layer, URL, source, cache, fixture, or generated-data
-behavior changed. Controlled browser at `1280x900`, `390x844`, `1920x1080`,
-and a 640px-wide reflow equivalent showed no title clipping or document
-overflow for `EP092026`; map UI remains reserved for CSS Wave B.
+The separately authorized sitemap-wide CSS Phases 3 and 4 changed Tropical and
+Active title/heading presentation plus general tab/subtab ownership. Tropical
+retains its family-owned gold title and URL-addressable basin state. Active
+retains `#storm-title` and `#storm-id`, while its primary modules and generated
+text, graphics, language/product, and radii controls now use shared BEM
+presentation with IDs/`data-*` hooks and `.is-active`/`[hidden]` state. The
+Phase 4 browser pass exercised Tropical keyboard tabs and basin Back/Forward
+state plus Active primary/generated tabs at `1280x900` and `390x844`, with no
+horizontal overflow or console warning/error.
+
+No Tropical/Active map control, loading/error state, layer, legend, scrubber,
+popup, source, storm identity, cache package, fixture, or generated-data
+behavior changed. The owner subsequently reported that Wave A visual acceptance
+passed and authorized CSS Wave B Phase 5. That authorization does not reopen a
+Tropical product phase or permit presentation removal.
 
 ## Static compatibility-page retirement: 2026-08-24
 

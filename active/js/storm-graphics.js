@@ -391,22 +391,22 @@ class StormGraphics {
   renderTabbedContent(section) {
     let html = '<div class="graphics-interface">';
 
-    html += '<div class="graphics-tabs time-tabs">';
+    html += '<div class="subtabs subtabs--graphics subtabs--time">';
     section.timeframes.forEach((time, index) => {
       const hours = parseInt(time);
       const label = `${hours}h`;
       html += `
-        <button class="graphics-tab time-tab ${index === 0 ? 'active' : ''}" data-time="${time}">
+        <button class="subtabs__tab ${index === 0 ? 'is-active' : ''}" data-time="${time}">
           ${label}
         </button>
       `;
     });
     html += '</div>';
 
-    html += '<div class="graphics-tabs category-tabs">';
+    html += '<div class="subtabs subtabs--graphics subtabs--category">';
     section.graphics.forEach((graphic, index) => {
       html += `
-        <button class="graphics-tab category-tab ${index === 0 ? 'active' : ''}" data-category="${index}">
+        <button class="subtabs__tab ${index === 0 ? 'is-active' : ''}" data-category="${index}">
           ${graphic.name}
         </button>
       `;
@@ -414,7 +414,7 @@ class StormGraphics {
     html += '</div>';
 
     html += '<div class="graphics-content-container">';
-    html += '<div class="graphics-content-panel active" id="wind-probability-display">';
+    html += '<div class="graphics-content-panel is-active" id="wind-probability-display">';
     html += '<div class="single-graphic" id="wind-probability-graphic">';
 
     const defaultGraphic = section.graphics[0];
@@ -432,11 +432,11 @@ class StormGraphics {
   renderSingleGraphicTabs(section) {
     let html = '<div class="graphics-interface">';
 
-    html += '<div class="graphics-tabs">';
+    html += '<div class="subtabs subtabs--graphics">';
     section.graphics.forEach((graphic, index) => {
       const isActive = index === (section.defaultGraphic || 0);
       html += `
-        <button class="graphics-tab ${isActive ? 'active' : ''}" data-tab="${section.id}-${index}">
+        <button class="subtabs__tab ${isActive ? 'is-active' : ''}" data-tab="${section.id}-${index}">
           ${graphic.name}
         </button>
       `;
@@ -447,7 +447,7 @@ class StormGraphics {
     section.graphics.forEach((graphic, index) => {
       const isActive = index === (section.defaultGraphic || 0);
       html += `
-        <div class="graphics-content-panel ${isActive ? 'active' : ''}" id="${section.id}-${index}">
+        <div class="graphics-content-panel ${isActive ? 'is-active' : ''}" id="${section.id}-${index}">
           <div class="single-graphic">
             ${this.renderGraphicItem(graphic.name, graphic.localUrl, graphic.optional, graphic.id, section.id, graphic.remoteUrl, graphic.className, graphic.ospoUrl)}
           </div>
@@ -465,13 +465,13 @@ class StormGraphics {
       : section.languages[0].id;
     let html = '<div class="graphics-interface track-graphics-interface">';
 
-    html += '<div class="graphics-tabs track-language-tabs" role="tablist" aria-label="Graphic language">';
+    html += '<div class="subtabs subtabs--graphics subtabs--track-language" role="tablist" aria-label="Graphic language">';
     section.languages.forEach(language => {
       const isActive = language.id === defaultLanguage;
       html += `
         <button
           type="button"
-          class="graphics-tab track-language-tab ${isActive ? 'active' : ''}"
+          class="subtabs__tab ${isActive ? 'is-active' : ''}"
           id="${section.id}-language-tab-${language.id}"
           data-language="${language.id}"
           role="tab"
@@ -491,7 +491,7 @@ class StormGraphics {
 
       html += `
         <div
-          class="track-language-panel ${isActiveLanguage ? 'active' : ''}"
+          class="track-language-panel ${isActiveLanguage ? 'is-active' : ''}"
           id="${section.id}-language-${language.id}"
           data-language-panel="${language.id}"
           role="tabpanel"
@@ -501,14 +501,14 @@ class StormGraphics {
       `;
 
       if (!section.hideProductTabs) {
-        html += `<div class="graphics-tabs track-product-tabs" role="tablist" aria-label="${language.label} products">`;
+        html += `<div class="subtabs subtabs--graphics subtabs--track-product" role="tablist" aria-label="${language.label} products">`;
         language.graphics.forEach(graphic => {
           const isActiveProduct = graphic.product === defaultProduct;
           const tabId = `${section.id}-${language.id}-${graphic.product}`;
           html += `
             <button
               type="button"
-              class="graphics-tab track-product-tab ${isActiveProduct ? 'active' : ''}"
+              class="subtabs__tab ${isActiveProduct ? 'is-active' : ''}"
               id="${tabId}-tab"
               data-track-product="${tabId}"
               role="tab"
@@ -527,7 +527,7 @@ class StormGraphics {
         const tabId = `${section.id}-${language.id}-${graphic.product}`;
         html += `
           <div
-            class="graphics-content-panel ${isActiveProduct ? 'active' : ''}"
+            class="graphics-content-panel ${isActiveProduct ? 'is-active' : ''}"
             id="${tabId}"
             role="tabpanel"
             aria-labelledby="${section.hideProductTabs ? `${section.id}-language-tab-${language.id}` : `${tabId}-tab`}"
@@ -612,19 +612,19 @@ class StormGraphics {
   }
 
   attachEventListeners() {
-    document.querySelectorAll('.graphics-tab:not(.time-tab):not(.category-tab):not(.track-language-tab):not(.track-product-tab)').forEach(button => {
+    document.querySelectorAll('[data-tab]').forEach(button => {
       button.addEventListener('click', () => {
         const tabId = button.dataset.tab;
         const tabGroup = button.parentElement;
         const wrapper = tabGroup.parentElement;
         const contentArea = wrapper.querySelector('.graphics-content-container');
 
-        tabGroup.querySelectorAll('.graphics-tab').forEach(b => b.classList.remove('active'));
-        button.classList.add('active');
+        tabGroup.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('is-active'));
+        button.classList.add('is-active');
 
-        contentArea.querySelectorAll('.graphics-content-panel').forEach(pane => pane.classList.remove('active'));
+        contentArea.querySelectorAll('.graphics-content-panel').forEach(pane => pane.classList.remove('is-active'));
         const target = document.getElementById(tabId);
-        if (target) target.classList.add('active');
+        if (target) target.classList.add('is-active');
 
         // ...existing code...
       });
@@ -649,7 +649,7 @@ class StormGraphics {
 
   attachTrackMessageListeners() {
     document.querySelectorAll('.track-graphics-interface').forEach(interfaceElement => {
-      const languageTabs = interfaceElement.querySelectorAll('.track-language-tab');
+      const languageTabs = interfaceElement.querySelectorAll('[data-language]');
       const languagePanels = interfaceElement.querySelectorAll('.track-language-panel');
 
       languageTabs.forEach(button => {
@@ -658,13 +658,13 @@ class StormGraphics {
 
           languageTabs.forEach(tab => {
             const isActive = tab === button;
-            tab.classList.toggle('active', isActive);
+            tab.classList.toggle('is-active', isActive);
             tab.setAttribute('aria-selected', String(isActive));
           });
 
           languagePanels.forEach(panel => {
             const isActive = panel.dataset.languagePanel === language;
-            panel.classList.toggle('active', isActive);
+            panel.classList.toggle('is-active', isActive);
             panel.setAttribute('aria-hidden', String(!isActive));
             panel.hidden = !isActive;
           });
@@ -672,7 +672,7 @@ class StormGraphics {
       });
 
       interfaceElement.querySelectorAll('.track-language-panel').forEach(languagePanel => {
-        const productTabs = languagePanel.querySelectorAll('.track-product-tab');
+        const productTabs = languagePanel.querySelectorAll('[data-track-product]');
         const productPanels = languagePanel.querySelectorAll('.graphics-content-panel');
 
         productTabs.forEach(button => {
@@ -681,13 +681,13 @@ class StormGraphics {
 
             productTabs.forEach(tab => {
               const isActive = tab === button;
-              tab.classList.toggle('active', isActive);
+              tab.classList.toggle('is-active', isActive);
               tab.setAttribute('aria-selected', String(isActive));
             });
 
             productPanels.forEach(panel => {
               const isActive = panel.id === productPanelId;
-              panel.classList.toggle('active', isActive);
+              panel.classList.toggle('is-active', isActive);
               panel.setAttribute('aria-hidden', String(!isActive));
               panel.hidden = !isActive;
             });
@@ -698,15 +698,15 @@ class StormGraphics {
   }
 
   attachWindProbabilityListeners() {
-    const timeButtons = document.querySelectorAll('.graphics-tab.time-tab');
-    const categoryButtons = document.querySelectorAll('.graphics-tab.category-tab');
+    const timeButtons = document.querySelectorAll('[data-time]');
+    const categoryButtons = document.querySelectorAll('[data-category]');
 
     // Handle time tab clicks
     timeButtons.forEach(button => {
       button.addEventListener('click', () => {
         // Update active time tab
-        timeButtons.forEach(b => b.classList.remove('active'));
-        button.classList.add('active');
+        timeButtons.forEach(b => b.classList.remove('is-active'));
+        button.classList.add('is-active');
 
         // Update graphic display
         this.updateWindProbabilityGraphic();
@@ -717,8 +717,8 @@ class StormGraphics {
     categoryButtons.forEach(button => {
       button.addEventListener('click', () => {
         // Update active category tab
-        categoryButtons.forEach(b => b.classList.remove('active'));
-        button.classList.add('active');
+        categoryButtons.forEach(b => b.classList.remove('is-active'));
+        button.classList.add('is-active');
 
         // Update graphic display
 
@@ -729,8 +729,8 @@ class StormGraphics {
   }
 
   updateWindProbabilityGraphic() {
-    const activeTimeTab = document.querySelector('.graphics-tab.time-tab.active');
-    const activeCategoryTab = document.querySelector('.graphics-tab.category-tab.active');
+    const activeTimeTab = document.querySelector('[data-time].is-active');
+    const activeCategoryTab = document.querySelector('[data-category].is-active');
     const graphicContainer = document.getElementById('wind-probability-graphic');
 
     if (!activeTimeTab || !activeCategoryTab || !graphicContainer) return;

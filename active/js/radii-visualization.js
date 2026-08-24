@@ -396,24 +396,25 @@ function renderRadiiVisualAndTable(cacheRadii, fixes, stormName) {
 
   const hours = collectForecastHours(fixes);
   const hourControls = document.createElement("div");
-  hourControls.className = "radii-hour-controls";
+  hourControls.className = "subtabs subtabs--radii-hours";
   hourControls.setAttribute("role", "tablist");
   hourControls.innerHTML = hours
     .map((h, i) => {
       const label = h === 0 ? "Now" : `${h}h`;
-      const cls = i === 0 ? "radii-hour-btn active" : "radii-hour-btn";
+      const cls = i === 0 ? "subtabs__tab is-active" : "subtabs__tab";
       return `<button class="${cls}" data-hour="${h}" role="tab" aria-selected="${i === 0
         }">${label}</button>`;
     })
     .join("");
 
   const controls = document.createElement("div");
-  controls.className = "radii-controls";
+  controls.className = "subtabs subtabs--radii";
+  controls.setAttribute("role", "tablist");
   controls.innerHTML = `
-      <button class="radii-btn active" data-wind="34">TS Winds</button>
-      <button class="radii-btn" data-wind="50">Gale Force</button>
-      <button class="radii-btn" data-wind="64">Hurricane</button>
-      <button class="radii-btn" data-wind="all">All Winds</button>
+      <button class="subtabs__tab is-active" data-wind="34" role="tab" aria-selected="true">TS Winds</button>
+      <button class="subtabs__tab" data-wind="50" role="tab" aria-selected="false">Gale Force</button>
+      <button class="subtabs__tab" data-wind="64" role="tab" aria-selected="false">Hurricane</button>
+      <button class="subtabs__tab" data-wind="all" role="tab" aria-selected="false">All Winds</button>
     `;
 
   const compassWrap = document.createElement("div");
@@ -558,25 +559,27 @@ function renderRadiiVisualAndTable(cacheRadii, fixes, stormName) {
         ["NE", "SE", "SW", "NW"].some((k) => (rad.r64?.[k] || 0) > 0),
     };
 
-    controls.querySelectorAll(".radii-btn").forEach((btn) => {
+    controls.querySelectorAll("[data-wind]").forEach((btn) => {
       const w = btn.getAttribute("data-wind");
-      if (w === "34") btn.style.display = has.r34 ? "" : "none";
-      if (w === "50") btn.style.display = has.r50 ? "" : "none";
-      if (w === "64") btn.style.display = has.r64 ? "" : "none";
+      if (w === "34") btn.hidden = !has.r34;
+      if (w === "50") btn.hidden = !has.r50;
+      if (w === "64") btn.hidden = !has.r64;
       if (w === "all")
-        btn.style.display = has.r34 || has.r50 || has.r64 ? "" : "none";
+        btn.hidden = !(has.r34 || has.r50 || has.r64);
     });
 
-    const activeBtn = controls.querySelector(".radii-btn.active");
-    if (activeBtn && activeBtn.style.display === "none") {
-      const fallback = controls.querySelector(
-        '.radii-btn:not([style*="display: none"])'
-      );
+    const activeBtn = controls.querySelector("[data-wind].is-active");
+    if (activeBtn?.hidden) {
+      const fallback = controls.querySelector('[data-wind]:not([hidden])');
       if (fallback) {
         controls
-          .querySelectorAll(".radii-btn")
-          .forEach((b) => b.classList.remove("active"));
-        fallback.classList.add("active");
+          .querySelectorAll("[data-wind]")
+          .forEach((b) => {
+            b.classList.remove("is-active");
+            b.setAttribute("aria-selected", "false");
+          });
+        fallback.classList.add("is-active");
+        fallback.setAttribute("aria-selected", "true");
         selectedWind = fallback.getAttribute("data-wind");
       }
     }
@@ -588,25 +591,29 @@ function renderRadiiVisualAndTable(cacheRadii, fixes, stormName) {
   }
 
   hourControls.addEventListener("click", (e) => {
-    const btn = e.target.closest(".radii-hour-btn");
+    const btn = e.target.closest("[data-hour]");
     if (!btn) return;
-    hourControls.querySelectorAll(".radii-hour-btn").forEach((b) => {
-      b.classList.remove("active");
+    hourControls.querySelectorAll("[data-hour]").forEach((b) => {
+      b.classList.remove("is-active");
       b.setAttribute("aria-selected", "false");
     });
-    btn.classList.add("active");
+    btn.classList.add("is-active");
     btn.setAttribute("aria-selected", "true");
     selectedHour = parseInt(btn.getAttribute("data-hour"), 10) || 0;
     updateForSelection();
   });
 
   controls.addEventListener("click", (e) => {
-    const btn = e.target.closest(".radii-btn");
+    const btn = e.target.closest("[data-wind]");
     if (!btn) return;
     controls
-      .querySelectorAll(".radii-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+      .querySelectorAll("[data-wind]")
+      .forEach((b) => {
+        b.classList.remove("is-active");
+        b.setAttribute("aria-selected", "false");
+      });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-selected", "true");
     selectedWind = btn.getAttribute("data-wind");
     updateForSelection();
   });

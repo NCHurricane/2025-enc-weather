@@ -275,7 +275,7 @@ function formatNHCText(rawText) {
 function createTabInterface(availableProducts) {
   const tabsHtml = availableProducts.map(product => {
     const isSpanish = product.code.startsWith('T') && product.code.endsWith('S');
-    const tabClass = isSpanish ? 'text-tab spanish' : 'text-tab';
+    const tabClass = isSpanish ? 'subtabs__tab subtabs__tab--spanish' : 'subtabs__tab';
 
     return `
       <button class="${tabClass}" 
@@ -296,13 +296,13 @@ function createTabInterface(availableProducts) {
          aria-labelledby="tab-${product.code}"
          hidden>
       <pre class="text-content" id="text-${product.code}">${TEXT_CONFIG.FALLBACK_MESSAGES.loading}</pre>
-      <div class="text-actions" id="actions-${product.code}" style="display: none;"></div>
+      <div class="text-actions" id="actions-${product.code}" hidden></div>
     </div>
   `).join('');
 
   return `
     <div class="text-products-interface">
-      <div class="text-tabs" role="tablist" aria-label="Text Products">
+      <div class="subtabs subtabs--text" role="tablist" aria-label="Text Products">
         ${tabsHtml}
       </div>
       <div class="text-content-container">
@@ -313,7 +313,7 @@ function createTabInterface(availableProducts) {
 }
 
 function setupTabEventListeners() {
-  const tabs = textEls.container.querySelectorAll('.text-tab');
+  const tabs = textEls.container.querySelectorAll('[data-product]');
   const panels = textEls.container.querySelectorAll('.text-content-panel');
 
   tabs.forEach((tab, index) => {
@@ -327,20 +327,20 @@ function setupTabEventListeners() {
 }
 
 function activateTab(activeTab, panels) {
-  const tabs = textEls.container.querySelectorAll('.text-tab');
+  const tabs = textEls.container.querySelectorAll('[data-product]');
   const productCode = activeTab.dataset.product;
 
   tabs.forEach(tab => {
     const isActive = tab === activeTab;
     tab.setAttribute('aria-selected', isActive);
     tab.tabIndex = isActive ? 0 : -1;
-    tab.classList.toggle('active', isActive);
+    tab.classList.toggle('is-active', isActive);
   });
 
   panels.forEach(panel => {
     const isActive = panel.id === `content-${productCode}`;
     panel.hidden = !isActive;
-    panel.classList.toggle('active', isActive);
+    panel.classList.toggle('is-active', isActive);
   });
 }
 
@@ -418,7 +418,7 @@ async function loadTextProducts(stormId) {
 
   setupTabEventListeners();
 
-  const firstTab = textEls.container.querySelector('.text-tab');
+  const firstTab = textEls.container.querySelector('[data-product]');
   const allPanels = textEls.container.querySelectorAll('.text-content-panel');
   if (firstTab && allPanels.length > 0) {
     activateTab(firstTab, allPanels);

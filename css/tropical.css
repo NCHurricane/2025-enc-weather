@@ -26,19 +26,19 @@
   margin-bottom: 10px;
 }
 
-.weather-center-tabs.tropical-basin-tabs {
+.tabset--tropical-basin {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.weather-center-condition-tabs.tropical-section-tabs {
+.subtabs--tropical-section {
   display: flex;
 }
 
-.weather-center-condition-tabs.tropical-section-tabs .weather-center-condition-tab {
+.subtabs--tropical-section .subtabs__tab {
   flex: 1 1 0;
 }
 
-.tropical-basin-tabs .weather-center-tab span {
+.tabset--tropical-basin .tabset__tab span {
   white-space: normal;
 }
 

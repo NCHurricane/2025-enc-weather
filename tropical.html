@@ -51,12 +51,12 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="css/styles.css?v=20260824-phase3-1" />
-    <link rel="stylesheet" href="css/components.css?v=20260824-phase3-1" />
+    <link rel="stylesheet" href="css/styles.css?v=20260824-phase4-1" />
+    <link rel="stylesheet" href="css/components.css?v=20260824-phase4-1" />
     <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823-map-status-1" />
     <link rel="stylesheet" href="css/tropical-map-engine.css?v=20260819-7" />
-    <link rel="stylesheet" href="counties/css/county.css?v=20260824-phase3-1" />
-    <link rel="stylesheet" href="css/tropical.css?v=20260824-phase3-1" />
+    <link rel="stylesheet" href="counties/css/county.css?v=20260824-phase4-1" />
+    <link rel="stylesheet" href="css/tropical.css?v=20260824-phase4-1" />
 
     <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
     <script type="application/ld+json">
@@ -96,29 +96,29 @@
 
       <div class="weather-center-layout">
         <section class="weather-center-map-card" aria-label="Tropical Weather Center">
-          <div class="weather-center-tabs tropical-basin-tabs" role="tablist" aria-label="Tropical basin">
-            <button id="basin-tab-atl" class="weather-center-tab is-active" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="atl" aria-selected="true" aria-controls="tropical-weather-center-content" tabindex="0"><span>Atlantic</span></button>
-            <button id="basin-tab-epac" class="weather-center-tab" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="epac" aria-selected="false" aria-controls="tropical-weather-center-content" tabindex="-1"><span>Eastern Pacific</span></button>
-            <button id="basin-tab-cpac" class="weather-center-tab" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="cpac" aria-selected="false" aria-controls="tropical-weather-center-content" tabindex="-1"><span>Central Pacific</span></button>
+          <div class="tabset tabset--weather tabset--tropical-basin" role="tablist" aria-label="Tropical basin">
+            <button id="basin-tab-atl" class="tabset__tab is-active" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="atl" aria-selected="true" aria-controls="tropical-weather-center-content" tabindex="0"><span>Atlantic</span></button>
+            <button id="basin-tab-epac" class="tabset__tab" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="epac" aria-selected="false" aria-controls="tropical-weather-center-content" tabindex="-1"><span>Eastern Pacific</span></button>
+            <button id="basin-tab-cpac" class="tabset__tab" type="button" role="tab" data-a11y-tab="true" data-tropical-basin="cpac" aria-selected="false" aria-controls="tropical-weather-center-content" tabindex="-1"><span>Central Pacific</span></button>
           </div>
 
           <div id="tropical-weather-center-content" role="tabpanel" aria-labelledby="basin-tab-atl">
-            <div class="weather-center-condition-tabs tropical-section-tabs" role="tablist" aria-label="Tropical Weather Center section">
-              <button id="tropical-tab-overview" class="weather-center-condition-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="tropical-panel-overview" data-tropical-section="overview">
+            <div class="subtabs subtabs--tropical-section" role="tablist" aria-label="Tropical Weather Center section">
+              <button id="tropical-tab-overview" class="subtabs__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="tropical-panel-overview" data-tropical-section="overview">
                 <span>Overview</span>
               </button>
-              <button id="tropical-tab-satellite" class="weather-center-condition-tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-satellite" data-tropical-section="satellite" tabindex="-1">
+              <button id="tropical-tab-satellite" class="subtabs__tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-satellite" data-tropical-section="satellite" tabindex="-1">
                 <span>Satellite</span>
               </button>
-              <button id="tropical-tab-imagery" class="weather-center-condition-tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-imagery" data-tropical-section="imagery" tabindex="-1">
+              <button id="tropical-tab-imagery" class="subtabs__tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-imagery" data-tropical-section="imagery" tabindex="-1">
                 <span>Graphics</span>
               </button>
-              <button id="tropical-tab-products" class="weather-center-condition-tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-products" data-tropical-section="products" tabindex="-1">
+              <button id="tropical-tab-products" class="subtabs__tab" type="button" role="tab" aria-selected="false" aria-controls="tropical-panel-products" data-tropical-section="products" tabindex="-1">
                 <span>Text Products</span>
               </button>
             </div>
 
-            <section id="tropical-panel-overview" class="weather-center-panel" role="tabpanel" aria-labelledby="tropical-tab-overview" data-tropical-panel="overview">
+            <section id="tropical-panel-overview" class="tabset__panel" role="tabpanel" aria-labelledby="tropical-tab-overview" data-tropical-panel="overview">
               <div class="temperature-controls tropical-panel-toolbar">
                 <span class="weather-center-toolbar-label">
                   <i class="fa-solid fa-hurricane" aria-hidden="true"></i>
@@ -135,11 +135,11 @@
               </div>
             </section>
 
-            <section id="tropical-panel-imagery" class="weather-center-panel" role="tabpanel" aria-labelledby="tropical-tab-imagery" data-tropical-panel="imagery" hidden>
-              <div class="weather-center-condition-tabs tropical-product-tabs" role="tablist" aria-label="Official graphic product">
-                <button type="button" role="tab" class="weather-center-condition-tab tropical-product-tab is-active" data-a11y-tab="true" data-graphic-product="two" data-short-label="2-Day" aria-selected="true" aria-controls="official-graphic-panel" tabindex="0">2-Day</button>
-                <button type="button" role="tab" class="weather-center-condition-tab tropical-product-tab" data-a11y-tab="true" data-graphic-product="seven" data-short-label="7-Day" aria-selected="false" aria-controls="official-graphic-panel" tabindex="-1">7-Day</button>
-                <button type="button" role="tab" class="weather-center-condition-tab tropical-product-tab" data-a11y-tab="true" data-graphic-product="surface" data-short-label="Surface" aria-selected="false" aria-controls="official-graphic-panel" tabindex="-1">Surface</button>
+            <section id="tropical-panel-imagery" class="tabset__panel" role="tabpanel" aria-labelledby="tropical-tab-imagery" data-tropical-panel="imagery" hidden>
+              <div class="subtabs subtabs--tropical-product" role="tablist" aria-label="Official graphic product">
+                <button type="button" role="tab" class="subtabs__tab is-active" data-a11y-tab="true" data-graphic-product="two" data-short-label="2-Day" aria-selected="true" aria-controls="official-graphic-panel" tabindex="0">2-Day</button>
+                <button type="button" role="tab" class="subtabs__tab" data-a11y-tab="true" data-graphic-product="seven" data-short-label="7-Day" aria-selected="false" aria-controls="official-graphic-panel" tabindex="-1">7-Day</button>
+                <button type="button" role="tab" class="subtabs__tab" data-a11y-tab="true" data-graphic-product="surface" data-short-label="Surface" aria-selected="false" aria-controls="official-graphic-panel" tabindex="-1">Surface</button>
               </div>
               <div class="tropical-product-panel">
                 <figure id="official-graphic-panel" class="official-graphic" role="tabpanel">
@@ -149,8 +149,8 @@
               </div>
             </section>
 
-            <section id="tropical-panel-products" class="weather-center-panel" role="tabpanel" aria-labelledby="tropical-tab-products" data-tropical-panel="products" hidden>
-              <div id="supporting-text-tabs" class="weather-center-condition-tabs tropical-product-tabs" role="tablist" aria-label="Tropical text product"></div>
+            <section id="tropical-panel-products" class="tabset__panel" role="tabpanel" aria-labelledby="tropical-tab-products" data-tropical-panel="products" hidden>
+              <div id="supporting-text-tabs" class="subtabs subtabs--tropical-product" role="tablist" aria-label="Tropical text product"></div>
               <div class="tropical-product-panel">
                 <h2 id="supporting-text-title" class="section-heading section-heading--tropical-product">Atlantic Outlook</h2>
                 <pre id="supporting-text-content" class="tropical-text-content">Waiting for the selected basin package…</pre>
@@ -158,7 +158,7 @@
               </div>
             </section>
 
-            <section id="tropical-panel-satellite" class="weather-center-panel" role="tabpanel" aria-labelledby="tropical-tab-satellite" data-tropical-panel="satellite" hidden>
+            <section id="tropical-panel-satellite" class="tabset__panel" role="tabpanel" aria-labelledby="tropical-tab-satellite" data-tropical-panel="satellite" hidden>
               <div class="satellite-controls tropical-satellite-controls">
                 <label class="satellite-select-container">
                   <span>Product</span>
@@ -237,9 +237,9 @@
     </footer>
 
     <script src="vendor/leaflet/1.9.4/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script type="module" src="js/modules/tropicalOverview.js?v=20260823-map-status-1"></script>
+    <script type="module" src="js/modules/tropicalOverview.js?v=20260824-phase4-1"></script>
     <script type="module">
-        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase3-1';
+        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase4-1';
 
       NavigationModule.navData.logo = {
         textBefore: 'NCHurric',
@@ -249,6 +249,6 @@
       };
       document.addEventListener('DOMContentLoaded', () => NavigationModule.init('./'));
     </script>
-    <a href="#" class="back-to-top" aria-label="Back to top" style="display: none"><i class="fa-solid fa-up-long" aria-hidden="true"></i></a>
+    <a href="#" class="back-to-top" data-back-to-top aria-label="Back to top" hidden><i class="fa-solid fa-up-long" aria-hidden="true"></i></a>
   </body>
 </html>

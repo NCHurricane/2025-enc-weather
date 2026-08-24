@@ -29,9 +29,23 @@ function officialProductUrl(value) {
   return /^https:\/\/api\.weather\.gov\/products\/[a-f0-9-]{36}$/i.test(url) ? url : '';
 }
 
+const dialogOpeners = new WeakMap();
+
+function rememberDialogOpener(dialog, opener) {
+  dialogOpeners.set(dialog, opener);
+}
+
+function restoreDialogOpener(dialog) {
+  const opener = dialogOpeners.get(dialog);
+  dialogOpeners.delete(dialog);
+  if (opener?.isConnected) {
+    requestAnimationFrame(() => opener.focus({ preventScroll: true }));
+  }
+}
+
 function bindOutlookDialog(container) {
   const trigger = container.querySelector('[data-county-hwo-open]');
-  const dialog = container.querySelector('.county-hwo-dialog');
+  const dialog = container.querySelector('[data-county-hwo-dialog]');
   if (!trigger || !dialog) return;
 
   const closeDialog = () => {
@@ -41,9 +55,11 @@ function bindOutlookDialog(container) {
       dialog.removeAttribute('open');
     }
     document.documentElement.classList.remove('county-alert-modal-open');
+    restoreDialogOpener(dialog);
   };
 
   trigger.addEventListener('click', () => {
+    rememberDialogOpener(dialog, trigger);
     if (typeof dialog.showModal === 'function') {
       if (!dialog.open) dialog.showModal();
     } else {
@@ -60,6 +76,7 @@ function bindOutlookDialog(container) {
   });
   dialog.addEventListener('close', () => {
     document.documentElement.classList.remove('county-alert-modal-open');
+    restoreDialogOpener(dialog);
   });
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) closeDialog();
@@ -130,19 +147,19 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
         </span>
       </button>
 
-      <dialog class="county-alert-dialog county-hwo-dialog" id="county-hwo-dialog" aria-labelledby="county-hwo-dialog-title">
-        <div class="county-alert-dialog-shell">
-          <header class="county-alert-dialog-header">
+      <dialog class="alert-dialog alert-dialog--county alert-dialog--hwo" id="county-hwo-dialog" data-county-hwo-dialog aria-labelledby="county-hwo-dialog-title">
+        <div class="alert-dialog__shell">
+          <header class="alert-dialog__header">
             <div>
               <span>Forecast outlook</span>
-              <h2 id="county-hwo-dialog-title" class="section-heading county-alert-dialog__title">Hazardous Weather Outlook</h2>
+              <h2 id="county-hwo-dialog-title" class="section-heading alert-dialog__title">Hazardous Weather Outlook</h2>
             </div>
-            <button type="button" class="county-alert-dialog-close" data-county-hwo-close aria-label="Close Hazardous Weather Outlook">
+            <button type="button" class="alert-dialog__close" data-county-hwo-close aria-label="Close Hazardous Weather Outlook">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </header>
 
-          <div class="county-alert-dialog-scroll">
+          <div class="alert-dialog__body" data-alert-dialog-body>
             <article class="county-alert-panel county-hwo-panel">
               <header class="county-alert-panel-heading">
                 <i class="fa-solid fa-cloud-bolt" aria-hidden="true"></i>
@@ -175,7 +192,7 @@ function alertEvent(alert) {
 }
 
 export function closeCountyAlertDialog(root = document) {
-  const dialog = root.querySelector('.county-alert-dialog[open]');
+  const dialog = root.querySelector('[data-county-alert-dialog][open], [data-county-hwo-dialog][open]');
   if (dialog) {
     if (typeof dialog.close === 'function') {
       dialog.close();
@@ -184,6 +201,7 @@ export function closeCountyAlertDialog(root = document) {
     }
   }
   document.documentElement.classList.remove('county-alert-modal-open');
+  restoreDialogOpener(dialog);
 }
 
 function setSelectedAlert(dialog, index, { focusSelector = false } = {}) {
@@ -195,7 +213,7 @@ function setSelectedAlert(dialog, index, { focusSelector = false } = {}) {
     const isSelected = Number(selector.dataset.countyAlertSelect) === selectedIndex;
     selector.setAttribute('aria-selected', String(isSelected));
     selector.tabIndex = isSelected ? 0 : -1;
-    selector.classList.toggle('is-selected', isSelected);
+    selector.classList.toggle('is-active', isSelected);
     if (isSelected && focusSelector) selector.focus();
   });
 
@@ -203,12 +221,12 @@ function setSelectedAlert(dialog, index, { focusSelector = false } = {}) {
     panel.hidden = Number(panel.dataset.countyAlertPanel) !== selectedIndex;
   });
 
-  const scroller = dialog.querySelector('.county-alert-dialog-scroll');
+  const scroller = dialog.querySelector('[data-alert-dialog-body]');
   if (scroller) scroller.scrollTop = 0;
 }
 
 function bindAlertDialog(container) {
-  const dialog = container.querySelector('.county-alert-dialog');
+  const dialog = container.querySelector('[data-county-alert-dialog]');
   if (!dialog) return;
 
   const closeDialog = () => {
@@ -218,10 +236,12 @@ function bindAlertDialog(container) {
       dialog.removeAttribute('open');
     }
     document.documentElement.classList.remove('county-alert-modal-open');
+    restoreDialogOpener(dialog);
   };
 
   container.querySelectorAll('[data-county-alert-open]').forEach((button) => {
     button.addEventListener('click', () => {
+      rememberDialogOpener(dialog, button);
       const index = Number(button.dataset.countyAlertOpen) || 0;
       setSelectedAlert(dialog, index);
       if (typeof dialog.showModal === 'function') {
@@ -260,6 +280,7 @@ function bindAlertDialog(container) {
   });
   dialog.addEventListener('close', () => {
     document.documentElement.classList.remove('county-alert-modal-open');
+    restoreDialogOpener(dialog);
   });
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) closeDialog();
@@ -345,7 +366,7 @@ export function renderCountyAlerts({
         <button
           type="button"
           id="county-alert-selector-${entry.index}"
-          class="county-alert-selector${entry.index === 0 ? ' is-selected' : ''}"
+          class="alert-dialog__selector${entry.index === 0 ? ' is-active' : ''}"
           style="--county-alert-color: ${entry.color};"
           role="tab"
           aria-selected="${entry.index === 0}"
@@ -426,23 +447,23 @@ export function renderCountyAlerts({
         ${viewAllHTML}
       </div>
 
-      <dialog class="county-alert-dialog" id="county-alert-dialog" aria-labelledby="county-alert-dialog-title">
-        <div class="county-alert-dialog-shell">
-          <header class="county-alert-dialog-header">
+      <dialog class="alert-dialog alert-dialog--county" id="county-alert-dialog" data-county-alert-dialog aria-labelledby="county-alert-dialog-title">
+        <div class="alert-dialog__shell">
+          <header class="alert-dialog__header">
             <div>
               <span>Current alerts</span>
-              <h2 id="county-alert-dialog-title" class="section-heading county-alert-dialog__title">${countLabel}</h2>
+              <h2 id="county-alert-dialog-title" class="section-heading alert-dialog__title">${countLabel}</h2>
             </div>
-            <button type="button" class="county-alert-dialog-close" data-county-alert-close aria-label="Close alerts">
+            <button type="button" class="alert-dialog__close" data-county-alert-close aria-label="Close alerts">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </header>
 
-          <div class="county-alert-selectors" role="tablist" aria-label="Select an alert">
+          <div class="alert-dialog__selectors" role="tablist" aria-label="Select an alert">
             ${selectorHTML}
           </div>
 
-          <div class="county-alert-dialog-scroll">
+          <div class="alert-dialog__body" data-alert-dialog-body>
             ${panelHTML}
           </div>
         </div>

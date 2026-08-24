@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup completed locally; Phase 4 is not authorized
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; Phase 4 completed locally and accepted by the owner; Phase 5 is authorized
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -110,8 +110,8 @@ The owner then separately authorized removal of `index_update.html`,
   iframe-only `MutationObserver` error that did not reproduce in either direct
   canonical tab. Production Apache redirect behavior remains unverified.
 
-The owner then authorized Wave A Phase 3. Phase 3 is complete in the local
-working tree:
+The owner then authorized Wave A Phase 3. Phase 3 is complete and is included
+in checkpoint commit `edc6a50`:
 
 - `styles.css` now owns bounded page-title, section-heading, card-heading,
   helper, metadata and status-role tokens. `components.css` owns the shared
@@ -156,9 +156,52 @@ working tree:
   County URL/local-storage lifecycle; this evidence remains an open County
   follow-up rather than being absorbed into typography work.
 
-No cascade layer, staging, commit, push, deployment, production-data change, or
-generated/runtime cleanup was performed. Phase 4 requires new explicit
-authorization.
+The owner then authorized Wave A Phase 4. Phase 4 is complete in the local
+working tree and has passed owner review:
+
+- Shared BEM blocks now own primary tabsets, subtabs, information cards,
+  general buttons, analytics consent, County alert/HWO dialogs, the navigation
+  menu, and back-to-top behavior. JavaScript uses IDs or `data-*` hooks and
+  `.is-active`/`[hidden]` state; the retired presentation classes have no legacy
+  aliases.
+- Home, all nine County pages, Tropical, Active, the three information pages,
+  `404.html`, and the Bertie prototype use the new component contracts. Active
+  dynamically generated text, graphics, and radii controls were migrated with
+  their producers instead of being styled through compatibility selectors.
+- Reusable tab, card-grid, and multi-zone-selector layout responds to its owning
+  container. Viewport media queries remain only for page-level navigation and
+  other true structural changes. Migrated interactive targets are at least
+  44 by 44 CSS pixels at the checked viewports.
+- Static inline width/display presentation was removed only from the migrated
+  components. Map loading/error, scrubber, legend, control, and popup state is
+  deliberately frozen for Wave B.
+- The County zone selector changed only presentation classes, data hooks,
+  active state, and `aria-pressed`. Phase 4 did not change URL/local-storage or
+  data-loading lifecycle, so the retained San Diego `coastal` to Dare defect
+  remains open for a separate County fix.
+- Controlled browser covered the 15 sitemap routes plus `404.html` and the
+  Bertie prototype at `1280x900` and `390x844`. All 34 cases had one visible
+  `h1`, no document-level horizontal overflow, no undersized visible migrated
+  target, and no local resource response at or above `400`. The exercised
+  console had no warnings or errors.
+- Interaction checks passed for tab Arrow/Home/End behavior, Tropical basin URL
+  and Back/Forward state, desktop and nested mobile navigation with Escape focus
+  restoration, multi-zone selector state/URL changes, consent choice and status,
+  back-to-top visibility, and County HWO Close/Escape/backdrop dismissal. The
+  run exposed and corrected missing opener-focus restoration after HWO Escape;
+  the final Close, Escape, and backdrop cases all restore focus.
+- Static validation passes: all changed JavaScript parses, all 73 native Node
+  tests pass, the site validator passes 18 HTML files, 307 JSON files and 166
+  local references, and `git diff --check` reports no whitespace errors. The
+  existing ignored Tropical dependency harness assertion was updated to require
+  the Phase 4 BEM basin-tab block instead of its retired presentation classes.
+
+Checkpoint `edc6a50` contains the authorized Phase 1-3 and legacy-page work.
+The owner subsequently reported, "Visual acceptance passed." No exact pages,
+devices, viewport sizes, or interactions were supplied, so that owner evidence
+is retained only at the reported Wave A level. The owner authorized committing
+Phase 4 and continuing with Phase 5. No push, deployment, production-data
+change, cascade layer, or generated/runtime cleanup was performed.
 
 ## Purpose
 
@@ -442,7 +485,7 @@ Acceptance: all page families begin at a consistent visual rhythm, with document
 
 #### Phase 3: Titles, headings, labels, and text roles
 
-Implementation status: completed locally on 2026-08-24; Phase 4 remains gated.
+Implementation status: completed locally on 2026-08-24; Phase 4 was completed later in the same local working tree.
 
 1. Define canonical roles such as page title, section title, card title, eyebrow, label, helper text, metadata, and status text.
 2. Apply semantic headings according to document structure and the shared visual classes according to role.
@@ -454,7 +497,7 @@ Acceptance: titles and labels are consistent by role, not flattened into one ide
 
 #### Phase 4: Cards, tabs, selectors, buttons, menus, and dialogs
 
-Implementation status: not authorized.
+Implementation status: completed locally on 2026-08-24 and accepted by the owner; commit authorized.
 
 1. Establish shared component markup and BEM classes.
 2. Move common rules into `components.css`.
@@ -468,11 +511,15 @@ Acceptance: each migrated component has one base owner, explicit variants, no le
 
 ### Wave A owner review
 
+Implementation status: owner reported "Visual acceptance passed" on 2026-08-24; exact pages, devices, widths, and interactions were not supplied.
+
 Review the 15 public routes after the general interface migration. Compare against the recorded homepage direction and baseline screenshots. Resolve approved discrepancies before starting shared map work so Wave B does not hide general-layout regressions.
 
 ### Wave B: Shared map interface and final cascade architecture
 
 #### Phase 5: Map card and shared map controls
+
+Implementation status: authorized on 2026-08-24 after Wave A owner acceptance.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.

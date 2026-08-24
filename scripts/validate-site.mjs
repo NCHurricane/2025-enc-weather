@@ -4,7 +4,12 @@ import path from 'node:path';
 import process from 'node:process';
 
 import { validateTropicalStormManifest } from '../js/modules/tropicalMapEngine.js';
-import { leafletContract, phase2Contract, phase3Contract } from './css-ownership-contract.mjs';
+import {
+  leafletContract,
+  phase2Contract,
+  phase3Contract,
+  phase4Contract,
+} from './css-ownership-contract.mjs';
 
 const root = process.cwd();
 const excludedDirectories = new Set(['.git', 'node_modules', 'logs', 'output']);
@@ -371,8 +376,110 @@ for (const dependency of phase3Contract.scriptDependencies) {
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.consumer, reference) === dependency.target);
-  if (references.length !== 1 || referenceVersion(references[0]) !== phase3Contract.version) {
+  if (references.length !== 1 || referenceVersion(references[0]) !== phase3Contract.assetVersion) {
     errors.push(`${dependency.consumer}: ${dependency.target} must use the Phase 3 cache version`);
+  }
+}
+
+for (const page of phase4Contract.weatherPages) {
+  const html = phase2HtmlByRelativePath.get(page) || '';
+  const tags = openingTags(html);
+  for (const requiredClass of ['tabset', 'tabset__tab', 'tabset__panel', 'subtabs', 'subtabs__tab']) {
+    if (!tags.some(tag => tag.classes.has(requiredClass))) {
+      errors.push(`${page}: Phase 4 shared interface is missing .${requiredClass}`);
+    }
+  }
+}
+
+for (const page of phase4Contract.infoCardPages) {
+  const html = phase2HtmlByRelativePath.get(page) || '';
+  if (!openingTags(html).some(tag => tag.classes.has('content-card'))) {
+    errors.push(`${page}: Phase 4 information content must use .content-card`);
+  }
+}
+
+for (const page of phase4Contract.backToTopPages) {
+  const html = phase2HtmlByRelativePath.get(page) || '';
+  const backToTop = openingTags(html).find(tag => tag.classes.has('back-to-top'));
+  if (!backToTop || !/\sdata-back-to-top(?:\s|=|>)/i.test(backToTop.source)
+      || !/\shidden(?:\s|=|>)/i.test(backToTop.source)
+      || /\sstyle=/i.test(backToTop.source)) {
+    errors.push(`${page}: Phase 4 back-to-top control must use data-back-to-top and hidden state`);
+  }
+}
+
+for (const page of phase4Contract.multizonePages) {
+  const html = phase2HtmlByRelativePath.get(page) || '';
+  const zoneOptions = openingTags(html).filter(tag => /\sdata-zone=/i.test(tag.source));
+  if (!zoneOptions.length || zoneOptions.some(tag => !tag.classes.has('zone-selector__option')
+      || !/\saria-pressed=/i.test(tag.source))) {
+    errors.push(`${page}: Phase 4 zone choices must use the BEM option and aria-pressed contract`);
+  }
+}
+
+for (const [relative, html] of phase2HtmlByRelativePath) {
+  for (const tag of openingTags(html)) {
+    for (const retiredClass of phase4Contract.retiredClasses) {
+      if (tag.classes.has(retiredClass)) {
+        errors.push(`${relative}: retired Phase 4 class .${retiredClass} remains`);
+      }
+    }
+  }
+}
+
+const phase4ComponentCss = await readFile(
+  path.join(root, ...phase4Contract.componentOwner.split('/')),
+  'utf8',
+).catch(() => '');
+for (const selector of phase4Contract.requiredComponentSelectors) {
+  if (!phase4ComponentCss.includes(selector)) {
+    errors.push(`${phase4Contract.componentOwner}: missing Phase 4 component owner selector ${selector}`);
+  }
+}
+
+for (const stylesheet of phase4Contract.ownershipStylesheets) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const retiredClass of phase4Contract.retiredClasses) {
+    const escaped = retiredClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`\\.${escaped}(?![A-Za-z0-9_-])`).test(css)) {
+      errors.push(`${stylesheet}: retired Phase 4 selector .${retiredClass} remains`);
+    }
+  }
+}
+
+for (const stylesheet of phase4Contract.familyStylesheets) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const base of ['tabset', 'subtabs', 'content-card', 'button', 'consent-dialog', 'alert-dialog']) {
+    if (new RegExp(`(^|[,}\\s])\\.${base}\\s*\\{`, 'm').test(css)) {
+      errors.push(`${stylesheet}: Phase 4 shared .${base} base must be owned only by css/components.css`);
+    }
+  }
+}
+
+for (const sourceContract of [phase4Contract.navigation, ...phase4Contract.sourceContracts]) {
+  const source = await readFile(path.join(root, ...sourceContract.file.split('/')), 'utf8').catch(() => '');
+  for (const required of sourceContract.required) {
+    if (!source.includes(required)) {
+      errors.push(`${sourceContract.file}: missing Phase 4 source contract ${required}`);
+    }
+  }
+  for (const forbidden of sourceContract.forbidden) {
+    if (source.includes(forbidden)) {
+      errors.push(`${sourceContract.file}: retired Phase 4 source contract remains ${forbidden}`);
+    }
+  }
+}
+
+for (const dependency of phase4Contract.versionedAssets) {
+  const source = phase2HtmlByRelativePath.get(dependency.file)
+    || await readFile(path.join(root, ...dependency.file.split('/')), 'utf8').catch(() => '');
+  const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
+    .map(match => match[1])
+    .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
+  if (references.length !== 1 || referenceVersion(references[0]) !== phase4Contract.version) {
+    errors.push(`${dependency.file}: ${dependency.target} must use the Phase 4 cache version`);
   }
 }
 

@@ -1,8 +1,8 @@
 # County UI: Current Handoff
 
-Updated: 2026-08-23
+Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the current committed checkpoint is `7c46f80`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, and nested county navigation are implemented in the committed history described below. The current uncommitted map-status slice identifies the NWS Conditions source, preserves source/time/frame status for Radar and Satellite after removal of their old notes, and keeps the station instruction only on the nine live county index pages. There is no additional authorized county product phase. The next county task should be reconciliation and closeout of current working-tree changes, not a new feature family. Do not stage, commit, push, deploy, or change generated/runtime data without explicit authorization.
+Status: the current committed checkpoint is `edc6a50`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-3 are implemented in the committed history described below. Sitemap CSS Phase 4 is complete, owner-accepted, and authorized for commit. Shared map UI Phase 5 is authorized only through the sitemap CSS plan; there is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -17,11 +17,16 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 ## Current repository boundary
 
-- At this documentation cleanup, `HEAD`, `main`, and `origin/main` are `7c46f80`.
+- At the 2026-08-23 documentation cleanup, `HEAD`, `main`, and `origin/main` were `7c46f80`.
 - Before the cleanup began, the working tree already contained user-owned changes in all nine county pages, the Bertie prototype, county CSS/controllers, shared CSS, homepage/map modules, Tropical/Active modules, and an untracked `js/modules/mapBoundaryOverlays.js`.
 - Those changes are not classified by this handoff. Audit and separate them before modifying or staging any overlapping file.
 - The 2026-08-22 map-status slice changes only the status/note paths, the CSS needed to keep full mobile status text readable, matching asset cache-busters, and the site contract guard. It preserves concurrent font, attribution, Tropical SVG, satellite-provider, Active, fixture, and documentation work.
 - `counties/data/*-current.json`, county weather output, shared HWO office cache, logs, and `test/output/` are generated/runtime artifacts. Do not delete, rewrite, or commit them as documentation cleanup.
+- The sitemap CSS Phase 1-3 checkpoint is committed as `edc6a50`. The current
+  Phase 4 working tree changes only general component presentation/ownership,
+  hooks, accessibility state, cache versions, validation contracts, and these
+  handoffs. Map controls, map status, products, sources, stations, zones, and
+  generated/runtime data remain outside this slice.
 
 ## Committed checkpoints
 
@@ -33,6 +38,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 | `9e3ecb6` | Shared scoped editorial city favorites; Greenville is `tropical` and `homepage`, with no current `county` favorite. |
 | `ca89d62` | Shared weather-center CSS ownership moved into `css/components.css`/`css/styles.css` while county-specific presentation remained in `counties/css/county.css`. |
 | `7c46f80` | Hazardous Weather Outlook integration and nested `Counties` > `Non-NC Counties` navigation, including San Diego, committed. |
+| `edc6a50` | Sitemap CSS architecture Phases 1-3, self-hosted Leaflet 1.9.4, and owner-directed retirement of obsolete static pages/resources. |
 
 ## Current durable behavior
 
@@ -94,17 +100,24 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
-The separately authorized sitemap-wide CSS Phase 3 changed only County title,
-forecast-heading, text-role, stylesheet ownership and versioned dependency
-markup. It preserved zone selectors, URL/localStorage ownership, data paths,
-stations, alerts, maps and generated output. Its controlled-browser pass found
-one unresolved pre-existing lifecycle defect: after San Diego stores the zone
-value `coastal`, opening Dare without an explicit zone query requests
+The separately authorized sitemap-wide CSS Phases 3 and 4 changed County
+title/text roles and general component presentation/ownership. Phase 4 migrated
+the weather tabs, conditions/forecast subtabs, multi-zone selector, shared
+alert/HWO dialog shell, navigation menu, and back-to-top control to BEM classes
+with `data-*` JavaScript hooks. It added `aria-pressed` to the zone selector,
+44-pixel minimum targets, container-based selector/tab layout, and explicit
+opener-focus restoration for Close, Escape, and backdrop dialog dismissal.
+
+These CSS phases preserved URL/localStorage ownership, zone validation, data
+paths, stations, alert/HWO content, maps, products, and generated output. The
+unresolved pre-existing lifecycle defect remains: after San Diego stores the
+zone value `coastal`, opening Dare without an explicit zone query requests
 `counties/dare/data/coastal/current.json`, `forecast.json`, and `alerts.json`;
 all three return `404` rather than normalizing to an allowed Dare zone. Valid
-explicit Dare/Hyde/San Diego zone URLs passed the CSS/heading/overflow gate with
-no console warnings or errors. This finding is evidence for a future bounded
-County lifecycle fix, not authorization to implement it during CSS Phase 3.
+explicit Dare/Hyde/San Diego zone URLs passed the Phase 4 selector, heading,
+target-size, dialog, and overflow gates with no console warnings or errors.
+This finding is evidence for a future bounded County lifecycle fix; it was not
+implemented or authorized as part of the CSS architecture work.
 
 1. Inventory the current county/shared-map working-tree diff against `7c46f80` without editing it.
 2. Separate county-owned changes from Active/Tropical map-consistency, shared boundary, city-label, homepage, CSS, and unrelated work.

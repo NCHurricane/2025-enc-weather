@@ -39,13 +39,13 @@
 
         <link rel="stylesheet" href="../vendor/leaflet/1.9.4/leaflet.css"
             integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <link rel="stylesheet" href="../css/styles.css?v=20260824-phase3-1" />
-        <link rel="stylesheet" href="../css/components.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="../css/styles.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="../css/components.css?v=20260824-phase4-1" />
         <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260823-map-status-1" />
         <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
-        <link rel="stylesheet" href="../counties/css/county.css?v=20260824-phase3-1" />
-        <link rel="stylesheet" href="./css/active.css?v=20260824-phase3-1" />
-        <link rel="stylesheet" href="./css/storm-graphics.css?v=20260822-tabs-1" />
+        <link rel="stylesheet" href="../counties/css/county.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="./css/active.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="./css/storm-graphics.css?v=20260824-phase4-1" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
@@ -98,21 +98,21 @@
 
             <div class="active-storm-workspace">
                 <section class="active-module active-module--storm" aria-label="Storm overview and map">
-                    <div class="active-module-tabs" data-active-tab-group="storm" data-query-key="stormView"
+                    <div class="tabset tabset--active-module" data-active-tab-group="storm" data-query-key="stormView"
                         role="tablist" aria-label="Storm information">
-                        <button id="storm-tab-summary" class="active-module-tab is-active" type="button"
+                        <button id="storm-tab-summary" class="tabset__tab is-active" type="button"
                             role="tab" aria-selected="true" aria-controls="storm-panel-summary"
                             data-active-tab="summary">
                             <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
                             <span>Summary</span>
                         </button>
-                        <button id="storm-tab-map" class="active-module-tab" type="button"
+                        <button id="storm-tab-map" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="storm-panel-map"
                             data-active-tab="map" tabindex="-1">
                             <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
                             <span>Map &amp; Satellite</span>
                         </button>
-                        <button id="storm-tab-alerts" class="active-module-tab" type="button"
+                        <button id="storm-tab-alerts" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="storm-panel-alerts"
                             data-active-tab="alerts" tabindex="-1" hidden>
                             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
@@ -120,7 +120,7 @@
                         </button>
                     </div>
 
-                    <section id="storm-panel-summary" class="active-module-panel active-module-panel--summary"
+                    <section id="storm-panel-summary" class="tabset__panel active-module__panel active-module__panel--summary"
                         role="tabpanel" aria-labelledby="storm-tab-summary" data-active-panel="summary"
                         aria-hidden="false">
                         <div class="active-summary-layout">
@@ -150,7 +150,7 @@
                         </div>
                     </section>
 
-                    <section id="storm-panel-map" class="active-module-panel active-module-panel--map"
+                    <section id="storm-panel-map" class="tabset__panel active-module__panel active-module__panel--map"
                         role="tabpanel" aria-labelledby="storm-tab-map" data-active-panel="map"
                         aria-hidden="true" hidden>
                         <div class="active-storm-map-section">
@@ -240,17 +240,17 @@
                         </div>
                     </section>
 
-                    <section id="storm-panel-alerts" class="active-module-panel active-module-panel--alerts"
+                    <section id="storm-panel-alerts" class="tabset__panel active-module__panel active-module__panel--alerts"
                         role="tabpanel" aria-labelledby="storm-tab-alerts" data-active-panel="alerts"
                         aria-hidden="true" hidden>
-                        <div class="active-alert-tabs" role="tablist" aria-label="Storm alert products">
-                            <button id="alert-tab-wind" class="active-alert-tab is-active" type="button"
+                        <div class="subtabs subtabs--active-alerts" role="tablist" aria-label="Storm alert products">
+                            <button id="alert-tab-wind" class="subtabs__tab is-active" type="button"
                                 role="tab" aria-selected="true" aria-controls="alert-panel-wind"
                                 data-alert-tab="wind">
                                 <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                                 Watches &amp; Warnings
                             </button>
-                            <button id="alert-tab-surge" class="active-alert-tab" type="button"
+                            <button id="alert-tab-surge" class="subtabs__tab" type="button"
                                 role="tab" aria-selected="false" aria-controls="alert-panel-surge"
                                 data-alert-tab="surge" tabindex="-1">
                                 <i class="fa-solid fa-water" aria-hidden="true"></i>
@@ -287,49 +287,49 @@
                 </section>
 
                 <section class="active-module active-module--nhc" aria-label="NHC advisories and graphics">
-                    <div class="active-module-tabs" data-active-tab-group="nhc" data-query-key="nhcView"
+                    <div class="tabset tabset--active-module" data-active-tab-group="nhc" data-query-key="nhcView"
                         role="tablist" aria-label="NHC products">
-                        <button id="nhc-tab-advisories" class="active-module-tab is-active" type="button"
+                        <button id="nhc-tab-advisories" class="tabset__tab is-active" type="button"
                             role="tab" aria-selected="true" aria-controls="nhc-panel-advisories"
                             data-active-tab="advisories">
                             <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
                             <span>Advisories</span>
                         </button>
-                        <button id="nhc-tab-track" class="active-module-tab" type="button"
+                        <button id="nhc-tab-track" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="nhc-panel-track"
                             data-active-tab="track" tabindex="-1">
                             <i class="fa-solid fa-route" aria-hidden="true"></i>
                             <span>Track &amp; Cone</span>
                         </button>
-                        <button id="nhc-tab-key" class="active-module-tab" type="button"
+                        <button id="nhc-tab-key" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="nhc-panel-key"
                             data-active-tab="key" tabindex="-1">
                             <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
                             <span>Key Messages</span>
                         </button>
-                        <button id="nhc-tab-experimental" class="active-module-tab" type="button"
+                        <button id="nhc-tab-experimental" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="nhc-panel-experimental"
                             data-active-tab="experimental" tabindex="-1">
                             <i class="fa-solid fa-flask" aria-hidden="true"></i>
                             <span>Experimental</span>
                         </button>
                     </div>
-                    <section id="nhc-panel-advisories" class="active-module-panel text-products-container"
+                    <section id="nhc-panel-advisories" class="tabset__panel active-module__panel text-products-container"
                         role="tabpanel" aria-labelledby="nhc-tab-advisories"
                         data-active-panel="advisories" aria-hidden="false">
                         <div class="storm-text-section" id="storm-text-section"></div>
                     </section>
-                    <section id="nhc-panel-track" class="active-module-panel graphics-container"
+                    <section id="nhc-panel-track" class="tabset__panel active-module__panel graphics-container"
                         role="tabpanel" aria-labelledby="nhc-tab-track"
                         data-active-panel="track" aria-hidden="true" hidden>
                         <div class="track-messages-section" id="track-messages-section"></div>
                     </section>
-                    <section id="nhc-panel-key" class="active-module-panel graphics-container"
+                    <section id="nhc-panel-key" class="tabset__panel active-module__panel graphics-container"
                         role="tabpanel" aria-labelledby="nhc-tab-key"
                         data-active-panel="key" aria-hidden="true" hidden>
                         <div class="track-messages-section" id="key-messages-section"></div>
                     </section>
-                    <section id="nhc-panel-experimental" class="active-module-panel graphics-container"
+                    <section id="nhc-panel-experimental" class="tabset__panel active-module__panel graphics-container"
                         role="tabpanel" aria-labelledby="nhc-tab-experimental"
                         data-active-panel="experimental" aria-hidden="true" hidden>
                         <div class="track-messages-section" id="experimental-section"></div>
@@ -337,38 +337,38 @@
                 </section>
 
                 <section class="active-module active-module--wind" aria-label="Wind products">
-                    <div class="active-module-tabs" data-active-tab-group="wind" data-query-key="windView"
+                    <div class="tabset tabset--active-module" data-active-tab-group="wind" data-query-key="windView"
                         role="tablist" aria-label="Wind products">
-                        <button id="wind-tab-radii" class="active-module-tab is-active" type="button"
+                        <button id="wind-tab-radii" class="tabset__tab is-active" type="button"
                             role="tab" aria-selected="true" aria-controls="wind-panel-radii"
                             data-active-tab="radii">
                             <i class="fa-solid fa-wind" aria-hidden="true"></i>
                             <span>Radii</span>
                         </button>
-                        <button id="wind-tab-analysis" class="active-module-tab" type="button"
+                        <button id="wind-tab-analysis" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="wind-panel-analysis"
                             data-active-tab="analysis" tabindex="-1">
                             <i class="fa-solid fa-compass" aria-hidden="true"></i>
                             <span>Analysis</span>
                         </button>
-                        <button id="wind-tab-graphics" class="active-module-tab" type="button"
+                        <button id="wind-tab-graphics" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="wind-panel-graphics"
                             data-active-tab="graphics" tabindex="-1">
                             <i class="fa-solid fa-chart-area" aria-hidden="true"></i>
                             <span>Wind Graphics</span>
                         </button>
-                        <button id="wind-tab-probability" class="active-module-tab" type="button"
+                        <button id="wind-tab-probability" class="tabset__tab" type="button"
                             role="tab" aria-selected="false" aria-controls="wind-panel-probability"
                             data-active-tab="probability" tabindex="-1">
                             <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
                             <span>Probability</span>
                         </button>
                     </div>
-                    <section id="wind-panel-radii" class="active-module-panel radii-container"
+                    <section id="wind-panel-radii" class="tabset__panel active-module__panel radii-container"
                         role="tabpanel" aria-labelledby="wind-tab-radii"
                         data-active-panel="radii" aria-hidden="false">
                         <div class="radii-section" id="radii-section">
-                            <table id="radii-table" class="radii-table" style="width:100%;">
+                            <table id="radii-table" class="radii-table">
                                 <thead>
                                     <tr>
                                         <th scope="col">Quadrant</th>
@@ -381,17 +381,17 @@
                             </table>
                         </div>
                     </section>
-                    <section id="wind-panel-analysis" class="active-module-panel wind-analysis-container"
+                    <section id="wind-panel-analysis" class="tabset__panel active-module__panel wind-analysis-container"
                         role="tabpanel" aria-labelledby="wind-tab-analysis"
                         data-active-panel="analysis" aria-hidden="true" hidden>
                         <div class="wind-analysis-section" id="wind-analysis-section"></div>
                     </section>
-                    <section id="wind-panel-graphics" class="active-module-panel wind-graphics-container"
+                    <section id="wind-panel-graphics" class="tabset__panel active-module__panel wind-graphics-container"
                         role="tabpanel" aria-labelledby="wind-tab-graphics"
                         data-active-panel="graphics" aria-hidden="true" hidden>
                         <div class="wind-graphics-section" id="wind-graphics-section"></div>
                     </section>
-                    <section id="wind-panel-probability" class="active-module-panel wind-probability-container"
+                    <section id="wind-panel-probability" class="tabset__panel active-module__panel wind-probability-container"
                         role="tabpanel" aria-labelledby="wind-tab-probability"
                         data-active-panel="probability" aria-hidden="true" hidden>
                         <div class="wind-probability-section" id="wind-probability-section"></div>
@@ -404,7 +404,7 @@
                         <i class="fa-solid fa-cloud-rain" aria-hidden="true"></i>
                         <h2 id="surge-rain-title" class="section-heading active-module__title">Surge &amp; Rain Products</h2>
                     </header>
-                    <div class="active-module-panel surge-rain-container">
+                    <div class="active-module__panel surge-rain-container">
                         <div class="surge-rain-section" id="surge-rain-section"></div>
                     </div>
                 </section>
@@ -459,13 +459,13 @@
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
         <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
         <script type="module" src="./js/activeStormMap.js?v=20260823-status-row-removal-1"></script>
-        <script type="module" src="./js/storm.js?v=20260821-product-states-2"></script>
-        <script type="module" src="./js/storm_text.js?v=20260821-product-states-1"></script>
+        <script type="module" src="./js/storm.js?v=20260824-phase4-1"></script>
+        <script type="module" src="./js/storm_text.js?v=20260824-phase4-1"></script>
 
         <script type="module" src="./js/ww-maps.js?v=20260824-phase2-1" defer></script>
 
         <script type="module">
-        import { NavigationModule } from '../js/modules/navigation.js?v=20260824-phase3-1';
+        import { NavigationModule } from '../js/modules/navigation.js?v=20260824-phase4-1';
 
             document.addEventListener('DOMContentLoaded', () => {
                 NavigationModule.navData.logo = {

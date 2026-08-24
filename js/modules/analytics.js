@@ -138,20 +138,20 @@ function renderConsentPrompt(measurementId, options = {}) {
   const returnFocus = options.returnFocus instanceof HTMLElement ? options.returnFocus : null;
   const panel = document.createElement('section');
   panel.id = 'analytics-consent';
-  panel.className = 'analytics-consent';
+  panel.className = 'consent-dialog';
   panel.setAttribute('role', 'region');
   panel.setAttribute('aria-labelledby', 'analytics-consent-title');
   panel.setAttribute('tabindex', '-1');
   panel.innerHTML = `
-    <div class="analytics-consent-copy">
-      <h2 id="analytics-consent-title" class="section-heading analytics-consent__title">Optional analytics</h2>
+    <div class="consent-dialog__copy">
+      <h2 id="analytics-consent-title" class="section-heading consent-dialog__title">Optional analytics</h2>
       <p>May we use Google Analytics to understand site usage and improve NCHurricane.com? Advertising personalization and Google Signals remain disabled. <a href="/privacy.html">Read the privacy notice</a>.</p>
-      ${currentChoice ? `<p class="analytics-consent-current">Current choice: <strong>${currentChoice === CONSENT_GRANTED ? 'Allowed' : 'Declined'}</strong></p>` : ''}
+      ${currentChoice ? `<p class="consent-dialog__current">Current choice: <strong>${currentChoice === CONSENT_GRANTED ? 'Allowed' : 'Declined'}</strong></p>` : ''}
     </div>
-    <div class="analytics-consent-actions">
-      <button type="button" class="analytics-consent-button analytics-consent-allow" data-consent-choice="${CONSENT_GRANTED}">Allow analytics</button>
-      <button type="button" class="analytics-consent-button analytics-consent-decline" data-consent-choice="${CONSENT_DENIED}">Decline</button>
-      ${currentChoice ? '<button type="button" class="analytics-consent-close" data-consent-close>Close</button>' : ''}
+    <div class="consent-dialog__actions">
+      <button type="button" class="consent-dialog__button consent-dialog__button--allow" data-consent-choice="${CONSENT_GRANTED}">Allow analytics</button>
+      <button type="button" class="consent-dialog__button consent-dialog__button--decline" data-consent-choice="${CONSENT_DENIED}">Decline</button>
+      ${currentChoice ? '<button type="button" class="consent-dialog__close" data-consent-close>Close</button>' : ''}
     </div>
   `;
 

@@ -10,7 +10,7 @@
     padding: 13px clamp(20px, 3.3vw, 64px);
 }
 
-.info-main {
+.page-shell--info {
     font-family: var(--font-primary);
 }
 
@@ -36,9 +36,7 @@
     line-height: 1.6;
 }
 
-.case-study-hero,
-.info-panel,
-.notfound-container {
+.page-header--case-study {
     box-sizing: border-box;
     margin: 0 0 18px;
     padding: clamp(20px, 3vw, 34px);
@@ -49,7 +47,7 @@
     box-shadow: 0 14px 32px rgba(4, 10, 16, 0.24);
 }
 
-.case-study-hero {
+.page-header--case-study {
     padding: clamp(26px, 4vw, 48px);
     background:
         radial-gradient(circle at 88% 8%, rgba(255, 242, 0, 0.12), transparent 20rem),
@@ -71,72 +69,41 @@
     margin: 0 0 8px;
 }
 
-.info-panel .section-heading,
-.case-study-card .card-heading {
+.content-card--info .section-heading,
+.content-card--case-study .card-heading {
     margin-top: 0;
 }
 
-.info-panel .section-heading {
+.content-card--info .section-heading {
     margin: 1.7em 0 0.55em;
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(177, 201, 220, 0.25);
     font-size: clamp(1.2rem, 2vw, 1.55rem);
 }
 
-.info-panel > .section-heading:first-child,
-.info-panel .text-role--eyebrow + .section-heading {
+.content-card--info > .section-heading:first-child,
+.content-card--info .text-role--eyebrow + .section-heading {
     margin-top: 0;
 }
 
-.info-panel p,
-.info-panel li,
-.case-study-card p {
+.content-card--info p,
+.content-card--info li,
+.content-card--case-study p {
     color: #d6e2ea;
     line-height: 1.7;
 }
 
-.info-panel a:not(.project-cta),
-.notfound-container a {
+.content-card--info a:not(.button),
+.content-card--not-found a {
     color: #fff200;
 }
 
-.case-study-grid,
-.measurement-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.case-study-card {
-    padding: 20px;
-    border: 1px solid rgba(171, 198, 218, 0.28);
-    border-left: 4px solid var(--color-accent);
-    border-radius: 9px;
-    background: #0a1f34;
-}
-
-.case-study-card .card-heading {
+.content-card--case-study .card-heading {
     margin-bottom: 7px;
 }
 
-.case-study-card p {
+.content-card--case-study p {
     margin: 0;
-}
-
-.traffic-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 20px;
-}
-
-.metric-card {
-    padding: 22px;
-    border: 1px solid rgba(171, 198, 218, 0.28);
-    border-top: 4px solid var(--color-accent);
-    border-radius: 9px;
-    background: #0a1f34;
-    text-align: center;
 }
 
 .metric-value,
@@ -167,46 +134,29 @@
 }
 
 .meta-list,
-.info-panel ul {
+.content-card--info ul {
     padding-left: 1.35rem;
 }
 
 .meta-list li::marker,
-.info-panel li::marker {
+.content-card--info li::marker {
     color: var(--color-accent);
 }
 
-.project-cta,
-.notfound-action {
-    display: inline-flex;
-    min-height: 44px;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 14px;
-    padding: 10px 18px;
-    border: 1px solid var(--color-accent);
-    border-radius: 7px;
-    background: var(--color-accent);
-    color: #071b2e !important;
-    font-weight: 800;
-    text-decoration: none;
-}
-
-.project-cta:hover,
-.project-cta:focus-visible,
-.notfound-action:hover,
-.notfound-action:focus-visible {
-    background: #fff;
-    color: #071b2e;
-}
-
-.notfound-container {
+.content-card--not-found {
+    margin-bottom: 18px;
+    padding: clamp(20px, 3vw, 34px);
     max-width: 900px;
     margin-right: auto;
     margin-left: auto;
     text-align: center;
+}
+
+.content-card__caption {
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-style: italic;
+    font-weight: 900;
 }
 
 .section-heading--not-found {
@@ -222,11 +172,6 @@
     margin: 18px auto 0;
 }
 
-.notfound-subtitle {
-    color: #c7d7e3;
-    line-height: 1.6;
-}
-
 .evac-illustration {
     display: block;
     width: min(100%, 520px);
@@ -240,15 +185,7 @@
 }
 
 @media (max-width: 720px) {
-    .case-study-grid,
-    .measurement-grid,
-    .traffic-metrics {
-        grid-template-columns: 1fr;
-    }
-
-    .case-study-hero,
-    .info-panel,
-    .notfound-container {
+    .page-header--case-study {
         padding: 18px;
     }
 }

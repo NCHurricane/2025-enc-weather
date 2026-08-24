@@ -498,7 +498,7 @@ export class TropicalOverviewController {
       const button = createElement(
         this.documentRef,
         'button',
-        `weather-center-condition-tab tropical-product-tab${index === 0 ? ' is-active' : ''}`,
+        `subtabs__tab${index === 0 ? ' is-active' : ''}`,
         product.label,
       );
       button.type = 'button';

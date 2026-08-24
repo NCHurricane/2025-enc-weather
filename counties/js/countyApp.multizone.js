@@ -13,7 +13,7 @@ import {
     closeCountyAlertDialog,
     renderCountyAlerts,
     renderCountyOutlook,
-} from './countyAlerts.js?v=20260824-phase3-1';
+} from './countyAlerts.js?v=20260824-phase4-1';
 
 // Alert Colors and Priorities
 const warningColors = {
@@ -367,7 +367,7 @@ function setupZoneSelector() {
         return;
     }
 
-    const zoneButtons = zoneSelector.querySelectorAll('.zone-btn');
+    const zoneButtons = zoneSelector.querySelectorAll('[data-zone]');
     if (zoneButtons.length === 0) {
         console.log('[countyApp] No zone buttons found');
         return;
@@ -388,8 +388,12 @@ function setupZoneSelector() {
 
             console.log(`[countyApp] Zone button clicked: ${selectedZone}`);
 
-            zoneButtons.forEach((btn) => btn.classList.remove('active'));
-            e.target.classList.add('active');
+            zoneButtons.forEach((btn) => {
+                btn.classList.remove('is-active');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            e.currentTarget.classList.add('is-active');
+            e.currentTarget.setAttribute('aria-pressed', 'true');
 
             const success = API.switchZone ? API.switchZone(selectedZone) : false;
             if (success) {
@@ -409,9 +413,11 @@ function setupZoneSelector() {
     if (currentZone) {
         zoneButtons.forEach((btn) => {
             if (btn.dataset.zone === currentZone.id) {
-                btn.classList.add('active');
+                btn.classList.add('is-active');
+                btn.setAttribute('aria-pressed', 'true');
             } else {
-                btn.classList.remove('active');
+                btn.classList.remove('is-active');
+                btn.setAttribute('aria-pressed', 'false');
             }
         });
     }
@@ -419,13 +425,13 @@ function setupZoneSelector() {
 
 function showLoading() {
     document.body.classList.add('loading');
-    const zoneButtons = document.querySelectorAll('.zone-btn');
+    const zoneButtons = document.querySelectorAll('[data-zone]');
     zoneButtons.forEach((btn) => (btn.disabled = true));
 }
 
 function hideLoading() {
     document.body.classList.remove('loading');
-    const zoneButtons = document.querySelectorAll('.zone-btn');
+    const zoneButtons = document.querySelectorAll('[data-zone]');
     zoneButtons.forEach((btn) => (btn.disabled = false));
 }
 

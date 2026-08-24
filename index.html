@@ -37,11 +37,11 @@
    <script src="vendor/leaflet/1.9.4/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
    <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
-   <link rel="stylesheet" href="css/styles.css?v=20260824-phase3-1" />
-   <link rel="stylesheet" href="css/components.css?v=20260824-phase3-1" />
+   <link rel="stylesheet" href="css/styles.css?v=20260824-phase4-1" />
+   <link rel="stylesheet" href="css/components.css?v=20260824-phase4-1" />
    <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823" />
-   <link rel="stylesheet" href="counties/css/county.css?v=20260824-phase3-1" />
-   <link rel="stylesheet" href="css/home.css?v=20260824-phase3-1" />
+   <link rel="stylesheet" href="counties/css/county.css?v=20260824-phase4-1" />
+   <link rel="stylesheet" href="css/home.css?v=20260824-phase4-1" />
    <script type="application/ld+json">
    [
      {
@@ -92,49 +92,49 @@
 
       <div class="weather-center-layout">
          <section class="weather-center-map-card" aria-label="Eastern North Carolina Weather Center">
-            <div class="weather-center-tabs" role="tablist" aria-label="Weather Center section">
-               <button id="weather-tab-temp" class="weather-center-tab is-active" type="button" role="tab"
+            <div class="tabset tabset--weather" role="tablist" aria-label="Weather Center section">
+               <button id="weather-tab-temp" class="tabset__tab is-active" type="button" role="tab"
                   aria-selected="true" aria-controls="weather-panel-temp" data-weather-tab="temp">
                   <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i><span>Conditions</span>
                </button>
-               <button id="weather-tab-radar" class="weather-center-tab" type="button" role="tab"
+               <button id="weather-tab-radar" class="tabset__tab" type="button" role="tab"
                   aria-selected="false" aria-controls="weather-panel-radar" data-weather-tab="radar" tabindex="-1">
                   <i class="fa-solid fa-bullseye" aria-hidden="true"></i><span>Radar</span>
                </button>
-               <button id="weather-tab-satellite" class="weather-center-tab" type="button" role="tab"
+               <button id="weather-tab-satellite" class="tabset__tab" type="button" role="tab"
                   aria-selected="false" aria-controls="weather-panel-satellite" data-weather-tab="satellite"
                   tabindex="-1">
                   <i class="fa-solid fa-satellite" aria-hidden="true"></i><span>Satellite</span>
                </button>
             </div>
 
-            <div id="weather-panel-temp" class="weather-center-panel" role="tabpanel"
+            <div id="weather-panel-temp" class="tabset__panel" role="tabpanel"
                aria-labelledby="weather-tab-temp" data-weather-panel="temp">
-               <div class="weather-center-condition-tabs" role="tablist" aria-label="Observed condition">
-                  <button id="condition-tab-temperature" class="weather-center-condition-tab is-active" type="button"
+               <div class="subtabs subtabs--conditions" role="tablist" aria-label="Observed condition">
+                  <button id="condition-tab-temperature" class="subtabs__tab is-active" type="button"
                      role="tab" aria-selected="true" aria-controls="condition-panel-display" aria-label="Temperature"
                      data-condition-field="temperature" data-short-label="Temp">Temp</button>
-                  <button id="condition-tab-dewpoint" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-dewpoint" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Dew Point"
                      data-condition-field="dewpoint" data-short-label="DP" tabindex="-1">Dew P</button>
-                  <button id="condition-tab-humidity" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-humidity" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Humidity"
                      data-condition-field="humidity" data-short-label="Hum" tabindex="-1">Hum</button>
-                  <button id="condition-tab-wind" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-wind" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Wind"
                      data-condition-field="wind" data-short-label="Wind" tabindex="-1">Wind</button>
-                  <button id="condition-tab-gusts" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-gusts" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Gusts"
                      data-condition-field="gusts" data-short-label="Gust" tabindex="-1">Gust</button>
-                  <button id="condition-tab-pressure" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-pressure" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Pressure"
                      data-condition-field="pressure" data-short-label="Pres" tabindex="-1">Pres</button>
-                  <button id="condition-tab-visibility" class="weather-center-condition-tab" type="button" role="tab"
+                  <button id="condition-tab-visibility" class="subtabs__tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Visibility"
                      data-condition-field="visibility" data-short-label="Vis" tabindex="-1">Vis</button>
                </div>
 
-               <div id="condition-panel-display" class="weather-center-condition-panel" role="tabpanel"
+               <div id="condition-panel-display" class="subtabs__panel" role="tabpanel"
                   aria-labelledby="condition-tab-temperature">
                   <div class="temperature-controls">
                      <span class="weather-center-toolbar-label"><i class="fa-solid fa-list" aria-hidden="true"></i>
@@ -162,7 +162,7 @@
                </div>
             </div>
 
-            <section id="weather-panel-radar" class="radar-container weather-center-panel" role="tabpanel"
+            <section id="weather-panel-radar" class="radar-container tabset__panel" role="tabpanel"
                aria-labelledby="weather-tab-radar" data-weather-panel="radar" hidden>
                <input type="checkbox" id="radar-toggle" class="radar-toggle" />
                <label for="radar-toggle" class="radar-title weather-center-source-title" id="radar-heading">Radar
@@ -222,7 +222,7 @@
                </div>
             </section>
 
-            <section id="weather-panel-satellite" class="satellite-container weather-center-panel" role="tabpanel"
+            <section id="weather-panel-satellite" class="satellite-container tabset__panel" role="tabpanel"
                aria-labelledby="weather-tab-satellite" data-weather-panel="satellite" hidden>
                <input type="checkbox" id="satellite-toggle" class="satellite-toggle" />
                <label for="satellite-toggle" class="satellite-title weather-center-source-title"
@@ -315,7 +315,7 @@
    <script type="module" src="counties/js/weatherMaps.js?v=20260823-map-status-1"></script>
    <script type="module" src="counties/js/weatherCenter.js?v=20260823-map-status-1"></script>
    <script type="module">
-        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase3-1';
+        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase4-1';
       NavigationModule.navData.logo = {
          textBefore: 'ChuckCopeland',
          iconClass: 'fa-solid fa-bolt-lightning',
@@ -324,7 +324,7 @@
       };
       document.addEventListener('DOMContentLoaded', () => NavigationModule.init('./'));
    </script>
-   <a href="#" class="back-to-top" aria-label="Back to top" style="display: none"><i
+   <a href="#" class="back-to-top" data-back-to-top aria-label="Back to top" hidden><i
          class="fa-solid fa-up-long" aria-hidden="true"></i></a>
 </body>
 

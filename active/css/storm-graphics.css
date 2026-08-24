@@ -10,12 +10,12 @@
 }
 
 /* Time tabs - Grid layout to eliminate empty space */
-.graphics-tabs.time-tabs {
+.subtabs--time {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 }
 
-.graphics-tab.time-tab {
+.subtabs--time .subtabs__tab {
   margin-bottom: 0;
   text-overflow: ellipsis;
 }
@@ -40,76 +40,6 @@
   align-items: flex-start;
 }
 
-/* Tabs for Wind Probability */
-.tab-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 0.5rem;
-}
-
-.tab-button {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-background);
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.tab-button:hover {
-  background: #e8e8e8;
-}
-
-.tab-button.active {
-  background: #007bff;
-  color: white;
-}
-
-.tab-content {
-  position: relative;
-}
-
-.tab-pane {
-  display: none;
-}
-
-.tab-pane.active {
-  display: block;
-  animation: fadeIn 0.3s;
-}
-
-/* Action Button */
-.action-button-container {
-  display: flex;
-  justify-content: center;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.action-button {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s;
-}
-
-.action-button:hover {
-  background: linear-gradient(135deg, #0056b3, #003d82);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 /* --- Graphics Tabbed Interface Styles (moved from active.css) --- */
 
 /* Interface container */
@@ -128,19 +58,11 @@
   display: none; /* Hide all panels by default */
 }
 
-.graphics-content-panel.active {
+.graphics-content-panel.is-active {
   display: block; /* Show only the active panel */
 }
 
 /* Add section-specific class for wind probability hour tabs */
-.wind-probability-time-tab {
-  width: 100%;
-  box-sizing: border-box;
-  justify-self: stretch;
-  min-width: 0;
-  max-width: 100%;
-}
-
 /* Responsive styles for storm graphic images */
 .storm-graphic-img {
   width: 100%;
@@ -165,13 +87,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .graphics-tabs:not(.time-tabs) {
+  .subtabs--graphics:not(.subtabs--time) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     gap: 0.25rem;
   }
 
-  .graphics-tab:not(.time-tab) {
+  .subtabs--graphics:not(.subtabs--time) .subtabs__tab {
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
@@ -179,12 +101,12 @@
     white-space: nowrap;
   }
 
-  .graphics-tabs.category-tabs {
+  .subtabs--category {
     display: flex;
     flex-wrap: nowrap;
   }
 
-  .graphics-tab.category-tab {
+  .subtabs--category .subtabs__tab {
     flex: 1 1 0;
     min-width: 0;
     max-width: 100%;
@@ -193,19 +115,8 @@
     white-space: nowrap;
   }
 
-  .tab-buttons {
-    justify-content: center;
-  }
-
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-    justify-content: center;
-    transition: all 0.3s;
-  }
-
-  /* Two-row layout for graphics-tabs except time-tabs and category-tabs */
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls):not(.track-language-tabs):not(.track-product-tabs) {
+  /* Two-row layout for general graphics tabs. */
+  .subtabs--graphics:not(.subtabs--time):not(.subtabs--category):not(.subtabs--track-language):not(.subtabs--track-product) {
     display: flex;
     flex-wrap: wrap;
     gap: 0;
@@ -213,12 +124,12 @@
     border-bottom: 2px solid #e0e0e0;
   }
 
-  .graphics-tabs:not(.time-tabs):not(.category-tabs):not(.radii-hour-controls):not(.radii-controls):not(.track-language-tabs):not(.track-product-tabs) .graphics-tab {
+  .subtabs--graphics:not(.subtabs--time):not(.subtabs--category):not(.subtabs--track-language):not(.subtabs--track-product) .subtabs__tab {
     width: 50%;
     box-sizing: border-box;
   }
 
-  .graphics-tab:not(.time-tab):not(.category-tab) {
+  .subtabs--graphics:not(.subtabs--time):not(.subtabs--category) .subtabs__tab {
     width: 50%;
     min-width: 0;
     max-width: 100%;
@@ -229,7 +140,7 @@
 
   /* Two-row (stacked) layout for time-tabs: each tab is full width, stacked vertically */
   /* Force time-tabs to 2 rows and 6 columns on mobile, center last row's content */
-  .graphics-tabs.time-tabs {
+  .subtabs--time {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     grid-auto-rows: 1fr;
@@ -237,48 +148,35 @@
     place-items: stretch stretch;
   }
 
-  .graphics-tab.time-tab {
+  .subtabs--time .subtabs__tab {
     width: 100%;
     box-sizing: border-box;
     justify-self: center;
   }
 
-  .action-button:hover {
-    background: linear-gradient(135deg, #0056b3, #003d82);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .wind-probability-time-tab {
-    width: 100%;
-    box-sizing: border-box;
-    justify-self: stretch;
-    min-width: 0;
-    max-width: 100%;
-  }
 }
 
 /* Track & Key Messages uses language tabs with a second product-tab row. */
-.graphics-tabs.track-language-tabs {
+.subtabs--track-language {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.25rem;
   margin-bottom: 0.35rem;
 }
 
-.graphics-tabs.track-product-tabs {
+.subtabs--track-product {
   grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
   gap: 0.25rem;
   margin-bottom: 0.5rem;
 }
 
-.track-language-tab,
-.track-product-tab {
+.subtabs--track-language .subtabs__tab,
+.subtabs--track-product .subtabs__tab {
   min-width: 0;
   width: auto;
   white-space: normal;
 }
 
-.track-product-tab {
+.subtabs--track-product .subtabs__tab {
   line-height: var(--component-subtab-line-height);
 }
 
@@ -297,27 +195,27 @@
 }
 
 @media (max-width: 768px) {
-  .graphics-tabs.track-language-tabs {
+  .subtabs--track-language {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.2rem;
   }
 
-  .graphics-tabs.track-product-tabs {
+  .subtabs--track-product {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.2rem;
   }
 
-  .graphics-tabs.track-language-tabs .graphics-tab,
-  .graphics-tabs.track-product-tabs .graphics-tab {
+  .subtabs--track-language .subtabs__tab,
+  .subtabs--track-product .subtabs__tab {
     width: auto;
     max-width: none;
     padding: 0.275rem 0.175rem;
     white-space: normal;
   }
 
-  .track-product-tabs .track-product-tab:last-child:nth-child(odd) {
+  .subtabs--track-product .subtabs__tab:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
 }

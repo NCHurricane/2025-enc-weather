@@ -32,9 +32,9 @@
             content="This page isn't available. Visit the homepage for current weather updates." />
         <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
-        <link rel="stylesheet" href="./css/styles.css?v=20260824-phase3-1" />
-        <link rel="stylesheet" href="./css/components.css?v=20260824-phase3-1" />
-        <link rel="stylesheet" href="./css/info.css?v=20260824-phase3-1" />
+        <link rel="stylesheet" href="./css/styles.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="./css/components.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="./css/info.css?v=20260824-phase4-1" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
 
@@ -68,7 +68,7 @@
         <!-- Navigation will be dynamically generated here -->
         <header class="header"></header>
 
-        <main class="page-shell page-shell--info info-main" id="main-content">
+        <main class="page-shell page-shell--info" id="main-content">
             <header class="page-header page-header--info">
                 <p class="text-role text-role--eyebrow">Page not found</p>
                 <h1 class="page-title page-title--info page-title--not-found">404</h1>
@@ -76,19 +76,19 @@
             </header>
 
             <!-- Single panel, same “section container” look as other pages -->
-            <section class="notfound-container" aria-labelledby="notfound-title">
+            <section class="content-card content-card--not-found" aria-labelledby="notfound-title">
                 <h2 id="notfound-title" class="section-heading section-heading--not-found">
                     <i class="fa-solid fa-signs-post" aria-hidden="true"></i>This page
                     has moved or does not exist
                 </h2>
 
                 <figure class="evac-figure">
-                    <p class="notfound-subtitle muted">
+                    <p class="content-card__summary muted">
                         We could not find the forecast you requested.<br />Use the navigation above or return to the homepage.
                     </p>
                     <img src="./images/evac.webp" alt="Evacuation sign illustration" class="evac-illustration" />
-                    <figcaption class="notfound-caption">
-                        <a class="notfound-action" href="/"><i class="fa-solid fa-house" aria-hidden="true"></i>Return to the homepage</a>
+                    <figcaption class="content-card__caption">
+                        <a class="button button--primary" href="/"><i class="fa-solid fa-house" aria-hidden="true"></i>Return to the homepage</a>
                     </figcaption>
                 </figure>
             </section>
@@ -138,7 +138,7 @@
         </footer>
 
         <script type="module">
-        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase3-1';
+        import { NavigationModule } from './js/modules/navigation.js?v=20260824-phase4-1';
 
             document.addEventListener('DOMContentLoaded', () => {
                 NavigationModule.navData.logo = {

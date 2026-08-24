@@ -73,6 +73,390 @@
   color: var(--text-helper-color);
 }
 
+.content-card {
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid rgba(164, 190, 211, 0.52);
+  border-radius: var(--radius-lg);
+  background: var(--surface-panel);
+  color: #edf5fa;
+  box-shadow: 0 14px 32px rgba(4, 10, 16, 0.24);
+}
+
+.content-card--info {
+  container-type: inline-size;
+  margin: 0 0 18px;
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.content-card--case-study {
+  padding: 20px;
+  border-color: rgba(171, 198, 218, 0.28);
+  border-left: 4px solid var(--color-accent);
+  border-radius: 9px;
+  background: #0a1f34;
+  box-shadow: none;
+}
+
+.content-card--metric {
+  padding: 22px;
+  border-color: rgba(171, 198, 218, 0.28);
+  border-top: 4px solid var(--color-accent);
+  border-radius: 9px;
+  background: #0a1f34;
+  text-align: center;
+  box-shadow: none;
+}
+
+.content-card__summary {
+  color: #c7d7e3;
+  line-height: 1.6;
+}
+
+.card-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card-grid--case-study,
+.card-grid--measurement {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card-grid--metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.button {
+  display: inline-flex;
+  min-height: var(--control-target-min);
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+}
+
+.button--primary {
+  margin-top: 14px;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #071b2e !important;
+}
+
+.button--primary:hover,
+.button--primary:focus-visible {
+  background: #fff;
+  color: #071b2e !important;
+}
+
+.consent-dialog {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  z-index: var(--z-consent);
+  display: flex;
+  max-width: 980px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: #102f55;
+  color: var(--color-text-light);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.consent-dialog__title {
+  margin: 0 0 6px;
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+}
+
+.consent-dialog p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.consent-dialog a {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.consent-dialog__current {
+  margin-top: 6px !important;
+  font-size: 0.85rem;
+}
+
+.consent-dialog__actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.consent-dialog__button,
+.consent-dialog__close {
+  display: inline-flex;
+  min-height: var(--control-target-min);
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border: 2px solid var(--color-white);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.consent-dialog__button--allow {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text);
+}
+
+.consent-dialog__button--decline,
+.consent-dialog__close {
+  background: transparent;
+  color: var(--color-text-light);
+}
+
+.consent-dialog__close {
+  border-color: transparent;
+  text-decoration: underline;
+}
+
+.consent-dialog__button:hover,
+.consent-dialog__close:hover {
+  transform: translateY(-1px);
+}
+
+.consent-dialog a:focus-visible,
+.consent-dialog button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.alert-dialog {
+  position: fixed;
+  inset: 0;
+  width: 95%;
+  max-width: 40vw;
+  height: min(88svh, 820px);
+  max-height: 88svh;
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: #fff;
+}
+
+.alert-dialog::backdrop {
+  background: rgba(2, 8, 14, 0.68);
+  backdrop-filter: blur(2px);
+}
+
+.alert-dialog__shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(177, 201, 220, 0.5);
+  border-radius: 16px;
+  background: #071b2e;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.52);
+}
+
+.alert-dialog__header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(177, 201, 220, 0.28);
+  background: #0a1f34;
+}
+
+.alert-dialog__header span {
+  display: block;
+  margin-bottom: 2px;
+  color: #fff200;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.alert-dialog__title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.alert-dialog__close {
+  display: inline-grid;
+  width: var(--control-target-min);
+  height: var(--control-target-min);
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(177, 201, 220, 0.46);
+  border-radius: 999px;
+  background: #071b2e;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.15rem;
+}
+
+.alert-dialog__close:hover {
+  border-color: #fff200;
+  color: #fff200;
+}
+
+.alert-dialog__close:focus-visible,
+.alert-dialog__selector:focus-visible {
+  outline: 2px solid #fff200;
+  outline-offset: 2px;
+}
+
+.alert-dialog__selectors {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-bottom: 1px solid rgba(177, 201, 220, 0.22);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.alert-dialog__selector {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid rgba(171, 198, 218, 0.38);
+  border-bottom: 3px solid var(--county-alert-color, #dc3545);
+  border-radius: 8px;
+  background: #102940;
+  color: #dce7ef;
+  cursor: pointer;
+  text-align: left;
+}
+
+.alert-dialog__selector strong,
+.alert-dialog__selector span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.alert-dialog__selector strong {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.alert-dialog__selector span {
+  color: #b8cad8;
+  font-size: 0.66rem;
+}
+
+.alert-dialog__selector.is-active {
+  border-color: var(--county-alert-color, #dc3545);
+  background: #173854;
+  color: #fff;
+}
+
+.alert-dialog__body {
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 18px 20px 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@container (max-width: 720px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .consent-dialog {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .consent-dialog__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .alert-dialog {
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .alert-dialog {
+    max-width: none;
+  }
+
+  .alert-dialog__header {
+    padding: 14px 14px 11px;
+  }
+
+  .alert-dialog__title {
+    font-size: 1.08rem;
+  }
+
+  .alert-dialog__close {
+    width: var(--control-target-min);
+    height: var(--control-target-min);
+  }
+
+  .alert-dialog__selectors {
+    max-height: min(30svh, 210px);
+    grid-template-columns: 1fr;
+    padding: 10px 12px;
+  }
+
+  .alert-dialog__selector {
+    min-width: 0;
+  }
+
+  .alert-dialog__body {
+    padding: 14px 14px 28px;
+  }
+}
+
 .weather-center-layout {
   display: block;
 }
@@ -126,6 +510,7 @@
 
 .weather-center-map-card {
   --weather-center-content-height: clamp(400px, calc(100svh - 450px), 450px);
+  container-type: inline-size;
   min-width: 0;
   overflow: hidden;
   padding: 0;
@@ -135,12 +520,14 @@
   box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
 }
 
-.weather-center-condition-panel,
-.weather-center-panel {
+.subtabs__panel,
+.tabset__panel {
   min-width: 0;
 }
 
-.weather-center-panel[hidden] {
+.subtabs__panel[hidden],
+.subtabs__tab[hidden],
+.tabset__panel[hidden] {
   display: none !important;
 }
 
@@ -292,8 +679,7 @@
   color: #d7e2ea;
 }
 
-.weather-center-tabs,
-.active-module-tabs {
+.tabset {
   display: grid;
   align-items: stretch;
   gap: 0;
@@ -302,17 +688,16 @@
   background: #0a1f34;
 }
 
-.weather-center-tabs {
+.tabset--weather {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.active-module-tabs {
+.tabset--active-module {
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
 }
 
-.weather-center-tabs .weather-center-tab,
-.active-module-tabs .active-module-tab {
+.tabset__tab {
   position: relative;
   display: flex;
   width: auto;
@@ -340,58 +725,47 @@
   text-transform: none;
 }
 
-.weather-center-tabs .weather-center-tab::after,
-.active-module-tabs .active-module-tab::after {
+.tabset__tab::after {
   content: none;
 }
 
-.weather-center-tabs .weather-center-tab i,
-.active-module-tabs .active-module-tab i {
+.tabset__tab i {
   color: #eef5fb;
   font-size: 1rem;
 }
 
-.weather-center-tabs .weather-center-tab:hover,
-.active-module-tabs .active-module-tab:hover {
+.tabset__tab:hover {
   background: var(--component-tab-hover-background);
   color: var(--component-tab-active-color);
 }
 
-.weather-center-tabs .weather-center-tab:focus-visible,
-.active-module-tabs .active-module-tab:focus-visible {
+.tabset__tab:focus-visible {
   z-index: 2;
   outline: 2px solid var(--component-tab-indicator-color);
   outline-offset: -4px;
 }
 
-.weather-center-tabs .weather-center-tab.is-active,
-.active-module-tabs .active-module-tab.is-active {
+.tabset__tab.is-active {
   border-bottom-color: var(--component-tab-indicator-color);
   color: var(--component-tab-active-color);
   font-weight: 650;
 }
 
-.weather-center-condition-tabs,
-.weather-center-forecast-tabs,
-.active-alert-tabs,
-.active-satellite-tabs,
-.graphics-tabs,
-.text-tabs,
-.radii-hour-controls,
-.radii-controls {
+.subtabs,
+.active-satellite-tabs {
   padding-inline: 6px;
   border-bottom: 1px solid rgba(177, 201, 220, 0.24);
   background: #102a43;
 }
 
-.graphics-tabs {
+.subtabs--graphics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   gap: 0;
   margin: 0;
 }
 
-.text-tabs {
+.subtabs--text {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
@@ -400,41 +774,35 @@
   margin: 0;
 }
 
-.radii-hour-controls,
-.radii-controls {
+.subtabs--radii-hours,
+.subtabs--radii {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 0;
 }
 
-.weather-center-condition-tabs {
+.subtabs--conditions,
+.subtabs--tropical-section,
+.subtabs--tropical-product {
   display: flex;
   overflow-x: auto;
   scrollbar-color: rgba(255, 242, 0, 0.75) transparent;
   scrollbar-width: thin;
 }
 
-.weather-center-forecast-tabs {
+.subtabs--forecast {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
 }
 
-.active-alert-tabs {
+.subtabs--active-alerts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.weather-center-condition-tabs .weather-center-condition-tab,
-.weather-center-forecast-tabs .weather-center-forecast-tab,
-#main-content .active-storm-workspace :is(
-  .active-alert-tab,
-  .active-satellite-tab,
-  .graphics-tab,
-  .text-tab,
-  .radii-btn,
-  .radii-hour-btn
-) {
+.subtabs__tab,
+#main-content .active-storm-workspace .active-satellite-tab {
   position: relative;
   display: flex;
   width: auto;
@@ -464,58 +832,26 @@
   white-space: nowrap;
 }
 
-.weather-center-condition-tabs .weather-center-condition-tab::after,
-.weather-center-forecast-tabs .weather-center-forecast-tab::after,
-#main-content .active-storm-workspace :is(
-  .active-alert-tab,
-  .active-satellite-tab,
-  .graphics-tab,
-  .text-tab,
-  .radii-btn,
-  .radii-hour-btn
-)::after {
+.subtabs__tab::after,
+#main-content .active-storm-workspace .active-satellite-tab::after {
   content: none;
 }
 
-.weather-center-condition-tabs .weather-center-condition-tab:hover,
-.weather-center-forecast-tabs .weather-center-forecast-tab:hover,
-#main-content .active-storm-workspace :is(
-  .active-alert-tab,
-  .active-satellite-tab,
-  .graphics-tab,
-  .text-tab,
-  .radii-btn,
-  .radii-hour-btn
-):hover {
+.subtabs__tab:hover,
+#main-content .active-storm-workspace .active-satellite-tab:hover {
   background: var(--component-tab-hover-background);
   color: var(--component-tab-active-color);
 }
 
-.weather-center-condition-tabs .weather-center-condition-tab:focus-visible,
-.weather-center-forecast-tabs .weather-center-forecast-tab:focus-visible,
-#main-content .active-storm-workspace :is(
-  .active-alert-tab,
-  .active-satellite-tab,
-  .graphics-tab,
-  .text-tab,
-  .radii-btn,
-  .radii-hour-btn
-):focus-visible {
+.subtabs__tab:focus-visible,
+#main-content .active-storm-workspace .active-satellite-tab:focus-visible {
   z-index: 2;
   outline: 2px solid var(--component-tab-indicator-color);
   outline-offset: -3px;
 }
 
-.weather-center-condition-tabs .weather-center-condition-tab.is-active,
-.weather-center-forecast-tabs .weather-center-forecast-tab.is-active,
-#main-content .active-storm-workspace :is(
-  .active-alert-tab.is-active,
-  .active-satellite-tab.active,
-  .graphics-tab.active,
-  .text-tab.active,
-  .radii-btn.active,
-  .radii-hour-btn.active
-) {
+.subtabs__tab.is-active,
+#main-content .active-storm-workspace .active-satellite-tab.active {
   border-bottom-color: var(--component-tab-indicator-color);
   background: transparent;
   color: var(--component-tab-active-color);
@@ -650,14 +986,6 @@
 }
 
 @media (max-width: 768px) {
-  .weather-center-condition-tab:nth-child(-n + 4) {
-    grid-column: span 3;
-  }
-
-  .weather-center-condition-tab:nth-child(n + 5) {
-    grid-column: span 4;
-  }
-
   .temperature-controls,
   .weather-center-map-card .radar-controls,
   .weather-center-map-card .satellite-controls {
@@ -702,48 +1030,21 @@
   }
 }
 
-@media (max-width: 680px) {
-  :root {
-    --component-primary-tab-height: 40px;
-    --component-primary-tab-font-size: 0.7rem;
-    --component-primary-tab-line-height: 1.1;
-    --component-primary-tab-padding: 5px 3px;
-  }
-
-  .weather-center-tabs,
-  .active-module-tabs {
-    padding-inline: 4px;
-  }
-
-  .active-module-tabs {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .weather-center-tabs .weather-center-tab,
-  .active-module-tabs .active-module-tab {
-    flex-direction: row;
-    gap: 0;
-  }
-
-  .weather-center-tabs .weather-center-tab i,
-  .active-module-tabs .active-module-tab i,
-  #main-content .active-storm-workspace :is(.active-alert-tab, .active-satellite-tab) i {
-    display: none;
-  }
-
-  .weather-center-condition-tabs {
+@container (max-width: 680px) {
+  .subtabs--conditions {
     display: flex;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     overflow: visible;
     padding-inline: 0;
   }
 
-  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label] {
+  .subtabs--conditions .subtabs__tab[data-short-label],
+  .subtabs--tropical-product .subtabs__tab[data-short-label] {
     text-indent: -100vw;
   }
 
-  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]::before {
+  .subtabs--conditions .subtabs__tab[data-short-label]::before,
+  .subtabs--tropical-product .subtabs__tab[data-short-label]::before {
     position: absolute;
     inset: 0 3px 3px;
     display: flex;
@@ -756,40 +1057,48 @@
     text-indent: 0;
   }
 
-  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label].is-active::before,
-  .weather-center-condition-tabs .weather-center-condition-tab[data-short-label]:hover::before {
+  .subtabs--conditions .subtabs__tab[data-short-label].is-active::before,
+  .subtabs--conditions .subtabs__tab[data-short-label]:hover::before,
+  .subtabs--tropical-product .subtabs__tab[data-short-label].is-active::before,
+  .subtabs--tropical-product .subtabs__tab[data-short-label]:hover::before {
     color: var(--component-tab-active-color);
   }
 
-  #main-content .active-storm-workspace :is(
-    .radii-controls
-  ) {
+  #main-content .active-storm-workspace .subtabs--radii {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     overflow: visible;
   }
 
-    #main-content .active-storm-workspace :is(
-    .text-tabs
-  ) {
+  #main-content .active-storm-workspace .subtabs--text {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     overflow: visible;
   }
 
-    #main-content .active-storm-workspace :is(
-    .radii-hour-controls
-  ) {
+  #main-content .active-storm-workspace .subtabs--radii-hours {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
   }
 
+}
+
+@container (max-width: 768px) {
+  .subtabs--conditions .subtabs__tab:nth-child(-n + 4) {
+    grid-column: span 3;
+  }
+
+  .subtabs--conditions .subtabs__tab:nth-child(n + 5) {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 680px) {
   .map-menu > summary {
     width: 100%;
     justify-content: center;
   }
-
 }
 
 @media (max-width: 600px) {
@@ -829,7 +1138,7 @@
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   }
 
-  .weather-center-tab span {
+  .tabset__tab span {
     overflow: hidden;
     max-width: 100%;
     text-overflow: ellipsis;
@@ -852,5 +1161,30 @@
   .weather-center-toolbar-status {
     gap: 6px;
     white-space: nowrap;
+  }
+}
+
+@container (max-width: 680px) {
+  .tabset {
+    --component-primary-tab-height: 44px;
+    --component-primary-tab-font-size: 0.7rem;
+    --component-primary-tab-line-height: 1.1;
+    --component-primary-tab-padding: 5px 3px;
+    padding-inline: 4px;
+  }
+
+  .tabset--active-module {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabset__tab {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .tabset__tab i,
+  #main-content .active-storm-workspace .active-satellite-tab i {
+    display: none;
   }
 }
