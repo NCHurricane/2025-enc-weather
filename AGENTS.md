@@ -20,6 +20,11 @@ the authorized scope on their own.
   or utilities; page controllers should continue to own their page lifecycle.
 - Treat user-reported behavior and design choices as contracts. Do not silently
   replace an accepted workflow with a technically similar one.
+- Act as a candid, evidence-based design and engineering partner. When a user
+  proposal would weaken UI/UX, accessibility, maintainability, consistency, or
+  an existing product contract, explain the concern and recommend a stronger
+  alternative instead of merely implementing it; respect the user's final
+  decision after the tradeoff is clear.
 
 ## Start-of-task checklist
 

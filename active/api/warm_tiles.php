@@ -148,8 +148,6 @@ foreach ($zoneGeoms as $id => $geom) {
   $bboxes[] = bbox($geom);
 }
 
-echo "DONE. total={$done}, saved={$saved}, skipped={$skipped}, errors={$errors}\n";
-
 $totalPlanned = 0;
 foreach ($bboxes as $bbox) {
   list($LONMIN, $LONMAX, $LATMIN, $LATMAX) = $bbox;
@@ -249,58 +247,3 @@ function saveTile(string $url, string $destBase): ?string {
   @file_put_contents($path, $body);
   return $path;
 }
-
-$totalPlanned = 0;
-for ($z = $ZMIN; $z <= $ZMAX; $z++) {
-  $x0 = lon2tileX($LONMIN, $z);
-  $x1 = lon2tileX($LONMAX, $z);
-  $y0 = lat2tileY($LATMAX, $z); // note: y increases southward
-  $y1 = lat2tileY($LATMIN, $z);
-  if ($x0 > $x1) [$x0, $x1] = [$x1, $x0];
-  if ($y0 > $y1) [$y0, $y1] = [$y1, $y0];
-  $count = ($x1 - $x0 + 1) * ($y1 - $y0 + 1);
-  $totalPlanned += $count * count($styles);
-}
-echo "Warming styles=[" . implode(',', $styles) . "] z={$ZMIN}..{$ZMAX} over lon=[{$LONMIN},{$LONMAX}] lat=[{$LATMIN},{$LATMAX}]\n";
-echo "Planned tiles: ~{$totalPlanned}\n";
-
-$done = 0; $saved = 0; $skipped = 0; $errors = 0;
-
-foreach ($styles as $style) {
-  $tpl = $TEMPLATES[$style];
-  for ($z = $ZMIN; $z <= $ZMAX; $z++) {
-    $x0 = lon2tileX($LONMIN, $z);
-    $x1 = lon2tileX($LONMAX, $z);
-    $y0 = lat2tileY($LATMAX, $z);
-    $y1 = lat2tileY($LATMIN, $z);
-    if ($x0 > $x1) [$x0, $x1] = [$x1, $x0];
-    if ($y0 > $y1) [$y0, $y1] = [$y1, $y0];
-
-    for ($x = $x0; $x <= $x1; $x++) {
-      for ($y = $y0; $y <= $y1; $y++) {
-        $destDir = "{$siteRoot}/js/data/tiles/{$style}/{$z}/{$x}";
-        if (!is_dir($destDir)) @mkdir($destDir, 0775, true);
-        $base = "{$destDir}/{$y}";
-
-        $existing = null;
-        foreach (['jpg','jpeg','png','webp'] as $e) {
-          $p = "{$base}.{$e}"; if (is_file($p)) { $existing = $p; break; }
-        }
-        if ($existing && !$PURGE) { $skipped++; $done++; continue; }
-
-        $url = str_replace(['{z}','{x}','{y}'], [$z,$x,$y], $tpl);
-        $path = saveTile($url, $base);
-        if ($path) { $saved++; }
-        else { $errors++; }
-        $done++;
-
-        if ($done % 200 === 0) {
-          echo "Progress: {$done}/{$totalPlanned} (saved={$saved}, skipped={$skipped}, errors={$errors})\n";
-        }
-        usleep($SLEEP * 1000);
-      }
-    }
-  }
-}
-
-echo "DONE. total={$done}, saved={$saved}, skipped={$skipped}, errors={$errors}\n";

@@ -79,9 +79,11 @@ function createCountyPopup(zone, alerts) {
   const eyebrow = document.createElement('p');
   eyebrow.className = 'home-county-popup-eyebrow';
   eyebrow.textContent = zone.county === zone.label.replace(' County', '')
-    ? 'County weather page'
+    ? ''
     : `${zone.county} County zone`;
-  popup.append(eyebrow);
+  if (eyebrow.textContent) {
+    popup.append(eyebrow);
+  }
 
   const heading = document.createElement('h3');
   heading.textContent = zone.label;
@@ -116,7 +118,7 @@ function createCountyPopup(zone, alerts) {
   const link = document.createElement('a');
   link.className = 'home-county-popup-link';
   link.href = zone.href;
-  link.textContent = `Open ${zone.county} County Weather`;
+  link.textContent = `Open ${zone.county} County Page`;
   popup.append(link);
   return popup;
 }

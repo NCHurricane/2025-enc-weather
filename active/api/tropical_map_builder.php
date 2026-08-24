@@ -319,24 +319,6 @@ try {
     }
     $sources = tropicalMapCreateSources($fixtures, $fixtureRoot, $basins, $currentStormsOverride);
 
-    if (in_array($parsed['mode'], ['overview', 'all'], true)) {
-        foreach ($basins as $basin) {
-            try {
-                $path = tropicalMapBuildOverview($basin, $sources, $overviewOutput, $generatedAt);
-                echo "OK overview {$basin}: {$path}" . PHP_EOL;
-            } catch (Throwable $error) {
-                $retained = !$fixtures && TropicalMapLib::markOverviewStale($overviewOutput, $basin, $error);
-                fwrite(STDERR, sprintf(
-                    "ERROR overview %s: %s%s\n",
-                    $basin,
-                    $error->getMessage(),
-                    $retained ? ' (last-known-good retained as stale)' : ''
-                ));
-                $exitCode = 1;
-            }
-        }
-    }
-
     if (in_array($parsed['mode'], ['storm', 'all'], true)) {
         $stormIds = [];
         if ($parsed['mode'] === 'storm') {
@@ -357,6 +339,24 @@ try {
                 echo "OK storm {$stormId}: {$path}" . PHP_EOL;
             } catch (Throwable $error) {
                 fwrite(STDERR, "ERROR storm {$stormId}: {$error->getMessage()}\n");
+                $exitCode = 1;
+            }
+        }
+    }
+
+    if (in_array($parsed['mode'], ['overview', 'all'], true)) {
+        foreach ($basins as $basin) {
+            try {
+                $path = tropicalMapBuildOverview($basin, $sources, $overviewOutput, $generatedAt);
+                echo "OK overview {$basin}: {$path}" . PHP_EOL;
+            } catch (Throwable $error) {
+                $retained = !$fixtures && TropicalMapLib::markOverviewStale($overviewOutput, $basin, $error);
+                fwrite(STDERR, sprintf(
+                    "ERROR overview %s: %s%s\n",
+                    $basin,
+                    $error->getMessage(),
+                    $retained ? ' (last-known-good retained as stale)' : ''
+                ));
                 $exitCode = 1;
             }
         }

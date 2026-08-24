@@ -81,6 +81,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 ## Open gates and known limitations
 
+- The 2026-08-23 homepage county-popup mobile follow-up scopes Leaflet paragraph margins to `.home-county-leaflet-popup` at the base popup level, reducing the default vertical gaps without relying on a mobile media-query match or changing Tropical and other popup families. The homepage uses the matching `20260823f` `home.css` cache key. Owner re-smoke on the reported S23 Ultra remains open.
 - The map-status slice passed JavaScript syntax checks, 14 focused Tropical/Active tests, `git diff --check`, and controlled browser checks at `1280x900` and `390x844` on the homepage, Beaufort, Dare, San Diego, Tropical, and Active. Conditions/Radar/Satellite status text was present and unclipped, map widths stayed bounded, and the exercised console had no errors or warnings. The site validator's new map-status/note guards passed, but the repository-level command remains blocked by the concurrent static skip link in `active/index.html`.
 - Owner follow-up after the map-status/note cleanup reported, "Everything seems to pass." No exact pages, devices, or viewport sizes were supplied, so the evidence is retained only at that overall granularity.
 - Navigation owner smoke passed for the committed nested desktop/mobile workflow.

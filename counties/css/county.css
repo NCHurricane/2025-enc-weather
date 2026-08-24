@@ -1282,7 +1282,7 @@ canvas#meteogramChart {
   transition: transform 0.3s ease;
 }
 
-.radar-timestamp,
+/* .radar-timestamp,
 .satellite-timestamp {
   position: absolute;
   bottom: 10px;
@@ -1292,7 +1292,7 @@ canvas#meteogramChart {
   padding: 5px 10px;
   border-radius: 3px;
   font-family: var(--font-mono), monospace;
-}
+} */
 
 .radar-loading,
 .radar-error,
@@ -1353,7 +1353,7 @@ canvas#meteogramChart {
   margin: 0 auto;
 }
 
-.radar-timestamp {
+/* .radar-timestamp {
   position: absolute;
   bottom: 10px;
   left: 10px;
@@ -1363,7 +1363,7 @@ canvas#meteogramChart {
   border-radius: 3px;
   font-size: 0.8rem;
   font-family: monospace;
-}
+} */
 
 .radar-loading,
 .radar-error {
@@ -1484,7 +1484,7 @@ canvas#meteogramChart {
   object-position: 40% 50%; /* Slightly different position for animated EUS */
 }
 
-.satellite-timestamp {
+/* .satellite-timestamp {
   position: absolute;
   bottom: 10px;
   left: 10px;
@@ -1494,7 +1494,7 @@ canvas#meteogramChart {
   border-radius: 3px;
   font-size: 0.8rem;
   font-family: monospace;
-}
+} */
 
 .satellite-loading,
 .satellite-error {
@@ -1562,11 +1562,11 @@ canvas#meteogramChart {
     object-position: 5% 50%;
   }
 
-  .satellite-timestamp {
+  /* .satellite-timestamp {
     font-size: 0.7rem;
     bottom: 5px;
     left: 5px;
-  }
+  } */
 }
 
 @media (max-width: 600px) {
@@ -1680,13 +1680,13 @@ canvas#meteogramChart {
   color: #ffb6bd;
 }
 
-#radar-timestamp,
+/* #radar-timestamp,
 #satellite-timestamp {
   top: 10px;
   right: 10px;
   bottom: auto;
   left: auto;
-}
+} */
 
 .weather-center-map-card .weather-place-label {
   border: 0;

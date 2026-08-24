@@ -1,0 +1,110 @@
+# NCHurricane production crontab
+# Generated from the verified repository layout on 2026-08-23.
+# Paste this file into `crontab -e` for the production account.
+# Before installing, ensure every referenced log directory exists.
+
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+PHP_BIN=/usr/bin/php8.4-cli
+SITE_ROOT=/kunden/homepages/4/d194842499/htdocs/weather
+
+# ============================================================
+# TROPICAL PROCESSING
+# Hourly AL, EP, and CP refresh sequence
+# ============================================================
+
+5 * * * * sleep 5;  $PHP_BIN $SITE_ROOT/active/api/tropical_data.php --cron >> $SITE_ROOT/active/logs/cron_tropical_data.log 2>&1
+5 * * * * sleep 10; $PHP_BIN $SITE_ROOT/active/api/text_products_cache.php >> $SITE_ROOT/active/logs/cron_text_products.log 2>&1
+
+5 * * * * sleep 20; $PHP_BIN $SITE_ROOT/active/api/advisory_writer.php --storm=ALL >> $SITE_ROOT/active/logs/cron_advisory_atl.log 2>&1
+5 * * * * sleep 25; $PHP_BIN $SITE_ROOT/active/api/advisory_writer_ep.php --storm=ALL >> $SITE_ROOT/active/logs/cron_advisory_ep.log 2>&1
+5 * * * * sleep 30; $PHP_BIN $SITE_ROOT/active/api/advisory_writer_cp.php --storm=ALL >> $SITE_ROOT/active/logs/cron_advisory_cp.log 2>&1
+
+5 * * * * sleep 35; $PHP_BIN $SITE_ROOT/active/api/tcv_writer.php --storm=ALL >> $SITE_ROOT/active/logs/cron_tcv_atl.log 2>&1
+5 * * * * sleep 40; $PHP_BIN $SITE_ROOT/active/api/tcv_writer_ep.php --storm=ALL >> $SITE_ROOT/active/logs/cron_tcv_ep.log 2>&1
+5 * * * * sleep 45; $PHP_BIN $SITE_ROOT/active/api/tcv_writer_cp.php --storm=ALL >> $SITE_ROOT/active/logs/cron_tcv_cp.log 2>&1
+
+5 * * * * sleep 50; $PHP_BIN $SITE_ROOT/active/api/cxml_writer.php --storm=ALL >> $SITE_ROOT/active/logs/cron_cxml_atl.log 2>&1
+5 * * * * sleep 55; $PHP_BIN $SITE_ROOT/active/api/cxml_writer_ep.php --storm=ALL >> $SITE_ROOT/active/logs/cron_cxml_ep.log 2>&1
+6 * * * * $PHP_BIN $SITE_ROOT/active/api/cxml_writer_cp.php --storm=ALL >> $SITE_ROOT/active/logs/cron_cxml_cp.log 2>&1
+
+7 * * * * $PHP_BIN $SITE_ROOT/active/api/nhc_graphics_cache.php >> $SITE_ROOT/active/logs/cron_graphics_atl.log 2>&1
+7 * * * * sleep 20; $PHP_BIN $SITE_ROOT/active/api/nhc_graphics_cache_ep.php >> $SITE_ROOT/active/logs/cron_graphics_ep.log 2>&1
+7 * * * * sleep 40; $PHP_BIN $SITE_ROOT/active/api/nhc_graphics_cache_cp.php >> $SITE_ROOT/active/logs/cron_graphics_cp.log 2>&1
+
+8 * * * * $PHP_BIN $SITE_ROOT/active/api/cache_tropical.php >> $SITE_ROOT/active/logs/cron_cache_tropical.log 2>&1
+# `all` mode publishes current-storm packages before basin overviews.
+9 * * * * $PHP_BIN $SITE_ROOT/active/api/tropical_map_builder.php all --basin=all --current-storms-file=$SITE_ROOT/active/cache/nhc_current_storms.json >> $SITE_ROOT/active/logs/cron_tropical_map_builder.log 2>&1
+10 * * * * $PHP_BIN $SITE_ROOT/active/api/warm_tiles.php >> $SITE_ROOT/active/logs/cron_warm_tiles.log 2>&1
+
+# MTCSWA already processes AL, EP, and CP storms.
+40 */3 * * * $PHP_BIN $SITE_ROOT/active/api/mtcswa_fetcher.php >> $SITE_ROOT/active/logs/cron_mtcswa.log 2>&1
+
+# ============================================================
+# SHARED STATEWIDE CONDITIONS
+# NC serves the homepage and NC counties; CA serves San Diego.
+# ============================================================
+
+5,35 * * * * $PHP_BIN $SITE_ROOT/counties/api/cache_nc_conditions.php >> $SITE_ROOT/counties/bertie/logs/cron_nc_conditions.log 2>&1
+15,45 * * * * $PHP_BIN $SITE_ROOT/counties/api/cache_ca_conditions.php >> $SITE_ROOT/counties/san-diego/logs/cron_ca_conditions.log 2>&1
+
+# ============================================================
+# AREA FORECAST DISCUSSIONS
+# Hourly and staggered around tropical processing
+# ============================================================
+
+0 * * * * $PHP_BIN $SITE_ROOT/counties/bertie/api/cache_afd.php >> $SITE_ROOT/counties/bertie/logs/cron_afd.log 2>&1
+1 * * * * $PHP_BIN $SITE_ROOT/counties/pitt/api/cache_afd.php >> $SITE_ROOT/counties/pitt/logs/cron_afd.log 2>&1
+2 * * * * $PHP_BIN $SITE_ROOT/counties/beaufort/api/cache_afd.php >> $SITE_ROOT/counties/beaufort/logs/cron_afd.log 2>&1
+3 * * * * $PHP_BIN $SITE_ROOT/counties/martin/api/cache_afd.php >> $SITE_ROOT/counties/martin/logs/cron_afd.log 2>&1
+4 * * * * $PHP_BIN $SITE_ROOT/counties/dare/api/cache_afd.php >> $SITE_ROOT/counties/dare/logs/cron_afd.log 2>&1
+11 * * * * $PHP_BIN $SITE_ROOT/counties/hyde/api/cache_afd.php >> $SITE_ROOT/counties/hyde/logs/cron_afd.log 2>&1
+12 * * * * $PHP_BIN $SITE_ROOT/counties/washington/api/cache_afd.php >> $SITE_ROOT/counties/washington/logs/cron_afd.log 2>&1
+13 * * * * $PHP_BIN $SITE_ROOT/counties/tyrrell/api/cache_afd.php >> $SITE_ROOT/counties/tyrrell/logs/cron_afd.log 2>&1
+14 * * * * $PHP_BIN $SITE_ROOT/counties/san-diego/api/cache_afd.php >> $SITE_ROOT/counties/san-diego/logs/cron_afd.log 2>&1
+
+# ============================================================
+# COUNTY FORECASTS
+# Every two hours, staggered
+# ============================================================
+
+15 */2 * * * $PHP_BIN $SITE_ROOT/counties/bertie/api/cache_forecast.php >> $SITE_ROOT/counties/bertie/logs/cron_forecast.log 2>&1
+16 */2 * * * $PHP_BIN $SITE_ROOT/counties/pitt/api/cache_forecast.php >> $SITE_ROOT/counties/pitt/logs/cron_forecast.log 2>&1
+17 */2 * * * $PHP_BIN $SITE_ROOT/counties/beaufort/api/cache_forecast.php >> $SITE_ROOT/counties/beaufort/logs/cron_forecast.log 2>&1
+18 */2 * * * $PHP_BIN $SITE_ROOT/counties/martin/api/cache_forecast.php >> $SITE_ROOT/counties/martin/logs/cron_forecast.log 2>&1
+19 */2 * * * $PHP_BIN $SITE_ROOT/counties/dare/api/cache_forecast.php >> $SITE_ROOT/counties/dare/logs/cron_forecast.log 2>&1
+20 */2 * * * $PHP_BIN $SITE_ROOT/counties/hyde/api/cache_forecast.php >> $SITE_ROOT/counties/hyde/logs/cron_forecast.log 2>&1
+21 */2 * * * $PHP_BIN $SITE_ROOT/counties/washington/api/cache_forecast.php >> $SITE_ROOT/counties/washington/logs/cron_forecast.log 2>&1
+22 */2 * * * $PHP_BIN $SITE_ROOT/counties/tyrrell/api/cache_forecast.php >> $SITE_ROOT/counties/tyrrell/logs/cron_forecast.log 2>&1
+31 */2 * * * $PHP_BIN $SITE_ROOT/counties/san-diego/api/cache_forecast.php >> $SITE_ROOT/counties/san-diego/logs/cron_forecast.log 2>&1
+
+# ============================================================
+# COUNTY CURRENT CONDITIONS
+# Hourly, staggered
+# ============================================================
+
+23 * * * * $PHP_BIN $SITE_ROOT/counties/bertie/api/cache_current.php >> $SITE_ROOT/counties/bertie/logs/cron_current.log 2>&1
+24 * * * * $PHP_BIN $SITE_ROOT/counties/pitt/api/cache_current.php >> $SITE_ROOT/counties/pitt/logs/cron_current.log 2>&1
+25 * * * * $PHP_BIN $SITE_ROOT/counties/beaufort/api/cache_current.php >> $SITE_ROOT/counties/beaufort/logs/cron_current.log 2>&1
+26 * * * * $PHP_BIN $SITE_ROOT/counties/martin/api/cache_current.php >> $SITE_ROOT/counties/martin/logs/cron_current.log 2>&1
+27 * * * * $PHP_BIN $SITE_ROOT/counties/dare/api/cache_current.php >> $SITE_ROOT/counties/dare/logs/cron_current.log 2>&1
+28 * * * * $PHP_BIN $SITE_ROOT/counties/hyde/api/cache_current.php >> $SITE_ROOT/counties/hyde/logs/cron_current.log 2>&1
+29 * * * * $PHP_BIN $SITE_ROOT/counties/washington/api/cache_current.php >> $SITE_ROOT/counties/washington/logs/cron_current.log 2>&1
+30 * * * * $PHP_BIN $SITE_ROOT/counties/tyrrell/api/cache_current.php >> $SITE_ROOT/counties/tyrrell/logs/cron_current.log 2>&1
+54 * * * * $PHP_BIN $SITE_ROOT/counties/san-diego/api/cache_current.php >> $SITE_ROOT/counties/san-diego/logs/cron_current.log 2>&1
+
+# ============================================================
+# COUNTY ALERTS AND HAZARDOUS WEATHER OUTLOOKS
+# Every minute, staggered by seven seconds.
+# HWO refresh is integrated into each county alert publisher.
+# ============================================================
+
+* * * * * $PHP_BIN $SITE_ROOT/counties/bertie/api/cache_alerts.php >> $SITE_ROOT/counties/bertie/logs/cron_alerts.log 2>&1
+* * * * * sleep 7;  $PHP_BIN $SITE_ROOT/counties/pitt/api/cache_alerts.php >> $SITE_ROOT/counties/pitt/logs/cron_alerts.log 2>&1
+* * * * * sleep 14; $PHP_BIN $SITE_ROOT/counties/beaufort/api/cache_alerts.php >> $SITE_ROOT/counties/beaufort/logs/cron_alerts.log 2>&1
+* * * * * sleep 21; $PHP_BIN $SITE_ROOT/counties/martin/api/cache_alerts.php >> $SITE_ROOT/counties/martin/logs/cron_alerts.log 2>&1
+* * * * * sleep 28; $PHP_BIN $SITE_ROOT/counties/dare/api/cache_alerts.php >> $SITE_ROOT/counties/dare/logs/cron_alerts.log 2>&1
+* * * * * sleep 35; $PHP_BIN $SITE_ROOT/counties/hyde/api/cache_alerts.php >> $SITE_ROOT/counties/hyde/logs/cron_alerts.log 2>&1
+* * * * * sleep 42; $PHP_BIN $SITE_ROOT/counties/washington/api/cache_alerts.php >> $SITE_ROOT/counties/washington/logs/cron_alerts.log 2>&1
+* * * * * sleep 49; $PHP_BIN $SITE_ROOT/counties/tyrrell/api/cache_alerts.php >> $SITE_ROOT/counties/tyrrell/logs/cron_alerts.log 2>&1
+* * * * * sleep 56; $PHP_BIN $SITE_ROOT/counties/san-diego/api/cache_alerts.php >> $SITE_ROOT/counties/san-diego/logs/cron_alerts.log 2>&1

@@ -1572,6 +1572,9 @@ if (isset($_POST['action'])) {
                 // Tropical scripts need storm parameter
                 defaultParams = '--storm=ALL';
                 placeholder = '--storm=ALL or --storm=AL012025';
+            } else if (scriptName === 'Tropical Map Builder') {
+                defaultParams = 'all';
+                placeholder = 'all or overview';
             } else {
                 // County and cache scripts typically don't need parameters
                 defaultParams = '';
@@ -1597,6 +1600,8 @@ if (isset($_POST['action'])) {
                 // Use script-specific defaults
                 if (currentScript.name.includes('Writer') || currentScript.name.includes('TCV') || currentScript.name.includes('CXML')) {
                     params = '--storm=ALL';
+                } else if (currentScript.name === 'Tropical Map Builder') {
+                    params = 'all';
                 } else {
                     params = ''; // No parameters for county/cache scripts
                 }
@@ -1962,21 +1967,25 @@ function getScripts() {
     
     // Tropical scripts
     $tropicalScripts = [
-        'advisory_writer.php' => ['Advisory Writer (AT)', 'Hourly · :05 +20s', 'Atlantic advisory XML', 5400],
-        'advisory_writer_ep.php' => ['Advisory Writer (EP)', 'Hourly · :05 +25s', 'Eastern Pacific advisory XML', 5400],
-        'tcv_writer.php' => ['TCV Writer (AT)', 'Hourly · :05 +30s', 'Atlantic watch and warning zones', 5400],
-        'tcv_writer_ep.php' => ['TCV Writer (EP)', 'Hourly · :05 +35s', 'Eastern Pacific watch and warning zones', 5400],
-        'cxml_writer.php' => ['CXML Writer (AT)', 'Hourly · :05 +40s', 'Atlantic compact storm data', 5400],
-        'cxml_writer_ep.php' => ['CXML Writer (EP)', 'Hourly · :05 +45s', 'Eastern Pacific compact storm data', 5400],
-        'mtcswa_fetcher.php' => ['MTCSWA Fetcher (AT/EP)', 'Every 3 hours · :40', 'Satellite-derived surface wind analysis', 14400],
-        'nhc_graphics_cache.php' => ['NHC Graphics Cache (AT)', 'Hourly · :07', 'Atlantic NHC graphics', 5400],
-        'nhc_graphics_cache_ep.php' => ['NHC Graphics Cache (EP)', 'Hourly · :07 +30s', 'Eastern Pacific NHC graphics', 5400],
+        'advisory_writer.php' => ['Advisory Writer (Atlantic)', 'Hourly · :05 +20s', 'Atlantic advisory XML', 5400, 'cron_advisory_atl.log'],
+        'advisory_writer_ep.php' => ['Advisory Writer (Eastern Pacific)', 'Hourly · :05 +25s', 'Eastern Pacific advisory XML', 5400, 'cron_advisory_ep.log'],
+        'advisory_writer_cp.php' => ['Advisory Writer (Central Pacific)', 'Hourly · :05 +30s', 'Central Pacific advisory XML', 5400, 'cron_advisory_cp.log'],
+        'tcv_writer.php' => ['TCV Writer (Atlantic)', 'Hourly · :05 +35s', 'Atlantic watch and warning zones', 5400, 'cron_tcv_atl.log'],
+        'tcv_writer_ep.php' => ['TCV Writer (Eastern Pacific)', 'Hourly · :05 +40s', 'Eastern Pacific watch and warning zones', 5400, 'cron_tcv_ep.log'],
+        'tcv_writer_cp.php' => ['TCV Writer (Central Pacific)', 'Hourly · :05 +45s', 'Central Pacific watch and warning zones', 5400, 'cron_tcv_cp.log'],
+        'cxml_writer.php' => ['CXML Writer (Atlantic)', 'Hourly · :05 +50s', 'Atlantic compact storm data', 5400, 'cron_cxml_atl.log'],
+        'cxml_writer_ep.php' => ['CXML Writer (Eastern Pacific)', 'Hourly · :05 +55s', 'Eastern Pacific compact storm data', 5400, 'cron_cxml_ep.log'],
+        'cxml_writer_cp.php' => ['CXML Writer (Central Pacific)', 'Hourly · :06', 'Central Pacific compact storm data', 5400, 'cron_cxml_cp.log'],
+        'mtcswa_fetcher.php' => ['MTCSWA Fetcher (All Basins)', 'Every 3 hours · :40', 'Satellite-derived surface wind analysis', 14400, 'cron_mtcswa.log'],
+        'nhc_graphics_cache.php' => ['NHC Graphics Cache (Atlantic)', 'Hourly · :07', 'Atlantic NHC graphics', 5400, 'cron_graphics_atl.log'],
+        'nhc_graphics_cache_ep.php' => ['NHC Graphics Cache (Eastern Pacific)', 'Hourly · :07 +20s', 'Eastern Pacific NHC graphics', 5400, 'cron_graphics_ep.log'],
+        'nhc_graphics_cache_cp.php' => ['NHC Graphics Cache (Central Pacific)', 'Hourly · :07 +40s', 'Central Pacific NHC graphics', 5400, 'cron_graphics_cp.log'],
     ];
 
     foreach ($tropicalScripts as $file => $metadata) {
         $path = BASE_DIR . "/active/api/$file";
         if (file_exists($path)) {
-            $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
+            $logPath = LOGS_DIR . '/' . $metadata[4];
             $scripts['tropical'][] = buildDashboardScriptEntry(
                 'tropical',
                 $metadata[0],
@@ -1992,7 +2001,7 @@ function getScripts() {
     // Add warm_tiles.php as a special tropical script
     $warmTilesPath = BASE_DIR . '/active/api/warm_tiles.php';
     if (file_exists($warmTilesPath)) {
-        $logPath = LOGS_DIR . '/warm_tiles_log';
+        $logPath = LOGS_DIR . '/cron_warm_tiles.log';
         $scripts['tropical'][] = buildDashboardScriptEntry(
             'tropical',
             'Tile Warmer (All Styles)',
@@ -2008,15 +2017,16 @@ function getScripts() {
     
     // Cache scripts
     $cacheScripts = [
-        'text_products_cache.php' => ['Text Products Cache', 'Hourly · :05 +10s', 'NHC advisories and discussions', 5400],
-        'tropical_data.php' => ['Tropical Data Cache', 'Hourly · :05 +5s', 'Current NHC storm inventory', 5400],
-        'cache_tropical.php' => ['Tropical Coordination Guard', 'Hourly · :08', 'Verifies the tropical cache is fresh', 5400],
+        'text_products_cache.php' => ['Text Products Cache', 'Hourly · :05 +10s', 'NHC advisories and discussions', 5400, 'cron_text_products.log'],
+        'tropical_data.php' => ['Tropical Data Cache', 'Hourly · :05 +5s', 'Current NHC storm inventory', 5400, 'cron_tropical_data.log'],
+        'cache_tropical.php' => ['Tropical Coordination Guard', 'Hourly · :08', 'Verifies the tropical cache is fresh', 5400, 'cron_cache_tropical.log'],
+        'tropical_map_builder.php' => ['Tropical Map Builder', 'Hourly · :09', 'Publishes current-storm packages and basin overviews', 5400, 'cron_tropical_map_builder.log'],
     ];
 
     foreach ($cacheScripts as $file => $metadata) {
         $path = BASE_DIR . "/active/api/$file";
         if (file_exists($path)) {
-            $logPath = LOGS_DIR . '/' . str_replace('.php', '.log', $file);
+            $logPath = LOGS_DIR . '/' . $metadata[4];
             $statusPath = $file === 'cache_tropical.php'
                 ? BASE_DIR . '/active/cache/nhc_current_storms.json'
                 : $logPath;
@@ -2033,18 +2043,24 @@ function getScripts() {
         }
     }
 
-    $sharedConditionsPath = BASE_DIR . '/counties/api/cache_nc_conditions.php';
-    if (file_exists($sharedConditionsPath)) {
-        $sharedConditionsLog = BASE_DIR . '/counties/bertie/logs/cron_nc_conditions.log';
-        $scripts['cache'][] = buildDashboardScriptEntry(
-            'cache',
-            'Shared NC Conditions Map',
-            $sharedConditionsPath,
-            $sharedConditionsLog,
-            'Every 30 minutes · :05/:35',
-            'Statewide surface observations used by county maps',
-            3000
-        );
+    $sharedConditionsScripts = [
+        'cache_nc_conditions.php' => ['Shared NC Conditions Map', 'counties/bertie/logs/cron_nc_conditions.log', 'Every 30 minutes · :05/:35', 'North Carolina surface observations used by the homepage and county maps'],
+        'cache_ca_conditions.php' => ['Shared California Conditions Map', 'counties/san-diego/logs/cron_ca_conditions.log', 'Every 30 minutes · :15/:45', 'California surface observations used by the San Diego county map'],
+    ];
+
+    foreach ($sharedConditionsScripts as $file => $metadata) {
+        $path = BASE_DIR . "/counties/api/$file";
+        if (file_exists($path)) {
+            $scripts['cache'][] = buildDashboardScriptEntry(
+                'cache',
+                $metadata[0],
+                $path,
+                BASE_DIR . '/' . $metadata[1],
+                $metadata[2],
+                $metadata[3],
+                3000
+            );
+        }
     }
     
     // County scripts

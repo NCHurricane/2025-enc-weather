@@ -37,11 +37,11 @@
    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
    <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
-   <link rel="stylesheet" href="css/styles.css?v=20260823-breadcrumbs-1" />
-   <link rel="stylesheet" href="counties/css/county.css?v=20260823-map-status-1" />
-   <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823-map-status-1" />
-   <link rel="stylesheet" href="css/home.css?v=20260817-4" />
-   <link rel="stylesheet" href="css/components.css?v=20260822-2" />
+   <link rel="stylesheet" href="css/styles.css?v=20260823c" />
+   <link rel="stylesheet" href="counties/css/county.css?v=20260823" />
+   <link rel="stylesheet" href="css/interactive-weather-map.css?v=20260823" />
+   <link rel="stylesheet" href="css/home.css?v=20260823g" />
+   <link rel="stylesheet" href="css/components.css?v=20260823c" />
    <script type="application/ld+json">
    [
      {
@@ -88,7 +88,6 @@
       data-satellite-platform="East" data-radar-regional-precip-type="true">
       <header class="weather-center-heading">
          <h1 class="main-title">Eastern North Carolina Weather</h1>
-         <p>Current observations, active alerts, radar, and satellite imagery in one regional map center.</p>
       </header>
 
       <div class="weather-center-layout">
@@ -117,22 +116,22 @@
                      data-condition-field="temperature" data-short-label="Temp">Temp</button>
                   <button id="condition-tab-dewpoint" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Dew Point"
-                     data-condition-field="dewpoint" data-short-label="Dew Point" tabindex="-1">Dew P</button>
+                     data-condition-field="dewpoint" data-short-label="DP" tabindex="-1">Dew P</button>
                   <button id="condition-tab-humidity" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Humidity"
-                     data-condition-field="humidity" data-short-label="Humidity" tabindex="-1">Humid</button>
+                     data-condition-field="humidity" data-short-label="Hum" tabindex="-1">Hum</button>
                   <button id="condition-tab-wind" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Wind"
                      data-condition-field="wind" data-short-label="Wind" tabindex="-1">Wind</button>
                   <button id="condition-tab-gusts" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Gusts"
-                     data-condition-field="gusts" data-short-label="Gust" tabindex="-1">Gusts</button>
+                     data-condition-field="gusts" data-short-label="Gust" tabindex="-1">Gust</button>
                   <button id="condition-tab-pressure" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Pressure"
-                     data-condition-field="pressure" data-short-label="Pressure" tabindex="-1">Press</button>
+                     data-condition-field="pressure" data-short-label="Pres" tabindex="-1">Pres</button>
                   <button id="condition-tab-visibility" class="weather-center-condition-tab" type="button" role="tab"
                      aria-selected="false" aria-controls="condition-panel-display" aria-label="Visibility"
-                     data-condition-field="visibility" data-short-label="Visibility" tabindex="-1">Vis</button>
+                     data-condition-field="visibility" data-short-label="Vis" tabindex="-1">Vis</button>
                </div>
 
                <div id="condition-panel-display" class="weather-center-condition-panel" role="tabpanel"
@@ -312,7 +311,7 @@
       </div>
    </footer>
 
-   <script type="module" src="js/modules/homeMapOverlays.js?v=20260817-home10"></script>
+   <script type="module" src="js/modules/homeMapOverlays.js?v=20260823"></script>
    <script type="module" src="counties/js/weatherMaps.js?v=20260823-map-status-1"></script>
    <script type="module" src="counties/js/weatherCenter.js?v=20260823-map-status-1"></script>
    <script type="module">

@@ -182,7 +182,7 @@ html.satellite-imagery-modal-open body {
   position: absolute;
   z-index: 700;
   left: 10px;
-  bottom: 22px;
+  bottom: 20px;
   max-width: calc(100% - 20px);
   padding: 5px 9px;
   overflow: hidden;
@@ -190,7 +190,7 @@ html.satellite-imagery-modal-open body {
   background: rgba(0, 0, 0, 0.78);
   color: #fff;
   font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
+  font-size: clamp(0.5rem, 2vw, 0.7rem);
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -400,7 +400,6 @@ html.satellite-imagery-modal-open body {
   }
 
   .weather-map-timestamp {
-    font-size: 0.62rem;
     text-overflow: clip;
     white-space: normal;
   }

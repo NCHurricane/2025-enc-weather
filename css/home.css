@@ -13,9 +13,9 @@
 .home-weather-center .weather-center-heading p {
   margin: 8px auto 0;
   color: #c7d7e3;
-  font-size: clamp(0.86rem, 1.4vw, 1rem);
+  font-size: clamp(0.7rem, 1.4vw, 1rem);
   font-family: var(--font-heading);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .home-weather-center .temperature-content,
@@ -161,9 +161,13 @@
 }
 
 .home-county-leaflet-popup .leaflet-popup-content {
-  width: min(255px, 65vw) !important;
+  width: min(175px, 65vw) !important;
   margin: 15px;
   font-family: var(--font-primary);
+}
+
+.home-county-leaflet-popup .leaflet-popup-content p {
+  margin: 0.5em 0;
 }
 
 .home-county-popup-eyebrow {
@@ -176,10 +180,10 @@
 }
 
 .home-county-popup h3 {
-  margin: 0 0 10px;
+  margin: 0 0 5px;
   color: #fff;
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 0.8rem;
 }
 
 .home-county-popup-alerts {
@@ -212,16 +216,15 @@
 
 .home-county-popup-link {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 20px;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
-  margin-top: 12px;
   padding: 8px 12px;
   border-radius: 6px;
   background: #fff200;
   color: #071b2e !important;
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   font-weight: 800;
   text-decoration: none;
 }
@@ -261,5 +264,25 @@
   .home-map-key.is-below-map .home-map-key-panel {
     max-height: none;
     overflow-y: auto;
+  }
+  .home-county-leaflet-popup .leaflet-popup-content {
+    width: clamp(165px, 40vw, 170px) !important;
+    margin: 8px;
+  }
+
+  .home-county-popup h3 {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+  }
+
+  .home-county-popup-clear {
+    font-size: 0.68rem;
+  }
+
+  .home-county-popup-link {
+    width: 100%;
+    margin-top: 8px;
+    padding: 7px 10px;
+    font-size: 0.6rem;
   }
 }
