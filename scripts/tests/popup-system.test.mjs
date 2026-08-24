@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import { phase6Contract } from '../css-ownership-contract.mjs';
+import { phase6Contract, phase7Contract } from '../css-ownership-contract.mjs';
 import {
   buildTropicalPopup,
   tropicalPopupAccessibleLabel,
@@ -70,6 +70,6 @@ test('Phase 6 owns one accessible popup shell with BEM family content and no leg
 
   assert.equal(phase6Contract.version, '20260824-phase6-1');
   const harness = readProjectFile('test/tropical-map/phase2-harness.html');
-  assert.match(harness, /interactive-weather-map\.css\?v=20260824-phase6-1/);
+  assert.match(harness, new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.version}`));
   assert.match(harness, /tropical-map-engine\.css\?v=20260824-phase6-1/);
 });

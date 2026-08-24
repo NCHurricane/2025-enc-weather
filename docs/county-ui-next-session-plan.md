@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`. Sitemap CSS Phase 6 is complete locally and owner-accepted; Phase 7 was explicitly authorized on 2026-08-24 but is not part of the Phase 6 checkpoint. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`, and owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`. Sitemap CSS Phase 7 is complete locally and owner-accepted but not committed; Phase 8 remains gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -26,10 +26,11 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   owner-accepted Phase 4 checkpoint is `1f6b0b1`; and owner-accepted Phase 5 is
   committed as `af8577a`. The bounded CI portability follow-up changes only
   exact harness tracking, vendor-byte attributes, official action versions,
-  and these handoffs. The separately authorized Phase 6 popup slice begins at
-  local baseline `7a32866`; it changes popup presentation/hooks and their
-  dependency contracts without changing products, sources, stations, zones,
-  camera/data lifecycle, or generated/runtime data.
+  and these handoffs. Owner-accepted Phase 6 is committed locally in `5448d61`.
+  The authorized Phase 7 dependency slice begins from that clean checkpoint;
+  it changes only stylesheet ownership/consumers, their cache keys and
+  contracts/tests, and these handoffs without changing products, sources,
+  stations, zones, camera/data lifecycle, or generated/runtime data.
 
 ## Committed checkpoints
 
@@ -80,9 +81,10 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Preserve the current retained ready-layer animation behavior; readiness timing alone is not an equivalent replacement.
 - Shared weather-center structure belongs in shared components, and shared map
   cards, controls, timestamps, legends, markers, and city labels belong in
-  `css/interactive-weather-map.css`. County forecast, observation-popup,
-  alert-detail, multi-zone, San Diego, and explicit County variants remain
-  county-owned.
+  `css/interactive-weather-map.css`. The shared Home/County observation popup
+  and station-details presentation now has that same shared map owner. County
+  forecast, alert-detail, multi-zone, San Diego, and explicit County variants
+  remain county-owned.
 - The Bertie prototype remains a prototype. Do not promote it to a live page without explicit authorization.
 
 ### Sitemap CSS Phase 6 popup closeout: 2026-08-24
@@ -120,6 +122,39 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   so this closes Phase 6 owner review only at that overall granularity. The
   same message separately authorized Phase 7 dependency removal, not a new
   County product phase or Phase 8.
+
+### Sitemap CSS Phase 7 dependency closeout: 2026-08-24
+
+- Owner-accepted Phase 6 was committed locally as `5448d61`. Phase 7 begins
+  from that clean checkpoint and is complete locally but not staged or
+  committed.
+- The reusable observation BEM content and inline station-details presentation
+  moved from `counties/css/county.css` to
+  `css/interactive-weather-map.css`, preserving the same generated markup,
+  `data-observation-popup-*` hooks, station content, NWS links, and lifecycle.
+  County CSS is now consumed only by the nine live County pages and the Bertie
+  prototype; Home, Tropical, and Active no longer depend on it.
+- All County and shared-map consumers use `20260824-phase7-1`. Focused ownership
+  tests and the validator enforce the new consumer list and reject relocated
+  observation selectors in County CSS.
+- Controlled browser at `1280x900` and `390x844` covered Bertie, Dare Hatteras,
+  and San Diego Mountains. Keyboard and mouse opening/closing, focus return,
+  44-pixel close/NWS-link targets, below-map mobile placement, and zero document
+  or panel horizontal overflow passed. Dare retained `?zone=hatteras`; San
+  Diego retained `?zone=mountains`. Per-page console/network capture was clean.
+- Phase-wide static evidence passes: five changed JavaScript/MJS syntax checks,
+  full 70-file PHP and 76-file tracked/task JavaScript baselines, all 80 focused
+  tests, the site validator at 18 HTML/307 JSON/164 local references, seven
+  PHP-served HTTP probes, focused selector/dependency searches, and
+  `git diff --check`.
+- No County zone, station, provider, product, alert/HWO, cache, camera,
+  generated/runtime, or prototype-promotion behavior changed. Nothing was
+  pushed, deployed, generated, or deleted. Phase 8 remains gated and unstarted.
+- Owner smoke on 2026-08-24 concluded with the exact report, "Ok, then it has
+  passed." The owner explicitly confirmed the bounded Active fixture and alert
+  popup in the same smoke sequence; no County page, zone, device, or viewport
+  was individually named in the final confirmation, so County evidence remains
+  at the overall Phase 7 acceptance level.
 
 ## Shared header breadcrumb follow-up: 2026-08-23
 
@@ -160,8 +195,8 @@ city labels to their approved BEM contracts with IDs/`data-*` hooks and no
 legacy aliases. Valid explicit Bertie, Dare, and San Diego routes passed the
 desktop/mobile map, target-size, product/zone switch, loading-state, local
 response, console, and horizontal-overflow gates. The separately authorized
-Phase 6 popup migration is complete locally with the exact evidence above and
-awaits owner review. The owner reported, "Ok, visual
+Phase 6 popup migration is owner-accepted and committed locally in `5448d61`;
+Phase 7 dependency removal is owner-accepted locally but uncommitted. The owner reported, "Ok, visual
 acceptance passed." No exact County page, device, viewport, or interaction was
 supplied, so the evidence is retained only at the overall Phase 5 level.
 

@@ -11,6 +11,7 @@ import {
   phase4Contract,
   phase5Contract,
   phase6Contract,
+  phase7Contract,
 } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
@@ -550,16 +551,20 @@ for (const stylesheet of phase5Contract.ownerStylesheets) {
   }
 }
 
+const phase7StylesheetNames = new Set(Object.keys(phase7Contract.stylesheets));
 for (const [stylesheet, consumers] of Object.entries(phase5Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
+  const expectedVersion = phase7StylesheetNames.has(stylesheet)
+    ? phase7Contract.version
+    : phase5Contract.stylesheetVersion;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
     );
     if (references.length > 0) actualConsumers.add(relative);
     if (expectedConsumers.has(relative)
-        && (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.stylesheetVersion)) {
+        && (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion)) {
       errors.push(`${relative}: ${stylesheet} must use the current shared-map stylesheet cache version`);
     }
   }
@@ -668,14 +673,17 @@ for (const sourceContract of phase6Contract.sourceContracts) {
 for (const [stylesheet, consumers] of Object.entries(phase6Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
+  const expectedVersion = phase7StylesheetNames.has(stylesheet)
+    ? phase7Contract.version
+    : phase6Contract.version;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
     );
     if (references.length > 0) actualConsumers.add(relative);
     if (expectedConsumers.has(relative)
-        && (references.length !== 1 || referenceVersion(references[0]) !== phase6Contract.version)) {
-      errors.push(`${relative}: ${stylesheet} must use the Phase 6 cache version`);
+        && (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion)) {
+      errors.push(`${relative}: ${stylesheet} must use its current Phase 6/7 cache version`);
     }
   }
   for (const consumer of actualConsumers) {
@@ -698,6 +706,68 @@ for (const dependency of phase6Contract.versionedAssets) {
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   if (references.length !== 1 || referenceVersion(references[0]) !== phase6Contract.version) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 6 cache version`);
+  }
+}
+
+const phase7SharedCss = (await readFile(
+  path.join(root, ...phase7Contract.sharedOwner.split('/')),
+  'utf8',
+).catch(() => '')).replace(/\/\*[\s\S]*?\*\//g, '');
+const phase7CountyCss = (await readFile(
+  path.join(root, ...phase7Contract.countyOwner.split('/')),
+  'utf8',
+).catch(() => '')).replace(/\/\*[\s\S]*?\*\//g, '');
+for (const selector of phase7Contract.movedSelectors) {
+  if (!phase7SharedCss.includes(selector)) {
+    errors.push(`${phase7Contract.sharedOwner}: missing relocated Phase 7 selector ${selector}`);
+  }
+  if (phase7CountyCss.includes(selector)) {
+    errors.push(`${phase7Contract.countyOwner}: relocated Phase 7 selector remains ${selector}`);
+  }
+}
+
+const phase7HomeCss = (await readFile(
+  path.join(root, ...phase7Contract.homeOwner.split('/')),
+  'utf8',
+).catch(() => '')).replace(/\/\*[\s\S]*?\*\//g, '');
+for (const selector of phase7Contract.forbiddenHomeSelectors) {
+  if (phase7HomeCss.includes(selector)) {
+    errors.push(`${phase7Contract.homeOwner}: obsolete Phase 7 selector remains ${selector}`);
+  }
+}
+
+for (const [stylesheet, consumers] of Object.entries(phase7Contract.stylesheets)) {
+  const expectedConsumers = new Set(consumers);
+  const actualConsumers = new Set();
+  for (const [relative, html] of phase2HtmlByRelativePath) {
+    const references = stylesheetHrefs(html).filter(
+      reference => repositoryReference(relative, reference) === stylesheet,
+    );
+    if (references.length > 0) actualConsumers.add(relative);
+    if (expectedConsumers.has(relative)
+        && (references.length !== 1 || referenceVersion(references[0]) !== phase7Contract.version)) {
+      errors.push(`${relative}: ${stylesheet} must use the Phase 7 cache version`);
+    }
+  }
+  for (const consumer of actualConsumers) {
+    if (!expectedConsumers.has(consumer)) {
+      errors.push(`${consumer}: undeclared Phase 7 ${stylesheet} consumer`);
+    }
+  }
+  for (const consumer of expectedConsumers) {
+    if (!actualConsumers.has(consumer)) {
+      errors.push(`${consumer}: missing declared Phase 7 ${stylesheet} dependency`);
+    }
+  }
+}
+
+for (const dependency of phase7Contract.forbiddenDependencies) {
+  const html = phase2HtmlByRelativePath.get(dependency.file) || '';
+  const references = stylesheetHrefs(html).filter(
+    reference => repositoryReference(dependency.file, reference) === dependency.target,
+  );
+  if (references.length > 0) {
+    errors.push(`${dependency.file}: removed Phase 7 ${dependency.target} dependency remains`);
   }
 }
 

@@ -10,14 +10,6 @@
   margin-bottom: 18px;
 }
 
-.home-weather-center .page-header--weather p {
-  margin: 8px auto 0;
-  color: #c7d7e3;
-  font-size: clamp(0.7rem, 1.4vw, 1rem);
-  font-family: var(--font-heading);
-  font-weight: 700;
-}
-
 .home-map-key {
   width: min(290px, calc(100vw - 76px));
   margin: 0 10px 10px 0 !important;
@@ -219,9 +211,6 @@
     --weather-map-block-size: clamp(23.75rem, 56svh, 26.875rem);
   }
 
-  .home-weather-center .page-header--weather p {
-    max-width: 34rem;
-  }
 }
 
 @media (max-width: 600px) {

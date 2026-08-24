@@ -27,7 +27,6 @@ export const leafletContract = Object.freeze({
         'css/styles.css',
         'css/components.css',
         'css/interactive-weather-map.css',
-        'counties/css/county.css',
         'css/home.css',
       ],
     },
@@ -41,7 +40,6 @@ export const leafletContract = Object.freeze({
         'css/components.css',
         'css/interactive-weather-map.css',
         'css/tropical-map-engine.css',
-        'counties/css/county.css',
         'css/tropical.css',
       ],
     },
@@ -55,7 +53,6 @@ export const leafletContract = Object.freeze({
         '../css/components.css',
         '../css/interactive-weather-map.css',
         '../css/tropical-map-engine.css',
-        '../counties/css/county.css',
         './css/active.css',
         './css/storm-graphics.css',
       ],
@@ -166,6 +163,7 @@ const phase3Version = '20260824-phase3-1';
 const phase4Version = '20260824-phase4-1';
 const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
+const phase7Version = '20260824-phase7-1';
 const phase3Pages = [
   {
     file: 'index.html',
@@ -232,9 +230,6 @@ const phase2Stylesheets = {
   'css/styles.css': phase2Pages.map(page => page.file),
   'css/components.css': phase2Pages.map(page => page.file),
   'counties/css/county.css': [
-    'index.html',
-    'tropical.html',
-    'active/index.html',
     ...countyPages,
     'counties/bertie/index_test.html',
   ],
@@ -259,6 +254,11 @@ const phase6UpdatedStylesheets = new Set([
   'css/home.css',
 ]);
 
+const phase7UpdatedStylesheets = new Set([
+  'counties/css/county.css',
+  'css/home.css',
+]);
+
 export const phase2Contract = Object.freeze({
   version: '20260824-phase2-1',
   pages: Object.freeze(phase2Pages),
@@ -266,11 +266,13 @@ export const phase2Contract = Object.freeze({
     Object.entries(phase2Stylesheets).map(([file, consumers]) => [
       file,
       Object.freeze({
-        version: phase6UpdatedStylesheets.has(file)
-          ? phase6Version
-          : phase5UpdatedStylesheets.has(file)
-            ? phase5Version
-            : phase4Version,
+        version: phase7UpdatedStylesheets.has(file)
+          ? phase7Version
+          : phase6UpdatedStylesheets.has(file)
+            ? phase6Version
+            : phase5UpdatedStylesheets.has(file)
+              ? phase5Version
+              : phase4Version,
         consumers: Object.freeze(consumers),
       }),
     ]),
@@ -758,11 +760,6 @@ export const phase6Contract = Object.freeze({
       '.home-popup {',
       '.home-popup__link {',
     ]),
-    'counties/css/county.css': Object.freeze([
-      '.observation-popup {',
-      '.observation-popup__close {',
-      '.observation-popup__close:focus-visible {',
-    ]),
     'css/tropical-map-engine.css': Object.freeze([
       '.tropical-map-popup {',
       '.tropical-map-popup__title {',
@@ -808,9 +805,6 @@ export const phase6Contract = Object.freeze({
       'test/tropical-map/phase2-harness.html',
     ]),
     'counties/css/county.css': Object.freeze([
-      'index.html',
-      'tropical.html',
-      'active/index.html',
       ...countyPages,
       'counties/bertie/index_test.html',
     ]),
@@ -882,5 +876,42 @@ export const phase6Contract = Object.freeze({
     Object.freeze({ file: 'active/js/ww-maps.js', target: 'js/modules/leafletPopupShell.js' }),
     Object.freeze({ file: 'test/tropical-map/phase2-harness.html', target: 'test/tropical-map/phase2-harness.js' }),
     Object.freeze({ file: 'test/tropical-map/phase2-harness.js', target: 'js/modules/tropicalMapEngine.js' }),
+  ]),
+});
+
+export const phase7Contract = Object.freeze({
+  version: phase7Version,
+  sharedOwner: 'css/interactive-weather-map.css',
+  countyOwner: 'counties/css/county.css',
+  homeOwner: 'css/home.css',
+  movedSelectors: Object.freeze([
+    '.observation-popup {',
+    '.observation-popup__close {',
+    '.observation-popup__close:focus-visible {',
+    '.temperature-station-details {',
+    '@keyframes temperature-station-details-enter {',
+  ]),
+  forbiddenHomeSelectors: Object.freeze([
+    '.home-weather-center .page-header--weather p',
+  ]),
+  stylesheets: Object.freeze({
+    'css/interactive-weather-map.css': Object.freeze([
+      'index.html',
+      'tropical.html',
+      'active/index.html',
+      ...countyPages,
+      'counties/bertie/index_test.html',
+      'test/tropical-map/phase2-harness.html',
+    ]),
+    'counties/css/county.css': Object.freeze([
+      ...countyPages,
+      'counties/bertie/index_test.html',
+    ]),
+    'css/home.css': Object.freeze(['index.html']),
+  }),
+  forbiddenDependencies: Object.freeze([
+    Object.freeze({ file: 'index.html', target: 'counties/css/county.css' }),
+    Object.freeze({ file: 'tropical.html', target: 'counties/css/county.css' }),
+    Object.freeze({ file: 'active/index.html', target: 'counties/css/county.css' }),
   ]),
 });

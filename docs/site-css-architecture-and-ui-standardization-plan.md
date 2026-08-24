@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed locally in `7a32866`; Phase 6 complete locally and owner-accepted; Phase 7 explicitly authorized on 2026-08-24 but not included in the Phase 6 checkpoint
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed locally in `7a32866`; owner-accepted Phase 6 committed locally in `5448d61`; Phase 7 complete locally and owner-accepted but not committed; Phase 8 remains gated
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -256,8 +256,10 @@ Phase 5 is complete and committed in `af8577a`:
 The owner subsequently reported, "Ok, visual acceptance passed." No exact
 pages, devices, viewport sizes, or interactions were supplied, so this evidence
 is retained only as overall Phase 5 owner acceptance. The owner then separately
-authorized Phase 6 on 2026-08-24; the local implementation and validation are
-recorded below. Phase 7 remains gated.
+authorized Phase 6 on 2026-08-24; its implementation and validation are
+recorded below. The owner accepted Phase 6 at the reported overall level and
+authorized Phase 7, which is now complete locally and owner-accepted. Phase 8
+remains gated.
 
 The first GitHub Actions run for `af8577a` exposed two portability defects in
 the validation contract rather than a site regression: the tracked contract
@@ -338,6 +340,70 @@ Sitemap CSS Phase 6 is complete in the local working tree at baseline
   No pages, devices, viewport sizes, or individual interactions were supplied,
   so this is retained as overall Phase 6 owner evidence only. The same message
   explicitly authorized Phase 7; it did not authorize Phase 8.
+
+Sitemap CSS Phase 7 is complete and owner-accepted in the local working tree at
+baseline `5448d61`:
+
+- Home, Tropical, and Active no longer load `counties/css/county.css`. County
+  CSS is now consumed only by the nine live County routes and the Bertie
+  prototype. The Phase 2 compatibility harness continues to load only its real
+  shared-map and Tropical-engine dependencies.
+- The reusable `observation-popup` content block and
+  `temperature-station-details` layout moved intact from County CSS to
+  `css/interactive-weather-map.css`, where their shared Home/County runtime
+  owner already lives. County CSS retains only County composition, forecast,
+  alert, multi-zone, San Diego, and other genuine family variants.
+- A stale Home header-paragraph override was removed after the consumer audit
+  proved that no such paragraph exists. The remaining `css/home.css` rules are
+  generated or static Home composition and explicit Home variants; no reusable
+  block required another owner. Existing BEM presentation classes and
+  IDs/`data-*` behavior hooks were preserved because this dependency-only slice
+  did not require JavaScript hook changes.
+- All affected stylesheet consumers use `20260824-phase7-1`. The ownership
+  contract, site validator, durable popup test, local Tropical compatibility
+  assertion, and new focused Phase 7 test enforce the relocated selectors,
+  consumer lists, cache keys, and absence of the three cross-family links and
+  obsolete Home rule.
+- Static/automated validation: all five changed JavaScript/MJS files pass
+  `node --check`, including the relevant ignored local Tropical test; the full
+  baselines pass for 70 tracked PHP files and 76 tracked/task JavaScript files;
+  all 80 focused repository tests pass; and the site validator passes 18 HTML
+  files, 307 JSON files, and 164 local references. Focused dependency/selector
+  searches and `git diff --check` are clean. The validator also reverified the
+  exact local Leaflet 1.9.4 asset checksums.
+- Seven PHP-served HTTP probes returned `200` for Home, Bertie, explicit Dare
+  Hatteras, explicit San Diego Mountains, Atlantic Tropical, deterministic
+  `AL052025` Active, and the shared popup-shell module.
+- Controlled browser at `1280x900` and `390x844` covered Home, Bertie, Dare
+  Hatteras, San Diego Mountains, Atlantic Tropical, and deterministic
+  `AL052025` Active. Every route loaded the Phase 7 shared stylesheet; only the
+  County routes loaded County CSS. Observation panels and Home/Tropical/Active
+  popups retained mouse and keyboard opening/closing, focus return, official or
+  page links where applicable, 44-pixel close/link targets, bounded content,
+  and zero document/internal horizontal overflow. Dare retained
+  `?zone=hatteras`, San Diego retained `?zone=mountains`, and mobile observation
+  panels retained their below-map placement.
+- Per-page console/network capture was clean for Home, all exercised County
+  cases, and Tropical at both widths. Active retained only its known fixture
+  text/graphic-product `404`s and the missing-image ORB failure; its truthful
+  unavailable-product state remained intact and no Phase 7 stylesheet or popup
+  asset failed.
+- Phase 7 is not staged or committed. Nothing was pushed, deployed, generated,
+  or deleted; production/generated data and runtime artifacts were not changed.
+  Phase 8 cascade layers remain unstarted and require explicit authorization.
+- Owner smoke on 2026-08-24: after starting the bounded fixture router, the
+  owner confirmed that deterministic `AL052025` loaded and that its alert popup
+  worked, supplied a screenshot of the Coastal Colleton Tropical Storm Warning
+  polygon/popup, and then reported exactly, "Ok, then it has passed." The
+  fixture intentionally contains one SC zone for both wind and surge, so that
+  screenshot is correct for the subset rather than evidence of the historical
+  advisory's complete SC/NC extent. This closes Phase 7 owner review at the
+  reported overall level; the other smoke pages/devices were not individually
+  named in the final confirmation. Phase 8 was not authorized.
+- A separate modification to `css/styles.css` appeared after Phase 7
+  implementation and automated/browser validation. It is treated as
+  user-owned, was not edited or absorbed here, and is outside the recorded
+  Phase 7 validation boundary.
 
 ## Purpose
 
@@ -657,8 +723,8 @@ Review the 15 public routes after the general interface migration. Compare again
 #### Phase 5: Map card and shared map controls
 
 Implementation status: completed, owner-accepted, and committed in `af8577a`
-on 2026-08-24. Phase 6 was separately authorized and is complete locally;
-Phase 7 remains gated pending explicit authorization.
+on 2026-08-24. Phase 6 is owner-accepted and committed locally in `5448d61`;
+Phase 7 is complete locally and owner-accepted. Phase 8 remains gated.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.
@@ -689,6 +755,9 @@ Do not apply broad `.leaflet-popup-content p` rules site-wide when only one popu
 Acceptance: popups fit narrow viewports, do not obscure required controls unnecessarily, retain readable content and touch targets, and pass mouse, touch, keyboard, close, link, and focus checks.
 
 #### Phase 7: Remove cross-family dependencies and dead ownership
+
+Implementation status: complete and owner-accepted locally on 2026-08-24 at
+baseline `5448d61`; not yet committed. Phase 8 remains gated and unstarted.
 
 1. Remove `counties/css/county.css` from Home, Tropical, and Active once every required dependency has a shared or correct family owner.
 2. Move reusable rules out of `home.css`; retain only homepage composition and explicit variants.
