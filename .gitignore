@@ -58,6 +58,7 @@ counties/*/logs/
 
 #Documentation
 docs/*
+!docs/site-css-architecture-and-ui-standardization-plan.md
 !docs/archive/
 !docs/archive/**
 
