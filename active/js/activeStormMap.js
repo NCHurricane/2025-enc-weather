@@ -1,15 +1,15 @@
 import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
-import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260822-san-diego-cities-3';
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260822-svg-popups-1';
+import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260824-phase5-1';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260824-phase5-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260822-map-borders-1';
 import {
   TROPICAL_SATELLITE_PRODUCTS,
   tropicalSatelliteSource,
-} from '../../js/modules/tropicalSatelliteMap.js?v=20260823-map-status-1';
+} from '../../js/modules/tropicalSatelliteMap.js?v=20260824-phase5-1';
 
 const LAYER_PRODUCT = Object.freeze({
   currentPosition: 'currentPosition',
@@ -75,7 +75,7 @@ export class ActiveStormMapController {
     this.windowRef = windowRef;
     this.controls = Array.from(documentRef?.querySelectorAll?.('[data-storm-layer]') || []);
     this.mapPanel = documentRef?.getElementById?.('storm-panel-map');
-    this.mapShell = documentRef?.querySelector?.('.active-storm-map-section .interactive-weather-map-shell');
+    this.mapShell = documentRef?.querySelector?.('.active-storm-map-section [data-weather-map]');
     this.imageryGroup = documentRef?.getElementById?.('active-map-imagery-source');
     this.imageryDetails = this.imageryGroup?.closest?.('.active-map-imagery') || null;
     this.satelliteControls = documentRef?.getElementById?.('active-map-satellite-controls');

@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import {
   createGibsWmtsSatelliteSource,
@@ -12,7 +12,7 @@ import {
   loadWeatherPageContext,
 } from './countyContext.js?v=20260816-home1';
 import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260822-map-borders-1';
-import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260822-san-diego-cities-3';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260824-phase5-1';
 
 const NOWCOAST_RADAR_URL = 'https://nowcoast.noaa.gov/geoserver/weather_radar/wms';
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
@@ -153,19 +153,19 @@ function setPlayButton(button, playing, type) {
 }
 
 function setBusy(loading, error, busy) {
-  if (loading) loading.style.display = busy ? 'flex' : 'none';
-  if (busy && error) error.style.display = 'none';
+  if (loading) loading.hidden = !busy;
+  if (busy && error) error.hidden = true;
 }
 
 function hideError(error) {
-  if (error) error.style.display = 'none';
+  if (error) error.hidden = true;
 }
 
 function showError(error, message) {
   if (!error) return;
   const detail = error.querySelector('small');
   if (detail && message) detail.textContent = message;
-  error.style.display = 'flex';
+  error.hidden = false;
 }
 
 function setWeatherLegend(elements, legend) {
@@ -578,7 +578,7 @@ class CountySatelliteViewer {
       scaleMax: document.getElementById('satellite-legend-scale-max'),
       description: document.getElementById('satellite-legend-description'),
     };
-    this.mapShell = this.mapElement?.closest('.interactive-weather-map-shell') || null;
+    this.mapShell = this.mapElement?.closest('[data-weather-map]') || null;
     this.map = null;
     this.fallbackDialog = null;
     this.fallbackMode = false;

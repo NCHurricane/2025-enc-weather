@@ -40,10 +40,10 @@
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="../../css/styles.css?v=20260824-phase4-1" />
-      <link rel="stylesheet" href="../../css/components.css?v=20260824-phase4-1" />
-      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260823-map-status-1" />
-      <link rel="stylesheet" href="../css/county.css?v=20260824-phase4-1" />
+      <link rel="stylesheet" href="../../css/styles.css?v=20260824-phase5-1" />
+      <link rel="stylesheet" href="../../css/components.css?v=20260824-phase5-1" />
+      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260824-phase5-1" />
+      <link rel="stylesheet" href="../css/county.css?v=20260824-phase5-1" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
@@ -125,7 +125,7 @@
          </section>
 
          <div class="weather-center-layout">
-            <section class="weather-center-map-card" aria-label="Hyde County Weather Center">
+            <section class="weather-map-card" aria-label="Hyde County Weather Center">
                <div class="tabset tabset--weather" role="tablist" aria-label="Weather Center section">
                   <button id="weather-tab-temp" class="tabset__tab is-active" type="button" role="tab"
                      aria-selected="true" aria-controls="weather-panel-temp" data-weather-tab="temp">
@@ -161,11 +161,11 @@
                         data-short-label="Temp">Temp</button>
                      <button id="condition-tab-dewpoint" class="subtabs__tab" type="button"
                         role="tab" aria-selected="false" aria-controls="condition-panel-display"
-                        aria-label="Dew Point" data-condition-field="dewpoint" data-short-label="Dew Point"
+                        aria-label="Dew Point" data-condition-field="dewpoint" data-short-label="DP"
                         tabindex="-1">Dew P</button>
                      <button id="condition-tab-humidity" class="subtabs__tab" type="button"
                         role="tab" aria-selected="false" aria-controls="condition-panel-display"
-                        aria-label="Humidity" data-condition-field="humidity" data-short-label="Humidity"
+                        aria-label="Humidity" data-condition-field="humidity" data-short-label="Hum"
                         tabindex="-1">Humid</button>
                      <button id="condition-tab-wind" class="subtabs__tab" type="button" role="tab"
                         aria-selected="false" aria-controls="condition-panel-display" aria-label="Wind"
@@ -175,44 +175,44 @@
                         data-condition-field="gusts" data-short-label="Gust" tabindex="-1">Gusts</button>
                      <button id="condition-tab-pressure" class="subtabs__tab" type="button"
                         role="tab" aria-selected="false" aria-controls="condition-panel-display"
-                        aria-label="Pressure" data-condition-field="pressure" data-short-label="Pressure"
+                        aria-label="Pressure" data-condition-field="pressure" data-short-label="Pres"
                         tabindex="-1">Press</button>
                      <button id="condition-tab-visibility" class="subtabs__tab" type="button"
                         role="tab" aria-selected="false" aria-controls="condition-panel-display"
-                        aria-label="Visibility" data-condition-field="visibility" data-short-label="Visibility"
+                        aria-label="Visibility" data-condition-field="visibility" data-short-label="Vis"
                         tabindex="-1">Vis</button>
                   </div>
 
                   <div id="condition-panel-display" class="subtabs__panel" role="tabpanel"
                      aria-labelledby="condition-tab-temperature">
-                     <div class="temperature-controls">
-                        <span class="weather-center-toolbar-label">
+                     <div class="map-toolbar map-toolbar--conditions">
+                        <span class="map-toolbar__label">
                            <i class="fa-solid fa-list" aria-hidden="true"></i>
                            Surface observations
                         </span>
-                        <span class="weather-center-toolbar-status">
-                           <span class="weather-center-status-dot" aria-hidden="true"></span>
+                        <span class="map-toolbar__status">
+                           <span class="map-toolbar__status-indicator" data-map-status-indicator aria-hidden="true"></span>
                            <span id="temperature-station-count">Loading stations...</span>
                         </span>
                      </div>
-                     <div class="temperature-content weather-map-content">
-                        <div id="temperature-loading" class="temperature-status" role="status">
+                     <div class="weather-map__content">
+                        <div id="temperature-loading" class="status-message status-message--loading" role="status">
                            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                            <span>Loading current station observations...</span>
                         </div>
-                        <div id="temperature-error" class="temperature-status temperature-error" role="alert" hidden>
+                        <div id="temperature-error" class="status-message status-message--error" role="alert" hidden>
                            <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                            <span>Current station observations are unavailable.</span>
                         </div>
-                        <div class="interactive-weather-map-shell">
-                           <div id="temperature-map" class="interactive-weather-map" role="region"
+                        <div class="weather-map" data-weather-map>
+                           <div id="temperature-map" class="weather-map__canvas" role="region"
                               aria-label="Current temperatures near Hyde County"></div>
-                           <div id="temperature-timestamp" class="weather-map-timestamp"></div>
+                           <div id="temperature-timestamp" class="weather-map__timestamp"></div>
                         </div>
                         <aside id="temperature-station-details" class="temperature-station-details"
                            role="dialog" aria-modal="false" aria-label="Selected station details"
                            aria-live="polite" hidden></aside>
-                        <p class="weather-map-note">
+                        <p class="weather-map-card__note">
                            Select a station marker for details. Scroll to zoom, or use the map controls.
                         </p>
                      </div>
@@ -220,16 +220,15 @@
                </div>
 
                <!-- The existing checkboxes remain the visibility contract for weatherMaps.js. -->
-               <section id="weather-panel-radar" class="radar-container tabset__panel" role="tabpanel"
+               <section id="weather-panel-radar" class="weather-map-card__panel tabset__panel" role="tabpanel"
                   aria-labelledby="weather-tab-radar" data-weather-panel="radar" hidden>
-                  <input type="checkbox" id="radar-toggle" class="radar-toggle" />
-                  <label for="radar-toggle" class="radar-title weather-center-source-title" id="radar-heading">
+                  <input type="checkbox" id="radar-toggle" class="weather-map-card__toggle" />
+                  <label for="radar-toggle" class="weather-map-card__source-title" id="radar-heading">
                      Radar Imagery
                   </label>
-                  <div class="radar-tabs">
-                     <div class="radar-controls">
-                        <div class="radar-select-container">
-                           <select id="radar-station-select" class="radar-select" aria-label="Radar station">
+                  <div class="weather-map-card__body">
+                     <div class="map-toolbar map-toolbar--radar">
+                        <div class="field field--map-product field--map-station"><select id="radar-station-select" class="field__control" aria-label="Radar station">
                         <option value="KAKQ" selected>KAKQ (Wakefield, VA)</option>
                         <option value="KMHX">KMHX (Newport, NC)</option>
                         <option value="KRAX">KRAX (Raleigh, NC)</option>
@@ -237,51 +236,51 @@
                         <option value="SOUTHEAST">Regional (Southeast)</option>
                      </select>
                         </div>
-                        <div class="radar-select-container">
-                           <select id="radar-product-select" class="radar-select" aria-label="Radar product">
+                        <div class="field field--map-product">
+                           <select id="radar-product-select" class="field__control" aria-label="Radar product">
                         <option value="reflectivity" selected>Reflectivity</option>
                         <option value="velocity">Velocity</option>
                               <option value="storm_total">Storm Total</option>
                      </select>
                         </div>
                      </div>
-                     <div class="radar-content weather-map-content">
-                        <div id="radar-loading" class="radar-loading" style="display: none">
+                     <div class="weather-map__content">
+                        <div id="radar-loading" class="status-message status-message--loading" role="status" hidden>
                            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                            <span>Loading interactive radar...</span>
                            <small>Retrieving the latest NOAA map frames.</small>
                         </div>
-                        <div id="radar-error" class="radar-error" style="display: none">
+                        <div id="radar-error" class="status-message status-message--error" role="alert" hidden>
                            <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                            <span>Unable to load radar imagery</span>
                            <small>This could be due to a connection issue or server maintenance.
                               Please try a different station or product.</small>
                         </div>
-                        <div class="interactive-weather-map-shell">
-                           <div id="radar-map" class="interactive-weather-map" role="region"
+                        <div class="weather-map" data-weather-map>
+                           <div id="radar-map" class="weather-map__canvas" role="region"
                               aria-label="Interactive radar map centered on Hyde County"></div>
-                           <div id="radar-fallback" class="weather-map-fallback" hidden>
+                           <div id="radar-fallback" class="weather-map__fallback" hidden>
                               <img id="radar-image" alt="NWS radar image fallback" decoding="async" />
                            </div>
-                           <div id="radar-timestamp" class="weather-map-timestamp"></div>
+                           <div id="radar-timestamp" class="weather-map__timestamp"></div>
                         </div>
-                        <div id="radar-scrubber" class="weather-map-scrubber" hidden>
-                           <button id="radar-play-pause" class="radar-button weather-map-scrubber-play" type="button"
+                        <div id="radar-scrubber" class="map-timeline" data-map-timeline hidden>
+                           <button id="radar-play-pause" class="map-timeline__play" type="button"
                               aria-label="Play radar animation" aria-pressed="false">
                               <i class="fa-solid fa-play" aria-hidden="true"></i>
                            </button>
                            <input id="radar-frame-scrubber" type="range" min="0" max="0" value="0" step="1"
                               aria-label="Radar animation frame" disabled />
-                           <div class="weather-map-frame-count">
-                              <span class="weather-map-frame-label">Frame</span>
+                           <div class="map-timeline__frame">
+                              <span class="map-timeline__frame-label">Frame</span>
                               <output id="radar-frame-indicator" for="radar-frame-scrubber">0 / 0</output>
                            </div>
                         </div>
-                        <aside id="radar-legend" class="weather-map-legend" aria-label="Radar product legend" hidden>
-                           <span id="radar-legend-title" class="weather-map-legend-title"></span>
-                           <div class="weather-map-legend-content">
-                              <img id="radar-legend-image" class="weather-map-legend-image" alt="" decoding="async" hidden />
-                              <p id="radar-legend-description" class="weather-map-legend-description"></p>
+                        <aside id="radar-legend" class="map-legend" aria-label="Radar product legend" hidden>
+                           <span id="radar-legend-title" class="map-legend__title"></span>
+                           <div class="map-legend__content">
+                              <img id="radar-legend-image" class="map-legend__image" alt="" decoding="async" hidden />
+                              <p id="radar-legend-description" class="map-legend__description"></p>
                            </div>
                         </aside>
 
@@ -289,15 +288,15 @@
                   </div>
                </section>
 
-               <section id="weather-panel-satellite" class="satellite-container tabset__panel" role="tabpanel"
+               <section id="weather-panel-satellite" class="weather-map-card__panel tabset__panel" role="tabpanel"
                   aria-labelledby="weather-tab-satellite" data-weather-panel="satellite" hidden>
-                  <input type="checkbox" id="satellite-toggle" class="satellite-toggle" />
-                  <label for="satellite-toggle" class="satellite-title weather-center-source-title"
+                  <input type="checkbox" id="satellite-toggle" class="weather-map-card__toggle" />
+                  <label for="satellite-toggle" class="weather-map-card__source-title"
                      id="satellite-heading">Satellite Imagery</label>
-                  <div class="satellite-tabs">
-                     <div class="satellite-controls">
-                        <div class="satellite-select-container">
-                           <select id="satellite-product-select" class="satellite-select" aria-label="Satellite product">
+                  <div class="weather-map-card__body">
+                     <div class="map-toolbar map-toolbar--satellite">
+                        <div class="field field--map-product">
+                           <select id="satellite-product-select" class="field__control" aria-label="Satellite product">
                         <option value="GEOCOLOR" selected>GeoColor</option>
                         <option value="02">Visible</option>
                         <option value="07">Shortwave IR</option>
@@ -307,50 +306,50 @@
                      </select>
                         </div>
                      </div>
-                     <div class="satellite-content weather-map-content">
-                        <div id="satellite-loading" class="satellite-loading" style="display: none">
+                     <div class="weather-map__content">
+                        <div id="satellite-loading" class="status-message status-message--loading" role="status" hidden>
                            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                            <span>Loading interactive satellite...</span>
                            <small>Retrieving the latest satellite map frames.</small>
                         </div>
-                        <div id="satellite-error" class="satellite-error" style="display: none">
+                        <div id="satellite-error" class="status-message status-message--error" role="alert" hidden>
                            <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                            <span>Unable to load satellite imagery</span>
                            <small>This could be due to a connection issue or provider maintenance.
                               Please try a different product.</small>
                         </div>
-                        <div class="interactive-weather-map-shell">
-                           <div id="satellite-map" class="interactive-weather-map" role="region"
+                        <div class="weather-map" data-weather-map>
+                           <div id="satellite-map" class="weather-map__canvas" role="region"
                               aria-label="Interactive GOES satellite map centered on Hyde County"></div>
-                           <div id="satellite-fallback" class="weather-map-fallback" hidden>
+                           <div id="satellite-fallback" class="weather-map__fallback" hidden>
                               <img id="satellite-image" alt="GOES-19 satellite image fallback" decoding="async" />
                            </div>
-                           <div id="satellite-timestamp" class="weather-map-timestamp"></div>
+                           <div id="satellite-timestamp" class="weather-map__timestamp"></div>
                         </div>
-                        <div id="satellite-scrubber" class="weather-map-scrubber" hidden>
-                           <button id="satellite-play-pause" class="satellite-button weather-map-scrubber-play" type="button"
+                        <div id="satellite-scrubber" class="map-timeline" data-map-timeline hidden>
+                           <button id="satellite-play-pause" class="map-timeline__play" type="button"
                               aria-label="Play satellite animation" aria-pressed="false">
                               <i class="fa-solid fa-play" aria-hidden="true"></i>
                            </button>
                            <input id="satellite-frame-scrubber" type="range" min="0" max="0" value="0" step="1"
                               aria-label="Satellite animation frame" disabled />
-                           <div class="weather-map-frame-count">
-                              <span class="weather-map-frame-label">Frame</span>
+                           <div class="map-timeline__frame">
+                              <span class="map-timeline__frame-label">Frame</span>
                               <output id="satellite-frame-indicator" for="satellite-frame-scrubber">0 / 0</output>
                            </div>
                         </div>
-                        <aside id="satellite-legend" class="weather-map-legend" aria-label="Satellite product legend" hidden>
-                           <span id="satellite-legend-title" class="weather-map-legend-title"></span>
-                           <div class="weather-map-legend-content">
-                              <img id="satellite-legend-image" class="weather-map-legend-image" alt="" decoding="async" hidden />
-                              <div id="satellite-legend-scale" class="weather-map-legend-scale" role="img" hidden>
-                                 <div id="satellite-legend-scale-bar" class="weather-map-legend-scale-bar"></div>
-                                 <div class="weather-map-legend-scale-labels" aria-hidden="true">
+                        <aside id="satellite-legend" class="map-legend" aria-label="Satellite product legend" hidden>
+                           <span id="satellite-legend-title" class="map-legend__title"></span>
+                           <div class="map-legend__content">
+                              <img id="satellite-legend-image" class="map-legend__image" alt="" decoding="async" hidden />
+                              <div id="satellite-legend-scale" class="map-legend__scale" role="img" hidden>
+                                 <div id="satellite-legend-scale-bar" class="map-legend__scale-bar"></div>
+                                 <div class="map-legend__scale-labels" aria-hidden="true">
                                     <span id="satellite-legend-scale-min"></span>
                                     <span id="satellite-legend-scale-max"></span>
                                  </div>
                               </div>
-                              <p id="satellite-legend-description" class="weather-map-legend-description"></p>
+                              <p id="satellite-legend-description" class="map-legend__description"></p>
                            </div>
                         </aside>
 
@@ -512,8 +511,8 @@
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
       <script src="js/countyApp.js?v=20260824-phase4-1" type="module"></script>
-      <script src="../js/weatherMaps.js?v=20260823-map-status-1" type="module"></script>
-      <script src="../js/weatherCenter.js?v=20260823-map-status-1" type="module"></script>
+      <script src="../js/weatherMaps.js?v=20260824-phase5-1" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260824-phase5-1" type="module"></script>
 
       <script type="module">
         import { NavigationModule } from '../../js/modules/navigation.js?v=20260824-phase4-1';

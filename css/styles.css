@@ -721,8 +721,6 @@ button {
 .afd-container,
 .forecast-container,
 .detailed-container,
-.radar-container,
-.satellite-container,
 .meteogram-container,
 .other-container {
     background-color: rgba(0, 119, 204, 0.7);
@@ -736,8 +734,6 @@ button {
 
 .map-title,
 .afd-title,
-.radar-title,
-.satellite-title,
 .meteogram-title,
 .detailed-title,
 .section-title {
@@ -748,16 +744,12 @@ button {
 }
 
 .afd-toggle,
-.radar-toggle,
-.satellite-toggle,
 .meteogram-toggle,
 .detailed-toggle {
     display: none;
 }
 
 .afd-title::after,
-.radar-title::after,
-.satellite-title::after,
 .meteogram-title::after,
 .detailed-title::after {
     font-family: 'Font Awesome 6 Free';
@@ -769,8 +761,6 @@ button {
 }
 
 .afd-toggle:checked + .afd-title::after,
-.radar-toggle:checked + .radar-title::after,
-.satellite-toggle:checked + .satellite-title::after,
 .meteogram-toggle:checked + .meteogram-title::after,
 .detailed-toggle:checked + .detailed-title::after {
     content: '\f068';
@@ -778,16 +768,12 @@ button {
 }
 
 .afd-tabs,
-.radar-tabs,
-.satellite-tabs,
 .meteogram-tabs,
 .detailed-tabs {
     display: none;
 }
 
 .afd-toggle:checked + .afd-title + .afd-content,
-.radar-toggle:checked + .radar-title + .radar-tabs,
-.satellite-toggle:checked + .satellite-title + .satellite-tabs,
 .meteogram-toggle:checked + .meteogram-title + .meteogram-tabs,
 .detailed-toggle:checked + .detailed-title + .detailed-tabs {
     display: block;
@@ -1270,26 +1256,6 @@ button {
         color: var(--color-text);
     }
 
-    .satellite-controls,
-    .radar-controls {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .radar-select-container,
-    .satellite-select-container {
-        width: 100%;
-    }
-
-    .radar-select,
-    .satellite-select,
-    .radar-label,
-    .satellite-label,
-    .radar-button,
-    .satellite-button {
-        font-size: 0.8rem;
-    }
-
     .back-to-top {
         font-size: 2rem;
         padding: 25px;
@@ -1306,37 +1272,16 @@ button {
         font-weight: 600;
     }
 
-    .map-legend div {
-        font-size: 0.6rem;
-    }
-
     .detailed-day {
         font-size: 1rem;
     }
 
     .section-title,
     .detailed-title,
-    .satellite-title,
-    .radar-title,
     .meteogram-title,
     .afd-title,
     .other-title {
         font-size: 1rem;
-    }
-
-    .radar-select,
-    .satellite-select,
-    .radar-label,
-    .satellite-label,
-    .radar-button,
-    .satellite-button {
-        font-size: 0.6rem;
-    }
-
-    .radar-timestamp,
-    .satellite-timestamp {
-        bottom: 20px;
-        font-size: 0.5rem;
     }
 
     .no-active-systems,

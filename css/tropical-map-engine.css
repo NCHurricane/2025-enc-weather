@@ -197,6 +197,10 @@
 }
 
 @media (max-width: 680px) {
+  .leaflet-control.tropical-map-legend {
+    display: none;
+  }
+
   .tropical-map-legend ul {
     grid-template-columns: 1fr;
   }

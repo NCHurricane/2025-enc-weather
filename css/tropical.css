@@ -7,8 +7,8 @@
     url('../images/isabel_bg.webp') top / cover fixed;
 }
 
-.tropical-weather-center .weather-center-map-card {
-  --weather-center-content-height: clamp(380px, calc(100svh - 400px), 600px);
+.tropical-weather-center .weather-map-card {
+  --weather-map-block-size: clamp(23.75rem, calc(100svh - 25rem), 37.5rem);
 }
 
 .visually-hidden {
@@ -77,11 +77,11 @@
   font-size: clamp(0.7rem, 2vw, 0.9rem);
 }
 
-.tropical-weather-center .tropical-panel-toolbar {
+.tropical-weather-center .map-toolbar--tropical-overview {
   justify-content: space-between;
 }
 
-.tropical-weather-center .tropical-panel-toolbar .weather-center-toolbar-label {
+.tropical-weather-center .map-toolbar--tropical-overview .map-toolbar__label {
   min-width: 50%;
 
   font-family: "Montserrat", Arial, sans-serif;
@@ -90,7 +90,7 @@
 .tropical-source-link,
 .tropical-action {
   display: inline-flex;
-  min-height: auto;
+  min-height: var(--control-target-min, 44px);
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
@@ -121,22 +121,9 @@
   outline-offset: 2px;
 }
 
-.tropical-map-content,
-.tropical-satellite-content {
-  position: relative;
-  overflow: hidden;
-  background: #07111b;
-}
-
-.tropical-map-content .interactive-weather-map-shell,
-.tropical-satellite-content .interactive-weather-map-shell,
-.tropical-satellite-content .weather-map-fallback {
-  min-height: var(--weather-center-content-height);
-}
-
 #tropical-map,
 #tropical-satellite-map {
-  height: var(--weather-center-content-height);
+  height: var(--weather-map-block-size);
 }
 
 #tropical-map-timestamp,
@@ -157,7 +144,7 @@
 
 .tropical-product-panel {
   display: grid;
-  min-height: var(--weather-center-content-height);
+  min-height: var(--weather-map-block-size);
   box-sizing: border-box;
   align-content: start;
   gap: 14px;
@@ -174,7 +161,7 @@
 .official-graphic {
   display: grid;
   min-width: 0;
-  min-height: calc(var(--weather-center-content-height) - 78px);
+  min-height: calc(var(--weather-map-block-size) - 78px);
   place-items: center;
   margin: 0;
   overflow: hidden;
@@ -186,13 +173,13 @@
 .official-graphic img {
   display: block;
   width: 100%;
-  max-height: calc(var(--weather-center-content-height) - 90px);
+  max-height: calc(var(--weather-map-block-size) - 90px);
   object-fit: contain;
 }
 
 .tropical-text-content {
   width: 100%;
-  max-height: calc(var(--weather-center-content-height) - 104px);
+  max-height: calc(var(--weather-map-block-size) - 104px);
   box-sizing: border-box;
   margin: 0;
   padding: 14px;
@@ -206,62 +193,33 @@
   white-space: pre-wrap;
 }
 
-.tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
+.tropical-weather-center .map-toolbar--satellite {
   gap: 10px 14px;
 }
 
-.tropical-satellite-controls label {
+.tropical-weather-center .map-toolbar--satellite label {
   color: #cbdbe6;
   font-family: "Montserrat", Arial, sans-serif;
   font-size: 0.68rem;
   font-weight: 650;
 }
 
-.weather-center-map-card .tropical-satellite-controls .satellite-select {
+.tropical-weather-center .map-toolbar--satellite .field__control {
   min-width: 170px;
 }
 
-.tropical-satellite-content .satellite-loading,
-.tropical-satellite-content .satellite-error {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px;
-  background: rgba(7, 17, 27, 0.86);
-  color: #fff;
-  font-family: "Fira Code", monospace;
-  text-align: center;
-}
-
-.tropical-satellite-content .satellite-error {
-  color: #ffb6bd;
-}
-
-.tropical-satellite-content .satellite-loading[hidden],
-.tropical-satellite-content .satellite-error[hidden],
-.tropical-satellite-content .weather-map-fallback[hidden] {
-  display: none;
-}
-
-.tropical-satellite-content .weather-map-fallback img {
-  height: var(--weather-center-content-height);
-  max-height: var(--weather-center-content-height);
+.tropical-panel__satellite .weather-map__fallback img {
+  height: var(--weather-map-block-size);
+  max-height: var(--weather-map-block-size);
 }
 
 .tropical-satellite-link {
   margin: 10px 12px;
 }
 
-.tropical-satellite-content .weather-map-legend-content {
-  flex: 1 1 auto;
-}
-
 @media (max-width: 768px) {
-  .tropical-weather-center .weather-center-map-card {
-    --weather-center-content-height: 380px;
+  .tropical-weather-center .weather-map-card {
+    --weather-map-block-size: clamp(21.25rem, 50svh, 23.75rem);
   }
 
   .tropical-product-tabs {
@@ -272,13 +230,13 @@
     flex: 1 1 0;
   }
 
-  .tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
+  .tropical-weather-center .map-toolbar--satellite {
     display: grid;
     grid-template-columns: 1fr;
   }
 
-  .weather-center-map-card .tropical-satellite-controls .satellite-select-container,
-  .weather-center-map-card .tropical-satellite-controls .satellite-select {
+  .tropical-weather-center .map-toolbar--satellite .field--map-product,
+  .tropical-weather-center .map-toolbar--satellite .field__control {
     width: 100%;
     min-width: 0;
   }
@@ -291,10 +249,6 @@
 
   .tropical-system-grid > :only-child {
     grid-column: 1 / -1;
-  }
-
-  .leaflet-control.tropical-map-legend {
-    display: none;
   }
 
   .tropical-mobile-legend {
@@ -332,17 +286,17 @@
   }
 
   .official-graphic {
-    min-height: calc(var(--weather-center-content-height) - 58px);
+    min-height: calc(var(--weather-map-block-size) - 58px);
   }
 
-  .tropical-weather-center .weather-center-map-card .tropical-satellite-controls {
+  .tropical-weather-center .map-toolbar--satellite {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .tropical-weather-center .weather-center-map-card {
-    --weather-center-content-height: 330px;
+  .tropical-weather-center .weather-map-card {
+    --weather-map-block-size: clamp(20rem, 45svh, 20.625rem);
   }
 
   .tropical-source-link {

@@ -39,12 +39,12 @@
 
         <link rel="stylesheet" href="../vendor/leaflet/1.9.4/leaflet.css"
             integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <link rel="stylesheet" href="../css/styles.css?v=20260824-phase4-1" />
-        <link rel="stylesheet" href="../css/components.css?v=20260824-phase4-1" />
-        <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260823-map-status-1" />
-        <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260821-phase5-1" />
-        <link rel="stylesheet" href="../counties/css/county.css?v=20260824-phase4-1" />
-        <link rel="stylesheet" href="./css/active.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="../css/styles.css?v=20260824-phase5-1" />
+        <link rel="stylesheet" href="../css/components.css?v=20260824-phase5-1" />
+        <link rel="stylesheet" href="../css/interactive-weather-map.css?v=20260824-phase5-1" />
+        <link rel="stylesheet" href="../css/tropical-map-engine.css?v=20260824-phase5-1" />
+        <link rel="stylesheet" href="../counties/css/county.css?v=20260824-phase5-1" />
+        <link rel="stylesheet" href="./css/active.css?v=20260824-phase5-1" />
         <link rel="stylesheet" href="./css/storm-graphics.css?v=20260824-phase4-1" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
@@ -154,13 +154,13 @@
                         role="tabpanel" aria-labelledby="storm-tab-map" data-active-panel="map"
                         aria-hidden="true" hidden>
                         <div class="active-storm-map-section">
-                            <div class="active-map-toolbar">
-                                <details class="active-map-imagery map-menu">
+                            <div class="map-toolbar map-toolbar--active">
+                                <details class="active-map-imagery map-menu" data-map-menu>
                                     <summary>
                                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                                         Satellite imagery
                                     </summary>
-                                    <div id="active-map-imagery-source" class="active-map-imagery-options map-menu-options"
+                                    <div id="active-map-imagery-source" class="active-map-imagery-options map-menu__options"
                                         role="radiogroup" aria-label="Map imagery">
                                         <label><input type="radio" name="active-map-imagery" value="map"
                                                 data-map-imagery checked /> Storm map</label>
@@ -177,12 +177,12 @@
                                     </div>
                                 </details>
 
-                                <details class="active-map-layers map-menu">
+                                <details class="active-map-layers map-menu" data-map-menu>
                                     <summary>
                                         <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                                         Storm overlays
                                     </summary>
-                                    <div class="active-storm-map-controls map-menu-options" role="group"
+                                    <div class="active-storm-map-controls map-menu__options" role="group"
                                         aria-label="Detailed storm map layers">
                                         <label><input type="checkbox" data-storm-layer="currentPosition" checked disabled /> Current</label>
                                         <label><input type="checkbox" data-storm-layer="bestTrack" checked /> Past track</label>
@@ -197,42 +197,40 @@
                                 </details>
                             </div>
 
-                            <div class="interactive-weather-map-shell">
-                                <div id="active-storm-map" class="interactive-weather-map" role="region"
+                            <div class="weather-map" data-weather-map>
+                                <div id="active-storm-map" class="weather-map__canvas" role="region"
                                     aria-label="Detailed active tropical cyclone map"></div>
                                 <div id="active-satellite-image-container" class="active-satellite-image-container"
                                     hidden>
                                     <img id="active-satellite-image" class="active-satellite-image" alt="" />
                                 </div>
-                                <div id="active-satellite-loading" class="active-satellite-loading"
+                                <div id="active-satellite-loading" class="status-message status-message--loading status-message--floating"
                                     role="status" hidden>
                                     <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
                                     <span>Loading satellite imagery…</span>
                                 </div>
-                                <div id="active-satellite-error" class="active-satellite-error"
+                                <div id="active-satellite-error" class="status-message status-message--error status-message--floating"
                                     role="alert" hidden>
                                     <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
                                     <span>Satellite imagery is temporarily unavailable.</span>
                                 </div>
                             </div>
 
-                                <div id="active-map-satellite-controls" class="weather-map-scrubber" hidden>
-                                    <button id="active-satellite-play-pause" class="active-map-play-button"
+                            <div id="active-map-satellite-controls" class="map-timeline" data-map-timeline hidden>
+                                    <button id="active-satellite-play-pause" class="map-timeline__play"
                                         type="button" aria-label="Play satellite animation" aria-pressed="false">
                                         <i class="fa-solid fa-play" aria-hidden="true"></i>
                                     </button>
-                                    <div id="active-map-scrubber" class="weather-map-scrubber" hidden>
-                                        <input id="active-satellite-frame-scrubber" type="range"
-                                            min="0" max="0" value="0" aria-label="Satellite animation frame" />
-                                        <span class="weather-map-frame-count">
-                                            <span class="weather-map-frame-label">Frame</span>
-                                            <output id="active-satellite-frame-indicator"
-                                                for="active-satellite-frame-scrubber">0 / 0</output>
-                                        </span>
-                                    </div>
-                                </div>
+                                    <input id="active-satellite-frame-scrubber" type="range"
+                                        min="0" max="0" value="0" aria-label="Satellite animation frame" />
+                                    <span class="map-timeline__frame">
+                                        <span class="map-timeline__frame-label">Frame</span>
+                                        <output id="active-satellite-frame-indicator"
+                                            for="active-satellite-frame-scrubber">0 / 0</output>
+                                    </span>
+                            </div>
 
-                            <aside id="active-satellite-legend" class="active-map-satellite-legend"
+                            <aside id="active-satellite-legend" class="map-legend map-legend--active"
                                 aria-label="Satellite imagery legend" hidden>
                                 <span>Satellite:</span>
                                 <strong id="active-satellite-legend-title">Satellite imagery</strong>
@@ -458,11 +456,11 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="module" src="../js/modules/warningColors.js?v=2025.09.29"></script>
         <script type="module" src="./js/activeStormWorkspace.js?v=20260821-active-tweaks-4"></script>
-        <script type="module" src="./js/activeStormMap.js?v=20260823-status-row-removal-1"></script>
+        <script type="module" src="./js/activeStormMap.js?v=20260824-phase5-1"></script>
         <script type="module" src="./js/storm.js?v=20260824-phase4-1"></script>
         <script type="module" src="./js/storm_text.js?v=20260824-phase4-1"></script>
 
-        <script type="module" src="./js/ww-maps.js?v=20260824-phase2-1" defer></script>
+        <script type="module" src="./js/ww-maps.js?v=20260824-phase5-1" defer></script>
 
         <script type="module">
         import { NavigationModule } from '../js/modules/navigation.js?v=20260824-phase4-1';

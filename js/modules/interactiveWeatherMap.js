@@ -65,6 +65,7 @@ export function installBasemapMenuControl({
     const container = leaflet.DomUtil.create('div', 'map-basemap-control');
     const details = documentRef.createElement('details');
     details.className = 'map-menu map-menu--map-control';
+    details.dataset.mapMenu = '';
 
     const summary = documentRef.createElement('summary');
     summary.setAttribute('aria-label', 'Choose base map');
@@ -75,7 +76,7 @@ export function installBasemapMenuControl({
     summary.appendChild(icon);
 
     const options = documentRef.createElement('div');
-    options.className = 'map-menu-options';
+    options.className = 'map-menu__options';
     options.setAttribute('role', 'radiogroup');
     options.setAttribute('aria-label', 'Base map');
 
@@ -360,7 +361,7 @@ export class InteractiveWeatherMap {
     this.referenceOverlays = referenceOverlays || (referenceOverlay ? [referenceOverlay] : []);
     this.scrubber = resolveElement(scrubber);
     this.scrubberOutput = resolveElement(scrubberOutput);
-    this.scrubberContainer = this.scrubber?.closest('.weather-map-scrubber') || null;
+    this.scrubberContainer = this.scrubber?.closest('[data-map-timeline]') || null;
     this.onLoading = onLoading;
     this.onError = onError;
     this.onSourceFallback = onSourceFallback;

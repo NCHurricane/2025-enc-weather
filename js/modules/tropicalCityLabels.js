@@ -211,7 +211,7 @@ export function installTropicalCityLabels(leafletMap, {
     for (const city of cities) {
       const { major, width, height } = cityLabelDimensions(city);
       const icon = leaflet.divIcon({
-        className: `weather-place-label${major ? ' is-major' : ''}`,
+        className: `map-place-label${major ? ' is-major' : ''}`,
         html: `<span>${escapeCityLabelHtml(city.city)}</span>`,
         iconSize: [width, height],
         iconAnchor: [Math.round(width / 2), Math.round(height / 2)],

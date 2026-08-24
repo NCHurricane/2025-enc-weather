@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the current committed checkpoint is `edc6a50`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-3 are implemented in the committed history described below. Sitemap CSS Phase 4 is complete, owner-accepted, and authorized for commit. Shared map UI Phase 5 is authorized only through the sitemap CSS plan; there is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the current committed checkpoint is `1f6b0b1`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-4 are implemented in the committed history described below. Shared map UI Phase 5 is complete locally and owner-accepted at the reported overall level; committing it and beginning sitemap CSS Phase 6 remain gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -22,11 +22,12 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Those changes are not classified by this handoff. Audit and separate them before modifying or staging any overlapping file.
 - The 2026-08-22 map-status slice changes only the status/note paths, the CSS needed to keep full mobile status text readable, matching asset cache-busters, and the site contract guard. It preserves concurrent font, attribution, Tropical SVG, satellite-provider, Active, fixture, and documentation work.
 - `counties/data/*-current.json`, county weather output, shared HWO office cache, logs, and `test/output/` are generated/runtime artifacts. Do not delete, rewrite, or commit them as documentation cleanup.
-- The sitemap CSS Phase 1-3 checkpoint is committed as `edc6a50`. The current
-  Phase 4 working tree changes only general component presentation/ownership,
-  hooks, accessibility state, cache versions, validation contracts, and these
-  handoffs. Map controls, map status, products, sources, stations, zones, and
-  generated/runtime data remain outside this slice.
+- The sitemap CSS Phase 1-3 checkpoint is committed as `edc6a50`; the
+  owner-accepted Phase 4 checkpoint is `1f6b0b1`. The current Phase 5 working
+  tree changes shared map presentation classes/ownership, IDs or `data-*`
+  hooks, semantic hidden state, cache versions, validation contracts, and
+  these handoffs. Products, sources, stations, zones, camera/data lifecycle,
+  popup content, and generated/runtime data remain outside this slice.
 
 ## Committed checkpoints
 
@@ -39,6 +40,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 | `ca89d62` | Shared weather-center CSS ownership moved into `css/components.css`/`css/styles.css` while county-specific presentation remained in `counties/css/county.css`. |
 | `7c46f80` | Hazardous Weather Outlook integration and nested `Counties` > `Non-NC Counties` navigation, including San Diego, committed. |
 | `edc6a50` | Sitemap CSS architecture Phases 1-3, self-hosted Leaflet 1.9.4, and owner-directed retirement of obsolete static pages/resources. |
+| `1f6b0b1` | Owner-accepted sitemap CSS Phase 4 BEM components, state hooks, accessibility target/focus corrections, and validator ownership guards. |
 
 ## Current durable behavior
 
@@ -73,7 +75,11 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Homepage and live county Conditions maps identify `NWS observations` with the latest observation time and freshness count. Radar and Satellite retain provider, frame time, and `Frame n of n`; mobile timestamp overlays wrap instead of clipping those fields.
 - `weather-map-note` remains only for the live county Conditions instruction. Removed Radar, Satellite, homepage, Tropical, and prototype notes are not runtime dependencies, and CSS contains no selectors scoped only to those retired notes.
 - Preserve the current retained ready-layer animation behavior; readiness timing alone is not an equivalent replacement.
-- Shared weather-center structure belongs in shared components; county forecast, place-label, temperature-popup, alert-detail, and multi-zone rules remain county-owned.
+- Shared weather-center structure belongs in shared components, and shared map
+  cards, controls, timestamps, legends, markers, and city labels belong in
+  `css/interactive-weather-map.css`. County forecast, observation-popup,
+  alert-detail, multi-zone, San Diego, and explicit County variants remain
+  county-owned.
 - The Bertie prototype remains a prototype. Do not promote it to a live page without explicit authorization.
 
 ## Shared header breadcrumb follow-up: 2026-08-23
@@ -100,13 +106,24 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
-The separately authorized sitemap-wide CSS Phases 3 and 4 changed County
-title/text roles and general component presentation/ownership. Phase 4 migrated
+The separately authorized sitemap-wide CSS Phases 3 through 5 changed County
+title/text roles plus general and shared-map component presentation/ownership.
+Phase 4 migrated
 the weather tabs, conditions/forecast subtabs, multi-zone selector, shared
 alert/HWO dialog shell, navigation menu, and back-to-top control to BEM classes
 with `data-*` JavaScript hooks. It added `aria-pressed` to the zone selector,
 44-pixel minimum targets, container-based selector/tab layout, and explicit
 opener-focus restoration for Close, Escape, and backdrop dialog dismissal.
+
+Phase 5 migrated the shared map card, toolbars, fields, canvases, fallbacks,
+timestamps, status overlays, timelines, legends, basemap menu, markers, and
+city labels to their approved BEM contracts with IDs/`data-*` hooks and no
+legacy aliases. Valid explicit Bertie, Dare, and San Diego routes passed the
+desktop/mobile map, target-size, product/zone switch, loading-state, local
+response, console, and horizontal-overflow gates. Popup content remains frozen
+for Phase 6, which has not been authorized. The owner reported, "Ok, visual
+acceptance passed." No exact County page, device, viewport, or interaction was
+supplied, so the evidence is retained only at the overall Phase 5 level.
 
 These CSS phases preserved URL/localStorage ownership, zone validation, data
 paths, stations, alert/HWO content, maps, products, and generated output. The

@@ -2,18 +2,18 @@ import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
   formatWeatherTime,
-} from './interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+} from './interactiveWeatherMap.js?v=20260824-phase5-1';
 import { SatelliteFallbackDialog } from './satelliteFallbackDialog.js?v=20260822-2';
 import {
   createGibsWmtsSatelliteSource,
   withRealEarthFallback,
 } from './satelliteTileSources.js?v=20260822-2';
-import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260822-san-diego-cities-3';
+import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260824-phase5-1';
 import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260822-svg-popups-1';
+} from './tropicalMapEngine.js?v=20260824-phase5-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
@@ -231,7 +231,7 @@ export class TropicalSatelliteMap {
     this.legendScaleMax = resolveElement(documentRef, 'tropical-satellite-legend-scale-max');
     this.legendDescription = resolveElement(documentRef, 'tropical-satellite-legend-description');
     this.sourceLink = resolveElement(documentRef, 'tropical-satellite-link');
-    this.mapShell = this.mapElement?.closest?.('.interactive-weather-map-shell') || null;
+    this.mapShell = this.mapElement?.closest?.('[data-weather-map]') || null;
   }
 
   init() {

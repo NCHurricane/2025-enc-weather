@@ -508,18 +508,6 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
 }
 
-.weather-center-map-card {
-  --weather-center-content-height: clamp(400px, calc(100svh - 450px), 450px);
-  container-type: inline-size;
-  min-width: 0;
-  overflow: hidden;
-  padding: 0;
-  border: 1px solid rgba(164, 190, 211, 0.52);
-  border-radius: 12px;
-  background: #071b2e;
-  box-shadow: 0 10px 26px rgba(3, 9, 15, 0.34);
-}
-
 .subtabs__panel,
 .tabset__panel {
   min-width: 0;
@@ -531,152 +519,26 @@
   display: none !important;
 }
 
-.weather-center-map-card .radar-container,
-.weather-center-map-card .satellite-container {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.weather-center-source-title {
-  display: none;
-}
-
-.weather-center-map-card .radar-tabs,
-.weather-center-map-card .satellite-tabs {
-  margin: 0;
-}
-
-.temperature-controls,
-.weather-center-map-card .radar-controls,
-.weather-center-map-card .satellite-controls {
+.status-message {
   display: flex;
-  min-height: 5px;
   box-sizing: border-box;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px 18px;
-  padding: 8px 18px;
-  border-bottom: 1px solid rgba(177, 201, 220, 0.24);
-  background: #0b2238;
-  color: #e8f0f6;
-  font-family: var(--font-heading);
-}
-
-.weather-center-toolbar-label,
-.weather-center-toolbar-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-mono, 'Fira Code', sans serif);
-  font-size: clamp(0.5rem, 1.2vw, 0.6rem);
-  font-weight: 400;
-}
-
-.weather-center-toolbar-label {
-  padding-right: 18px;
-  border-right: 1px solid rgba(177, 201, 220, 0.32);
-}
-
-.weather-center-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #7fe0aa;
-  box-shadow: 0 0 0 3px rgba(127, 224, 170, 0.12);
-}
-
-.weather-center-status-dot.is-empty {
-  background: #9cabb6;
-  box-shadow: 0 0 0 3px rgba(156, 171, 182, 0.12);
-}
-
-.weather-center-map-card .radar-select-container,
-.weather-center-map-card .satellite-select-container {
-  position: relative;
-  display: inline-flex;
-  min-width: 0;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  color: var(--color-text-light);
+  font-family: var(--font-mono), monospace;
+  line-height: 1.5;
+  text-align: center;
 }
 
-.weather-center-map-card .radar-select,
-.weather-center-map-card .satellite-select {
-  min-width: 100px;
-  min-height: 5px;
-  box-sizing: border-box;
-  padding: 7px 12px;
-  border: 1px solid;
-  border-radius: 8px;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m1 1 6 6 6-6' fill='none' stroke='%23dce7ef' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(2, 10, 17, 0.2);
-  cursor: pointer;
-  text-transform: none;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+.status-message[hidden] {
+  display: none !important;
 }
 
-.weather-center-map-card #radar-station-select {
-  min-width: 220px;
-}
-
-.weather-center-map-card .radar-select:hover,
-.weather-center-map-card .satellite-select:hover {
-  border-color: rgba(220, 234, 243, 0.82);
-}
-
-.weather-center-map-card .radar-select:focus,
-.weather-center-map-card .satellite-select:focus {
-  border-color: #fff200;
-  outline: 2px solid #fff200;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(255, 242, 0, 0.12);
-}
-
-.temperature-content,
-.weather-center-map-card .radar-content,
-.weather-center-map-card .satellite-content {
-  position: relative;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  border-radius: 0;
-  background: #07111b;
-}
-
-.weather-center-map-card .interactive-weather-map-shell,
-.weather-center-map-card .weather-map-fallback {
-  min-height: var(--weather-center-content-height);
-  border-radius: 0;
-}
-
-.weather-center-map-card .interactive-weather-map {
-  height: var(--weather-center-content-height);
-}
-
-.weather-center-map-card .weather-map-content.radar-content,
-.weather-center-map-card .weather-map-content.satellite-content {
-  min-height: var(--weather-center-content-height);
-}
-
-.weather-center-map-card .weather-map-note,
-.weather-center-map-card .weather-map-scrubber,
-.weather-center-map-card .weather-map-legend {
-  background: #081d31;
-}
-
-.weather-center-map-card .weather-map-note {
-  border-top: 1px solid rgba(177, 201, 220, 0.22);
-  color: #d7e2ea;
+.status-message--error {
+  color: #ffb6bd;
 }
 
 .tabset {
@@ -859,177 +721,6 @@
   box-shadow: none;
 }
 
-.weather-center-map-card :is(.radar-select, .satellite-select) {
-  border-color: var(--component-menu-border-color);
-  background-color: var(--component-menu-background);
-  color: var(--component-menu-color);
-  font-family: var(--font-heading);
-  font-size: var(--component-menu-font-size);
-  font-weight: var(--component-menu-font-weight);
-  line-height: var(--component-menu-line-height);
-}
-
-.weather-center-map-card :is(.radar-select, .satellite-select):hover {
-  background-color: var(--component-menu-hover-background);
-}
-
-.weather-center-map-card :is(.radar-select, .satellite-select) option {
-  background: var(--component-menu-option-background);
-  color: var(--component-menu-color);
-  font-family: var(--font-heading);
-  font-size: var(--component-menu-font-size);
-  font-weight: var(--component-menu-font-weight);
-  line-height: var(--component-menu-line-height);
-}
-
-.map-menu {
-  position: relative;
-}
-
-.map-basemap-control {
-  position: relative;
-  z-index: 1200;
-}
-
-.map-basemap-control .map-menu > summary {
-  width: 33px;
-  min-height: 33px;
-  justify-content: center;
-  padding: 0;
-  border-color: rgba(31, 52, 67, 0.45);
-  border-radius: 10px;
-  background: #ffffff;
-  color: #74787b;
-  box-shadow: 0 3px 12px rgba(4, 13, 20, 0.25);
-}
-
-.map-basemap-control .map-menu > summary i {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.map-menu > summary {
-  display: inline-flex;
-  min-height: 38px;
-  box-sizing: border-box;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 11px;
-  border: 1px solid rgba(151, 180, 202, 0.58);
-  border-radius: 8px;
-  background: #102a43;
-  color: #f5f9fc;
-  cursor: pointer;
-  list-style: none;
-  font-family: var(--font-heading);
-  font-size: 0.74rem;
-  font-weight: 650;
-}
-
-.map-menu > summary::-webkit-details-marker {
-  display: none;
-}
-
-.map-menu > summary:focus-visible {
-  outline: 2px solid var(--component-tab-indicator-color);
-  outline-offset: 2px;
-}
-
-.map-menu-options {
-  position: absolute;
-  top: calc(100% + 7px);
-  left: 0;
-  z-index: 1200;
-  display: grid;
-  width: min(175px, calc(100vw - 36px));
-  box-sizing: border-box;
-  gap: 6px;
-  padding: 9px;
-  border: 1px solid var(--component-menu-border-color);
-  border-radius: 9px;
-  background: var(--component-menu-background);
-  box-shadow: 0 10px 24px rgba(2, 8, 14, 0.46);
-}
-
-.map-menu--align-end .map-menu-options {
-  right: 0;
-  left: auto;
-}
-
-.map-menu-options label {
-  display: flex;
-  min-width: 0;
-  min-height: 20px;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 6px;
-  color: var(--component-menu-color);
-  cursor: pointer;
-  font-family: var(--font-heading);
-  font-size: var(--component-menu-font-size);
-  font-weight: var(--component-menu-font-weight);
-  line-height: var(--component-menu-line-height);
-}
-
-.map-menu-options label:hover {
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.map-menu-options input {
-  flex: 0 0 auto;
-  accent-color: var(--component-tab-indicator-color);
-}
-
-.map-menu:not([open]) .map-menu-options {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .temperature-controls,
-  .weather-center-map-card .radar-controls,
-  .weather-center-map-card .satellite-controls {
-    gap: 8px 12px;
-    padding: 8px;
-  }
-
-  .weather-center-map-card .radar-controls {
-    display: grid;
-    grid-template-columns: minmax(0, 320px) minmax(0, 220px);
-    align-items: end;
-  }
-
-  .weather-center-map-card .satellite-controls {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .weather-center-map-card .radar-select-container,
-  .weather-center-map-card .satellite-select-container {
-    display: block;
-    width: 100%;
-    flex: 0 1 auto;
-  }
-
-  .weather-center-map-card .radar-select,
-  .weather-center-map-card #radar-station-select {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .weather-center-map-card .satellite-select {
-    width: 100%;
-    min-width: 0;
-    max-width: 320px;
-  }
-
-
-  .weather-center-toolbar-label {
-    padding-right: 12px;
-  }
-}
-
 @container (max-width: 680px) {
   .subtabs--conditions {
     display: flex;
@@ -1094,13 +785,6 @@
   }
 }
 
-@media (max-width: 680px) {
-  .map-menu > summary {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 @media (max-width: 600px) {
   .weather-center-alerts .alert-title {
     padding: 0.15em 0;
@@ -1116,26 +800,11 @@
     padding: 5px;
   }
 
-  .weather-center-map-card .leaflet-control-zoom a {
-    width: 26px;
-    height: 26px;
-    font-size: 18px;
-    line-height: 26px;
-  }
 }
 
 @media (max-width: 480px) {
   .weather-center-alerts {
     margin-bottom: 10px;
-  }
-
-  .weather-center-map-card {
-    border-radius: 9px;
-  }
-
-  .weather-center-map-card .radar-controls {
-    flex-direction: column;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   }
 
   .tabset__tab span {
@@ -1144,24 +813,6 @@
     text-overflow: ellipsis;
   }
 
-  .temperature-controls {
-    min-height: 36px;
-    align-items: center;
-    flex-flow: row nowrap;
-    gap: 5px;
-    justify-content: space-between;
-    padding: 4px 7px;
-  }
-
-  .weather-center-toolbar-label {
-    padding-right: 7px;
-  }
-
-  .weather-center-toolbar-label,
-  .weather-center-toolbar-status {
-    gap: 6px;
-    white-space: nowrap;
-  }
 }
 
 @container (max-width: 680px) {

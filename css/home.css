@@ -1,5 +1,5 @@
 .home-weather-center {
-  --weather-center-content-height: clamp(500px, calc(100svh - 330px), 700px);
+  --weather-map-block-size: clamp(31.25rem, calc(100svh - 20.625rem), 43.75rem);
 }
 
 .home-weather-center .tabset--weather {
@@ -16,12 +16,6 @@
   font-size: clamp(0.7rem, 1.4vw, 1rem);
   font-family: var(--font-heading);
   font-weight: 700;
-}
-
-.home-weather-center .temperature-content,
-.home-weather-center .weather-center-map-card .radar-content,
-.home-weather-center .weather-center-map-card .satellite-content {
-  min-height: var(--weather-center-content-height);
 }
 
 .home-map-key {
@@ -236,7 +230,7 @@
 
 @media (max-width: 768px) {
   .home-weather-center {
-    --weather-center-content-height: 430px;
+    --weather-map-block-size: clamp(23.75rem, 56svh, 26.875rem);
   }
 
   .home-weather-center .page-header--weather p {
@@ -246,7 +240,7 @@
 
 @media (max-width: 600px) {
   .home-weather-center {
-    --weather-center-content-height: 350px;
+    --weather-map-block-size: clamp(20.625rem, 48svh, 21.875rem);
   }
 
   .home-map-key.is-below-map {

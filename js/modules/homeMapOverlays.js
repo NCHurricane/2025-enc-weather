@@ -205,7 +205,7 @@ function createMapKey(map, alertsByZone, failedZoneCount, alertLayer) {
 
   const controlContainer = control.getContainer();
   const leafletCorner = controlContainer?.parentElement;
-  const mapShell = map.getContainer().closest('.interactive-weather-map-shell');
+  const mapShell = map.getContainer().closest('[data-weather-map]');
   const mobileLayoutQuery = window.matchMedia('(max-width: 600px)');
   const syncControlPlacement = () => {
     if (!controlContainer || !leafletCorner || !mapShell) return;

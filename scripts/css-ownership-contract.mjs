@@ -163,6 +163,7 @@ const phase2Pages = [
 
 const phase3Version = '20260824-phase3-1';
 const phase4Version = '20260824-phase4-1';
+const phase5Version = '20260824-phase5-1';
 const phase3Pages = [
   {
     file: 'index.html',
@@ -241,13 +242,25 @@ const phase2Stylesheets = {
   'css/info.css': ['about.html', 'privacy.html', 'accessibility.html', '404.html'],
 };
 
+const phase5UpdatedStylesheets = new Set([
+  'css/styles.css',
+  'css/components.css',
+  'counties/css/county.css',
+  'css/tropical.css',
+  'active/css/active.css',
+  'css/home.css',
+]);
+
 export const phase2Contract = Object.freeze({
   version: '20260824-phase2-1',
   pages: Object.freeze(phase2Pages),
   stylesheets: Object.freeze(Object.fromEntries(
     Object.entries(phase2Stylesheets).map(([file, consumers]) => [
       file,
-      Object.freeze({ version: phase4Version, consumers: Object.freeze(consumers) }),
+      Object.freeze({
+        version: phase5UpdatedStylesheets.has(file) ? phase5Version : phase4Version,
+        consumers: Object.freeze(consumers),
+      }),
     ]),
   )),
   retiredFiles: Object.freeze([
@@ -330,7 +343,7 @@ export const phase2Contract = Object.freeze({
     page: 'active/index.html',
     script: 'active/js/ww-maps.js',
     attribute: 'data-active-page',
-    version: '20260824-phase2-1',
+    version: phase5Version,
   }),
 });
 
@@ -536,11 +549,170 @@ export const phase4Contract = Object.freeze({
     }),
   ]),
   versionedAssets: Object.freeze([
-    Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/css/storm-graphics.css' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/storm.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/storm_text.js' }),
     Object.freeze({ file: 'active/js/storm.js', target: 'active/js/storm-graphics.js' }),
     Object.freeze({ file: 'active/js/storm.js', target: 'active/js/radii-visualization.js' }),
+  ]),
+});
+
+export const phase5Contract = Object.freeze({
+  version: phase5Version,
+  owner: 'css/interactive-weather-map.css',
+  cardPages: Object.freeze([
+    'index.html',
+    'tropical.html',
+    ...countyPages,
+    'counties/bertie/index_test.html',
+  ]),
+  mapPages: Object.freeze([
+    'index.html',
+    'tropical.html',
+    'active/index.html',
+    ...countyPages,
+    'counties/bertie/index_test.html',
+  ]),
+  ownerStylesheets: Object.freeze([
+    'css/styles.css',
+    'css/components.css',
+    'css/interactive-weather-map.css',
+    'css/home.css',
+    'css/tropical.css',
+    'css/tropical-map-engine.css',
+    'counties/css/county.css',
+    'active/css/active.css',
+  ]),
+  requiredOwnerSelectors: Object.freeze([
+    '.weather-map-card {',
+    '.weather-map {',
+    '.weather-map__canvas {',
+    '.weather-map__timestamp {',
+    '.map-toolbar {',
+    '.map-timeline {',
+    '.map-legend {',
+    '.map-menu {',
+    '.map-place-label {',
+    '.temperature-marker-value {',
+    '--weather-map-block-size:',
+  ]),
+  retiredClasses: Object.freeze([
+    'weather-center-map-card',
+    'temperature-controls',
+    'weather-center-toolbar-label',
+    'weather-center-toolbar-status',
+    'weather-center-status-dot',
+    'radar-container',
+    'satellite-container',
+    'radar-tabs',
+    'satellite-tabs',
+    'radar-controls',
+    'satellite-controls',
+    'radar-select-container',
+    'satellite-select-container',
+    'radar-select',
+    'satellite-select',
+    'radar-loading',
+    'radar-error',
+    'satellite-loading',
+    'satellite-error',
+    'temperature-status',
+    'temperature-error',
+    'temperature-content',
+    'radar-content',
+    'satellite-content',
+    'weather-map-content',
+    'interactive-weather-map-shell',
+    'interactive-weather-map',
+    'weather-map-fallback',
+    'weather-map-timestamp',
+    'weather-map-scrubber',
+    'weather-map-scrubber-play',
+    'weather-map-frame-count',
+    'weather-map-frame-label',
+    'weather-map-legend',
+    'weather-map-legend-title',
+    'weather-map-legend-content',
+    'weather-map-legend-image',
+    'weather-map-legend-scale',
+    'weather-map-legend-scale-bar',
+    'weather-map-legend-scale-labels',
+    'weather-map-legend-description',
+    'weather-map-note',
+    'weather-place-label',
+    'map-menu-options',
+    'active-map-toolbar',
+    'active-map-play-button',
+    'active-map-satellite-legend',
+  ]),
+  stylesheets: Object.freeze({
+    'css/interactive-weather-map.css': Object.freeze([
+      'index.html',
+      'tropical.html',
+      'active/index.html',
+      ...countyPages,
+      'counties/bertie/index_test.html',
+    ]),
+    'css/tropical-map-engine.css': Object.freeze([
+      'tropical.html',
+      'active/index.html',
+      'test/tropical-map/phase2-harness.html',
+    ]),
+  }),
+  versionedAssets: Object.freeze([
+    Object.freeze({ file: 'index.html', target: 'js/modules/homeMapOverlays.js' }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherMaps.js' }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js' }),
+    ...countyEntryPages.flatMap(file => [
+      Object.freeze({ file, target: 'counties/js/weatherMaps.js' }),
+      Object.freeze({ file, target: 'counties/js/weatherCenter.js' }),
+    ]),
+    Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/js/activeStormMap.js' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/js/ww-maps.js' }),
+    Object.freeze({ file: 'counties/js/weatherMaps.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'counties/js/weatherMaps.js', target: 'counties/js/weatherCityLabels.js' }),
+    Object.freeze({ file: 'counties/js/weatherCenter.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'counties/js/weatherCenter.js', target: 'counties/js/weatherCityLabels.js' }),
+    Object.freeze({ file: 'js/modules/tropicalMapEngine.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'js/modules/tropicalSatelliteMap.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'js/modules/tropicalSatelliteMap.js', target: 'js/modules/tropicalMapEngine.js' }),
+    Object.freeze({ file: 'js/modules/tropicalSatelliteMap.js', target: 'js/modules/tropicalCityLabels.js' }),
+    Object.freeze({ file: 'js/modules/tropicalOverview.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'js/modules/tropicalOverview.js', target: 'js/modules/tropicalMapEngine.js' }),
+    Object.freeze({ file: 'js/modules/tropicalOverview.js', target: 'js/modules/tropicalSatelliteMap.js' }),
+    Object.freeze({ file: 'js/modules/tropicalOverview.js', target: 'js/modules/tropicalCityLabels.js' }),
+    Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/tropicalMapEngine.js' }),
+    Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/tropicalSatelliteMap.js' }),
+    Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/tropicalCityLabels.js' }),
+    Object.freeze({ file: 'active/js/ww-maps.js', target: 'js/modules/interactiveWeatherMap.js' }),
+  ]),
+  sourceContracts: Object.freeze([
+    Object.freeze({
+      file: 'counties/js/weatherMaps.js',
+      required: Object.freeze(["closest('[data-weather-map]')", 'loading.hidden = !busy', 'error.hidden = false']),
+      forbidden: Object.freeze(['.style.display', '.interactive-weather-map-shell']),
+    }),
+    Object.freeze({
+      file: 'counties/js/weatherCenter.js',
+      required: Object.freeze(["querySelector('[data-map-status-indicator]')", "closest('[data-weather-map]')"]),
+      forbidden: Object.freeze(['.weather-center-status-dot', '.interactive-weather-map-shell']),
+    }),
+    Object.freeze({
+      file: 'js/modules/interactiveWeatherMap.js',
+      required: Object.freeze(["closest('[data-map-timeline]')", "options.className = 'map-menu__options'", "details.dataset.mapMenu = ''"]),
+      forbidden: Object.freeze(['.weather-map-scrubber', "options.className = 'map-menu-options'"]),
+    }),
+    Object.freeze({
+      file: 'counties/js/weatherCityLabels.js',
+      required: Object.freeze(['map-place-label']),
+      forbidden: Object.freeze(['weather-place-label']),
+    }),
+    Object.freeze({
+      file: 'js/modules/tropicalCityLabels.js',
+      required: Object.freeze(['map-place-label']),
+      forbidden: Object.freeze(['weather-place-label']),
+    }),
   ]),
 });

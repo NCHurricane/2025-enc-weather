@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Phase 6 application-source removal remains. This document does not authorize staging, committing, pushing, deployment, destructive file cleanup, or another presentation removal.
+Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is complete locally and owner-accepted at the reported overall level. Committing that slice and starting the sitemap CSS popup phase remain gated. This document does not authorize staging, committing, pushing, deployment, destructive file cleanup, another presentation removal, or the sitemap CSS popup phase.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -54,11 +54,23 @@ Phase 4 browser pass exercised Tropical keyboard tabs and basin Back/Forward
 state plus Active primary/generated tabs at `1280x900` and `390x844`, with no
 horizontal overflow or console warning/error.
 
-No Tropical/Active map control, loading/error state, layer, legend, scrubber,
-popup, source, storm identity, cache package, fixture, or generated-data
-behavior changed. The owner subsequently reported that Wave A visual acceptance
-passed and authorized CSS Wave B Phase 5. That authorization does not reopen a
-Tropical product phase or permit presentation removal.
+The owner subsequently reported that Wave A visual acceptance passed and
+authorized CSS Wave B Phase 5. That sitemap phase migrated Tropical and Active
+map card, toolbar, field, canvas, status, timeline, legend, basemap menu, and
+city-label presentation to shared BEM contracts with IDs/`data-*` hooks and no
+legacy aliases. Engine-only presentation remains in
+`css/tropical-map-engine.css`; explicit page variants remain in the Tropical
+and Active family sheets. Desktop/mobile browser checks preserved basin URL
+state, Satellite switching, Active map/layer menus, map size, targets,
+horizontal overflow, and a clean explicit-state console/network run.
+
+The sitemap CSS slice did not change popup content, sources, storm identity,
+cache packages, fixtures, camera policy, layer semantics, or generated data.
+It does not reopen a Tropical product phase or permit presentation removal.
+The owner reported, "Ok, visual acceptance passed." No exact Tropical/Active
+page, device, viewport, or interaction was supplied, so this is retained only
+as overall sitemap CSS Phase 5 owner evidence. Sitemap CSS Phase 6 popup work
+remains unstarted and requires separate explicit authorization.
 
 ## Static compatibility-page retirement: 2026-08-24
 

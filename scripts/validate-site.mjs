@@ -9,6 +9,7 @@ import {
   phase2Contract,
   phase3Contract,
   phase4Contract,
+  phase5Contract,
 } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
@@ -480,6 +481,121 @@ for (const dependency of phase4Contract.versionedAssets) {
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   if (references.length !== 1 || referenceVersion(references[0]) !== phase4Contract.version) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 4 cache version`);
+  }
+}
+
+for (const page of phase5Contract.mapPages) {
+  const html = phase2HtmlByRelativePath.get(page) || '';
+  const tags = openingTags(html);
+  for (const requiredClass of ['weather-map', 'weather-map__canvas', 'map-toolbar', 'map-timeline', 'map-legend']) {
+    if (!tags.some(tag => tag.classes.has(requiredClass))) {
+      errors.push(`${page}: Phase 5 shared map interface is missing .${requiredClass}`);
+    }
+  }
+  if (!tags.some(tag => tag.classes.has('status-message--loading'))
+      || !tags.some(tag => tag.classes.has('status-message--error'))) {
+    errors.push(`${page}: Phase 5 map loading/error states must use shared status messages`);
+  }
+  const mapShells = tags.filter(tag => tag.classes.has('weather-map'));
+  if (!mapShells.length || mapShells.some(tag => !/\sdata-weather-map(?:\s|=|>)/i.test(tag.source))) {
+    errors.push(`${page}: Phase 5 map shells must expose data-weather-map hooks`);
+  }
+  if (tags.some(tag => /\sstyle=['"][^'"]*display\s*:/i.test(tag.source))) {
+    errors.push(`${page}: Phase 5 map consumers must use hidden/state classes instead of inline display styles`);
+  }
+  for (const tag of tags) {
+    for (const retiredClass of phase5Contract.retiredClasses) {
+      if (tag.classes.has(retiredClass)) {
+        errors.push(`${page}: retired Phase 5 class .${retiredClass} remains`);
+      }
+    }
+  }
+}
+
+for (const page of phase5Contract.cardPages) {
+  const tags = openingTags(phase2HtmlByRelativePath.get(page) || '');
+  for (const requiredClass of ['weather-map-card', 'weather-map__content']) {
+    if (!tags.some(tag => tag.classes.has(requiredClass))) {
+      errors.push(`${page}: Phase 5 map card is missing .${requiredClass}`);
+    }
+  }
+}
+
+const phase5OwnerCss = (await readFile(
+  path.join(root, ...phase5Contract.owner.split('/')),
+  'utf8',
+).catch(() => '')).replace(/\/\*[\s\S]*?\*\//g, '');
+for (const selector of phase5Contract.requiredOwnerSelectors) {
+  if (!phase5OwnerCss.includes(selector)) {
+    errors.push(`${phase5Contract.owner}: missing Phase 5 map owner selector ${selector}`);
+  }
+}
+
+for (const stylesheet of phase5Contract.ownerStylesheets) {
+  const css = (await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => ''))
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const retiredClass of phase5Contract.retiredClasses) {
+    const escaped = retiredClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`\\.${escaped}(?![A-Za-z0-9_-])`).test(css)) {
+      errors.push(`${stylesheet}: retired Phase 5 selector .${retiredClass} remains`);
+    }
+  }
+  if (stylesheet !== phase5Contract.owner) {
+    for (const base of ['weather-map-card', 'weather-map', 'map-toolbar', 'map-timeline', 'map-legend', 'map-menu', 'map-place-label']) {
+      if (new RegExp(`^\\s*\\.${base}\\s*\\{`, 'm').test(css)) {
+        errors.push(`${stylesheet}: Phase 5 shared .${base} base must be owned only by ${phase5Contract.owner}`);
+      }
+    }
+  }
+}
+
+for (const [stylesheet, consumers] of Object.entries(phase5Contract.stylesheets)) {
+  const expectedConsumers = new Set(consumers);
+  const actualConsumers = new Set();
+  for (const [relative, html] of phase2HtmlByRelativePath) {
+    const references = stylesheetHrefs(html).filter(
+      reference => repositoryReference(relative, reference) === stylesheet,
+    );
+    if (references.length > 0) actualConsumers.add(relative);
+    if (expectedConsumers.has(relative)
+        && (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.version)) {
+      errors.push(`${relative}: ${stylesheet} must use the Phase 5 cache version`);
+    }
+  }
+  for (const consumer of actualConsumers) {
+    if (!expectedConsumers.has(consumer)) {
+      errors.push(`${consumer}: undeclared Phase 5 ${stylesheet} consumer`);
+    }
+  }
+  for (const consumer of expectedConsumers) {
+    if (!actualConsumers.has(consumer)) {
+      errors.push(`${consumer}: missing declared Phase 5 ${stylesheet} dependency`);
+    }
+  }
+}
+
+for (const sourceContract of phase5Contract.sourceContracts) {
+  const source = await readFile(path.join(root, ...sourceContract.file.split('/')), 'utf8').catch(() => '');
+  for (const required of sourceContract.required) {
+    if (!source.includes(required)) {
+      errors.push(`${sourceContract.file}: missing Phase 5 source contract ${required}`);
+    }
+  }
+  for (const forbidden of sourceContract.forbidden) {
+    if (source.includes(forbidden)) {
+      errors.push(`${sourceContract.file}: retired Phase 5 source contract remains ${forbidden}`);
+    }
+  }
+}
+
+for (const dependency of phase5Contract.versionedAssets) {
+  const source = phase2HtmlByRelativePath.get(dependency.file)
+    || await readFile(path.join(root, ...dependency.file.split('/')), 'utf8').catch(() => '');
+  const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
+    .map(match => match[1])
+    .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
+  if (references.length !== 1 || referenceVersion(references[0]) !== phase5Contract.version) {
+    errors.push(`${dependency.file}: ${dependency.target} must use the Phase 5 cache version`);
   }
 }
 

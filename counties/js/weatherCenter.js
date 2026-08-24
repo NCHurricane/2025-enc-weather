@@ -1,13 +1,13 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
 } from './countyContext.js?v=20260816-home1';
 import { WEATHER_BOUNDARY_OVERLAYS } from './weatherBoundaries.js?v=20260822-map-borders-1';
-import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260822-san-diego-cities-3';
+import { installWeatherCityLabels } from './weatherCityLabels.js?v=20260824-phase5-1';
 
 const STATION_MAX_AGE_MINUTES = 120;
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -312,10 +312,10 @@ class CountyTemperatureViewer {
   constructor() {
     this.mapElement = document.getElementById('temperature-map');
     this.stationCount = document.getElementById('temperature-station-count');
-    this.statusDot = document.querySelector('.weather-center-status-dot');
+    this.statusDot = document.querySelector('[data-map-status-indicator]');
     this.conditionPanel = document.getElementById('condition-panel-display');
     this.stationDetails = document.getElementById('temperature-station-details');
-    this.mapShell = this.mapElement?.closest('.interactive-weather-map-shell');
+    this.mapShell = this.mapElement?.closest('[data-weather-map]');
     this.conditionButtons = Array.from(document.querySelectorAll('[data-condition-field]'));
     this.loading = document.getElementById('temperature-loading');
     this.error = document.getElementById('temperature-error');

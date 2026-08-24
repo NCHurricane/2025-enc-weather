@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24  
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; Phase 4 completed locally and accepted by the owner; Phase 5 is authorized
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; Phase 5 completed locally and owner-accepted; commit and Phase 6 remain gated
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -156,8 +156,8 @@ in checkpoint commit `edc6a50`:
   County URL/local-storage lifecycle; this evidence remains an open County
   follow-up rather than being absorbed into typography work.
 
-The owner then authorized Wave A Phase 4. Phase 4 is complete in the local
-working tree and has passed owner review:
+The owner then authorized Wave A Phase 4. Phase 4 is committed in `1f6b0b1`
+and has passed owner review:
 
 - Shared BEM blocks now own primary tabsets, subtabs, information cards,
   general buttons, analytics consent, County alert/HWO dialogs, the navigation
@@ -200,8 +200,64 @@ Checkpoint `edc6a50` contains the authorized Phase 1-3 and legacy-page work.
 The owner subsequently reported, "Visual acceptance passed." No exact pages,
 devices, viewport sizes, or interactions were supplied, so that owner evidence
 is retained only at the reported Wave A level. The owner authorized committing
-Phase 4 and continuing with Phase 5. No push, deployment, production-data
-change, cascade layer, or generated/runtime cleanup was performed.
+Phase 4 and continuing with Phase 5. Phase 4 was committed as `1f6b0b1`. No
+push, deployment, production-data change, cascade layer, or generated/runtime
+cleanup was performed.
+
+Phase 5 is complete in the local working tree and is not staged or committed:
+
+- Home, all nine live County pages, the Bertie prototype, Tropical, and Active
+  now use the approved `.weather-map-card`, `.map-toolbar`, `.weather-map`,
+  `.map-timeline`, `.map-legend`, `.map-menu`, `.map-place-label`, `.field`,
+  and `.status-message` contracts. IDs and `data-*` attributes remain the
+  JavaScript hooks; the retired presentation classes have no aliases.
+- `css/interactive-weather-map.css` owns the shared map card, toolbar, field,
+  canvas, fallback, timestamp, status, timeline, legend, basemap menu, city
+  label, temperature-marker, and Leaflet control presentation.
+  `css/tropical-map-engine.css` retains only engine-specific presentation;
+  Home, County, Tropical, and Active styles retain explicit contextual or
+  family variants rather than duplicate base ownership.
+- Map size uses the owned `--weather-map-block-size` with bounded `clamp()` and
+  `svh` values. Visible map controls meet the 44-pixel target floor. Static map
+  loading/error display styles were replaced by semantic `[hidden]` state, and
+  the live County controller now toggles that state without inline display
+  presentation.
+- Provider/product choices, station and zone configuration, camera policy,
+  frame count, retained animation-layer behavior, playback, scrubbing,
+  basemaps, legends, map content, storm identity, and generated/runtime data
+  remain unchanged. Popup content and wrapper consolidation remain frozen for
+  the separately gated Phase 6.
+- The ownership contract and validator enforce Phase 5 consumers, load order,
+  cache versions, required BEM/data hooks, single base ownership, retired-class
+  absence, and the ban on reintroducing migrated inline display state. The
+  ignored Tropical dependency harness and its focused assertion were updated
+  in place but remain outside the tracked commit boundary.
+- Static/automated validation passes: all 13 changed JavaScript files parse,
+  all 73 focused repository tests pass, the site validator passes 18 HTML
+  files, 307 JSON files, and 166 local references, focused retired-selector
+  searches are clean, and `git diff --check` reports no whitespace errors.
+- Local PHP HTTP probes returned `200` for the 15 sitemap consumers plus
+  `404.html` and the Bertie prototype. Controlled-browser checks covered all
+  17 pages at `1280x900` and `390x844`: all 34 cases retained one main `h1`,
+  zero document-level horizontal overflow, no undersized visible map control,
+  no retired presentation class, and the expected versioned stylesheets.
+- Interaction checks passed for Home radar station/product switching,
+  playback/pause and direct scrubber input; Tropical basin URL and Satellite
+  switching; Active map, menu, and responsive control states; a standard
+  County radar product and settled loading state; explicit multi-zone changes;
+  and San Diego's zone-specific center/URL state. Tropical, Active, and County
+  map presentation was visually inspected at narrow and wide viewports.
+- A clean explicit-zone Home/Tropical/Active/Bertie/Dare/San Diego run captured
+  zero console warnings or errors and zero local failures across 421 response
+  events. Deliberately exercising the already-recorded invalid/stored-zone Dare
+  defect reproduced its three expected cache `404`s; Phase 5 did not alter or
+  absorb that County lifecycle issue.
+
+The owner subsequently reported, "Ok, visual acceptance passed." No exact
+pages, devices, viewport sizes, or interactions were supplied, so this evidence
+is retained only as overall Phase 5 owner acceptance. Phase 5 remains unstaged
+and uncommitted. Phase 6 has not been started or authorized and requires a new
+explicit authorization before popup work begins.
 
 ## Purpose
 
@@ -497,7 +553,8 @@ Acceptance: titles and labels are consistent by role, not flattened into one ide
 
 #### Phase 4: Cards, tabs, selectors, buttons, menus, and dialogs
 
-Implementation status: completed locally on 2026-08-24 and accepted by the owner; commit authorized.
+Implementation status: completed and accepted by the owner; committed in
+`1f6b0b1` on 2026-08-24.
 
 1. Establish shared component markup and BEM classes.
 2. Move common rules into `components.css`.
@@ -519,7 +576,8 @@ Review the 15 public routes after the general interface migration. Compare again
 
 #### Phase 5: Map card and shared map controls
 
-Implementation status: authorized on 2026-08-24 after Wave A owner acceptance.
+Implementation status: completed locally and owner-accepted on 2026-08-24;
+not staged or committed. Phase 6 remains gated pending explicit authorization.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.

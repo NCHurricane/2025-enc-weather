@@ -154,7 +154,7 @@ export function installWeatherCityLabels(leafletMap, homeCenter, dataUrl, {
     cities.forEach((city) => {
       const { major, width, height } = cityLabelDimensions(city, overlay.homeCenter);
       const icon = window.L.divIcon({
-        className: `weather-place-label${major ? ' is-major' : ''}`,
+        className: `map-place-label${major ? ' is-major' : ''}`,
         html: `<span>${escapeCityLabelHtml(city.city)}</span>`,
         iconSize: [width, height],
         iconAnchor: [Math.round(width / 2), Math.round(height / 2)],

@@ -1,4 +1,4 @@
-import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260822-wmts-realearth-1';
+import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260824-phase5-1';
 
 const DEFAULT_BASEMAP_URL =
   'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
