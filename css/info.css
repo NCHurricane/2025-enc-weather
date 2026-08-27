@@ -1,3 +1,4 @@
+@layer pages {
 .site-page--info .header {
     border-bottom: var(--border-subtle);
     background: var(--surface-header);
@@ -188,4 +189,5 @@
     .page-header--case-study {
         padding: 18px;
     }
+}
 }

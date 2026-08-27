@@ -5,6 +5,7 @@ import process from 'node:process';
 
 import { validateTropicalStormManifest } from '../js/modules/tropicalMapEngine.js';
 import {
+  basemapContract,
   leafletContract,
   phase2Contract,
   phase3Contract,
@@ -12,6 +13,7 @@ import {
   phase5Contract,
   phase6Contract,
   phase7Contract,
+  phase8Contract,
 } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
@@ -145,11 +147,54 @@ const tagsForReference = (html, tagName, attribute, reference) => [...html.match
   match[0].match(new RegExp(`\\b${attribute}=['"]([^'"]+)['"]`, 'i'))?.[1] || '',
 ) === reference);
 
+function topLevelLayerNames(css) {
+  const source = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const names = [];
+  let index = 0;
+
+  while (index < source.length) {
+    while (/\s/.test(source[index] || '')) index += 1;
+    if (index >= source.length) break;
+
+    const header = source.slice(index).match(/^@layer\s+([a-z][a-z0-9-]*)\s*\{/i);
+    if (!header) return null;
+    names.push(header[1]);
+    index += header[0].length;
+
+    let depth = 1;
+    let quote = '';
+    while (index < source.length && depth > 0) {
+      const character = source[index];
+      if (quote) {
+        if (character === '\\') index += 1;
+        else if (character === quote) quote = '';
+      } else if (character === '"' || character === "'") {
+        quote = character;
+      } else if (character === '{') {
+        depth += 1;
+      } else if (character === '}') {
+        depth -= 1;
+      }
+      index += 1;
+    }
+    if (depth !== 0) return null;
+  }
+
+  return names;
+}
+
+const importantDeclarations = css => css.split(/\r?\n/)
+  .map(line => line.trim())
+  .filter(line => line.includes('!important'));
+
 const expectedLeafletConsumers = new Set(leafletContract.consumers.map(consumer => consumer.file));
 const actualLeafletConsumers = new Set();
 for (const [relative, html] of htmlByRelativePath) {
   if (/\b(?:href|src)=['"](?:https?:)?\/\/[^'"]*leaflet[^'"]*['"]/i.test(html)) {
     errors.push(`${relative}: remote Leaflet reference is forbidden`);
+  }
+  if (/\bhref=['"][^'"]*vendor\/leaflet\/1\.9\.4\/leaflet\.css(?:[?'"])/i.test(html)) {
+    errors.push(`${relative}: direct Leaflet stylesheet reference bypasses the Phase 8 vendor layer`);
   }
   if (htmlReferences(html).some(reference => /vendor\/leaflet\/1\.9\.4\/leaflet\.(?:css|js)$/.test(reference))) {
     actualLeafletConsumers.add(relative);
@@ -163,12 +208,19 @@ for (const consumer of leafletContract.consumers) {
     continue;
   }
 
+  const layerOrderTags = tagsForReference(html, 'link', 'href', consumer.layerOrderCss);
   const cssTags = tagsForReference(html, 'link', 'href', consumer.css);
   const jsTags = tagsForReference(html, 'script', 'src', consumer.js);
+  if (layerOrderTags.length !== 1
+      || referenceVersion(layerOrderTags[0][0].match(/\bhref=['"]([^'"]+)['"]/i)?.[1] || '')
+        !== phase8Contract.version) {
+    errors.push(`${consumer.file}: expected exactly one current Phase 8 layer-order stylesheet reference`);
+  }
   if (cssTags.length !== 1) {
-    errors.push(`${consumer.file}: expected exactly one local Leaflet stylesheet reference`);
-  } else if (!cssTags[0][0].includes(`integrity="${leafletContract.cssIntegrity}"`)) {
-    errors.push(`${consumer.file}: local Leaflet stylesheet integrity hash is missing or incorrect`);
+    errors.push(`${consumer.file}: expected exactly one layered Leaflet wrapper reference`);
+  } else if (referenceVersion(cssTags[0][0].match(/\bhref=['"]([^'"]+)['"]/i)?.[1] || '')
+      !== phase8Contract.version) {
+    errors.push(`${consumer.file}: layered Leaflet wrapper cache version is stale or missing`);
   }
   if (jsTags.length !== 1) {
     errors.push(`${consumer.file}: expected exactly one local Leaflet script reference`);
@@ -180,7 +232,7 @@ for (const consumer of leafletContract.consumers) {
   const positions = consumer.stylesheetOrder.map(reference => stylesheets.indexOf(reference));
   if (positions.some(position => position === -1)
       || positions.some((position, index) => index > 0 && position <= positions[index - 1])) {
-    errors.push(`${consumer.file}: stylesheets do not follow the approved Phase 1 pre-layer order`);
+    errors.push(`${consumer.file}: stylesheets do not follow the approved Phase 8 layered order`);
   }
 }
 
@@ -327,9 +379,9 @@ const repositoryReference = (documentRelative, reference) => {
   const target = localTarget(documentPath, reference);
   return target ? path.relative(root, target).replaceAll('\\', '/') : null;
 };
-const referenceVersion = reference => new URLSearchParams(
-  reference.split('#')[0].split('?')[1] || '',
-).get('v');
+function referenceVersion(reference) {
+  return new URLSearchParams(reference.split('#')[0].split('?')[1] || '').get('v');
+}
 
 const actualNavigationConsumers = new Set();
 for (const [relative, html] of phase2HtmlByRelativePath) {
@@ -481,7 +533,10 @@ for (const dependency of phase4Contract.versionedAssets) {
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
-  if (references.length !== 1 || referenceVersion(references[0]) !== phase4Contract.version) {
+  const expectedVersion = dependency.target.endsWith('.css')
+    ? phase4Contract.stylesheetVersion
+    : phase4Contract.version;
+  if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 4 cache version`);
   }
 }
@@ -551,13 +606,10 @@ for (const stylesheet of phase5Contract.ownerStylesheets) {
   }
 }
 
-const phase7StylesheetNames = new Set(Object.keys(phase7Contract.stylesheets));
 for (const [stylesheet, consumers] of Object.entries(phase5Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
-  const expectedVersion = phase7StylesheetNames.has(stylesheet)
-    ? phase7Contract.version
-    : phase5Contract.stylesheetVersion;
+  const expectedVersion = phase5Contract.stylesheetVersion;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
@@ -597,15 +649,21 @@ for (const sourceContract of phase5Contract.sourceContracts) {
 const phase6VersionedAssetKeys = new Set(
   phase6Contract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
 );
+const basemapVersionedAssetKeys = new Set(
+  basemapContract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
+);
 for (const dependency of phase5Contract.versionedAssets) {
   const source = phase2HtmlByRelativePath.get(dependency.file)
     || await readFile(path.join(root, ...dependency.file.split('/')), 'utf8').catch(() => '');
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
-  const expectedVersion = phase6VersionedAssetKeys.has(`${dependency.file}\0${dependency.target}`)
-    ? phase6Contract.version
-    : phase5Contract.version;
+  const dependencyKey = `${dependency.file}\0${dependency.target}`;
+  const expectedVersion = basemapVersionedAssetKeys.has(dependencyKey)
+    ? basemapContract.version
+    : phase6VersionedAssetKeys.has(dependencyKey)
+      ? phase6Contract.version
+      : phase5Contract.version;
   if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the current shared-map cache version`);
   }
@@ -673,9 +731,7 @@ for (const sourceContract of phase6Contract.sourceContracts) {
 for (const [stylesheet, consumers] of Object.entries(phase6Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
-  const expectedVersion = phase7StylesheetNames.has(stylesheet)
-    ? phase7Contract.version
-    : phase6Contract.version;
+  const expectedVersion = phase6Contract.stylesheetVersion;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
@@ -704,7 +760,11 @@ for (const dependency of phase6Contract.versionedAssets) {
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*|\bhref\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
-  if (references.length !== 1 || referenceVersion(references[0]) !== phase6Contract.version) {
+  const dependencyKey = `${dependency.file}\0${dependency.target}`;
+  const expectedVersion = basemapVersionedAssetKeys.has(dependencyKey)
+    ? basemapContract.version
+    : phase6Contract.version;
+  if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 6 cache version`);
   }
 }
@@ -745,7 +805,8 @@ for (const [stylesheet, consumers] of Object.entries(phase7Contract.stylesheets)
     );
     if (references.length > 0) actualConsumers.add(relative);
     if (expectedConsumers.has(relative)
-        && (references.length !== 1 || referenceVersion(references[0]) !== phase7Contract.version)) {
+        && (references.length !== 1
+          || referenceVersion(references[0]) !== phase7Contract.stylesheetVersion)) {
       errors.push(`${relative}: ${stylesheet} must use the Phase 7 cache version`);
     }
   }
@@ -768,6 +829,100 @@ for (const dependency of phase7Contract.forbiddenDependencies) {
   );
   if (references.length > 0) {
     errors.push(`${dependency.file}: removed Phase 7 ${dependency.target} dependency remains`);
+  }
+}
+
+const phase8LayerOrder = `@layer ${phase8Contract.layerOrder.join(', ')};`;
+const phase8OrderCss = await readFile(
+  path.join(root, ...phase8Contract.orderStylesheet.split('/')),
+  'utf8',
+).catch(() => '');
+if (phase8OrderCss.trim() !== phase8LayerOrder) {
+  errors.push(`${phase8Contract.orderStylesheet}: Phase 8 layer order must be exactly ${phase8LayerOrder}`);
+}
+
+const phase8VendorCss = await readFile(
+  path.join(root, ...phase8Contract.vendorStylesheet.split('/')),
+  'utf8',
+).catch(() => '');
+if (phase8VendorCss.trim() !== phase8Contract.vendorImport) {
+  errors.push(`${phase8Contract.vendorStylesheet}: Leaflet must be imported unchanged into the vendor layer`);
+}
+
+const phase8HtmlConsumers = new Set(phase8Contract.htmlConsumers);
+for (const [relative, html] of htmlByRelativePath) {
+  const stylesheets = stylesheetHrefs(html);
+  const orderReferences = stylesheets.filter(
+    reference => repositoryReference(relative, reference) === phase8Contract.orderStylesheet,
+  );
+  if (!phase8HtmlConsumers.has(relative)) {
+    if (orderReferences.length > 0) {
+      errors.push(`${relative}: undeclared Phase 8 layer-order consumer`);
+    }
+    continue;
+  }
+  if (orderReferences.length !== 1 || referenceVersion(orderReferences[0]) !== phase8Contract.version) {
+    errors.push(`${relative}: expected exactly one current Phase 8 layer-order stylesheet`);
+  }
+  if (repositoryReference(relative, stylesheets[0] || '') !== phase8Contract.orderStylesheet) {
+    errors.push(`${relative}: Phase 8 layer-order stylesheet must be the first stylesheet`);
+  }
+  if (openingTags(html).some(tag => /\sstyle\s*=/i.test(tag.source))) {
+    errors.push(`${relative}: unlayered inline style attribute is forbidden in a Phase 8 consumer`);
+  }
+
+  for (const reference of stylesheets) {
+    const target = repositoryReference(relative, reference);
+    if ((target === phase8Contract.orderStylesheet
+        || target === phase8Contract.vendorStylesheet
+        || Object.hasOwn(phase8Contract.stylesheetLayers, target))
+        && referenceVersion(reference) !== phase8Contract.version) {
+      errors.push(`${relative}: ${target} must use the Phase 8 cache version`);
+    }
+  }
+}
+for (const consumer of phase8HtmlConsumers) {
+  if (!htmlByRelativePath.has(consumer)) {
+    errors.push(`${consumer}: declared Phase 8 HTML consumer is missing`);
+  }
+}
+
+for (const [stylesheet, expectedLayers] of Object.entries(phase8Contract.stylesheetLayers)) {
+  const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
+  const actualLayers = topLevelLayerNames(css);
+  if (!actualLayers || actualLayers.join('\0') !== expectedLayers.join('\0')) {
+    errors.push(`${stylesheet}: contains unlayered rules or does not use its documented Phase 8 layer ownership`);
+  }
+
+  const expectedImportant = [...(phase8Contract.importantAllowlist[stylesheet] || [])].sort();
+  const actualImportant = importantDeclarations(css).sort();
+  if (actualImportant.join('\0') !== expectedImportant.join('\0')) {
+    errors.push(`${stylesheet}: !important usage differs from the documented Phase 8 allowlist`);
+  }
+}
+
+const phase8InlineLayerPages = new Set(phase8Contract.inlineLayerPages);
+for (const [relative, html] of htmlByRelativePath) {
+  const blocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(match => match[1]);
+  if (phase8InlineLayerPages.has(relative)) {
+    if (blocks.length !== 1 || topLevelLayerNames(blocks[0])?.join('\0') !== 'pages') {
+      errors.push(`${relative}: county background style must be contained in the Phase 8 pages layer`);
+    }
+  } else if (blocks.length > 0) {
+    errors.push(`${relative}: undeclared inline stylesheet bypasses the Phase 8 ownership contract`);
+  }
+}
+
+const phase8CssFiles = new Set([
+  phase8Contract.orderStylesheet,
+  phase8Contract.vendorStylesheet,
+  ...Object.keys(phase8Contract.stylesheetLayers),
+]);
+for (const file of files.filter(candidate => candidate.endsWith('.css'))) {
+  const relative = path.relative(root, file).replaceAll('\\', '/');
+  if (relative.startsWith(`${leafletContract.vendorRoot}/`)) continue;
+  if (!phase8CssFiles.has(relative)) {
+    errors.push(`${relative}: application stylesheet has no Phase 8 layer ownership contract`);
   }
 }
 

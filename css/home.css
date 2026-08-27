@@ -1,3 +1,4 @@
+@layer pages {
 .home-weather-center {
   --weather-map-block-size: clamp(31.25rem, calc(100svh - 20.625rem), 43.75rem);
 }
@@ -12,7 +13,7 @@
 
 .home-map-key {
   width: min(290px, calc(100vw - 76px));
-  margin: 0 10px 10px 0 !important;
+  margin: 0 10px 10px 0;
   border: 1px solid rgba(180, 205, 223, 0.58);
   border-radius: 10px;
   background: rgba(7, 27, 46, 0.96);
@@ -121,17 +122,17 @@
 }
 
 .home-county-tooltip {
-  border: 1px solid rgba(255, 242, 0, 0.76) !important;
-  background: #071b2e !important;
-  color: #fff !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+  border: 1px solid rgba(255, 242, 0, 0.76);
+  background: #071b2e;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
   font-family: var(--font-primary);
   font-size: 0.75rem;
   font-weight: 700;
 }
 
 .home-county-tooltip::before {
-  border-top-color: #071b2e !important;
+  border-top-color: #071b2e;
 }
 
 .weather-map-popup--home {
@@ -195,7 +196,7 @@
   padding: 8px 12px;
   border-radius: 6px;
   background: #fff200;
-  color: #071b2e !important;
+  color: #071b2e;
   font-size: 0.6rem;
   font-weight: 800;
   text-decoration: none;
@@ -221,7 +222,7 @@
   .home-map-key.is-below-map {
     box-sizing: border-box;
     width: 100%;
-    margin: 0 !important;
+    margin: 0;
     float: none;
     clear: none;
     border-right: 0;
@@ -253,4 +254,5 @@
     padding: 7px 10px;
     font-size: 0.6rem;
   }
+}
 }

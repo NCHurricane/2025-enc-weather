@@ -1,3 +1,4 @@
+@layer pages {
 /*=================================================================*/
 /*                        ACTIVE PAGE STYLES                      */
 /*                       Scope: /active/index.html                */
@@ -1661,4 +1662,5 @@
         gap: 0.15rem;
         text-align: center;
     }
+}
 }

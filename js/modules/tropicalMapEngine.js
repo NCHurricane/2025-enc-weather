@@ -1,13 +1,15 @@
-import { installBasemapMenuControl } from './interactiveWeatherMap.js?v=20260824-phase5-1';
+import {
+  installBasemapMenuControl,
+  WEATHER_BASEMAP_FALLBACK_URL,
+  WEATHER_BASEMAPS,
+} from './interactiveWeatherMap.js?v=20260826-basemaps-1';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,
 } from './leafletPopupShell.js?v=20260824-phase6-1';
 
-const DEFAULT_BASEMAP_URL =
-  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
-const DEFAULT_BASEMAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Tropical data: NOAA/NHC';
+const DEFAULT_BASEMAP_URL = WEATHER_BASEMAPS.light.url;
+const DEFAULT_BASEMAP_ATTRIBUTION = WEATHER_BASEMAPS.light.attribution;
 
 export const TROPICAL_LAYER_KEYS = Object.freeze([
   'outlookAreas',
@@ -650,8 +652,9 @@ export class TropicalMapEngine {
     } else {
       this.basemapLayer = this.leaflet.tileLayer(this.basemapUrl, {
         attribution: this.basemapAttribution,
+        errorTileUrl: WEATHER_BASEMAP_FALLBACK_URL,
+        maxNativeZoom: WEATHER_BASEMAPS.light.maxNativeZoom,
         maxZoom: 20,
-        subdomains: 'abcd',
         noWrap: false,
         pane: 'tropicalBasemapPane',
       });

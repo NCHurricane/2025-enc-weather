@@ -1,3 +1,4 @@
+@layer pages {
 .site-page--tropical-overview {
   --page-title-color: gold;
   --page-title-weight: 800;
@@ -302,4 +303,5 @@
   .tropical-source-link {
     width: auto;
   }
+}
 }

@@ -3,10 +3,10 @@ declare(strict_types=1);
 error_reporting(E_ALL);
 
 /**
- * Simple USGS XYZ tile proxy + disk cache
+ * Simple ArcGIS Online XYZ tile proxy + disk cache
  * GET /2025_weather/active/api/tiles.php?style=topo&z=8&x=99&y=69[&ttl=2592000][&purge=1]
  *
- * Cache path: /2025_weather/js/data/tiles/{style}/{z}/{x}/{y}.{ext}
+ * Cache path: /2025_weather/js/data/tiles/{provider-cache}/{z}/{x}/{y}.{ext}
  * Default TTL: 30 days (set via ?ttl=SECONDS). Use &purge=1 to force re-fetch.
  */
 
@@ -28,9 +28,18 @@ function respond_error(int $code, string $msg): void {
 }
 
 $styles = [
-  'topo'    => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-  'imagery' => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-  'shaded'  => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}',
+  'topo' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-terrain',
+  ],
+  'imagery' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-imagery',
+  ],
+  'shaded' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-dark-gray',
+  ],
 ];
 
 
@@ -51,7 +60,8 @@ $ttl   = isset($_GET['ttl']) ? max(0, (int)$_GET['ttl']) : 60*60*24*30;
 $purge = isset($_GET['purge']);
 log_debug("Request: style=$style z=$z x=$x y=$y ttl=$ttl purge=$purge");
 
-$cacheDir  = $siteRoot . "/js/data/tiles/{$style}/{$z}/{$x}";
+$cacheKey = $styles[$style]['cache'];
+$cacheDir  = $siteRoot . "/js/data/tiles/{$cacheKey}/{$z}/{$x}";
 if (!is_dir($cacheDir)) {
   $mk = @mkdir($cacheDir, 0775, true);
   log_debug("mkdir $cacheDir: " . ($mk ? 'ok' : 'fail'));
@@ -83,8 +93,8 @@ if ($cacheFile && !$purge && (time() - (int)@filemtime($cacheFile) < $ttl)) {
   $serve($cacheFile, $ttl);
 }
 
-log_debug("Fetching from USGS: style=$style z=$z x=$x y=$y");
-$url = str_replace(['{z}','{x}','{y}'], [$z, $x, $y], $styles[$style]);
+log_debug("Fetching from ArcGIS Online: style=$style z=$z x=$x y=$y");
+$url = str_replace(['{z}','{x}','{y}'], [$z, $x, $y], $styles[$style]['url']);
 $ch = curl_init($url);
 curl_setopt_array($ch, [
   CURLOPT_RETURNTRANSFER => true,
@@ -99,7 +109,7 @@ $body = curl_exec($ch);
 $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
 $ct   = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 if ($body === false) log_debug("curl_exec error: " . curl_error($ch));
-log_debug("USGS response: code=$code ct=$ct len=" . ($body !== false ? strlen($body) : 'false'));
+log_debug("ArcGIS Online response: code=$code ct=$ct len=" . ($body !== false ? strlen($body) : 'false'));
 curl_close($ch);
 
 if ($body === false || $code !== 200 || !$ct) {

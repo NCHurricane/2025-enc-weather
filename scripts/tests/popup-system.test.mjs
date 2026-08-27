@@ -70,6 +70,6 @@ test('Phase 6 owns one accessible popup shell with BEM family content and no leg
 
   assert.equal(phase6Contract.version, '20260824-phase6-1');
   const harness = readProjectFile('test/tropical-map/phase2-harness.html');
-  assert.match(harness, new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.version}`));
-  assert.match(harness, /tropical-map-engine\.css\?v=20260824-phase6-1/);
+  assert.match(harness, new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.stylesheetVersion}`));
+  assert.match(harness, new RegExp(`tropical-map-engine\\.css\\?v=${phase6Contract.stylesheetVersion}`));
 });

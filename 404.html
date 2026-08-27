@@ -32,11 +32,13 @@
             content="This page isn't available. Visit the homepage for current weather updates." />
         <meta name="twitter:image" content="https://nchurricane.com/images/2026-OG-Card.webp" />
 
-        <link rel="stylesheet" href="./css/styles.css?v=20260824-phase5-1" />
-        <link rel="stylesheet" href="./css/components.css?v=20260824-phase5-1" />
-        <link rel="stylesheet" href="./css/info.css?v=20260824-phase4-1" />
+        <link rel="stylesheet" href="./css/cascade-layers.css?v=20260824-phase8-1" />
+        <link rel="stylesheet" href="./css/styles.css?v=20260824-phase8-1" />
+        <link rel="stylesheet" href="./css/components.css?v=20260824-phase8-1" />
+        <link rel="stylesheet" href="./css/info.css?v=20260824-phase8-1" />
 
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" sizes="any" href="/images/20260824_icon.svg" />
 
         <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
@@ -142,10 +144,9 @@
 
             document.addEventListener('DOMContentLoaded', () => {
                 NavigationModule.navData.logo = {
-                    textBefore: 'ChuckCopeland',
-                    iconClass: 'fa-solid fa-bolt-lightning',
-                    textAfter: 'WX',
-                    ariaLabel: 'ChuckCopelandWx home',
+                    src: 'images/20260826_cc_wx_logo.svg',
+                    alt: 'Chuck Copeland WX',
+                    ariaLabel: 'Chuck Copeland WX home',
                 };
                 NavigationModule.init('./');
             });

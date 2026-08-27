@@ -47,3 +47,11 @@ The current source uses measurement ID `G-8ERHE6K7MK`, but the tag is consent-ga
 ## Release evidence
 
 For each release, retain separate evidence for PHP lint, JavaScript syntax, JSON/JSON-LD/XML parsing, internal-link checks, controlled-browser behavior, response headers, and account-owned search/analytics verification. One category does not substitute for another.
+
+### Static SVG favicon follow-up: 2026-08-24
+
+- All 16 public pages and the Bertie prototype declare `/images/20260824_icon.svg` as a static SVG favicon while retaining the existing ICO, PNG, Apple touch icon, and webmanifest fallbacks.
+- The SVG parses as XML and contains no CSS keyframes, animation declaration, or SMIL animation element.
+- Static validation passed the focused 17-consumer favicon contract, `node scripts/validate-site.mjs` (18 HTML files, 307 JSON files, and 199 local references), and `git diff --check`.
+- A local PHP response returned `200` with `Content-Type: image/svg+xml`. Controlled-browser checks confirmed that Home at `1280x900` and Dare mainland at `390x844` requested the SVG from the root-relative URL, had no document-level horizontal overflow, and produced no captured console warnings or errors.
+- Production/deployment verification and owner smoke remain separate open evidence. Nothing was staged, committed, pushed, deployed, generated, or deleted for this follow-up.

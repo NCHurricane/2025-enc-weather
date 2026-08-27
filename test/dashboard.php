@@ -73,7 +73,7 @@ if (!is_dir($baseDir . '/active')) {
 define('BASE_DIR', $baseDir);
 define('LOGS_DIR', BASE_DIR . '/active/logs');
 define('AUDIT_LOG', __DIR__ . '/dashboard_audit.log');
-define('IMAGERY_TILES_DIR', BASE_DIR . '/js/data/tiles/imagery');
+define('IMAGERY_TILES_DIR', BASE_DIR . '/js/data/tiles/esri-imagery');
 
 // Ensure logs directory exists
 if (!file_exists(LOGS_DIR)) {
@@ -1167,7 +1167,7 @@ if (isset($_POST['action'])) {
                         <h2>Imagery Tile Cache</h2>
                     </div>
                 </summary>
-                <p class="cache-note">Review and purge generated imagery basemap tiles. This action does not affect topographic tiles, source data, or application code.</p>
+                <p class="cache-note">Review and purge generated Esri imagery basemap tiles. This action does not affect other basemap tiles, source data, or application code.</p>
                 <div class="cache-summary" aria-live="polite">
                     <div class="cache-stat">
                         <strong id="imagery-cache-files">—</strong>
@@ -1433,8 +1433,8 @@ if (isset($_POST['action'])) {
             const cacheSize = imageryCacheStats.size_formatted || 'unknown size';
             const estimatePrefix = imageryCacheStats.scan_complete === false ? 'at least ' : '';
             const confirmed = confirm(
-                `Permanently delete ${estimatePrefix}${fileCount} generated imagery tile files (${estimatePrefix}${cacheSize})?\n\n` +
-                'The imagery cache directory will remain in place, and tiles may be generated again as they are requested. Topographic tiles are not affected.'
+                `Permanently delete ${estimatePrefix}${fileCount} generated Esri imagery tile files (${estimatePrefix}${cacheSize})?\n\n` +
+                'The imagery cache directory will remain in place, and tiles may be generated again as they are requested. Other basemap tiles are not affected.'
             );
             if (!confirmed) return;
 

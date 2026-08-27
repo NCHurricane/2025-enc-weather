@@ -112,8 +112,9 @@ A real-time local-weather and tropical-intelligence platform centered on Eastern
 -   **NWS RIDGE Radar** (`radar.weather.gov`)
     -   Radar loop GIFs (hotlinked)
     -   Future enhancement: local caching planned
--   **USGS National Map** (`basemap.nationalmap.gov`)
-    -   Map tiles for tropical watches/warnings overlays
+-   **Esri ArcGIS Online** (`services.arcgisonline.com`)
+    -   Label-free terrain, imagery, and gray-canvas basemaps
+    -   Self-hosted neutral tiles and local boundary data provide the fallback
 
 ## Counties & Multi-Zone Architecture
 
@@ -901,8 +902,13 @@ All weather data comes from official U.S. government sources:
 -   **NOAA/NESDIS**: `cdn.star.nesdis.noaa.gov`
     -   GOES-East satellite imagery
     -   Multiple sectors and product types
--   **USGS National Map**: `basemap.nationalmap.gov`
-    -   Map tiles for tropical overlays
+
+### Basemap Sources
+
+-   **Esri ArcGIS Online**: `services.arcgisonline.com`
+    -   Label-free World Terrain Base, World Imagery, and dark/light gray canvas tiles
+-   **Self-hosted fallback**
+    -   Neutral local tiles with bundled Natural Earth and U.S. Census boundary overlays
 
 ### Data Disclaimer
 

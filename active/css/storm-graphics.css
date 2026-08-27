@@ -1,3 +1,4 @@
+@layer pages {
 /* Section title behavior is defined in active.css; keep defaults here */
 /* Remove local overrides that centered and added chevrons */
 /* Collapsed state animation and default expanded state */
@@ -218,4 +219,5 @@
   .subtabs--track-product .subtabs__tab:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
+}
 }

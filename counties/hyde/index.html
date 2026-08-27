@@ -33,22 +33,25 @@
       <meta name="twitter:image" content="https://nchurricane.com/images/county/2025-OG-Card-Hyde.webp" />
 
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="stylesheet" href="../../vendor/leaflet/1.9.4/leaflet.css"
-         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+      <link rel="icon" type="image/svg+xml" sizes="any" href="/images/20260824_icon.svg" />
+      <link rel="stylesheet" href="../../css/cascade-layers.css?v=20260824-phase8-1" />
+      <link rel="stylesheet" href="../../css/leaflet-vendor.css?v=20260824-phase8-1" />
       <script src="../../vendor/leaflet/1.9.4/leaflet.js"
          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
       <script src="https://kit.fontawesome.com/04fcf90301.js" crossorigin="anonymous"></script>
 
       <!-- CHANGE VERSION: -->
-      <link rel="stylesheet" href="../../css/styles.css?v=20260824-phase5-1" />
-      <link rel="stylesheet" href="../../css/components.css?v=20260824-phase5-1" />
-      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260824-phase7-1" />
-      <link rel="stylesheet" href="../css/county.css?v=20260824-phase7-1" />
+      <link rel="stylesheet" href="../../css/styles.css?v=20260824-phase8-1" />
+      <link rel="stylesheet" href="../../css/components.css?v=20260824-phase8-1" />
+      <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260824-phase8-1" />
+      <link rel="stylesheet" href="../css/county.css?v=20260824-phase8-1" />
 
       <!-- CHANGE THE IMAGE -->
       <style>
+         @layer pages {
          .current-container {
             background-image: url('../../images/county/hyde-background.webp');
+         }
          }
       </style>
 
@@ -511,18 +514,17 @@
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
       <script src="js/countyApp.js?v=20260824-phase4-1" type="module"></script>
-      <script src="../js/weatherMaps.js?v=20260824-phase5-1" type="module"></script>
-      <script src="../js/weatherCenter.js?v=20260824-phase6-1" type="module"></script>
+      <script src="../js/weatherMaps.js?v=20260826-basemaps-1" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260826-basemaps-1" type="module"></script>
 
       <script type="module">
         import { NavigationModule } from '../../js/modules/navigation.js?v=20260824-phase4-1';
 
       document.addEventListener('DOMContentLoaded', () => {
         NavigationModule.navData.logo = {
-          textBefore: 'ChuckCopeland',
-          iconClass: 'fa-solid fa-bolt-lightning',
-          textAfter: 'WX',
-          ariaLabel: 'ChuckCopelandWx home',
+          src: 'images/20260826_cc_wx_logo.svg',
+          alt: 'Chuck Copeland WX',
+          ariaLabel: 'Chuck Copeland WX home',
         };
         NavigationModule.init('../../');
       });

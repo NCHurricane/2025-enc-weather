@@ -3,13 +3,13 @@ declare(strict_types=1);
 error_reporting(E_ALL);
 
 /**
- * Pre-download USGS XYZ tiles for a lon/lat bbox and zoom range.
+ * Pre-download ArcGIS Online XYZ tiles for a lon/lat bbox and zoom range.
  *
  * Usage (CLI):
  *   php warm_tiles.php --styles=topo,imagery --zmin=6 --zmax=8 --lonMin=-106 --lonMax=-60 --latMin=18 --latMax=50 [--sleepMs=40] [--purge=1]
  *
  * Styles: topo | imagery | shaded
- * Saves to: /js/data/tiles/{style}/{z}/{x}/{y}.{ext}
+ * Saves to: /js/data/tiles/{provider-cache}/{z}/{x}/{y}.{ext}
  */
 
 error_reporting(E_ALL);
@@ -57,11 +57,26 @@ $PURGE  = (bool) arg('purge', $PURGE);
 $activeDir = __DIR__;
 $siteRoot  = dirname(dirname($activeDir));
 
-$TEMPLATES = [
-  'topo'    => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-  'imagery' => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-  'shaded'  => 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}',
+$PROVIDERS = [
+  'topo' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-terrain',
+  ],
+  'imagery' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-imagery',
+  ],
+  'shaded' => [
+    'url' => 'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    'cache' => 'esri-dark-gray',
+  ],
 ];
+
+$invalidStyles = array_values(array_diff($styles, array_keys($PROVIDERS)));
+if ($invalidStyles) {
+  fwrite(STDERR, 'Unknown styles: ' . implode(', ', $invalidStyles) . "\n");
+  exit(1);
+}
 
 $stormDirs = glob($siteRoot . '/active/storms/*', GLOB_ONLYDIR);
 $zoneIds = [];
@@ -170,7 +185,8 @@ $done = 0; $saved = 0; $skipped = 0; $errors = 0;
 foreach ($bboxes as $bbox) {
   list($LONMIN, $LONMAX, $LATMIN, $LATMAX) = $bbox;
   foreach ($styles as $style) {
-    $tpl = $TEMPLATES[$style];
+    $provider = $PROVIDERS[$style];
+    $tpl = $provider['url'];
     for ($z = $ZMIN; $z <= $ZMAX; $z++) {
       $x0 = lon2tileX($LONMIN, $z);
       $x1 = lon2tileX($LONMAX, $z);
@@ -181,7 +197,7 @@ foreach ($bboxes as $bbox) {
 
       for ($x = $x0; $x <= $x1; $x++) {
         for ($y = $y0; $y <= $y1; $y++) {
-          $destDir = "{$siteRoot}/js/data/tiles/{$style}/{$z}/{$x}";
+          $destDir = "{$siteRoot}/js/data/tiles/{$provider['cache']}/{$z}/{$x}";
           if (!is_dir($destDir)) @mkdir($destDir, 0775, true);
           $base = "{$destDir}/{$y}";
 

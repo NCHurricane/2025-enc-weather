@@ -1,3 +1,4 @@
+@layer maps {
 .tropical-map-status {
   margin: 0;
   color: #dbeafe;
@@ -159,4 +160,5 @@
   .tropical-map-legend ul {
     grid-template-columns: 1fr;
   }
+}
 }

@@ -2,7 +2,7 @@
 import {
   WEATHER_BASEMAPS,
   installBasemapMenuControl,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,
@@ -113,7 +113,7 @@ const INSETS = {
   },
 };
 
-const LOCAL_IMAGERY_ROOT = `${BASE_PATH}/js/data/tiles/imagery`;
+const LOCAL_IMAGERY_ROOT = `${BASE_PATH}/js/data/tiles/esri-imagery`;
 const LOCAL_IMAGERY_EXTS = ["jpg"];
 
 const TILE_PROVIDERS = {

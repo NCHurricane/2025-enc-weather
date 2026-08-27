@@ -1,3 +1,4 @@
+@layer components {
 /* Shared presentation for typography, tabs, weather-center shell, and map menus. */
 
 .page-header {
@@ -150,13 +151,13 @@
   margin-top: 14px;
   border-color: var(--color-accent);
   background: var(--color-accent);
-  color: #071b2e !important;
+  color: #071b2e;
 }
 
 .button--primary:hover,
 .button--primary:focus-visible {
   background: #fff;
-  color: #071b2e !important;
+  color: #071b2e;
 }
 
 .consent-dialog {
@@ -197,7 +198,7 @@
 }
 
 .consent-dialog__current {
-  margin-top: 6px !important;
+  margin-top: 6px;
   font-size: 0.85rem;
 }
 
@@ -472,7 +473,7 @@
   min-height: 42px;
   box-sizing: border-box;
   padding: 0 14px;
-  border-radius: 8px !important;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(4, 10, 16, 0.18);
   font-family: var(--font-heading), sans-serif;
   font-weight: 400;
@@ -482,10 +483,10 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border: 1px solid rgba(171, 198, 218, 0.46) !important;
-  border-left: 5px solid #7fe0aa !important;
-  border-radius: 9px !important;
-  background: #0a1f34 !important;
+  border: 1px solid rgba(171, 198, 218, 0.46);
+  border-left: 5px solid #7fe0aa;
+  border-radius: 9px;
+  background: #0a1f34;
   color: #fff;
 }
 
@@ -838,4 +839,5 @@
   #main-content .active-storm-workspace .active-satellite-tab i {
     display: none;
   }
+}
 }

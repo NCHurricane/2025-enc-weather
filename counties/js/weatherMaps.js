@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import {
   createGibsWmtsSatelliteSource,

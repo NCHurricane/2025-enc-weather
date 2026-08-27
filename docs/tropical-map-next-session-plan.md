@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed locally in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`; and sitemap CSS Phase 7 is complete locally and owner-accepted but not committed. This document does not authorize pushing, deployment, destructive file cleanup, another Tropical presentation removal, a new Tropical product phase, or sitemap CSS Phase 8.
+Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed locally in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`; owner-accepted Phase 7 is committed locally in `dbd7c8c`; and Phase 8 is implemented and validated locally but not staged or committed. This document does not authorize pushing, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase. Phase 8 owner review remains open.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -116,8 +116,8 @@ at baseline `7a32866` and is owner-accepted:
   overall granularity. The same message explicitly authorized sitemap CSS
   Phase 7; it did not reopen a Tropical product phase or authorize Phase 8.
 
-The separately authorized sitemap CSS Phase 7 dependency slice is complete and
-owner-accepted locally at baseline `5448d61`:
+The separately authorized sitemap CSS Phase 7 dependency slice is complete,
+owner-accepted, and committed locally as `dbd7c8c`:
 
 - `tropical.html` and `active/index.html` no longer load County CSS. Both retain
   the shared map owner, Tropical engine sheet, and their correct family sheets
@@ -145,9 +145,9 @@ owner-accepted locally at baseline `5448d61`:
   `git diff --check`.
 - Storm identities, sources, packages, fixtures, map products, cameras,
   controls, alerts, current-storm-only routing, generated/runtime data, and all
-  retained presentations are unchanged. Phase 7 is not staged or committed;
-  nothing was pushed, deployed, generated, or deleted. Phase 8 remains gated
-  and unstarted.
+  retained presentations are unchanged. Phase 7 was committed locally as
+  `dbd7c8c`; nothing was pushed, deployed, generated, or deleted. The owner
+  subsequently authorized Phase 8 cascade layers.
 - Owner smoke on 2026-08-24: the owner started the bounded Active fixture
   router, confirmed that `AL052025` loaded, and supplied a screenshot showing
   the Coastal Colleton Tropical Storm Warning polygon and popup. Repository
@@ -155,7 +155,66 @@ owner-accepted locally at baseline `5448d61`:
   overlapping wind/surge features for that one SC zone, not the historical
   advisory's complete SC/NC extent. The owner then reported exactly, "Ok, then
   it has passed." This closes Phase 7 owner review at the reported overall
-  level and does not authorize Phase 8.
+  level. Phase 8 was authorized in the following owner request.
+
+Sitemap CSS Phase 8 is implemented and validated locally on 2026-08-24 from
+committed baseline `dbd7c8c`; owner review remains open:
+
+- Tropical and Active load the site-wide layer order first, then the map-only
+  Leaflet wrapper, token/base, components, shared map, Tropical engine, and
+  correct page-family sheets. Leaflet 1.9.4 remains byte-for-byte untouched and
+  is imported into `vendor`; the shared map and Tropical-engine rules use
+  `maps`, while Tropical, Active, and storm graphics use `pages`.
+- All stylesheet references use `20260824-phase8-1`. The ownership contract,
+  focused test, and validator reject direct Leaflet CSS links, unlayered or
+  undeclared application rules, stale cache references, and undocumented
+  `!important` use while continuing to enforce every exact Leaflet checksum.
+- Controlled browser at `1280x900` and `390x844` covered Eastern Pacific
+  Overview and deterministic `AL052025` Active after initial Atlantic/map
+  loading. Basin selection, URL state, map sizes, legends, responsive tabs,
+  warning geometry, and page composition retained zero horizontal overflow.
+  Tropical system and Active Coastal Colleton warning popups retained pointer
+  opening, `overflow:auto`, 44-pixel close targets, narrow fit, and focus return.
+- Full static evidence passes: seven changed tracked or dependency-only MJS
+  syntax checks, 73 PHP lint checks, 81 JavaScript/MJS syntax checks, all 84
+  focused tests, the site validator at 18 HTML/307 JSON/182 local references,
+  exact Leaflet hashes, focused old-reference/`!important` searches, and
+  `git diff --check`.
+- Storm identities, packages, current-storm routing, products, source links,
+  cameras, alerts, the one-zone deterministic warning subset, archived/ignored
+  data, and generated/runtime files remain unchanged. Phase 8 is not staged or
+  committed; nothing was pushed, deployed, generated, or deleted. Stop for
+  owner review.
+
+## ArcGIS basemap replacement: 2026-08-26
+
+- The shared basemap menu now exposes four label-free ArcGIS Online layers:
+  World Terrain Base, World Imagery, World Dark Gray Base, and World Light Gray
+  Base. The requested `USA_Topo_Maps` service was not used because its scanned
+  raster maps contain baked-in labels; World Terrain Base preserves the
+  intended terrain slot without adding a separate label layer.
+- CARTO and the direct USGS National Map provider are removed from the shared
+  browser configuration, CSP, documentation, Active hazard-tile proxy, and
+  tile warmer. Esri hazard tiles use new `esri-*` cache namespaces, so retained
+  generated USGS cache files are neither deleted nor reused.
+- Every external basemap uses a self-hosted neutral SVG as Leaflet's automatic
+  error tile. The bundled Natural Earth/Census reference layers, city labels,
+  storm vectors, and weather markers remain above that fallback.
+- Static/automated evidence: all 82 JavaScript/MJS syntax checks and 73 PHP
+  lints passed; all 88 JavaScript tests passed; the site validator passed 18
+  HTML files, 307 JSON files, and 199 local references; and `git diff --check`
+  passed with line-ending notices only.
+- Controlled browser: Home and Tropical at `1280x900`, Dare mainland at
+  `390x844`, and current `EP092026` Active at `1280x900` loaded the expected
+  ArcGIS tiles and four-option menu without horizontal overflow or console
+  warnings/errors. The forced ArcGIS-outage check produced loaded local tiles
+  while reference layers and data markers remained visible.
+- Live provider probes returned HTTP `200`, `image/jpeg`, CORS `*`, and nonzero
+  bytes for representative tiles from all four services. These provider checks
+  are time-dependent. Storm identity, products, layers, cameras, satellite
+  sources/fallbacks, generated/runtime data, scheduler state, and production
+  state were not changed; nothing was staged, committed, pushed, deployed,
+  generated, or deleted.
 
 ## Static compatibility-page retirement: 2026-08-24
 

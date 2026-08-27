@@ -32,16 +32,16 @@ test('Phase 7 removes cross-family County CSS dependencies and versions changed 
     assert.doesNotMatch(html, /counties\/css\/county\.css|\.\.\/counties\/css\/county\.css/);
     assert.match(
       html,
-      new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.version}`),
+      new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.stylesheetVersion}`),
     );
   }
 
   for (const countyPage of phase7Contract.stylesheets['counties/css/county.css']) {
     const html = readProjectFile(countyPage);
-    assert.match(html, new RegExp(`county\\.css\\?v=${phase7Contract.version}`));
+    assert.match(html, new RegExp(`county\\.css\\?v=${phase7Contract.stylesheetVersion}`));
     assert.match(
       html,
-      new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.version}`),
+      new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.stylesheetVersion}`),
     );
   }
 });

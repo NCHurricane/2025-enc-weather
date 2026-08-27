@@ -1,15 +1,15 @@
 import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260824-phase5-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260824-phase5-1';
-import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260824-phase6-1';
+import { TropicalMapEngine } from '../../js/modules/tropicalMapEngine.js?v=20260826-basemaps-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260822-map-borders-1';
 import {
   TROPICAL_SATELLITE_PRODUCTS,
   tropicalSatelliteSource,
-} from '../../js/modules/tropicalSatelliteMap.js?v=20260824-phase6-1';
+} from '../../js/modules/tropicalSatelliteMap.js?v=20260826-basemaps-1';
 
 const LAYER_PRODUCT = Object.freeze({
   currentPosition: 'currentPosition',

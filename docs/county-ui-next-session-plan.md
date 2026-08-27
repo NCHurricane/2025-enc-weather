@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`, and owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`. Sitemap CSS Phase 7 is complete locally and owner-accepted but not committed; Phase 8 remains gated. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`, and owner-accepted Phase 7 is committed locally in `dbd7c8c`. Phase 8 is implemented and validated locally but is not staged or committed; owner review is open. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -125,9 +125,9 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 ### Sitemap CSS Phase 7 dependency closeout: 2026-08-24
 
-- Owner-accepted Phase 6 was committed locally as `5448d61`. Phase 7 begins
-  from that clean checkpoint and is complete locally but not staged or
-  committed.
+- Owner-accepted Phase 6 was committed locally as `5448d61`. Phase 7 began
+  from that checkpoint and is now owner-accepted and committed locally as
+  `dbd7c8c`.
 - The reusable observation BEM content and inline station-details presentation
   moved from `counties/css/county.css` to
   `css/interactive-weather-map.css`, preserving the same generated markup,
@@ -149,12 +149,74 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   `git diff --check`.
 - No County zone, station, provider, product, alert/HWO, cache, camera,
   generated/runtime, or prototype-promotion behavior changed. Nothing was
-  pushed, deployed, generated, or deleted. Phase 8 remains gated and unstarted.
+  pushed, deployed, generated, or deleted. The owner subsequently authorized
+  Phase 8 cascade layers.
 - Owner smoke on 2026-08-24 concluded with the exact report, "Ok, then it has
   passed." The owner explicitly confirmed the bounded Active fixture and alert
   popup in the same smoke sequence; no County page, zone, device, or viewport
   was individually named in the final confirmation, so County evidence remains
   at the overall Phase 7 acceptance level.
+
+### Sitemap CSS Phase 8 cascade layers: 2026-08-24
+
+- Phase 8 starts from committed Phase 7 baseline `dbd7c8c`. Every County page
+  now loads `css/cascade-layers.css` first and the local Leaflet wrapper second,
+  then the Phase 8-versioned token/base, component, shared-map, and County
+  sheets. `counties/css/county.css` and the nine inline County background rules
+  are contained in `pages`; shared map rules remain in `maps`.
+- The untouched Leaflet 1.9.4 CSS is imported into `vendor`; no County HTML
+  directly links it. All changed CSS uses `20260824-phase8-1`. Validator and
+  focused tests enforce layer ownership, exact consumers, cache keys, no
+  unlayered rules, exact Leaflet hashes, and the reduced `!important` allowlist.
+- County controlled-browser checks at `1280x900` and `390x844` covered Bertie,
+  Dare, and San Diego. Maps retained 450/400-pixel desktop/mobile family
+  heights, responsive tabs and zone selectors had no horizontal overflow, and
+  Dare/San Diego switching retained URL and active-state behavior. Bertie
+  observation details retained keyboard opening, below-map mobile placement,
+  44-pixel close targets, and focus restoration.
+- An existing cross-county localStorage issue remains outside this CSS slice:
+  a persisted San Diego `coastal` value caused Dare to request missing
+  `data/coastal/*` once before a valid Dare zone was chosen. Explicit Dare
+  `?zone=mainland` followed by Northern OBX switching produced no console
+  errors. No controller, zone data, generated file, or fallback was changed.
+- Phase-wide evidence passes: seven changed tracked or dependency-only MJS
+  syntax checks, full 73-file PHP and 81-file JavaScript/MJS baselines, all 84
+  focused tests, the site validator at 18 HTML/307 JSON/182 local references,
+  exact Leaflet checksums, focused old-reference and `!important` searches, and
+  `git diff --check`.
+- Phase 8 is not staged or committed. Nothing was pushed, deployed, generated,
+  or deleted; County data, stations, providers, alerts/HWO, maps, cameras,
+  multi-zone behavior, San Diego exceptions, and the Bertie prototype boundary
+  remain unchanged. Owner review is open.
+
+### ArcGIS basemap replacement: 2026-08-26
+
+- The shared basemap menu now exposes four label-free ArcGIS Online layers:
+  World Terrain Base, World Imagery, World Dark Gray Base, and World Light Gray
+  Base. The requested `USA_Topo_Maps` service was not used because its scanned
+  raster maps contain baked-in labels; World Terrain Base preserves the
+  intended terrain slot without adding a separate label layer.
+- CARTO and the direct USGS National Map provider are removed from the shared
+  browser configuration, CSP, documentation, Active hazard-tile proxy, and
+  tile warmer. Esri hazard tiles use new `esri-*` cache namespaces, so retained
+  generated USGS cache files are neither deleted nor reused.
+- Every external basemap uses the self-hosted neutral SVG tile as Leaflet's
+  automatic error tile. Bundled Natural Earth/Census reference layers and the
+  existing weather markers/city labels remain visible over that fallback.
+- Static/automated evidence: all 82 JavaScript/MJS syntax checks and 73 PHP
+  lints passed; all 88 JavaScript tests passed; the site validator passed 18
+  HTML files, 307 JSON files, and 199 local references; and `git diff --check`
+  passed with line-ending notices only.
+- Controlled browser: Home at `1280x900` loaded all four ArcGIS choices with
+  nonzero 256-pixel tiles. Dare mainland at `390x844` switched to Dark Gray,
+  retained a 357-by-400 map with no horizontal overflow, and had a clean
+  console. Blocking ArcGIS in that mobile run produced six loaded local tiles
+  while the County reference layer and eight observation markers remained.
+- Live provider probes returned HTTP `200`, `image/jpeg`, CORS `*`, and nonzero
+  bytes for representative tiles from all four services. These provider checks
+  are time-dependent. No generated/runtime cache, county source, zone, station,
+  scheduler, or production state was changed; nothing was staged, committed,
+  pushed, deployed, or deleted.
 
 ## Shared header breadcrumb follow-up: 2026-08-23
 
@@ -166,6 +228,37 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Owner smoke, deployment, and production behavior remain open. The breadcrumb follow-up did not change county zones, data, alerts/HWO, Conditions, maps, forecasts, generated/runtime files, or provider contracts.
 
 ## Open gates and known limitations
+
+### Shared non-tropical SVG wordmark follow-up: 2026-08-24
+
+- The user-authorized shared header update replaces the structured
+  `ChuckCopeland` + lightning icon + `WX` wordmark on all 15 non-tropical
+  navigation consumers, including the Bertie prototype, with
+  `images/20260826_cc_wx_logo.svg`. Tropical and Active retain the separate
+  `NCHurric` + hurricane icon + `ne` wordmark and `NCHurricane home` label.
+- The SVG lettering is outlined, the single `lightning-bolt` group owns a
+  self-contained 5.4-second flash animation, and its embedded reduced-motion
+  rule disables the animation. The linked logo retains `Chuck Copeland WX
+  home` as its accessible name; the image has `Chuck Copeland WX` alternative
+  text.
+- Static/automated validation passed the focused 15-page logo contract, SVG
+  XML/animation checks, 15 navigation/Tropical tests, the site validator at 18
+  HTML/307 JSON/182 local references, and `git diff --check`. PHP-served Home,
+  Dare mainland, Tropical, and the SVG returned `200`; the SVG used
+  `image/svg+xml`.
+- Controlled browser at `1280x900` and `390x844` covered Home and Dare
+  mainland with the correct root/deep relative asset paths, accessible label,
+  responsive 300/230-pixel logo widths, zero horizontal overflow, and no
+  captured console warnings or errors. A cropped logo comparison found 12
+  distinct rendered frames across one animation cycle. Direct SVG computed
+  styles showed `lightning-bolt-flash` at 5.4 seconds normally and
+  `animation-name: none` under emulated reduced motion. Tropical retained its
+  hurricane wordmark. Active's current local runtime redirected to the 404
+  shell, so its preserved wordmark remains static/automated evidence rather
+  than browser-rendered evidence.
+- No county data, zones, stations, providers, maps, alerts/HWO, generated or
+  runtime files, or production state changed. Nothing was staged, committed,
+  pushed, deployed, generated, or deleted.
 
 - The 2026-08-23 homepage county-popup mobile follow-up scopes Leaflet paragraph margins to `.home-county-leaflet-popup` at the base popup level, reducing the default vertical gaps without relying on a mobile media-query match or changing Tropical and other popup families. The homepage uses the matching `20260823f` `home.css` cache key. Owner re-smoke on the reported S23 Ultra remains open.
 - The map-status slice passed JavaScript syntax checks, 14 focused Tropical/Active tests, `git diff --check`, and controlled browser checks at `1280x900` and `390x844` on the homepage, Beaufort, Dare, San Diego, Tropical, and Active. Conditions/Radar/Satellite status text was present and unclipped, map widths stayed bounded, and the exercised console had no errors or warnings. The site validator's new map-status/note guards passed, but the repository-level command remains blocked by the concurrent static skip link in `active/index.html`.

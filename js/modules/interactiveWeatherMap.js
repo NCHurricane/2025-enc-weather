@@ -1,37 +1,49 @@
+const ARCGIS_BASEMAP_ROOT = 'https://services.arcgisonline.com/arcgis/rest/services';
+export const WEATHER_BASEMAP_FALLBACK_URL = new URL(
+  '../../images/map-fallback-tile.svg',
+  import.meta.url,
+).toString();
 const DEFAULT_BASEMAP_URL =
-  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
+  `${ARCGIS_BASEMAP_ROOT}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`;
 const DEFAULT_BASEMAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>, ChuckCopelandWX';
+  '&copy; Esri, HERE, Garmin, OpenStreetMap contributors, and the GIS user community, ChuckCopelandWX';
 const referenceGeoJsonPromises = new Map();
 let basemapMenuSequence = 0;
 
 export const WEATHER_BASEMAPS = Object.freeze({
-  light: {
-    label: 'Light',
-    url: DEFAULT_BASEMAP_URL,
-    attribution: DEFAULT_BASEMAP_ATTRIBUTION,
+  terrain: {
+    label: 'Terrain',
+    url: `${ARCGIS_BASEMAP_ROOT}/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Sources: Esri, USGS, NOAA, ChuckCopelandWX',
+    errorTileUrl: WEATHER_BASEMAP_FALLBACK_URL,
+    maxNativeZoom: 13,
     maxZoom: 20,
-    subdomains: 'abcd',
-  },
-  dark: {
-    label: 'Dark',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>, ChuckCopelandWX',
-    maxZoom: 20,
-    subdomains: 'abcd',
-  },
-  usgs: {
-    label: 'USGS US Imagery',
-    url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map, USDA, ChuckCopelandWX',
-    maxZoom: 16,
   },
   esri: {
     label: 'Esri World Imagery',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri, DigitalGlobe, Earthstar Geographics, ChuckCopelandWX',
-    maxZoom: 18,
+    url: `${ARCGIS_BASEMAP_ROOT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+    attribution: '&copy; Esri, Vantor, Earthstar Geographics, and the GIS user community, ChuckCopelandWX',
+    errorTileUrl: WEATHER_BASEMAP_FALLBACK_URL,
+    maxNativeZoom: 23,
+    maxZoom: 23,
+  },
+  dark: {
+    label: 'Dark Gray',
+    url: `${ARCGIS_BASEMAP_ROOT}/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    className: 'core-basemap-dark-tiles',
+    attribution:
+      '&copy; Esri, HERE, Garmin, OpenStreetMap contributors, and the GIS user community, ChuckCopelandWX',
+    errorTileUrl: WEATHER_BASEMAP_FALLBACK_URL,
+    maxNativeZoom: 16,
+    maxZoom: 20,
+  },
+  light: {
+    label: 'Light Gray',
+    url: DEFAULT_BASEMAP_URL,
+    attribution: DEFAULT_BASEMAP_ATTRIBUTION,
+    errorTileUrl: WEATHER_BASEMAP_FALLBACK_URL,
+    maxNativeZoom: 16,
+    maxZoom: 20,
   },
 });
 

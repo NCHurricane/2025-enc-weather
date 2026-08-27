@@ -1,3 +1,4 @@
+@layer tokens {
 /*--------------------*/
 /* CSS VARIABLES */
 /*--------------------*/
@@ -115,7 +116,9 @@
     --component-menu-line-height: 1.2;
 
 }
+}
 
+@layer base {
 /*--------------------*/
 /* BASE STYLES */
 /*--------------------*/
@@ -1316,4 +1319,5 @@ button {
         padding: 15px;
         border-radius: 10px;
     }
+}
 }
