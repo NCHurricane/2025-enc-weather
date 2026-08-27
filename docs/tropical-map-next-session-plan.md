@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
-Updated: 2026-08-24
+Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed locally in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`; owner-accepted Phase 7 is committed locally in `dbd7c8c`; and Phase 8 is implemented and validated locally but not staged or committed. This document does not authorize pushing, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase. Phase 8 owner review remains open.
+Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
 
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
@@ -17,6 +17,12 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 
 ## Current repository boundary
 
+- Before this documentation reconciliation on 2026-08-26, `HEAD`, `main`, and
+  `origin/main` matched at `2f53445`, and the working tree was clean. That
+  checkpoint includes Phase 8 cascade layers, the ArcGIS basemap replacement,
+  and their tests, cache references, and handoff records. This handoff-only
+  reconciliation is uncommitted; neither state establishes owner acceptance or
+  production deployment.
 - At the 2026-08-22 Phase 5 audit start, `HEAD`, `main`, and `origin/main` were `d80c37d`, and `git status --short --branch` was clean.
 - Commits `f39a3be` through `d80c37d` changed Active/Tropical shell, CSS, map, satellite, city-label, and reference-overlay behavior after the original `7d125fa` implementation. The audit used the current tree rather than treating `7d125fa` as final behavior.
 - The reconciliation and authorized satellite-reliability edits are this handoff; the shared weather engine, satellite provider, and fallback-dialog modules; the Tropical, Active, homepage, and county satellite controllers; shared fallback CSS; focused site guards and tests; and the affected module/stylesheet cache-busters. Do not absorb unrelated county/shared-map work into a Phase 5 implementation patch.
@@ -182,9 +188,11 @@ committed baseline `dbd7c8c`; owner review remains open:
   `git diff --check`.
 - Storm identities, packages, current-storm routing, products, source links,
   cameras, alerts, the one-zone deterministic warning subset, archived/ignored
-  data, and generated/runtime files remain unchanged. Phase 8 is not staged or
-  committed; nothing was pushed, deployed, generated, or deleted. Stop for
-  owner review.
+  data, and generated/runtime files remained unchanged at the implementation
+  checkpoint. Phase 8 is committed and pushed in `2f53445`; nothing had been
+  deployed, generated, or deleted at that point. The later owner pass closes
+  functional smoke at its reported granularity while leaving Wave B layout
+  closeout open.
 
 ## ArcGIS basemap replacement: 2026-08-26
 
@@ -213,8 +221,32 @@ committed baseline `dbd7c8c`; owner review remains open:
   bytes for representative tiles from all four services. These provider checks
   are time-dependent. Storm identity, products, layers, cameras, satellite
   sources/fallbacks, generated/runtime data, scheduler state, and production
-  state were not changed; nothing was staged, committed, pushed, deployed,
-  generated, or deleted.
+  state were not changed by the implementation. The source change is committed
+  and pushed in `2f53445`; at that checkpoint nothing had been deployed,
+  generated, or deleted. The later owner upload is recorded below.
+
+## Owner functional smoke and deferred layout findings: 2026-08-26
+
+- After uploading the checkpoint to the server and testing it on the owner's
+  devices, the owner reported exactly, "All functions passed on all devices."
+  Known coverage includes an unspecified Samsung phone and a `3840x2160`
+  display; the exact page, browser, and remaining-device matrix was not
+  supplied, so this closes functional owner smoke only at that reported overall
+  level.
+- Visual/layout acceptance remains open. On a `3840x2160` display, some page
+  elements retain excessive empty height. On mobile and smaller desktops,
+  alerts and/or zone selectors can push the map scrubber and Radar/Satellite
+  color bar below the visible viewport.
+- Mobile page scrolling is impaired over maps and text-product regions: a
+  vertical gesture scrolls or interacts with the element instead of the page
+  unless the gesture begins near the extreme viewport edge.
+- These findings are deferred to the proposed final responsive-tuning phase.
+  Preserve current Tropical/Active data, basin/storm state, products, layers,
+  animation, and fallback contracts while measuring page-family-specific
+  height and touch/scroll needs.
+- The owner performed the upload. No exact production URL, uploaded-file audit,
+  server configuration, scheduler/cache state, or independent production probe
+  was recorded, so broader production verification remains open.
 
 ## Static compatibility-page retirement: 2026-08-24
 
@@ -365,8 +397,15 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
 - Owner follow-up after the map-status/note cleanup reported, "Everything seems to pass." No exact pages, devices, or viewport sizes were supplied, so this closes only the recent map-status/note owner check at that report's granularity.
 - Owner report: there are currently no active systems with watches or warnings, so live owner smoke of issued warning/surge path interactions is deferred until an eligible storm is active. Deterministic fixture and controlled-browser evidence remains separate and complete.
 - Final Active closeout owner report: "The active map looks great. No errors." No exact page URL, device, or viewport was supplied, so the acceptance is retained at that granularity.
+- Owner-managed server/device follow-up on 2026-08-26 reported, "All functions
+  passed on all devices." This closes functional smoke for the uploaded
+  checkpoint only at that overall granularity; the separately recorded height
+  and mobile nested-scroll findings keep Wave B visual/layout acceptance open.
 - Product decision: the owner removed archive support from the roadmap and stated that the website will no longer have an archive element. Active remains a current-storm-only public workflow.
-- Deployment/production: not attempted or established. Production PHP extensions, cache freshness, scheduler state, upload state, and production browser behavior remain open.
+- Deployment/production: the owner reported uploading and testing the checkpoint
+  on the server. Codex did not perform or audit that upload. Production PHP
+  extensions, cache freshness, scheduler state, exact uploaded-file parity,
+  and independent production verification remain open.
 
 ## Smallest coherent Phase 5 closeout slice
 
@@ -442,4 +481,6 @@ Read AGENTS.md and docs/tropical-map-next-session-plan.md completely, then run `
 Phase 5 is complete locally at committed checkpoint `385b52f`. Preserve the immutable AL/EP/CP fixtures, bounded Active router, SVG popup correction, duplicate-skip-link guard, user-authorized Active status-row removal, and recorded browser evidence. The owner accepted the Active map with no errors. Live owner smoke for issued warning/surge products is deferred until an eligible storm is active. Active remains current-storm-only; do not add an archive loader, selector, route, or archive state. Do not edit `active/cache/nhc_current_storms.json`, generated tropical-map packages, retained ignored output, or production/runtime state.
 
 Phase 6 presentation consolidation is complete locally with a retain-all owner decision. Preserve the alert, track/cone, radii, graphics, text, and Summary five-day preview surfaces, including the preview's existing fallback loader, responsive behavior, and Track & Cone action. Do not remove a presentation or begin a new Tropical phase without explicit authorization.
+
+The current shared-map/CSS implementation checkpoint is `2f53445`, with local `main` and `origin/main` synchronized before the uncommitted handoff-only reconciliation on 2026-08-26. Phase 8 and the ArcGIS basemap replacement are committed and pushed. The owner uploaded the checkpoint and reported that all functions passed on all tested devices; exact coverage was not supplied. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized for implementation. Deployment auditing and production scheduler work remain separately gated.
 ```

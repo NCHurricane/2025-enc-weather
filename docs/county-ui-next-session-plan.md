@@ -1,8 +1,8 @@
 # County UI: Current Handoff
 
-Updated: 2026-08-24
+Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed locally in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed locally in `5448d61`, and owner-accepted Phase 7 is committed locally in `dbd7c8c`. Phase 8 is implemented and validated locally but is not staged or committed; owner review is open. There is no additional authorized county product phase. Do not push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed in `5448d61`, and owner-accepted Phase 7 is committed in `dbd7c8c`. Phase 8 and the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. There is no additional authorized county product phase. Do not make another push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -17,6 +17,12 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 ## Current repository boundary
 
+- Before this documentation reconciliation on 2026-08-26, `HEAD`, `main`, and
+  `origin/main` matched at `2f53445`, and the working tree was clean. That
+  checkpoint includes Phase 8 cascade layers, the ArcGIS basemap replacement,
+  and their tests, cache references, and handoff records. This handoff-only
+  reconciliation is uncommitted; neither state establishes owner acceptance or
+  production deployment.
 - At the 2026-08-23 documentation cleanup, `HEAD`, `main`, and `origin/main` were `7c46f80`.
 - Before the cleanup began, the working tree already contained user-owned changes in all nine county pages, the Bertie prototype, county CSS/controllers, shared CSS, homepage/map modules, Tropical/Active modules, and an untracked `js/modules/mapBoundaryOverlays.js`.
 - Those changes are not classified by this handoff. Audit and separate them before modifying or staging any overlapping file.
@@ -184,10 +190,12 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   focused tests, the site validator at 18 HTML/307 JSON/182 local references,
   exact Leaflet checksums, focused old-reference and `!important` searches, and
   `git diff --check`.
-- Phase 8 is not staged or committed. Nothing was pushed, deployed, generated,
-  or deleted; County data, stations, providers, alerts/HWO, maps, cameras,
-  multi-zone behavior, San Diego exceptions, and the Bertie prototype boundary
-  remain unchanged. Owner review is open.
+- Phase 8 is committed and pushed in `2f53445`. At that implementation
+  checkpoint, nothing had been deployed, generated, or deleted; County data,
+  stations, providers, alerts/HWO, maps, cameras, multi-zone behavior, San Diego
+  exceptions, and the Bertie prototype boundary remained unchanged. The later
+  owner pass closes functional smoke at its reported granularity while leaving
+  Wave B layout closeout open.
 
 ### ArcGIS basemap replacement: 2026-08-26
 
@@ -215,8 +223,34 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Live provider probes returned HTTP `200`, `image/jpeg`, CORS `*`, and nonzero
   bytes for representative tiles from all four services. These provider checks
   are time-dependent. No generated/runtime cache, county source, zone, station,
-  scheduler, or production state was changed; nothing was staged, committed,
-  pushed, deployed, or deleted.
+  scheduler, or production state was changed by the implementation. The source
+  change is committed and pushed in `2f53445`; at that checkpoint nothing had
+  been deployed, generated, or deleted. The later owner upload is recorded
+  below.
+
+### Owner functional smoke and deferred layout findings: 2026-08-26
+
+- After uploading the checkpoint to the server and testing it on the owner's
+  devices, the owner reported exactly, "All functions passed on all devices."
+  Known coverage includes an unspecified Samsung phone and a `3840x2160`
+  display; the exact page, browser, and remaining-device matrix was not
+  supplied, so this closes functional owner smoke only at that reported overall
+  level.
+- Visual/layout acceptance remains open. On a `3840x2160` display, some page
+  elements retain excessive empty height. On mobile and smaller desktops,
+  alerts and/or zone selectors can push the map scrubber and Radar/Satellite
+  color bar below the visible viewport.
+- Mobile page scrolling is also impaired over maps and text-product regions:
+  a vertical gesture scrolls or interacts with the element instead of the page
+  unless the gesture begins near the extreme viewport edge. Treat this as a
+  scroll-ergonomics issue, not a functional data or map failure.
+- The owner supports handling these findings later through a final tuning
+  phase. Prefer shared height calculations plus explicit Home, standard County,
+  multi-zone County, Tropical, and Active variants; add literal per-page values
+  only when measured content differences require them.
+- The owner performed the upload. No exact production URL, uploaded-file audit,
+  server configuration, scheduler/cache state, or independent production probe
+  was recorded, so broader production verification remains open.
 
 ## Shared header breadcrumb follow-up: 2026-08-23
 
@@ -266,10 +300,13 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Navigation owner smoke passed for the committed nested desktop/mobile workflow.
 - The owner confirmed keyboard activation for the current HWO button and previously accepted the disclosure treatment. The archived record does not contain a later owner acceptance for every side-by-side/modal refinement; treat that narrower visual owner gate as open unless the owner explicitly confirms it.
 - The shared CSS follow-up has controlled-browser evidence in the archive, but its historical record says owner smoke was still open. Do not silently promote controlled-browser evidence to owner acceptance.
-- Production deployment, scheduler/cache publication, production PHP/CA configuration, and production provider freshness remain unverified unless separately recorded after deployment authorization.
+- The 2026-08-26 owner-managed server/device pass supersedes that historical
+  functional-smoke gap at the reported overall level. Wave B layout acceptance
+  remains open for the recorded height and nested-scroll findings.
+- An owner-managed upload occurred, but uploaded-file completeness, scheduler/cache publication, production PHP/CA configuration, and production provider freshness remain unverified unless separately recorded.
 - Provider availability, missing-station cache warnings, and meteogram `No data for timeframe: 0` warnings are time-dependent/runtime findings. Reproduce before treating them as current defects.
 
-## Best next course: dirty-tree reconciliation and closeout
+## Best next course: owner smoke and bounded lifecycle follow-up
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
@@ -288,8 +325,10 @@ city labels to their approved BEM contracts with IDs/`data-*` hooks and no
 legacy aliases. Valid explicit Bertie, Dare, and San Diego routes passed the
 desktop/mobile map, target-size, product/zone switch, loading-state, local
 response, console, and horizontal-overflow gates. The separately authorized
-Phase 6 popup migration is owner-accepted and committed locally in `5448d61`;
-Phase 7 dependency removal is owner-accepted locally but uncommitted. The owner reported, "Ok, visual
+Phase 6 popup migration is owner-accepted and committed in `5448d61`;
+Phase 7 dependency removal is owner-accepted and committed in `dbd7c8c`. Phase
+8 is committed and pushed in `2f53445`, with Wave B owner review still open.
+The owner reported, "Ok, visual
 acceptance passed." No exact County page, device, viewport, or interaction was
 supplied, so the evidence is retained only at the overall Phase 5 level.
 
@@ -304,11 +343,16 @@ target-size, dialog, and overflow gates with no console warnings or errors.
 This finding is evidence for a future bounded County lifecycle fix; it was not
 implemented or authorized as part of the CSS architecture work.
 
-1. Inventory the current county/shared-map working-tree diff against `7c46f80` without editing it.
-2. Separate county-owned changes from Active/Tropical map-consistency, shared boundary, city-label, homepage, CSS, and unrelated work.
-3. Identify the user-authorized slice and its preservation boundary before making further changes.
-4. Validate that slice narrowly first, then expand only according to shared-module impact.
-5. Update this handoff with exact current evidence and remaining gates; do not append another historical migration narrative here.
+1. Preserve the reported all-device functional pass while keeping the height
+   and nested-scroll findings open as visual/interaction work.
+2. Do not start the proposed final responsive-tuning phase until the owner
+   explicitly authorizes that implementation slice.
+3. When authorized, inventory the actual vertical stack for each page family
+   before choosing shared sizing rules and explicit family variants.
+4. Treat the cross-county stored-zone defect as a separate bounded County code
+   candidate: normalize an invalid persisted zone before any data request.
+5. Keep deployment, production scheduler work, and generated/runtime data
+   outside both fixes unless separately authorized.
 
 ## Validation categories for the next county slice
 
@@ -334,5 +378,5 @@ Continue the NCHurricane county/shared-map closeout in K:\Web Design\NCHurricane
 
 Read AGENTS.md and docs/county-ui-next-session-plan.md completely, then run `git status --short --branch` and `git log -8 --oneline`. Preserve every existing working-tree change. Do not stage, commit, push, deploy, edit generated/runtime data, or begin a new county product phase unless I explicitly authorize it.
 
-The committed county checkpoint is 7c46f80. There is no open county feature phase. First perform a read-only reconciliation of the current county/shared-map diff, separate county work from Active/Tropical/boundary/city-label/shared-CSS changes, and propose the smallest coherent closeout slice with its dependencies and validation gates. Treat the archived migration ledger as historical evidence only.
+The current county/shared-map implementation checkpoint is `2f53445`, with local `main` and `origin/main` synchronized before the uncommitted handoff-only reconciliation on 2026-08-26. Phase 8 and the ArcGIS basemap replacement are committed and pushed. The owner uploaded the checkpoint and reported that all functions passed on all tested devices; exact coverage was not supplied. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized for implementation. The cross-county persisted-zone normalization defect remains a separate bounded code candidate. Treat the archived migration ledger as historical evidence only.
 ```

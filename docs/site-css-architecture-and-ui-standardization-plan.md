@@ -1,8 +1,8 @@
 # Sitemap-Wide CSS Architecture and UI Standardization Plan
 
-Updated: 2026-08-24  
+Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed locally in `7a32866`; owner-accepted Phase 6 committed locally in `5448d61`; owner-accepted Phase 7 committed locally in `dbd7c8c`; Phase 8 implemented and validated locally, not staged or committed, with owner review open
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open. A final responsive-height and scroll-ergonomics phase is proposed but not authorized for implementation
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -407,7 +407,9 @@ Sitemap CSS Phase 7 is complete, owner-accepted, and committed locally as
   modifies that file only to contain its token and base rules in named layers.
 
 Sitemap CSS Phase 8 is implemented and validated locally on 2026-08-24 from
-committed Phase 7 baseline `dbd7c8c`; owner review remains open:
+committed Phase 7 baseline `dbd7c8c`, then committed and pushed in `2f53445`.
+Functional owner smoke passed at the reported overall level; Wave B layout
+closeout remains open:
 
 - `css/cascade-layers.css` establishes the single early order `vendor, tokens,
   base, components, maps, pages, utilities` on all 18 tracked HTML consumers.
@@ -454,10 +456,11 @@ committed Phase 7 baseline `dbd7c8c`; owner review remains open:
   Explicit `?zone=mainland` followed by Northern OBX switching was clean. This
   is outside the CSS-only Phase 8 authorization; no controller or generated
   data was changed.
-- Phase 8 is not staged or committed. Nothing was pushed, deployed, generated,
-  or deleted, and production/generated data and runtime artifacts were not
-  changed. Stop here for owner review; no further architecture phase is
-  authorized by this handoff.
+- Phase 8 is committed and pushed in `2f53445`. Nothing was deployed by Codex,
+  generated, or deleted, and production/generated data and runtime artifacts
+  were not changed by the implementation. The owner later uploaded and tested
+  the checkpoint. Stop here for Wave B layout closeout; the proposed final
+  tuning phase is not authorized for implementation by this handoff.
 
 ## Purpose
 
@@ -779,7 +782,8 @@ Review the 15 public routes after the general interface migration. Compare again
 Implementation status: completed, owner-accepted, and committed in `af8577a`
 on 2026-08-24. Phase 6 is owner-accepted and committed locally in `5448d61`;
 Phase 7 is owner-accepted and committed locally in `dbd7c8c`. Phase 8 is
-implemented and validated locally; owner review remains open.
+implemented, validated, committed, and pushed in `2f53445`; Wave B owner review
+remains open.
 
 1. Make `.weather-center-map-card` or its approved replacement the canonical shared map-card block.
 2. Define bounded fluid map height with an owned custom property and modern viewport units so maps neither collapse nor overflow the available layout.
@@ -825,7 +829,8 @@ Acceptance: no page depends on an unrelated family stylesheet, and no old class 
 #### Phase 8: Introduce cascade layers
 
 Implementation status: complete and validated locally on 2026-08-24 from
-baseline `dbd7c8c`; not staged or committed. Owner review remains open.
+baseline `dbd7c8c`; committed and pushed in `2f53445`. Functional owner smoke
+passed at the reported overall level; Wave B layout closeout remains open.
 
 Add layers only after ownership and load order are stable:
 
@@ -845,6 +850,43 @@ Acceptance: the cascade follows ownership rather than accidental link order or s
 ### Wave B owner review
 
 Review shared map cards, controls, timestamps, legends, markers, labels, and all popup variants across Home, County, Tropical, and Active. Resolve findings before declaring the architecture complete.
+
+Owner evidence on 2026-08-26: after uploading the checkpoint to the server and
+testing on the owner's devices, the owner reported exactly, "All functions
+passed on all devices." Known coverage includes an unspecified Samsung phone
+and a `3840x2160` display; the exact page, browser, and remaining-device matrix
+was not supplied, so this closes functional smoke only at that reported overall
+level. Wave B visual/layout acceptance remains open because the owner also
+reported:
+
+- excessive empty element height on a `3840x2160` display;
+- alerts and/or zone selectors pushing the map scrubber and Radar/Satellite
+  color bar below the visible viewport on mobile and smaller desktops; and
+- maps and text-product regions capturing mobile vertical scrolling unless the
+  gesture begins near the extreme viewport edge.
+
+#### Proposed Phase 9: Responsive height and scroll ergonomics
+
+Planning status: proposed for later owner authorization; implementation is not
+authorized by this record.
+
+1. Measure the occupied vertical stack for Home, standard County, multi-zone
+   County, Tropical, and Active at `3840x2160`, representative smaller desktop,
+   and mobile viewports before changing sizing rules.
+2. Replace one-size map/product heights with bounded shared calculations and
+   explicit page-family/context modifiers for alert and zone-selector rows.
+   Use literal page-specific values only when measured content differences
+   cannot be represented by a stable family variant.
+3. Keep scrubbers, timelines, legends, and Radar/Satellite color bars reachable
+   without sacrificing readable map/product space.
+4. Audit touch and wheel ownership separately for Leaflet maps, animated
+   products, and text products. Preserve deliberate map interaction while
+   preventing nested-scroll traps and maintaining keyboard accessibility.
+5. Preserve map cameras, products, frame counts, playback/scrubbing, alert and
+   zone state, popups, providers, data, and generated/runtime output.
+6. Validate width and height sweeps plus actual-device touch scrolling; include
+   large desktop, smaller desktop, mobile portrait/landscape, keyboard, console,
+   network, and no-horizontal-overflow evidence.
 
 ## Automated drift prevention
 
@@ -920,6 +962,10 @@ Dependency-only pages receive the smallest checks needed to prove compatibility 
 
 Record exactly which pages, devices, widths, and interactions the owner checks. Do not convert owner smoke into controlled-browser evidence or vice versa.
 
+The 2026-08-26 owner report establishes a functional pass at the reported
+all-device level. Exact coverage was not supplied, and the accompanying height
+and nested-scroll findings keep Wave B visual/layout acceptance open.
+
 ### External providers and production
 
 External NWS/NHC/NOAA availability and source freshness are separate from CSS correctness. Deployment, production cache keys, server file paths, CDN/cache behavior, PHP capability, and production browser behavior remain open until separately authorized and verified.
@@ -956,9 +1002,16 @@ The plan is complete only when:
 11. The current handoff documents record exact implementation status, validation, remaining gates, and the next authorized action.
 12. Deployment and production status are reported truthfully and separately.
 
+Items 8 and 9 remain open for the recorded Wave B height and mobile-scroll
+findings. The proposed Phase 9 is the bounded closeout candidate, not an
+automatic authorization to change application code.
+
 ## Questions and decision gates
 
-There are no unresolved questions preventing Phase 0. Phase 0 may expose page-specific ambiguities—especially where a similar-looking title, label, popup, or control serves a different semantic or interaction role. Bring those cases back with screenshots, computed styles, consumer lists, and a recommendation rather than guessing.
+The proposed Phase 9 remains gated. Before implementation, inventory computed
+heights, occupied control rows, overflow owners, and touch/wheel behavior by
+page family. Bring true page-specific exceptions back with screenshots,
+measurements, consumer lists, and a recommendation rather than guessing.
 
 Before each later phase, confirm the previous gate and the exact authorized slice. Do not treat this roadmap as blanket implementation approval.
 
@@ -982,19 +1035,22 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-Begin with Phase 0 only: build the read-only selector, consumer, JavaScript-hook,
-stylesheet-owner, and responsive-behavior inventory for the 15 sitemap routes
-plus required dependency consumers.
+The current CSS/shared-map implementation checkpoint is `2f53445`; local
+`main` and `origin/main` were synchronized and the working tree was clean before
+this uncommitted handoff-only reconciliation on 2026-08-26. Phases 0-8 and the
+ArcGIS basemap replacement are implemented, validated, committed, and pushed.
+The owner uploaded the checkpoint and reported that all functions passed on all
+tested devices; exact coverage was not supplied. Wave B layout closeout remains
+open for excessive large-display height, controls pushed below the viewport by
+alerts/zone selectors, and mobile page-scroll capture over maps/text products.
+Proposed Phase 9 documents that future tuning scope but does not authorize it.
 
-Use the current homepage as the visual direction, not as an unquestionable
-numeric specification. Record the homepage commit and baseline screenshots
-before implementation. Identify accessibility, overflow, target-size,
-semantic-heading, duplicate-ownership, inline-style, and cross-page consistency
-problems with evidence.
-
-Do not begin implementation until the Phase 0 ownership matrix, proposed
-old-to-new class mapping, page-specific variants, and two-wave validation
-boundary have been reviewed and authorized.
+Do not begin Phase 9 until explicitly authorized. When authorized, start with a
+read-only measurement matrix across Home, standard County, multi-zone County,
+Tropical, Active, and text-product surfaces before proposing shared height
+calculations and explicit page-family variants. Keep the separate cross-county
+persisted-zone defect, deployment auditing, production scheduler work, and
+generated/runtime data outside that phase unless explicitly authorized.
 
 Durable decisions:
 
