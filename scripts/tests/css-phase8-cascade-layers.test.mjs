@@ -39,7 +39,7 @@ function topLevelLayerNames(css) {
 }
 
 test('Phase 8 declares one stable layer order and imports untouched Leaflet into vendor', () => {
-  assert.equal(phase8Contract.version, '20260824-phase8-1');
+  assert.equal(phase8Contract.version, '20260831');
   assert.equal(
     readProjectFile(phase8Contract.orderStylesheet).trim(),
     `@layer ${phase8Contract.layerOrder.join(', ')};`,
@@ -80,4 +80,18 @@ test('Phase 8 keeps !important only in the documented exception allowlist', () =
       .sort();
     assert.deepEqual(actual, [...allowed].sort(), stylesheet);
   }
+});
+
+test('pre-Phase 9 responsive fixes survive the layered Font Awesome cascade', () => {
+  const components = readProjectFile('css/components.css');
+  const tropical = readProjectFile('css/tropical.css');
+
+  assert.match(
+    components,
+    /@container \(max-width: 680px\)[\s\S]*\.tabset__tab i,[\s\S]*display: none !important;/,
+  );
+  assert.match(
+    tropical,
+    /\.tropical-current-systems \.county-alert-chip \{[\s\S]*display: flex;[\s\S]*min-height: 54px;[\s\S]*border-radius: 9px;[\s\S]*color: #fff;/,
+  );
 });

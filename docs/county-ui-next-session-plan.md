@@ -4,6 +4,12 @@ Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed in `5448d61`, and owner-accepted Phase 7 is committed in `dbd7c8c`. Phase 8 and the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`; the documentation checkpoint is `a096ddc`. The cross-county persisted-zone defect is fixed and validated in the current uncommitted working tree. Owner-managed staging/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. The staging deployment at `http://s194842513.onlinehome.us/test/` serves the committed Phase 8/basemap checkpoint and current Dare, NC, and Atlantic packages; California Conditions is present but stale. `chuckcopelandwx.com` is the future production URL and has not yet replaced the current website. There is no additional authorized county product phase. Do not make another push, deploy, or change generated/runtime data without explicit authorization.
 
+Pre-Phase 9 CSS note on 2026-08-31: the current uncommitted shared-component
+fix keeps weather-tab icons hidden on mobile despite Font Awesome's unlayered
+display rule. Local Home and Bertie browser checks pass at `390x844`, desktop
+icons remain visible at `1280x900`, and the atomic CSS cache key is `20260831`.
+Phase 9 has not started.
+
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
 ## Resume order
@@ -16,6 +22,13 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 6. Do not start another county product/source/UI phase unless the user explicitly requests it.
 
 ## Current repository boundary
+
+- This pre-Phase 9 regression slice began from clean `6018db8`. Concurrent
+  user-owned County edits removed the desktop/mobile minimum heights from
+  `.county-hwo-trigger` and set County CSS references to `20260831`; preserve
+  those edits and do not attribute them to the tab-icon correction. The shared
+  correction owns only the component rule, atomic cache-reference alignment,
+  contract/test updates, and current handoff evidence.
 
 - Before the persisted-zone implementation on 2026-08-26, `HEAD`, `main`, and
   `origin/main` matched at documentation checkpoint `a096ddc`, and the working

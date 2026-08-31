@@ -4,6 +4,11 @@ Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`  
 Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open. A final responsive-height and scroll-ergonomics phase is proposed but not authorized for implementation
 
+Pre-Phase 9 regression checkpoint on 2026-08-31: the current uncommitted
+working tree restores Tropical active-system chip presentation and makes the
+shared mobile weather-tab icon rule override Font Awesome. All layered CSS
+consumers now use the atomic `20260831` cache key. Phase 9 has not started.
+
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
 ## Current implementation status
@@ -874,6 +879,32 @@ initialization now validates URL/localStorage state before its first product
 request; focused tests and desktop/mobile reload plus Back/Forward browser
 checks cover Bertie, Dare, Hyde, and San Diego. This does not authorize or form
 part of Phase 9, and it does not change the open height/scroll findings.
+
+#### Pre-Phase 9 regression corrections
+
+The owner-authorized 2026-08-31 correction is complete in the current
+uncommitted tree and remains outside Phase 9:
+
+- Tropical once again owns the complete contextual presentation for its active
+  storm links instead of depending on the County-only stylesheet removed from
+  Tropical in Phase 7. The restored chip is a padded, rounded flex card with
+  readable white text, storm-color icon treatment, hover, and keyboard focus.
+- The shared `@container (max-width: 680px)` weather-tab icon rule now uses a
+  documented vendor override so the unlayered Font Awesome display declaration
+  cannot re-show icons on mobile. Desktop icons remain visible.
+- The existing atomic CSS contract and all 18 HTML consumers use cache key
+  `20260831`. This aligns with, but does not absorb, concurrent user-owned
+  County HWO height edits and their County stylesheet cache key.
+- Static/automated checks pass: changed MJS syntax, five cascade-layer tests,
+  nine Tropical overview tests, the site validator for 18 HTML files, 307 JSON
+  files, and 199 local references, plus `git diff --check`.
+- Controlled browser checks at `390x844` and `1280x900` passed on Tropical,
+  Home, and Bertie. The Tropical active chip retained its complete card styling;
+  Home and Bertie icons collapsed to zero width on mobile and remained visible
+  on desktop; all checked pages had zero horizontal overflow and no console
+  errors or warnings.
+- No fixture/runtime data or external provider was changed; owner smoke,
+  staging/production, commit, push, and deployment remain unestablished.
 
 #### Proposed Phase 9: Responsive height and scroll ergonomics
 

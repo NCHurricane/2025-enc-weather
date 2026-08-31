@@ -175,7 +175,7 @@ const phase4Version = '20260824-phase4-1';
 const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
-const phase8Version = '20260824-phase8-1';
+const phase8Version = '20260831';
 const basemapVersion = '20260826-basemaps-1';
 const activeAlertsVersion = '20260831-tcv-alert-overlays-1';
 const phase3Pages = [
@@ -981,6 +981,7 @@ export const phase8Contract = Object.freeze({
   importantAllowlist: Object.freeze({
     'css/styles.css': Object.freeze([]),
     'css/components.css': Object.freeze([
+      'display: none !important;',
       'display: none !important;',
       'display: none !important;',
     ]),

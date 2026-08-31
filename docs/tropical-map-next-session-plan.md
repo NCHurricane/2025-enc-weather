@@ -4,6 +4,12 @@ Updated: 2026-08-31
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live `AL052026` issued-warning smoke on 2026-08-31 exposed a TCV publisher/frontend schema regression; after the repair was uploaded, the owner reported exactly, "Ok, it is working on the server." That closes TCV tab visibility at the reported overall level; the current shared-border/city follow-up remains local and is not deployed. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
 
+Pre-Phase 9 CSS note on 2026-08-31: the current uncommitted tree restores the
+Tropical active-system chip's complete card styling and fixes shared mobile
+weather-tab icons so Font Awesome cannot re-show them below the existing
+680-pixel container breakpoint. Local browser checks pass at `390x844` and
+`1280x900`; the atomic CSS cache key is `20260831`. Phase 9 has not started.
+
 Deployment context: live testing currently uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
 production replacement after site readiness.
@@ -20,6 +26,12 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 6. Do not add an archive workflow or remove a legacy presentation without explicit user authorization.
 
 ## Current repository boundary
+
+- This pre-Phase 9 regression slice began from clean `6018db8`. A concurrent
+  user-owned County edit then removed two HWO minimum heights and set the County
+  CSS key to `20260831`; it is preserved and not claimed by this Tropical fix.
+  This slice owns the Tropical chip rules, shared mobile tab-icon override,
+  atomic shared CSS references/contracts/tests, and current handoff evidence.
 
 - Before the persisted-zone implementation and handoff reconciliation on
   2026-08-26, `HEAD`, `main`, and `origin/main` matched at documentation

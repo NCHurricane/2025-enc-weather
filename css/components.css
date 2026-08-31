@@ -837,7 +837,7 @@
 
   .tabset__tab i,
   #main-content .active-storm-workspace .active-satellite-tab i {
-    display: none;
+    display: none !important;
   }
 }
 }

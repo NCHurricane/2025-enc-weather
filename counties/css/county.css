@@ -267,7 +267,6 @@ html.county-alert-modal-open body {
 .county-hwo-trigger {
   display: grid;
   min-width: 0;
-  min-height: 54px;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
@@ -537,7 +536,6 @@ html.county-alert-modal-open body {
   }
 
   .county-hwo-trigger {
-    min-height: 62px;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 8px;
     padding: 7px 9px;
