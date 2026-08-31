@@ -177,6 +177,7 @@ const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
 const phase8Version = '20260824-phase8-1';
 const basemapVersion = '20260826-basemaps-1';
+const activeAlertsVersion = '20260831-tcv-alert-overlays-1';
 const phase3Pages = [
   {
     file: 'index.html',
@@ -344,7 +345,7 @@ export const phase2Contract = Object.freeze({
     page: 'active/index.html',
     script: 'active/js/ww-maps.js',
     attribute: 'data-active-page',
-    version: basemapVersion,
+    version: activeAlertsVersion,
   }),
 });
 
@@ -691,6 +692,7 @@ export const phase5Contract = Object.freeze({
     Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/tropicalSatelliteMap.js' }),
     Object.freeze({ file: 'active/js/activeStormMap.js', target: 'js/modules/tropicalCityLabels.js' }),
     Object.freeze({ file: 'active/js/ww-maps.js', target: 'js/modules/interactiveWeatherMap.js' }),
+    Object.freeze({ file: 'active/js/ww-maps.js', target: 'js/modules/tropicalCityLabels.js' }),
   ]),
   sourceContracts: Object.freeze([
     Object.freeze({
@@ -732,7 +734,7 @@ export const basemapContract = Object.freeze({
     ]),
     Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/activeStormMap.js' }),
-    Object.freeze({ file: 'active/index.html', target: 'active/js/ww-maps.js' }),
+    Object.freeze({ file: 'active/index.html', target: 'active/js/ww-maps.js', version: activeAlertsVersion }),
     Object.freeze({ file: 'counties/js/weatherMaps.js', target: 'js/modules/interactiveWeatherMap.js' }),
     Object.freeze({ file: 'counties/js/weatherCenter.js', target: 'js/modules/interactiveWeatherMap.js' }),
     Object.freeze({ file: 'js/modules/tropicalMapEngine.js', target: 'js/modules/interactiveWeatherMap.js' }),

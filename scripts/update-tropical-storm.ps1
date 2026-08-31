@@ -220,6 +220,31 @@ try {
                 throw "Identity mismatch in ${outputPath}: $($identity.Value)"
             }
         }
+        $tcvOutput = $stormOutputs['tcv.json']
+        if ([string]$tcvOutput.state -eq 'available') {
+            $tcvEvents = @($tcvOutput.events)
+            if ($tcvEvents.Count -eq 0) {
+                throw "Available TCV package for $activeStormId contains no frontend alert events."
+            }
+            $invalidEvent = $tcvEvents | Where-Object {
+                [string]$_.zoneId -notmatch '^[A-Z]{3}\d{3}$' -or
+                [string]$_.phen -notin @('HU', 'TR', 'SS') -or
+                [string]$_.sig -notin @('A', 'W') -or
+                [string]$_.hazard -notin @('wind', 'surge')
+            } | Select-Object -First 1
+            if ($null -ne $invalidEvent) {
+                throw "Available TCV package for $activeStormId contains an invalid frontend alert event."
+            }
+            $eventZones = @($tcvEvents | ForEach-Object { ([string]$_.zoneId).ToUpperInvariant() } | Sort-Object -Unique)
+            $publishedZones = @($tcvOutput.zones | ForEach-Object { ([string]$_).ToUpperInvariant() } | Sort-Object -Unique)
+            if (($eventZones -join ',') -ne ($publishedZones -join ',')) {
+                throw "TCV zone/event mismatch for ${activeStormId}: zones=$($publishedZones -join ',') events=$($eventZones -join ',')"
+            }
+            $displayCount = @($tcvOutput.display.wind).Count + @($tcvOutput.display.surge).Count
+            if ($displayCount -eq 0) {
+                throw "Available TCV package for $activeStormId contains no frontend alert display groups."
+            }
+        }
         $allParsedOutputs[$activeStormId] = $stormOutputs
     }
 

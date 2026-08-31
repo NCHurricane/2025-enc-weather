@@ -1,12 +1,14 @@
 /* eslint-disable no-undef */
 import {
+  InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-  installBasemapMenuControl,
 } from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,
 } from '../../js/modules/leafletPopupShell.js?v=20260824-phase6-1';
+import { installTropicalCityLabels } from '../../js/modules/tropicalCityLabels.js?v=20260824-phase5-1';
+import { TROPICAL_REFERENCE_OVERLAYS } from '../../js/modules/tropicalReferenceLayers.js?v=20260822-map-borders-1';
 // ============================================================================
 // Watches & Warnings Maps Module (ww-maps.js)
 // ---------------------------------------------------------------------------
@@ -595,6 +597,22 @@ function drawPlacenames(ctx, domain, rect, zoom) {
   ctx.restore();
 }
 
+function normalizeZoneFeature(data, zoneId) {
+  if (data?.type === "Feature" && data.geometry) return data;
+  if (
+    data?.type &&
+    ["Polygon", "MultiPolygon", "GeometryCollection"].includes(data.type)
+  ) {
+    return {
+      type: "Feature",
+      id: zoneId,
+      geometry: data,
+      properties: {},
+    };
+  }
+  return null;
+}
+
 async function fetchZoneFeature(zoneId, zoneType) {
   const cacheParam = LOCAL_ZONE_CACHE_BUST ? `?v=${Date.now()}` : "";
   const localUrl = `${BASE_PATH}/active/cache/zones/${zoneId}.json${cacheParam}`;
@@ -602,7 +620,10 @@ async function fetchZoneFeature(zoneId, zoneType) {
     const r = await fetch(localUrl, {
       cache: LOCAL_ZONE_CACHE_BUST ? "no-cache" : "force-cache",
     });
-    if (r.ok) return r.json();
+    if (r.ok) {
+      const cached = normalizeZoneFeature(await r.json(), zoneId);
+      if (cached) return cached;
+    }
   } catch { }
   const nwsUrl = `https://api.weather.gov/zones/${zoneType}/${zoneId}`;
   try {
@@ -1041,40 +1062,29 @@ function ensureAlertMap(hazard) {
   const container = document.getElementById(mapId);
   if (!container || !window.L) return null;
   try {
-    const map = window.L.map(container, {
-      preferCanvas: true,
-      zoomControl: true,
-      attributionControl: true,
-    });
-    installLeafletPopupShell(map);
-    map.setView([27, -80], 4, { animate: false });
-    const basemapLayers = new Map();
-    for (const [id, config] of Object.entries(WEATHER_BASEMAPS)) {
-      const layer = window.L.tileLayer(config.url, {
-        attribution: config.attribution,
-        maxZoom: config.maxZoom || 20,
-        subdomains: config.subdomains || 'abc',
-      });
-      basemapLayers.set(id, layer);
-    }
-    (basemapLayers.get('esri') || basemapLayers.values().next().value)?.addTo(map);
-    installBasemapMenuControl({
-      leaflet: window.L,
-      map,
+    const mapController = new InteractiveWeatherMap({
+      container,
+      center: [27, -80],
+      zoom: 4,
+      minZoom: 2,
+      maxZoom: 10,
+      ariaLabel: container.getAttribute('aria-label') || 'Active storm alerts map',
       basemaps: WEATHER_BASEMAPS,
       initialBasemap: 'esri',
-      position: 'topleft',
-      onSelect: (basemapId) => {
-        const nextLayer = basemapLayers.get(basemapId);
-        if (!nextLayer) return false;
-        for (const layer of basemapLayers.values()) {
-          if (layer !== nextLayer && map.hasLayer(layer)) map.removeLayer(layer);
-        }
-        if (!map.hasLayer(nextLayer)) nextLayer.addTo(map);
-        return true;
-      },
+      showBasemapControl: true,
+      basemapControlPosition: 'topleft',
+      requireCtrlForWheelZoom: false,
+      referenceOverlays: TROPICAL_REFERENCE_OVERLAYS,
     });
-    const state = { map, layer: null, bounds: null };
+    const map = mapController.ensureMap();
+    installLeafletPopupShell(map);
+    const cityLabels = installTropicalCityLabels(map, {
+      leaflet: window.L,
+      fetchImpl: window.fetch,
+      paneName: 'activeAlertCityLabelPane',
+      paneZIndex: 306,
+    });
+    const state = { map, mapController, cityLabels, layer: null, bounds: null };
     ALERT_MAPS.set(mapId, state);
     return state;
   } catch (error) {
@@ -1089,7 +1099,17 @@ function renderLeafletPanel(hazard) {
   const features = alertFeatureCollection?.features?.filter(
     (feature) => feature?.properties?.hazard === hazard
   ) || [];
-  if (!features.length) return false;
+  if (!features.length) {
+    if (container) {
+      container.textContent = 'Map geometry is unavailable. See the current zone list.';
+      container.dataset.alertMapError = 'geometry-unavailable';
+    }
+    return false;
+  }
+  if (container?.dataset.alertMapError === 'geometry-unavailable') {
+    container.textContent = '';
+    delete container.dataset.alertMapError;
+  }
   const state = ensureAlertMap(hazard);
   if (!state) return false;
   if (state.layer) state.map.removeLayer(state.layer);
@@ -1252,6 +1272,11 @@ async function init() {
 
     const data = await loadJSON(url);
 
+    const payloadStormId = String(data.stormId || data.meta?.stormId || '').toUpperCase();
+    if (!payloadStormId || payloadStormId !== stormId.toUpperCase()) {
+      throw new Error(`TCV storm identity mismatch for ${stormId}`);
+    }
+
     if (
       !data.features ||
       !Array.isArray(data.features.features) ||
@@ -1260,11 +1285,20 @@ async function init() {
       data.features = await buildFeaturesFromEvents(data.events || []);
     }
 
-    // Hide containers if no feature data is present, show them otherwise.
-    const windFeatures = data.features?.features?.filter(f => f.properties.hazard === 'wind') ?? [];
-    const surgeFeatures = data.features?.features?.filter(f => f.properties.hazard === 'surge') ?? [];
-    const hasWind = windFeatures.length > 0;
-    const hasSurge = surgeFeatures.length > 0;
+    const events = Array.isArray(data.events) ? data.events : [];
+    const isAvailable = !Object.hasOwn(data, 'state') || data.state === 'available';
+    const windFeatures = data.features?.features?.filter(f => f?.properties?.hazard === 'wind') ?? [];
+    const surgeFeatures = data.features?.features?.filter(f => f?.properties?.hazard === 'surge') ?? [];
+    const hasWind = isAvailable && (
+      windFeatures.length > 0 ||
+      events.some(event => event?.hazard === 'wind') ||
+      (Array.isArray(data.display?.wind) && data.display.wind.length > 0)
+    );
+    const hasSurge = isAvailable && (
+      surgeFeatures.length > 0 ||
+      events.some(event => event?.hazard === 'surge') ||
+      (Array.isArray(data.display?.surge) && data.display.surge.length > 0)
+    );
     alertFeatureCollection = data.features;
 
     configureAlertTabs(hasWind, hasSurge);

@@ -649,8 +649,11 @@ for (const sourceContract of phase5Contract.sourceContracts) {
 const phase6VersionedAssetKeys = new Set(
   phase6Contract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
 );
-const basemapVersionedAssetKeys = new Set(
-  basemapContract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
+const basemapVersionedAssetVersions = new Map(
+  basemapContract.versionedAssets.map(dependency => [
+    `${dependency.file}\0${dependency.target}`,
+    dependency.version || basemapContract.version,
+  ]),
 );
 for (const dependency of phase5Contract.versionedAssets) {
   const source = phase2HtmlByRelativePath.get(dependency.file)
@@ -659,11 +662,10 @@ for (const dependency of phase5Contract.versionedAssets) {
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   const dependencyKey = `${dependency.file}\0${dependency.target}`;
-  const expectedVersion = basemapVersionedAssetKeys.has(dependencyKey)
-    ? basemapContract.version
-    : phase6VersionedAssetKeys.has(dependencyKey)
+  const expectedVersion = basemapVersionedAssetVersions.get(dependencyKey)
+    ?? (phase6VersionedAssetKeys.has(dependencyKey)
       ? phase6Contract.version
-      : phase5Contract.version;
+      : phase5Contract.version);
   if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the current shared-map cache version`);
   }
@@ -761,9 +763,8 @@ for (const dependency of phase6Contract.versionedAssets) {
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   const dependencyKey = `${dependency.file}\0${dependency.target}`;
-  const expectedVersion = basemapVersionedAssetKeys.has(dependencyKey)
-    ? basemapContract.version
-    : phase6Contract.version;
+  const expectedVersion = basemapVersionedAssetVersions.get(dependencyKey)
+    ?? phase6Contract.version;
   if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 6 cache version`);
   }

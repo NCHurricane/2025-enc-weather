@@ -137,16 +137,13 @@ function http_get(string $url, int $tries = 3, int $timeout = 12): string {
     throw new RuntimeException("Failed GET $url: $last");
 }
 
-function cache_zone_geo(string $zoneId) {
+function cache_zone_geo(string $zoneId): ?array {
     global $CACHE_DIR;
-    $zoneId = strtoupper(trim($zoneId));
-    if (!preg_match('/^[A-Z]{3}\d{3}$/', $zoneId)) return;
-    $out = $CACHE_DIR . '/' . $zoneId . '.json';
-    if (is_file($out)) return;
-    $json = http_get("https://api.weather.gov/zones/forecast/$zoneId", 2, 8);
-    $data = json_decode($json, true);
-    if (!is_array($data) || empty($data['geometry'])) return;
-    @file_put_contents($out, json_encode($data['geometry'], JSON_UNESCAPED_SLASHES));
+    return nch_cache_tcv_zone_feature(
+        $zoneId,
+        $CACHE_DIR,
+        static fn(string $url): string => http_get($url, 2, 8)
+    );
 }
 
 function write_storm_tcv(string $stormId, array $payload): void {
@@ -154,7 +151,7 @@ function write_storm_tcv(string $stormId, array $payload): void {
     $stormPath = $ACTIVE . '/storms/' . $stormId;
     @mkdir($stormPath, 0775, true);
     $outFile = $stormPath . '/tcv.json';
-    @file_put_contents($outFile, json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    nch_atomic_write_json($outFile, $payload);
 }
 
 function tcv_product_candidates(): array {
@@ -187,13 +184,11 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
     }
     if (!$stormRec) {
         vlog($log, "  WARN: Storm not in active list: $stormId\n");
-        write_storm_tcv($stormId, [
-            'stormId'=>$stormId,
-            'state'=>'not-issued',
-            'reason'=>'storm-not-active',
-            'tcv'=>null,
-            'zones'=>[],
-        ]);
+        write_storm_tcv($stormId, nch_compose_tcv_payload(
+            $stormId,
+            'not-issued',
+            'storm-not-active'
+        ));
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
@@ -222,13 +217,11 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
 
     if ($chosenRaw === null) {
         vlog($log, "  INFO: No current TCV issued for $stormId; writing explicit not-issued state.\n");
-        write_storm_tcv($stormId, [
-            'stormId'=>$stormId,
-            'state'=>'not-issued',
-            'reason'=>'no-matching-current-product',
-            'tcv'=>null,
-            'zones'=>[],
-        ]);
+        write_storm_tcv($stormId, nch_compose_tcv_payload(
+            $stormId,
+            'not-issued',
+            'no-matching-current-product'
+        ));
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
@@ -241,33 +234,38 @@ function process_storm(string $stormId, array $stormsData, bool $force, bool $lo
         $state = $classification['state'];
         $reason = $classification['reason'];
         vlog($log, "  INFO: TCV state for {$stormId} is {$state} ({$reason}); writing no active zones.\n");
-        write_storm_tcv($stormId, [
-            'stormId' => $stormId,
-            'state' => $state,
-            'reason' => $reason,
-            'source' => $chosen,
-            'sourceAdvisory' => $classification['sourceAdvisory'],
-            'sourceIssued' => $parsed['issued'],
-            'tcv' => null,
-            'zones' => [],
-        ]);
+        write_storm_tcv($stormId, nch_compose_tcv_payload(
+            $stormId,
+            $state,
+            $reason,
+            $chosen,
+            $parsed,
+            null,
+            [
+                'sourceAdvisory' => $classification['sourceAdvisory'],
+                'sourceIssued' => $parsed['issued'],
+            ]
+        ));
         vlog($log, "  SUCCESS: $stormId (empty)\n");
         return true;
     }
 
-    foreach ($parsed['zones'] as $z) {
-        try { cache_zone_geo($z); }
-        catch (Throwable $e) { vlog($log, "  WARN: zone cache failed for $z: " . $e->getMessage() . "\n"); }
-    }
-
-    $payload = [
-        'stormId' => $stormId,
-        'state'   => 'available',
-        'reason'  => null,
-        'source'  => $chosen,
-        'tcv'     => [ 'advisory'=>$parsed['advisory'], 'issued'=>$parsed['issued'], 'zones'=>$parsed['zones'] ],
-        'zones'   => $parsed['zones'],
-    ];
+    $zoneResolver = static function (string $zoneId, string $zoneType) use ($log): ?array {
+        try {
+            return cache_zone_geo($zoneId);
+        } catch (Throwable $e) {
+            vlog($log, "  WARN: zone cache failed for $zoneId: " . $e->getMessage() . "\n");
+            return null;
+        }
+    };
+    $payload = nch_compose_tcv_payload(
+        $stormId,
+        'available',
+        null,
+        $chosen,
+        $parsed,
+        $zoneResolver
+    );
     write_storm_tcv($stormId, $payload);
     vlog($log, "  SUCCESS: $stormId\n");
     return true;
@@ -289,14 +287,15 @@ try {
                 if (!$ok) vlog($log, "  ERROR: processing failed for $sid\n");
             } catch (Throwable $e) {
                 vlog($log, "  ERROR: unhandled for $sid: " . $e->getMessage() . "\n");
-                write_storm_tcv($sid, [
-                    'stormId'=>$sid,
-                    'state'=>'unavailable',
-                    'reason'=>'writer-error',
-                    'tcv'=>null,
-                    'zones'=>[],
-                    'error'=>$e->getMessage(),
-                ]);
+                write_storm_tcv($sid, nch_compose_tcv_payload(
+                    $sid,
+                    'unavailable',
+                    'writer-error',
+                    null,
+                    null,
+                    null,
+                    ['error' => $e->getMessage()]
+                ));
             }
         }
         if (PHP_SAPI !== 'cli') web_json(['ok'=>true,'processed'=>$pacificStorms]);

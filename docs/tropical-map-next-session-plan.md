@@ -1,8 +1,8 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
-Updated: 2026-08-26
+Updated: 2026-08-31
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
+Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live `AL052026` issued-warning smoke on 2026-08-31 exposed a TCV publisher/frontend schema regression; after the repair was uploaded, the owner reported exactly, "Ok, it is working on the server." That closes TCV tab visibility at the reported overall level; the current shared-border/city follow-up remains local and is not deployed. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
 
 Deployment context: live testing currently uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
@@ -47,8 +47,68 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 | 2: shared Leaflet engine | Implemented | `js/modules/tropicalMapEngine.js` owns overview/storm modes, named layers, failure states, generation cancellation, popups, and date-line-safe rendering. |
 | 3: unified overview | Complete through `9e3ecb6` | `tropical.html` owns URL-addressable `atl`, `epac`, and `cpac` views with Overview, Satellite, Graphics, and Text Products. |
 | 4: compatibility/navigation | Static entries retired locally by owner direction | `tropical_at.html` and `tropical_ep.html` plus their dedicated client helper are removed. Existing `.htaccess` 301 redirects preserve extensionless and `.html` Atlantic/Eastern Pacific bookmarks by sending them to canonical basin query state. |
-| 5: active shell/detailed map | Complete locally; live issued-hazard owner smoke deferred | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The duplicate skip link and redundant status row are removed and guarded. The owner cannot exercise issued warning/surge products until an eligible storm exists, so that time-dependent live smoke remains explicitly deferred. |
+| 5: active shell/detailed map | Complete locally; `AL052026` TCV repair owner-confirmed on the test server | Immutable AL/EP/CP fixtures and a bounded router cover exact identities, issued/not-issued/partial/unavailable states, and negative cross-storm cases. Desktop/mobile browser runs confirmed map and warning popups plus the current CP map/satellite path. The duplicate skip link and redundant status row are removed and guarded. Live `AL052026` exposed the compact-TCV/rich-UI contract mismatch; after upload, the owner reported that it was working on the server. The later Alerts border/city consistency slice remains local. |
 | 6: presentation consolidation | Complete locally; retain all presentations | The audit found the Summary five-day preview resolves to the same product as the Track & Cone English five-day tab, but the owner corrected the brief removal request and chose to retain its at-a-glance Summary workflow. No application-source removal remains. |
+
+## Live TCV alert-package reconciliation: 2026-08-31
+
+Preservation boundary: this repair and follow-up change only the shared TCV
+parser/payload contract, the Atlantic and shared Eastern/Central Pacific TCV
+writers, the Active alert consumer and its cache key, the shared Active map
+shell/reference/city wiring used by Alerts, adjacent publication/validation
+guards, focused tests, cache documentation, and this handoff. It does not run a
+publisher, rewrite `active/storms/AL052026`, alter ignored zone caches, change
+the detailed-map warning package, or deploy files.
+
+- The owner reported that the test-server `active/?storm=AL052026` page hid its
+  Alerts tab while an NHC Tropical Storm Warning covered the upper Texas and
+  southwestern Louisiana coast. Read-only browser inspection confirmed the
+  primary and both alert subtabs were hidden with no console error.
+- The uploaded `tcv.json` truthfully classified the product as `available`, but
+  exposed only the compact `stormId/state/tcv/zones` state contract. The
+  existing browser required the richer `events/features/display` contract and
+  therefore converted the missing event array into an empty feature collection
+  and emitted `hasWind: false`.
+- The compact parser also reduced NHC's compressed
+  `LAZ073-074-TXZ214-439-615` UGC line to `LAZ073` and `TXZ214`. The repair
+  expands prefixed, inherited, ranged, and wrapped UGC tokens; applies active
+  and cancellation VTEC actions; retains wind/surge watch-warning semantics;
+  and fails unavailable instead of presenting unparseable active VTEC as an
+  empty product.
+- All publisher states now retain one frontend-safe shape with exact root/meta
+  storm identity, normalized events, grouped state/zone display, an explicit
+  GeoJSON feature collection, and the existing state/reason fields. Generated
+  zone caches publish full GeoJSON Features atomically; the browser and writer
+  remain compatible with legacy geometry-only caches.
+- The Active browser verifies TCV storm identity, accepts legacy rich fixtures,
+  bases tab visibility on issued events/display as well as renderable geometry,
+  and keeps the current zone list visible with an explicit map-geometry message
+  if polygons are temporarily unavailable.
+- The Alerts wind and surge maps now use the same shared Active/Tropical map
+  shell, Natural Earth reference overlay, ranked Tropical city data, scoped
+  favorites, zoom-rank thresholds, viewport inclusion, and collision thinning
+  as the other Active/Tropical maps. Alert polygons and TCV state/zone lists
+  retain their separate source semantics.
+- Static/automated evidence: changed PHP and JavaScript syntax passes; the TCV
+  state/parser/payload/cache test passes 20 checks; 54 Tropical map tests and 40
+  repository subsystem tests pass; the Phase 0/1 PHP suites pass 68 parser and
+  publication checks; the site validator passes 18 HTML, 307 JSON, and 199
+  local references; and `git diff --check` passes.
+- Controlled browser on the deterministic issued `AL052025` fixture passes at
+  `1280x900` and `390x844`: Alerts, wind, and surge tabs are visible; desktop
+  wind and surge maps each show 12 collision-free labels at fitted zoom 8 with
+  Natural Earth and SimpleMaps attribution; zoom 9 removes the max-zoom-8
+  border while retaining re-filtered cities; zoom 6 retains five
+  high-priority/favorite cities; and mobile retains four non-overlapping city
+  labels with no horizontal overflow. Console warning/error logs are empty.
+- Owner smoke after the TCV upload: the owner reported exactly, "Ok, it is
+  working on the server." No device, viewport, or individual interaction was
+  named, so this establishes the test-server Alerts repair only at that
+  reported overall level.
+- The shared-border/city follow-up has not been uploaded or deployed. Upload
+  its changed source files and repeat the live desktop/mobile Alerts smoke.
+  External NHC state remains time-dependent and must be rechecked when the
+  publisher is next run.
 
 ## Current roadmap boundary
 

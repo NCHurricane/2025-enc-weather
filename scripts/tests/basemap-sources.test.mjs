@@ -47,13 +47,25 @@ test('server-side hazard tile cache uses ArcGIS namespaces without reusing USGS 
   assert.match(sources, /esri-imagery/);
 });
 
+test('Active alert maps share Tropical borders and zoom-filtered city labels', () => {
+  const source = readFileSync(
+    new URL('../../active/js/ww-maps.js', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(source, /new InteractiveWeatherMap\(\{[\s\S]*referenceOverlays:\s*TROPICAL_REFERENCE_OVERLAYS/);
+  assert.match(source, /installTropicalCityLabels\(map,/);
+  assert.match(source, /paneName:\s*'activeAlertCityLabelPane',[\s\S]*paneZIndex:\s*306/);
+  assert.match(source, /const state = \{ map, mapController, cityLabels,/);
+});
+
 test('every basemap consumer uses the dedicated cache version', () => {
   assert.equal(basemapContract.version, '20260826-basemaps-1');
   for (const dependency of basemapContract.versionedAssets) {
     const source = readFileSync(new URL(`../../${dependency.file}`, import.meta.url), 'utf8');
     const basename = dependency.target.split('/').at(-1);
     assert.ok(
-      source.includes(`${basename}?v=${basemapContract.version}`),
+      source.includes(`${basename}?v=${dependency.version || basemapContract.version}`),
       `${dependency.file} -> ${dependency.target}`,
     );
   }
