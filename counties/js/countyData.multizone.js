@@ -14,6 +14,36 @@ let config = null;
 
 const FRESH_MINUTES = 120;
 
+function hasZone(configValue, zoneId) {
+  return Boolean(zoneId) && Object.prototype.hasOwnProperty.call(configValue?.zones || {}, zoneId);
+}
+
+export function resolveInitialCountyZone(
+  configValue,
+  { urlZone = null, storedZone = null } = {}
+) {
+  if (!configValue?.county?.multiZone) {
+    return {
+      currentZone: null,
+      invalidUrlZone: false,
+      invalidStoredZone: false,
+    };
+  }
+
+  const zoneIds = Object.keys(configValue.zones || {});
+  const configuredDefault = configValue.county.defaultZone;
+  const fallbackZone = hasZone(configValue, configuredDefault)
+    ? configuredDefault
+    : zoneIds[0] || null;
+  const requestedZone = urlZone || storedZone || fallbackZone;
+
+  return {
+    currentZone: hasZone(configValue, requestedZone) ? requestedZone : fallbackZone,
+    invalidUrlZone: Boolean(urlZone) && !hasZone(configValue, urlZone),
+    invalidStoredZone: Boolean(storedZone) && !hasZone(configValue, storedZone),
+  };
+}
+
 function minutesSince(iso) {
   if (!iso) return Infinity;
   return Math.max(
@@ -118,8 +148,25 @@ export async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlZone = urlParams.get("zone");
     const storedZone = localStorage.getItem("selectedZone");
-    const currentZone =
-      urlZone || storedZone || config.county?.defaultZone || "mainland";
+    const {
+      currentZone,
+      invalidUrlZone,
+      invalidStoredZone,
+    } = resolveInitialCountyZone(config, { urlZone, storedZone });
+
+    if (!currentZone) {
+      throw new Error("Multi-zone county has no configured zones");
+    }
+
+    if (invalidUrlZone) {
+      const normalizedUrl = new URL(window.location.href);
+      normalizedUrl.searchParams.set("zone", currentZone);
+      window.history.replaceState({}, "", normalizedUrl);
+    }
+
+    if (invalidUrlZone || invalidStoredZone) {
+      localStorage.setItem("selectedZone", currentZone);
+    }
 
     config.currentZone = currentZone;
 

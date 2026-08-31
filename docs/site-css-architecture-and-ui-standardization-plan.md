@@ -856,7 +856,10 @@ testing on the owner's devices, the owner reported exactly, "All functions
 passed on all devices." Known coverage includes an unspecified Samsung phone
 and a `3840x2160` display; the exact page, browser, and remaining-device matrix
 was not supplied, so this closes functional smoke only at that reported overall
-level. Wave B visual/layout acceptance remains open because the owner also
+level. The owner later clarified that this testing used
+`http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
+production replacement. Wave B visual/layout acceptance remains open because
+the owner also
 reported:
 
 - excessive empty element height on a `3840x2160` display;
@@ -864,6 +867,13 @@ reported:
   color bar below the visible viewport on mobile and smaller desktops; and
 - maps and text-product regions capturing mobile vertical scrolling unless the
   gesture begins near the extreme viewport edge.
+
+The previously recorded cross-county persisted-zone defect is resolved in a
+separate bounded County lifecycle slice on 2026-08-26. Shared multi-zone
+initialization now validates URL/localStorage state before its first product
+request; focused tests and desktop/mobile reload plus Back/Forward browser
+checks cover Bertie, Dare, Hyde, and San Diego. This does not authorize or form
+part of Phase 9, and it does not change the open height/scroll findings.
 
 #### Proposed Phase 9: Responsive height and scroll ergonomics
 
@@ -968,7 +978,16 @@ and nested-scroll findings keep Wave B visual/layout acceptance open.
 
 ### External providers and production
 
-External NWS/NHC/NOAA availability and source freshness are separate from CSS correctness. Deployment, production cache keys, server file paths, CDN/cache behavior, PHP capability, and production browser behavior remain open until separately authorized and verified.
+External NWS/NHC/NOAA availability and source freshness are separate from CSS
+correctness. A read-only audit of the actual staging target on 2026-08-26 found
+Home, Dare, the Phase 8 cascade sheets, self-hosted fallback tile, current logo,
+and ArcGIS-enabled map module at `200`. Browser checks rendered nonzero ArcGIS
+tiles with a clean Dare console. Dare/NC packages and the Atlantic overview
+were current; California Conditions existed but retained an August 22 embedded
+generation time. The earlier probe of another public domain was not evidence
+for this deployment. The installed California publisher/log, production PHP/CA
+capability, and future `chuckcopelandwx.com` replacement remain open; no
+staging or production state was changed by the audit.
 
 ## Risks and mitigations
 
@@ -1035,10 +1054,11 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-The current CSS/shared-map implementation checkpoint is `2f53445`; local
-`main` and `origin/main` were synchronized and the working tree was clean before
-this uncommitted handoff-only reconciliation on 2026-08-26. Phases 0-8 and the
-ArcGIS basemap replacement are implemented, validated, committed, and pushed.
+The current documentation checkpoint is `a096ddc`; local `main` and
+`origin/main` were synchronized and the working tree was clean before the
+current uncommitted County persisted-zone implementation and handoff
+reconciliation on 2026-08-26. Phases 0-8 and the ArcGIS basemap replacement are
+implemented, validated, committed, and pushed in `2f53445`.
 The owner uploaded the checkpoint and reported that all functions passed on all
 tested devices; exact coverage was not supplied. Wave B layout closeout remains
 open for excessive large-display height, controls pushed below the viewport by
@@ -1049,8 +1069,13 @@ Do not begin Phase 9 until explicitly authorized. When authorized, start with a
 read-only measurement matrix across Home, standard County, multi-zone County,
 Tropical, Active, and text-product surfaces before proposing shared height
 calculations and explicit page-family variants. Keep the separate cross-county
-persisted-zone defect, deployment auditing, production scheduler work, and
-generated/runtime data outside that phase unless explicitly authorized.
+persisted-zone fix and its tests intact, and keep staging/production upload,
+scheduler repair, plus generated/runtime data outside that phase unless
+explicitly authorized. Live testing uses
+`http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
+production replacement. Staging has the committed Phase 8/basemap files, but
+the current zone fix is not yet uploaded and California Conditions is stale;
+re-smoke the former after upload and inspect the latter's cron/log separately.
 
 Durable decisions:
 

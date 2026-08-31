@@ -2,6 +2,21 @@
 
 This document separates code-complete marketing infrastructure from account-owned launch work. Do not add placeholder IDs to production.
 
+## Staging and future-domain boundary
+
+- Current live testing uses `http://s194842513.onlinehome.us/test/`.
+- The owner plans to replace the public website with this project at
+  `https://chuckcopelandwx.com/` after the site is ready. Staging evidence is
+  not production evidence for that future host.
+- The current repository still uses `https://nchurricane.com/` in canonical and
+  Open Graph URLs, JSON-LD, sitemap/robots contracts, compatibility redirects,
+  source-identification strings, and documentation. Do not partially replace
+  those URLs during feature/layout work.
+- Before cutover, authorize one bounded domain-migration slice that inventories
+  every absolute URL, updates metadata/sitemap/redirect and analytics/search
+  ownership atomically, defines the old-domain redirect policy, and validates
+  the deployed `chuckcopelandwx.com` responses before Search Console submission.
+
 ## Measurement plan
 
 Use a verified analytics property to answer specific product questions:
@@ -30,7 +45,10 @@ The current source uses measurement ID `G-8ERHE6K7MK`, but the tag is consent-ga
 
 1. Deploy `robots.txt` and `sitemap.xml` at the site root.
 2. Add a real Search Console verification method supplied by the verified site owner. Never commit a fabricated verification token.
-3. Submit `https://nchurricane.com/sitemap.xml` in Search Console.
+3. Submit the final production sitemap in Search Console. The current source
+   targets `https://nchurricane.com/sitemap.xml`; the planned cutover requires
+   the verified `https://chuckcopelandwx.com/sitemap.xml` only after the bounded
+   domain-migration slice is complete and deployed.
 4. Inspect the homepage, both tropical hubs, the case study, and representative county pages.
 5. Monitor indexing, canonical selection, structured-data errors, Core Web Vitals, and 404 trends.
 6. Request re-indexing only after the deployed HTML and response headers are verified.

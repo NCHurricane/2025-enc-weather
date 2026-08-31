@@ -4,6 +4,10 @@ Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live issued-hazard interaction remains a time-dependent future smoke when an eligible storm exists. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
 
+Deployment context: live testing currently uses
+`http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
+production replacement after site readiness.
+
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
 ## Resume order
@@ -17,12 +21,12 @@ The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`doc
 
 ## Current repository boundary
 
-- Before this documentation reconciliation on 2026-08-26, `HEAD`, `main`, and
-  `origin/main` matched at `2f53445`, and the working tree was clean. That
-  checkpoint includes Phase 8 cascade layers, the ArcGIS basemap replacement,
-  and their tests, cache references, and handoff records. This handoff-only
-  reconciliation is uncommitted; neither state establishes owner acceptance or
-  production deployment.
+- Before the persisted-zone implementation and handoff reconciliation on
+  2026-08-26, `HEAD`, `main`, and `origin/main` matched at documentation
+  checkpoint `a096ddc`, and the working tree was clean. The current uncommitted
+  source slice is County-only; this Tropical handoff changes only to record its
+  preservation boundary and the read-only production findings. Neither the
+  commit boundary nor the working tree establishes production deployment.
 - At the 2026-08-22 Phase 5 audit start, `HEAD`, `main`, and `origin/main` were `d80c37d`, and `git status --short --branch` was clean.
 - Commits `f39a3be` through `d80c37d` changed Active/Tropical shell, CSS, map, satellite, city-label, and reference-overlay behavior after the original `7d125fa` implementation. The audit used the current tree rather than treating `7d125fa` as final behavior.
 - The reconciliation and authorized satellite-reliability edits are this handoff; the shared weather engine, satellite provider, and fallback-dialog modules; the Tropical, Active, homepage, and county satellite controllers; shared fallback CSS; focused site guards and tests; and the affected module/stylesheet cache-busters. Do not absorb unrelated county/shared-map work into a Phase 5 implementation patch.
@@ -403,9 +407,11 @@ Audit checkpoint: clean `main` and `origin/main` at `d80c37d` before this handof
   and mobile nested-scroll findings keep Wave B visual/layout acceptance open.
 - Product decision: the owner removed archive support from the roadmap and stated that the website will no longer have an archive element. Active remains a current-storm-only public workflow.
 - Deployment/production: the owner reported uploading and testing the checkpoint
-  on the server. Codex did not perform or audit that upload. Production PHP
-  extensions, cache freshness, scheduler state, exact uploaded-file parity,
-  and independent production verification remain open.
+  on `http://s194842513.onlinehome.us/test/`. Codex did not perform that upload.
+  The read-only staging audit below confirms the committed Phase 8/basemap file
+  set and a fresh Atlantic overview. The future `chuckcopelandwx.com`
+  replacement, production PHP capability, and installed scheduler/log health
+  remain separate.
 
 ## Smallest coherent Phase 5 closeout slice
 
@@ -461,6 +467,33 @@ This local closeout is complete. Phase 6 is also complete with the retain-all ow
 - Static validation: all 56 cron rows have five schedule fields plus a command, reference 56 distinct existing PHP entry points, contain no exact duplicate jobs, and include exactly four CP-specific publishers, one California cache publisher, one San Diego alerts job, and one tropical map builder job. All 56 referenced PHP files and the maintenance dashboard passed `php -l`; the fixture-backed all-mode builder published storm packages before all three overview packages; a source-to-cron audit matched all 18 Tropical dashboard targets and log files and found each of the six new dashboard entries exactly once; `git diff --check` passed with only existing line-ending notices.
 - Production installation and runtime verification remain open. Before installing, verify `/usr/bin/php8.4-cli`, PHP CA configuration, required PHP extensions, log-directory permissions, and then inspect the new cron logs and generated package freshness. No production crontab, scheduler state, generated cache, or deployment was changed in this local slice.
 
+## Read-only staging deployment health audit: 2026-08-26
+
+- The owner clarified that live testing uses
+  `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
+  production URL after readiness. The earlier probe of another public domain
+  was not a probe of this deployment and must not be used as staging or
+  production-readiness evidence.
+- Cache-bypassed HTTP probes returned `200` for staging Home, Dare, the Phase 8
+  cascade sheets, self-hosted fallback tile, current SVG logo, and shared map
+  module. Home and Dare reference the Phase 8 cache key; the map module contains
+  the ArcGIS sources. Controlled browser checks rendered nonzero World Imagery
+  tiles on Home and Dare, and the captured Dare console was clean.
+- Staging Dare current/forecast/alerts and NC Conditions were generated August
+  26/27. The Atlantic overview returned `200`, reported `state: fresh`, and was
+  generated August 27 03:09 UTC. California Conditions also returned `200`, but
+  its embedded generation time remained August 22, making that publisher/log
+  the specific outstanding scheduler check rather than a broad site failure.
+- The local cron candidate was re-audited read-only: all 56 job rows have five
+  schedule fields plus a command, reference 56 distinct existing PHP entry
+  points, and retain the four CP-specific publishers, California Conditions,
+  San Diego alerts, and all-basin Tropical map builder.
+- Production server access was not available to inspect the installed crontab,
+  `/usr/bin/php8.4-cli`, required extensions/CA configuration, log permissions,
+  or cron output. No staging/production file, scheduler, configuration, or
+  cache was changed. Inspect the installed California cron row and log, and do
+  not treat staging as deployment proof for the future production replacement.
+
 ## Historical records
 
 - [Full August 2026 roadmap through the pre-Phase-5 handoff](archive/tropical-map/2026-08/tropical-map-roadmap-2026-08-21.md)
@@ -482,5 +515,5 @@ Phase 5 is complete locally at committed checkpoint `385b52f`. Preserve the immu
 
 Phase 6 presentation consolidation is complete locally with a retain-all owner decision. Preserve the alert, track/cone, radii, graphics, text, and Summary five-day preview surfaces, including the preview's existing fallback loader, responsive behavior, and Track & Cone action. Do not remove a presentation or begin a new Tropical phase without explicit authorization.
 
-The current shared-map/CSS implementation checkpoint is `2f53445`, with local `main` and `origin/main` synchronized before the uncommitted handoff-only reconciliation on 2026-08-26. Phase 8 and the ArcGIS basemap replacement are committed and pushed. The owner uploaded the checkpoint and reported that all functions passed on all tested devices; exact coverage was not supplied. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized for implementation. Deployment auditing and production scheduler work remain separately gated.
+The current documentation checkpoint is `a096ddc`; Phase 8 and the ArcGIS basemap replacement are committed and pushed in `2f53445`. The current uncommitted source slice is a bounded County persisted-zone fix and must not be absorbed into Tropical product work. Live testing uses `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future production replacement. Staging serves the committed Phase 8/basemap checkpoint and a fresh Atlantic overview. California Conditions exists but remains stale at an August 22 embedded generation time, so inspect that installed publisher cron/log separately. The current County zone fix is not yet uploaded. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized for implementation.
 ```

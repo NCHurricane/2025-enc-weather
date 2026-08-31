@@ -3,6 +3,12 @@
 const MULTI_ZONE_COUNTIES = new Set(['dare', 'hyde']);
 let implPromise = null;
 
+export function configUsesMultipleZones(config) {
+    if (config?.county?.multiZone === true || config?.multiZone === true) return true;
+    if (Array.isArray(config?.zones)) return config.zones.length > 1;
+    return false;
+}
+
 function getCountySlugFromPath() {
     const parts = window.location.pathname.split('/').filter(Boolean);
     const i = parts.indexOf('counties');
@@ -21,8 +27,7 @@ async function isMultiZoneCounty() {
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
             const cfg = await res.json();
-            if (cfg?.multiZone === true) return true;
-            if (Array.isArray(cfg?.zones) && cfg.zones.length > 1) return true;
+            if (configUsesMultipleZones(cfg)) return true;
         }
     } catch {
         // ignore and fall back
@@ -36,7 +41,7 @@ async function loadImpl() {
         implPromise = (async () => {
             const multi = await isMultiZoneCounty();
             return multi
-                ? import('./countyData.multizone.js')
+                ? import('./countyData.multizone.js?v=20260826-zone-normalization-1')
                 : import('./countyData.js');
         })();
     }

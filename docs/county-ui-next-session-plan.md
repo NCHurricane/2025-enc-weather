@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Repository: `K:\Web Design\NCHurricane 2025`
-Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed in `5448d61`, and owner-accepted Phase 7 is committed in `dbd7c8c`. Phase 8 and the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. There is no additional authorized county product phase. Do not make another push, deploy, or change generated/runtime data without explicit authorization.
+Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed in `5448d61`, and owner-accepted Phase 7 is committed in `dbd7c8c`. Phase 8 and the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`; the documentation checkpoint is `a096ddc`. The cross-county persisted-zone defect is fixed and validated in the current uncommitted working tree. Owner-managed staging/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. The staging deployment at `http://s194842513.onlinehome.us/test/` serves the committed Phase 8/basemap checkpoint and current Dare, NC, and Atlantic packages; California Conditions is present but stale. `chuckcopelandwx.com` is the future production URL and has not yet replaced the current website. There is no additional authorized county product phase. Do not make another push, deploy, or change generated/runtime data without explicit authorization.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 
@@ -17,12 +17,12 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 
 ## Current repository boundary
 
-- Before this documentation reconciliation on 2026-08-26, `HEAD`, `main`, and
-  `origin/main` matched at `2f53445`, and the working tree was clean. That
-  checkpoint includes Phase 8 cascade layers, the ArcGIS basemap replacement,
-  and their tests, cache references, and handoff records. This handoff-only
-  reconciliation is uncommitted; neither state establishes owner acceptance or
-  production deployment.
+- Before the persisted-zone implementation on 2026-08-26, `HEAD`, `main`, and
+  `origin/main` matched at documentation checkpoint `a096ddc`, and the working
+  tree was clean. The current uncommitted slice changes only shared multi-zone
+  initialization/loader code, Dare/Hyde/San Diego dependency cache keys, one
+  focused test file, and the current handoffs. Neither the commit boundary nor
+  the working tree establishes production deployment.
 - At the 2026-08-23 documentation cleanup, `HEAD`, `main`, and `origin/main` were `7c46f80`.
 - Before the cleanup began, the working tree already contained user-owned changes in all nine county pages, the Bertie prototype, county CSS/controllers, shared CSS, homepage/map modules, Tropical/Active modules, and an untracked `js/modules/mapBoundaryOverlays.js`.
 - Those changes are not classified by this handoff. Audit and separate them before modifying or staging any overlapping file.
@@ -180,11 +180,13 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   Dare/San Diego switching retained URL and active-state behavior. Bertie
   observation details retained keyboard opening, below-map mobile placement,
   44-pixel close targets, and focus restoration.
-- An existing cross-county localStorage issue remains outside this CSS slice:
+- At the Phase 8 checkpoint, a cross-county localStorage issue remained outside
+  that CSS slice:
   a persisted San Diego `coastal` value caused Dare to request missing
   `data/coastal/*` once before a valid Dare zone was chosen. Explicit Dare
   `?zone=mainland` followed by Northern OBX switching produced no console
-  errors. No controller, zone data, generated file, or fallback was changed.
+  errors. That historical finding is resolved by the later bounded lifecycle
+  slice below; Phase 8 itself did not change controller or zone behavior.
 - Phase-wide evidence passes: seven changed tracked or dependency-only MJS
   syntax checks, full 73-file PHP and 81-file JavaScript/MJS baselines, all 84
   focused tests, the site validator at 18 HTML/307 JSON/182 local references,
@@ -248,9 +250,73 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   phase. Prefer shared height calculations plus explicit Home, standard County,
   multi-zone County, Tropical, and Active variants; add literal per-page values
   only when measured content differences require them.
-- The owner performed the upload. No exact production URL, uploaded-file audit,
-  server configuration, scheduler/cache state, or independent production probe
-  was recorded, so broader production verification remains open.
+- The owner performed the upload to the staging site at
+  `http://s194842513.onlinehome.us/test/`. The later read-only audit below
+  verifies the committed Phase 8/basemap file set and public package health at
+  that target. It is not the future `chuckcopelandwx.com` production deployment.
+
+### Cross-county persisted-zone normalization: 2026-08-26
+
+- Shared multi-zone initialization now validates URL and `selectedZone`
+  localStorage values against the destination county's configured zones before
+  any product path is built. Invalid state falls back to the destination's
+  valid configured default, rewrites an invalid URL with `replaceState`, and
+  repairs localStorage. Valid URL and stored state are preserved.
+- `countyData.loader.js` now recognizes the actual `county.multiZone` config
+  topology while preserving the standard single-zone loader. Dare and Hyde use
+  the shared lifecycle directly; San Diego retains its local source and wrapper
+  normalization exceptions. Versioned dependency and entry-module references
+  prevent a mixed old/new module graph after upload.
+- Five focused tests cover Bertie single-zone detection, Dare/Hyde/San Diego
+  multi-zone detection, valid state, invalid URL/storage fallback, the original
+  San Diego `coastal` to Dare case, and cache-key propagation. The integration
+  test proves Dare requests `data/mainland/*` and never `data/coastal/*`.
+- Full static/automated evidence passed: 83 JavaScript/MJS syntax checks, 73 PHP
+  lints, all 93 JavaScript tests, the site validator at 18 HTML/307 JSON/199
+  local references, focused stale-reference searches, and `git diff --check`
+  with line-ending notices only.
+- Controlled browser at `1280x900` and `390x844` covered San Diego Coastal to
+  Dare, invalid direct `?zone=coastal`, valid Northern OBX switching, reload,
+  Back/Forward restoration, and Bertie's unchanged single-zone paths. Dare
+  normalized to `?zone=mainland` before product requests, valid Northern state
+  survived reload and history navigation, Bertie made no nested zone request,
+  page widths stayed bounded, and the captured consoles were clean.
+- No county configuration, zone inventory, station, product/provider, map,
+  generated/runtime data, or production state changed. Nothing was staged,
+  committed, pushed, deployed, generated, or deleted by this slice.
+
+### Read-only staging deployment health audit: 2026-08-26
+
+- The owner clarified that live testing uses
+  `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
+  production URL after site readiness. The earlier probe of another public
+  domain was not a probe of this deployment and must not be used as staging or
+  production-readiness evidence.
+- Cache-bypassed HTTP probes found staging Home, Dare, the Phase 8 cascade
+  sheets, self-hosted fallback tile, current SVG logo, and shared map module at
+  `200`. Home and Dare reference `20260824-phase8-1`; the map module contains the
+  ArcGIS services. A controlled browser rendered nonzero 256-pixel World
+  Imagery tiles on Home and Dare, Dare's zone selector was valid, page width was
+  bounded at the desktop viewport, and the captured Dare console was clean.
+- Staging Dare current, forecast, and alert packages were generated on August
+  26/27; NC statewide Conditions was generated August 26; and the Atlantic
+  overview was fresh at August 27 03:09 UTC. California Conditions returned
+  `200` but its embedded generation time remained August 22 12:58 EDT, so the
+  California publisher/log is the specific outstanding scheduler check.
+- The current uncommitted persisted-zone fix is intentionally absent from
+  staging: Dare still references its pre-fix `countyApp.js` URL. After the
+  current slice is committed and uploaded by the owner, repeat the San Diego
+  `coastal` to Dare normalization, reload, and Back/Forward smoke there.
+- The repository's production cron candidate still has 56 syntactically valid
+  job rows referencing 56 distinct existing PHP entry points, including the
+  four CP publishers, California Conditions, San Diego alerts, and the all-basin
+  map builder. The installed production crontab, `/usr/bin/php8.4-cli`, required
+  PHP extensions/CA configuration, log permissions, and cron logs cannot be
+  inspected from this workspace and remain unverified.
+- No staging/production file, scheduler, cache, or configuration was changed by
+  the audit. Inspect the installed California cron row and its log before
+  treating statewide California Conditions as healthy. Do not treat staging as
+  deployment proof for the future `chuckcopelandwx.com` replacement.
 
 ## Shared header breadcrumb follow-up: 2026-08-23
 
@@ -303,10 +369,13 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - The 2026-08-26 owner-managed server/device pass supersedes that historical
   functional-smoke gap at the reported overall level. Wave B layout acceptance
   remains open for the recorded height and nested-scroll findings.
-- An owner-managed upload occurred, but uploaded-file completeness, scheduler/cache publication, production PHP/CA configuration, and production provider freshness remain unverified unless separately recorded.
+- The owner-managed staging upload contains the committed Phase 8/basemap file
+  set. Most inspected packages are current; California Conditions is present
+  but stale. Its installed scheduler row/log and production PHP/CA state remain
+  open, as does the future full replacement at `chuckcopelandwx.com`.
 - Provider availability, missing-station cache warnings, and meteogram `No data for timeframe: 0` warnings are time-dependent/runtime findings. Reproduce before treating them as current defects.
 
-## Best next course: owner smoke and bounded lifecycle follow-up
+## Best next course: staging zone re-smoke, California publisher diagnosis, and deferred layout follow-up
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
@@ -334,25 +403,23 @@ supplied, so the evidence is retained only at the overall Phase 5 level.
 
 These CSS phases preserved URL/localStorage ownership, zone validation, data
 paths, stations, alert/HWO content, maps, products, and generated output. The
-unresolved pre-existing lifecycle defect remains: after San Diego stores the
-zone value `coastal`, opening Dare without an explicit zone query requests
-`counties/dare/data/coastal/current.json`, `forecast.json`, and `alerts.json`;
-all three return `404` rather than normalizing to an allowed Dare zone. Valid
-explicit Dare/Hyde/San Diego zone URLs passed the Phase 4 selector, heading,
-target-size, dialog, and overflow gates with no console warnings or errors.
-This finding is evidence for a future bounded County lifecycle fix; it was not
-implemented or authorized as part of the CSS architecture work.
+separate cross-county lifecycle slice now validates persisted and URL-owned zone
+state before the first product request. It closes the San Diego `coastal` to
+Dare `data/coastal/*` failure without changing the CSS architecture or San
+Diego's local exceptions.
 
 1. Preserve the reported all-device functional pass while keeping the height
    and nested-scroll findings open as visual/interaction work.
-2. Do not start the proposed final responsive-tuning phase until the owner
+2. After the current persisted-zone slice is committed and uploaded by the
+   owner, repeat the cross-county normalization/reload/history smoke on staging.
+3. Inspect the staging server's installed California Conditions cron row and
+   log; the package exists but its embedded generation time is still August 22.
+4. Do not start the proposed final responsive-tuning phase until the owner
    explicitly authorizes that implementation slice.
-3. When authorized, inventory the actual vertical stack for each page family
+5. When authorized, inventory the actual vertical stack for each page family
    before choosing shared sizing rules and explicit family variants.
-4. Treat the cross-county stored-zone defect as a separate bounded County code
-   candidate: normalize an invalid persisted zone before any data request.
-5. Keep deployment, production scheduler work, and generated/runtime data
-   outside both fixes unless separately authorized.
+6. Keep any upload, scheduler change, cache publication, and generated/runtime
+   data mutation outside local diagnosis unless separately authorized.
 
 ## Validation categories for the next county slice
 
@@ -363,7 +430,10 @@ Report independently:
 3. **Controlled browser:** representative desktop near `1280x900` and mobile near `390x844`; standard county, multi-zone county, San Diego, affected maps/tabs/dialogs, keyboard/focus, rapid zone/product changes, console, network, and horizontal overflow.
 4. **Owner smoke:** record only the exact page/device/case the owner confirms.
 5. **External provider:** record live NWS/NOAA availability and freshness separately from local correctness.
-6. **Deployment/production:** remains open unless separately authorized and verified.
+6. **Deployment/production:** staging file parity is verified for the committed
+   Phase 8/basemap checkpoint, but the current zone fix is not uploaded and the
+   California package is stale. The future `chuckcopelandwx.com` replacement,
+   installed scheduler/log repair, and production proof remain separate.
 
 ## Historical record
 
@@ -378,5 +448,5 @@ Continue the NCHurricane county/shared-map closeout in K:\Web Design\NCHurricane
 
 Read AGENTS.md and docs/county-ui-next-session-plan.md completely, then run `git status --short --branch` and `git log -8 --oneline`. Preserve every existing working-tree change. Do not stage, commit, push, deploy, edit generated/runtime data, or begin a new county product phase unless I explicitly authorize it.
 
-The current county/shared-map implementation checkpoint is `2f53445`, with local `main` and `origin/main` synchronized before the uncommitted handoff-only reconciliation on 2026-08-26. Phase 8 and the ArcGIS basemap replacement are committed and pushed. The owner uploaded the checkpoint and reported that all functions passed on all tested devices; exact coverage was not supplied. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized for implementation. The cross-county persisted-zone normalization defect remains a separate bounded code candidate. Treat the archived migration ledger as historical evidence only.
+The current documentation checkpoint is `a096ddc`; Phase 8 and the ArcGIS basemap replacement are committed and pushed in `2f53445`. The current uncommitted working tree fixes cross-county persisted-zone normalization before any data request and includes focused single-zone/NC multi-zone/San Diego tests plus clean desktop/mobile reload and Back/Forward browser evidence. Preserve that slice and its cache keys. Live testing currently uses `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future production URL after readiness. Staging serves the committed Phase 8/basemap checkpoint, current Dare/NC packages, and a fresh Atlantic overview, but it does not yet include the zone fix and California Conditions remains stale at an August 22 embedded generation time. After the owner commits/uploads the zone slice, re-smoke it on staging and separately inspect the California publisher cron/log. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized. Treat the archived migration ledger as historical evidence only.
 ```

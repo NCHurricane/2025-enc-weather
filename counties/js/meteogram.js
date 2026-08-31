@@ -11,7 +11,7 @@
 // - Responsive design for various screen sizes
 // ==============================
 
-import { getHourlyData } from './countyData.loader.js';
+import { getHourlyData } from './countyData.loader.js?v=20260826-zone-normalization-1';
 
 function degreesToCardinal(deg) {
   if (deg == null) return 'N/A';
