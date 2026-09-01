@@ -48,6 +48,7 @@
     --page-gutter: clamp(0.5rem, 1.5625vw, 1.5rem);
     --page-shell-fluid-size: max(85vw, 68.75rem);
     --page-shell-max: 106.25rem;
+    --page-shell-min-block-size: calc(100svh + 1px);
     --page-shell-start: clamp(5.3125rem, 10vw, 5.9375rem);
     --page-shell-end: 0rem;
 
@@ -225,6 +226,13 @@ body {
 
 .site-page--home,
 .site-page--county,
+.site-page--tropical,
+.site-page--active {
+    --page-shell-min-block-size: auto;
+}
+
+.site-page--home,
+.site-page--county,
 .site-page--tropical {
     --page-shell-max: 75rem;
 }
@@ -330,7 +338,7 @@ button {
         calc(100% - var(--page-gutter) - var(--page-gutter))
     );
     min-height: 100vh;
-    min-height: calc(100svh + 1px);
+    min-height: var(--page-shell-min-block-size);
     margin-inline: auto;
     padding-block-start: var(--page-shell-start);
     padding-block-end: var(--page-shell-end);
@@ -362,8 +370,9 @@ button {
 }
 
 .header-container img {
-    width: 100%;
-    max-width: 305px;
+    display: block;
+    width: auto;
+    height: clamp(17px, 2vw, 26px);
 }
 
 .header-container .logo-link {
@@ -1122,10 +1131,6 @@ button {
 @media (max-width: 768px) {
     .header-container {
         padding: 11px 14px;
-    }
-
-    .header-container img {
-        max-width: 230px;
     }
 
     .header-container .site-wordmark {

@@ -2,7 +2,7 @@
 import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260831-phase9-1';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,
@@ -1073,7 +1073,7 @@ function ensureAlertMap(hazard) {
       initialBasemap: 'esri',
       showBasemapControl: true,
       basemapControlPosition: 'topleft',
-      requireCtrlForWheelZoom: false,
+      requireCtrlForWheelZoom: true,
       referenceOverlays: TROPICAL_REFERENCE_OVERLAYS,
     });
     const map = mapController.ensureMap();

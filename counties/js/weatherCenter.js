@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260831-phase9-1';
 import {
   COUNTY_ZONE_CHANGE_EVENT,
   loadWeatherPageContext,
@@ -497,7 +497,7 @@ class CountyTemperatureViewer {
       container: this.mapElement,
       center: this.context.center,
       zoom: initialMapZoom(),
-      requireCtrlForWheelZoom: false,
+      requireCtrlForWheelZoom: true,
       ariaLabel: currentConditionsAriaLabel(this.context, CONDITION_FIELDS[this.activeField].mapLabel),
       initialBasemap: 'esri',
       showBasemapControl: true,
@@ -938,8 +938,6 @@ class CountyForecastTabs {
   constructor() {
     this.buttons = Array.from(document.querySelectorAll('[data-forecast-tab]'));
     this.panels = Array.from(document.querySelectorAll('[data-forecast-panel]'));
-    this.discussionPanel = document.querySelector('[data-forecast-panel="discussion"]');
-    this.syncDiscussionHeight = this.syncDiscussionHeight.bind(this);
   }
 
   init() {
@@ -949,9 +947,6 @@ class CountyForecastTabs {
       button.addEventListener('click', () => this.activate(button.dataset.forecastTab));
       button.addEventListener('keydown', (event) => this.handleKeydown(event, index));
     });
-    window.addEventListener('resize', this.syncDiscussionHeight);
-    window.visualViewport?.addEventListener('resize', this.syncDiscussionHeight);
-
     this.activate('seven-day');
     return true;
   }
@@ -973,24 +968,6 @@ class CountyForecastTabs {
     const nextButton = this.buttons[nextIndex];
     this.activate(nextButton.dataset.forecastTab);
     nextButton.focus();
-  }
-
-  syncDiscussionHeight() {
-    if (!this.discussionPanel || this.discussionPanel.hidden) return;
-
-    const content = this.discussionPanel.querySelector('.afd-content');
-    if (!content) return;
-    if (window.innerWidth > 768) {
-      content.style.removeProperty('--afd-viewport-height');
-      return;
-    }
-
-    const viewport = window.visualViewport;
-    const viewportBottom = (viewport?.offsetTop || 0) + (viewport?.height || window.innerHeight);
-    const availableHeight = Math.floor(
-      viewportBottom - content.getBoundingClientRect().top - 8,
-    );
-    content.style.setProperty('--afd-viewport-height', `${Math.max(240, availableHeight)}px`);
   }
 
   activate(name) {
@@ -1023,7 +1000,6 @@ class CountyForecastTabs {
       }
     }
 
-    if (name === 'discussion') window.requestAnimationFrame(this.syncDiscussionHeight);
   }
 }
 

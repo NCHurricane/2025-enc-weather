@@ -1,8 +1,9 @@
 import {
+  installCooperativeWheelZoom,
   installBasemapMenuControl,
   WEATHER_BASEMAP_FALLBACK_URL,
   WEATHER_BASEMAPS,
-} from './interactiveWeatherMap.js?v=20260826-basemaps-1';
+} from './interactiveWeatherMap.js?v=20260831-phase9-1';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,
@@ -598,6 +599,7 @@ export class TropicalMapEngine {
     this.pendingBasinView = false;
 
     this.map = null;
+    this.removeCooperativeWheelZoom = null;
     this.basemapLayer = null;
     this.basemapLayers = new Map();
     this.basemapLayerControl = null;
@@ -638,7 +640,15 @@ export class TropicalMapEngine {
       maxBounds: view.maxBounds,
       maxBoundsViscosity: 0.75,
       worldCopyJump: false,
+      scrollWheelZoom: false,
       preferCanvas: false,
+    });
+    this.removeCooperativeWheelZoom = installCooperativeWheelZoom({
+      container: this.container,
+      map: this.map,
+      minZoom: 2,
+      maxZoom: 10,
+      windowRef: this.windowRef,
     });
     installLeafletPopupShell(this.map);
     this.mapInstanceCount += 1;
@@ -1326,6 +1336,8 @@ export class TropicalMapEngine {
     this.resizeObserver?.disconnect?.();
     this.resizeObserver = null;
     this.windowRef?.removeEventListener?.('resize', this.handleWindowResize);
+    this.removeCooperativeWheelZoom?.();
+    this.removeCooperativeWheelZoom = null;
     this.map?.off?.('zoom zoomend resize', this.updateZoomIndicator);
     this.map?.remove?.();
     this.map = null;

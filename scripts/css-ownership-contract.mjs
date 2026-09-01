@@ -172,12 +172,14 @@ const phase2Pages = [
 
 const phase3Version = '20260824-phase3-1';
 const phase4Version = '20260824-phase4-1';
+const navigationVersion = '20260831-navigation-logo-1';
 const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
-const phase8Version = '20260831';
-const basemapVersion = '20260826-basemaps-1';
-const activeAlertsVersion = '20260831-tcv-alert-overlays-1';
+const phase9Version = '20260831-phase9-1';
+const phase8Version = phase9Version;
+const basemapVersion = phase9Version;
+const activeAlertsVersion = phase9Version;
 const phase3Pages = [
   {
     file: 'index.html',
@@ -357,7 +359,7 @@ export const phase3Contract = Object.freeze({
   inlineTitleStylePages: Object.freeze(['tropical.html', 'active/index.html']),
   navigation: Object.freeze({
     script: 'js/modules/navigation.js',
-    version: phase4Version,
+    version: navigationVersion,
     consumers: Object.freeze(phase3Pages.map(page => page.file)),
   }),
   dynamicHeadingSources: Object.freeze([
@@ -505,12 +507,15 @@ export const phase4Contract = Object.freeze({
       'data-submenu',
       "classList.toggle('is-open'",
       "querySelector('[data-back-to-top]')",
+      'src: "images/20260826_cc_wx_logo.svg"',
+      'ariaLabel: "Chuck Copeland WX home"',
     ]),
     forbidden: Object.freeze([
       "querySelector('.nav')",
       "querySelectorAll('.nav-menu",
       "querySelector('.back-to-top')",
       ".style.display",
+      '2025_banner.png',
     ]),
   }),
   sourceContracts: Object.freeze([
@@ -1014,5 +1019,49 @@ export const phase8Contract = Object.freeze({
     ]),
     'active/css/storm-graphics.css': Object.freeze([]),
     'test/tropical-map/phase2-harness.css': Object.freeze([]),
+  }),
+});
+
+export const phase9Contract = Object.freeze({
+  version: phase9Version,
+  shellOwner: 'css/styles.css',
+  mapOwner: 'css/interactive-weather-map.css',
+  weatherRoots: Object.freeze([
+    '.site-page--home',
+    '.site-page--county',
+    '.site-page--tropical',
+    '.site-page--active',
+  ]),
+  heightVariantStylesheets: Object.freeze([
+    'css/home.css',
+    'counties/css/county.css',
+    'css/tropical.css',
+    'active/css/active.css',
+  ]),
+  cooperativeWheelSources: Object.freeze([
+    'js/modules/interactiveWeatherMap.js',
+    'js/modules/tropicalMapEngine.js',
+    'counties/js/weatherCenter.js',
+    'counties/js/weatherMaps.js',
+    'js/modules/tropicalSatelliteMap.js',
+    'active/js/activeStormMap.js',
+    'active/js/ww-maps.js',
+  ]),
+  documentScrollStylesheets: Object.freeze({
+    'counties/css/county.css': Object.freeze([
+      '.weather-center-forecast-panel .afd-content',
+      'height: auto;',
+      'overflow-y: visible;',
+    ]),
+    'css/tropical.css': Object.freeze([
+      '.tropical-text-content',
+      'max-height: none;',
+      'overflow: visible;',
+    ]),
+    'active/css/active.css': Object.freeze([
+      '.text-content',
+      'max-height: none;',
+      'overflow-y: visible;',
+    ]),
   }),
 });

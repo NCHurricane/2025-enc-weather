@@ -117,8 +117,9 @@ requests that action. If staging is authorized, stage only the task's hunks.
 - Preserve URL-addressable Atlantic, Eastern Pacific, and Central Pacific basin
   state and the server-owned redirects from the retired `tropical_at` and
   `tropical_ep` paths to the canonical Tropical basin query.
-- Preserve the tropical `NCHurric` + hurricane icon + `ne` wordmark and its
-  accessible `NCHurricane home` label.
+- Preserve the outlined Tropical/Active SVG wordmark, its counterclockwise
+  flashing cyclone animation, reduced-motion fallback, and accessible
+  `NCHurricane home` label.
 - The overview Satellite view is basin-only. Do not center it on or select a
   current storm; storm/floater targeting belongs to `/active`.
 - Keep Clean IR as the overview Satellite default and preserve the shared

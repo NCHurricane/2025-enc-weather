@@ -1,6 +1,8 @@
 @layer pages {
-.home-weather-center {
-  --weather-map-block-size: clamp(31.25rem, calc(100svh - 20.625rem), 43.75rem);
+.home-weather-center .weather-map-card {
+  --weather-map-min-block-size: 20rem;
+  --weather-map-max-block-size: 31.25rem;
+  --weather-map-stack-offset: 28.125rem;
 }
 
 .home-weather-center .tabset--weather {
@@ -208,15 +210,18 @@
 }
 
 @media (max-width: 768px) {
-  .home-weather-center {
-    --weather-map-block-size: clamp(23.75rem, 56svh, 26.875rem);
+  .home-weather-center .weather-map-card {
+    --weather-map-min-block-size: 20.625rem;
+    --weather-map-max-block-size: 21.875rem;
+    --weather-map-stack-offset: 28rem;
   }
 
 }
 
 @media (max-width: 600px) {
-  .home-weather-center {
-    --weather-map-block-size: clamp(20.625rem, 48svh, 21.875rem);
+  .home-weather-center .weather-map-card {
+    --weather-map-min-block-size: 20rem;
+    --weather-map-max-block-size: 20.625rem;
   }
 
   .home-map-key.is-below-map {

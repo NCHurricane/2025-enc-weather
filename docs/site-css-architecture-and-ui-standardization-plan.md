@@ -1,13 +1,12 @@
 # Sitemap-Wide CSS Architecture and UI Standardization Plan
 
-Updated: 2026-08-26
+Updated: 2026-08-31
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open. A final responsive-height and scroll-ergonomics phase is proposed but not authorized for implementation
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. Phase 9 is implemented and locally validated in the current uncommitted tree; actual-device owner smoke, staging/production, commit, and push remain open
 
-Pre-Phase 9 regression checkpoint on 2026-08-31: the current uncommitted
-working tree restores Tropical active-system chip presentation and makes the
-shared mobile weather-tab icon rule override Font Awesome. All layered CSS
-consumers now use the atomic `20260831` cache key. Phase 9 has not started.
+The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
+remain intact. Phase 9 advances all layered CSS and shared-map dependency
+consumers atomically to `20260831-phase9-1`.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -906,10 +905,12 @@ uncommitted tree and remains outside Phase 9:
 - No fixture/runtime data or external provider was changed; owner smoke,
   staging/production, commit, push, and deployment remain unestablished.
 
-#### Proposed Phase 9: Responsive height and scroll ergonomics
+#### Phase 9: Responsive height and scroll ergonomics
 
-Planning status: proposed for later owner authorization; implementation is not
-authorized by this record.
+Implementation status: explicitly authorized by the owner on 2026-08-31,
+implemented locally, and validated through static/automated, local HTTP, and
+controlled-browser gates. Actual-device touch smoke and all production gates
+remain open.
 
 1. Measure the occupied vertical stack for Home, standard County, multi-zone
    County, Tropical, and Active at `3840x2160`, representative smaller desktop,
@@ -928,6 +929,62 @@ authorized by this record.
 6. Validate width and height sweeps plus actual-device touch scrolling; include
    large desktop, smaller desktop, mobile portrait/landscape, keyboard, console,
    network, and no-horizontal-overflow evidence.
+
+Implementation record:
+
+- The pre-change matrix confirmed that Home, standard County, multi-zone
+  County, and Tropical inherited a forced `calc(100svh + 1px)` page-shell
+  minimum. At `3840x2160`, it extended otherwise complete content into a
+  roughly 2394-pixel document with a large empty gap before the footer.
+  Multi-zone selector rows also pushed maps and their lower controls farther
+  down at smaller heights.
+- Shared map height ownership now uses bounded `clamp()` calculations with
+  explicit Home, standard County, multi-zone County, Tropical, and Active stack
+  offsets. Weather-family roots may size intrinsically instead of inheriting
+  the extra-tall generic shell. Active's later panel minimums use bounded
+  viewport values instead of width-driven values.
+- Ordinary wheel input remains available to the document over Leaflet maps.
+  Ctrl+wheel retains deliberate zoom through one shared helper. On coarse
+  pointers, Leaflet drag/zoom containers expose vertical pan to the page.
+- Long Tropical text and mobile County forecast-discussion content now remain
+  in the document scroller instead of introducing nested vertical scrolling.
+  Map cameras, products, frames, playback, legends, selectors, providers, and
+  data contracts were not changed.
+- `scripts/css-ownership-contract.mjs`,
+  `scripts/validate-site.mjs`, and
+  `scripts/tests/responsive-scroll-ergonomics.test.mjs` enforce the Phase 9
+  height, touch, wheel, text-scroll, consumer-version, and removed-runtime-height
+  contracts.
+
+Validation record:
+
+- Static/automated: all changed JavaScript passed `node --check`;
+  `node --test scripts/tests/*.test.mjs test/tropical-map/*.test.mjs` passed
+  98/98; `node scripts/validate-site.mjs` validated 18 HTML files, 307 JSON
+  files, and 199 local references; `git diff --check` passed.
+- Local HTTP: Home, Bertie, Dare, San Diego, Tropical, deterministic Active
+  fixture, and representative versioned CSS/JavaScript assets returned 200
+  with the expected HTML, CSS, and JavaScript MIME types.
+- Controlled browser: the six-family matrix passed at `3840x2160`,
+  `1280x900`, and `390x844`; Home, Dare, Tropical, and Active also passed at
+  `844x390`. No checked route had horizontal overflow. At 4K, Home, County,
+  and Tropical now end within one viewport instead of retaining the previous
+  empty shell extension.
+- Interaction: ordinary wheel input over the Dare Radar map moved document
+  scroll from 0 to 260 pixels. Tropical long text computed to
+  `overflow-y: visible`; wheel input moved document scroll 360 pixels while
+  its own `scrollTop` stayed 0. County weather tabs passed End-key selection,
+  and coarse-pointer emulation produced `touch-action: pan-y` on the visible
+  Leaflet container.
+- Console: a fresh representative Home, Dare, Tropical, and Active navigation
+  sequence produced no browser warnings or errors. The in-app browser's CDP
+  event stream returned no usable per-response entries, so local HTTP probes
+  are the recorded network evidence rather than a claim of complete provider
+  coverage.
+- Open gates: the in-app browser cannot synthesize the required touch gesture,
+  so actual-device vertical page scrolling over maps remains owner smoke.
+  External-provider freshness, owner acceptance, staging/production,
+  commit, push, and deployment are not established.
 
 ## Automated drift prevention
 
@@ -1052,16 +1109,16 @@ The plan is complete only when:
 11. The current handoff documents record exact implementation status, validation, remaining gates, and the next authorized action.
 12. Deployment and production status are reported truthfully and separately.
 
-Items 8 and 9 remain open for the recorded Wave B height and mobile-scroll
-findings. The proposed Phase 9 is the bounded closeout candidate, not an
-automatic authorization to change application code.
+The local automated and controlled-browser portions of items 8 and 9 are
+complete through Phase 9. Actual-device touch smoke and owner acceptance remain
+open before Wave B can be called fully closed.
 
 ## Questions and decision gates
 
-The proposed Phase 9 remains gated. Before implementation, inventory computed
-heights, occupied control rows, overflow owners, and touch/wheel behavior by
-page family. Bring true page-specific exceptions back with screenshots,
-measurements, consumer lists, and a recommendation rather than guessing.
+Phase 9 implementation is complete locally. The next decision gate is owner
+smoke on actual touch devices, followed by any owner-directed correction or
+acceptance. Do not infer staging, deployment, or production success from the
+local record.
 
 Before each later phase, confirm the previous gate and the exact authorized slice. Do not treat this roadmap as blanket implementation approval.
 
@@ -1090,19 +1147,20 @@ The current documentation checkpoint is `a096ddc`; local `main` and
 current uncommitted County persisted-zone implementation and handoff
 reconciliation on 2026-08-26. Phases 0-8 and the ArcGIS basemap replacement are
 implemented, validated, committed, and pushed in `2f53445`.
-The owner uploaded the checkpoint and reported that all functions passed on all
-tested devices; exact coverage was not supplied. Wave B layout closeout remains
-open for excessive large-display height, controls pushed below the viewport by
-alerts/zone selectors, and mobile page-scroll capture over maps/text products.
-Proposed Phase 9 documents that future tuning scope but does not authorize it.
+The owner uploaded the Phase 8 checkpoint and reported that all functions passed
+on all tested devices; exact coverage was not supplied. Phase 9 is now
+implemented and locally validated in the current uncommitted tree. Its
+large-display height, family stack, document-scroll, and cooperative wheel
+contracts are enforced by the site validator and focused tests.
 
-Do not begin Phase 9 until explicitly authorized. When authorized, start with a
-read-only measurement matrix across Home, standard County, multi-zone County,
-Tropical, Active, and text-product surfaces before proposing shared height
-calculations and explicit page-family variants. Keep the separate cross-county
-persisted-zone fix and its tests intact, and keep staging/production upload,
-scheduler repair, plus generated/runtime data outside that phase unless
-explicitly authorized. Live testing uses
+Begin the next session by preserving unrelated user-owned changes and reviewing
+the Phase 9 implementation record above. The next authorized action is not
+deployment: obtain owner smoke on actual touch devices for vertical page
+scrolling over Home/County/Tropical/Active maps and long text, then record the
+exact devices/pages/results. Keep the separate cross-county persisted-zone fix
+and its tests intact, and keep staging/production upload, scheduler repair, plus
+generated/runtime data outside the task unless explicitly authorized. Live
+testing uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
 production replacement. Staging has the committed Phase 8/basemap files, but
 the current zone fix is not yet uploaded and California Conditions is stale;

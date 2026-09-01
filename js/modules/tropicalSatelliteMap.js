@@ -2,7 +2,7 @@ import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
   formatWeatherTime,
-} from './interactiveWeatherMap.js?v=20260826-basemaps-1';
+} from './interactiveWeatherMap.js?v=20260831-phase9-1';
 import { SatelliteFallbackDialog } from './satelliteFallbackDialog.js?v=20260822-2';
 import {
   createGibsWmtsSatelliteSource,
@@ -13,7 +13,7 @@ import {
   TROPICAL_BASIN_VIEWS,
   TROPICAL_RESPONSIVE_BREAKPOINT,
   tropicalZoomForView,
-} from './tropicalMapEngine.js?v=20260826-basemaps-1';
+} from './tropicalMapEngine.js?v=20260831-phase9-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
 
 const NOWCOAST_SATELLITE_URL = 'https://nowcoast.noaa.gov/geoserver/satellite/wms';
@@ -294,7 +294,7 @@ export class TropicalSatelliteMap {
       showBasemapControl: true,
       basemapControlPosition: 'topleft',
       referenceOverlays: TROPICAL_REFERENCE_OVERLAYS,
-      requireCtrlForWheelZoom: false,
+      requireCtrlForWheelZoom: true,
       scrubber: this.scrubber,
       scrubberOutput: this.scrubberOutput,
       onLoading: (busy) => this.setBusy(busy),

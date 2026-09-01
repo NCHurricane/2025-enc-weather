@@ -14,6 +14,7 @@ import {
   phase6Contract,
   phase7Contract,
   phase8Contract,
+  phase9Contract,
 } from './css-ownership-contract.mjs';
 
 const root = process.cwd();
@@ -927,6 +928,84 @@ for (const file of files.filter(candidate => candidate.endsWith('.css'))) {
   }
 }
 
+const phase9ShellCss = await readFile(
+  path.join(root, ...phase9Contract.shellOwner.split('/')),
+  'utf8',
+).catch(() => '');
+for (const required of [
+  '--page-shell-min-block-size: calc(100svh + 1px);',
+  '--page-shell-min-block-size: auto;',
+  'min-height: var(--page-shell-min-block-size);',
+  ...phase9Contract.weatherRoots,
+]) {
+  if (!phase9ShellCss.includes(required)) {
+    errors.push(`${phase9Contract.shellOwner}: missing Phase 9 shell contract ${required}`);
+  }
+}
+
+const phase9MapCss = await readFile(
+  path.join(root, ...phase9Contract.mapOwner.split('/')),
+  'utf8',
+).catch(() => '');
+for (const required of [
+  '--weather-map-min-block-size',
+  '--weather-map-max-block-size',
+  '--weather-map-stack-offset',
+  'calc(100svh - var(--weather-map-stack-offset))',
+  '@media (pointer: coarse)',
+  'touch-action: pan-y;',
+]) {
+  if (!phase9MapCss.includes(required)) {
+    errors.push(`${phase9Contract.mapOwner}: missing Phase 9 map contract ${required}`);
+  }
+}
+
+for (const stylesheet of phase9Contract.heightVariantStylesheets) {
+  const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
+  if (!css.includes('--weather-map-stack-offset')) {
+    errors.push(`${stylesheet}: missing Phase 9 occupied-stack map-height variant`);
+  }
+}
+
+for (const [stylesheet, requiredTokens] of Object.entries(phase9Contract.documentScrollStylesheets)) {
+  const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
+  for (const required of requiredTokens) {
+    if (!css.includes(required)) {
+      errors.push(`${stylesheet}: missing Phase 9 document-scroll contract ${required}`);
+    }
+  }
+}
+
+for (const sourceFile of phase9Contract.cooperativeWheelSources) {
+  const source = await readFile(path.join(root, ...sourceFile.split('/')), 'utf8').catch(() => '');
+  if (source.includes('requireCtrlForWheelZoom: false')) {
+    errors.push(`${sourceFile}: direct map wheel capture violates the Phase 9 cooperative-wheel contract`);
+  }
+}
+
+const phase9InteractiveMapSource = await readFile(
+  path.join(root, 'js', 'modules', 'interactiveWeatherMap.js'),
+  'utf8',
+).catch(() => '');
+const phase9TropicalMapSource = await readFile(
+  path.join(root, 'js', 'modules', 'tropicalMapEngine.js'),
+  'utf8',
+).catch(() => '');
+if (!phase9InteractiveMapSource.includes('installCooperativeWheelZoom')) {
+  errors.push('js/modules/interactiveWeatherMap.js: missing Phase 9 cooperative wheel owner');
+}
+if (!phase9TropicalMapSource.includes('scrollWheelZoom: false')
+    || !phase9TropicalMapSource.includes('installCooperativeWheelZoom')) {
+  errors.push('js/modules/tropicalMapEngine.js: missing Phase 9 cooperative wheel integration');
+}
+const phase9CountyCenterSource = await readFile(
+  path.join(root, 'counties', 'js', 'weatherCenter.js'),
+  'utf8',
+).catch(() => '');
+if (/syncDiscussionHeight|afd-viewport-height/.test(phase9CountyCenterSource)) {
+  errors.push('counties/js/weatherCenter.js: retired Phase 9 mobile AFD inner-height ownership remains');
+}
+
 for (const [stylesheet, contract] of Object.entries(phase2Contract.stylesheets)) {
   const expectedConsumers = new Set(contract.consumers);
   const actualConsumers = new Set();
@@ -960,6 +1039,9 @@ for (const token of phase2Contract.requiredGlobalTokens) {
   if (!globalStyles.includes(`${token}:`)) {
     errors.push(`css/styles.css: missing required Phase 2 token ${token}`);
   }
+}
+if (!/\.header-container img\s*\{[^}]*\bwidth:\s*auto;[^}]*\bheight:\s*clamp\(17px,\s*2vw,\s*26px\);[^}]*\}/s.test(globalStyles)) {
+  errors.push('css/styles.css: header logos must use a definite shared height with proportional auto width');
 }
 
 for (const stylesheet of Object.keys(phase2Contract.stylesheets)) {
@@ -1115,9 +1197,38 @@ for (const required of [
   'activeStormMap.js?v=',
   'activeStormWorkspace.js?v=',
   '../vendor/leaflet/1.9.4/leaflet.js',
+  'src: \'images/20260831_nchurricane_logo_animated.svg?v=20260831-1\'',
   'ariaLabel: \'NCHurricane home\'',
 ]) {
   if (!activePage.includes(required)) errors.push(`active/index.html: missing Phase 5 contract ${required}`);
+}
+
+const tropicalPage = await readFile(path.join(root, 'tropical.html'), 'utf8').catch(() => '');
+const tropicalLogo = await readFile(path.join(root, 'images', '20260831_nchurricane_logo_animated.svg'), 'utf8').catch(() => '');
+for (const [pageName, page] of [
+  ['tropical.html', tropicalPage],
+  ['active/index.html', activePage],
+]) {
+  for (const required of [
+    'src: \'images/20260831_nchurricane_logo_animated.svg?v=20260831-1\'',
+    'alt: \'NCHurricane\'',
+    'ariaLabel: \'NCHurricane home\'',
+  ]) {
+    if (!page.includes(required)) errors.push(`${pageName}: missing Tropical SVG wordmark contract ${required}`);
+  }
+  if (/textBefore:\s*['"]NCHurric|iconClass:\s*['"]fa-solid fa-hurricane/.test(page)) {
+    errors.push(`${pageName}: obsolete font-based Tropical wordmark remains`);
+  }
+}
+for (const required of [
+  'id="cyclone-icon"',
+  'cyclone-icon-spin 5.4s ease-in-out infinite',
+  'cyclone-icon-flash 5.4s ease-in-out infinite',
+  'transform: rotate(-360deg)',
+  '@media (prefers-reduced-motion: reduce)',
+  'animation: none',
+]) {
+  if (!tropicalLogo.includes(required)) errors.push(`images/20260831_nchurricane_logo_animated.svg: missing animation contract ${required}`);
 }
 if (activePage.includes('id="glass-distortion"') || !activePage.includes('id="main-content"')) {
   errors.push('active/index.html: old distortion filter remains or accessible main target is missing');

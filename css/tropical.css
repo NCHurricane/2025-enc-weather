@@ -9,7 +9,9 @@
 }
 
 .tropical-weather-center .weather-map-card {
-  --weather-map-block-size: clamp(23.75rem, calc(100svh - 25rem), 37.5rem);
+  --weather-map-min-block-size: 20.625rem;
+  --weather-map-max-block-size: 31.25rem;
+  --weather-map-stack-offset: 35rem;
 }
 
 .visually-hidden {
@@ -264,7 +266,9 @@
 
 @media (max-width: 768px) {
   .tropical-weather-center .weather-map-card {
-    --weather-map-block-size: clamp(21.25rem, 50svh, 23.75rem);
+    --weather-map-min-block-size: 20.625rem;
+    --weather-map-max-block-size: 23.75rem;
+    --weather-map-stack-offset: 31rem;
   }
 
   .tropical-product-tabs {
@@ -334,6 +338,11 @@
     min-height: calc(var(--weather-map-block-size) - 58px);
   }
 
+  .tropical-text-content {
+    max-height: none;
+    overflow: visible;
+  }
+
   .tropical-weather-center .map-toolbar--satellite {
     grid-template-columns: 1fr;
   }
@@ -341,7 +350,8 @@
 
 @media (max-width: 480px) {
   .tropical-weather-center .weather-map-card {
-    --weather-map-block-size: clamp(20rem, 45svh, 20.625rem);
+    --weather-map-min-block-size: 20rem;
+    --weather-map-max-block-size: 20.625rem;
   }
 
   .tropical-source-link {

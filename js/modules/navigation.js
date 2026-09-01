@@ -61,8 +61,9 @@ export function breadcrumbItemsForPath(pathname = '') {
 export const NavigationModule = {
   navData: {
     logo: {
-      src: "images/2025_banner.png",
-      alt: "NCHurricane.com Logo"
+      src: "images/20260826_cc_wx_logo.svg",
+      alt: "Chuck Copeland WX",
+      ariaLabel: "Chuck Copeland WX home"
     },
     menuItems: [
       { text: "Home", href: "index.html" },

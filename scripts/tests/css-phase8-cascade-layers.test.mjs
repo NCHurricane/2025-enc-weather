@@ -39,7 +39,7 @@ function topLevelLayerNames(css) {
 }
 
 test('Phase 8 declares one stable layer order and imports untouched Leaflet into vendor', () => {
-  assert.equal(phase8Contract.version, '20260831');
+  assert.equal(phase8Contract.version, '20260831-phase9-1');
   assert.equal(
     readProjectFile(phase8Contract.orderStylesheet).trim(),
     `@layer ${phase8Contract.layerOrder.join(', ')};`,

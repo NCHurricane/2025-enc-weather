@@ -1002,11 +1002,11 @@
 .wind-analysis-section,
 .wind-graphics-section,
 .wind-probability-section {
-    min-height: clamp(420px, 55vh, 720px);
+    min-height: clamp(20rem, 38svh, 34rem);
 }
 
 .surge-rain-section {
-    min-height: clamp(380px, 50vh, 680px);
+    min-height: clamp(18rem, 34svh, 32rem);
 }
 
 @media (max-width: 900px) {
@@ -1234,7 +1234,14 @@
 }
 
 .active-module .active-storm-map-section {
-    --weather-map-block-size: clamp(30rem, 60vw, 42.5rem);
+    --weather-map-min-block-size: 22rem;
+    --weather-map-max-block-size: 36rem;
+    --weather-map-stack-offset: 25rem;
+    --weather-map-block-size: clamp(
+        var(--weather-map-min-block-size),
+        calc(100svh - var(--weather-map-stack-offset)),
+        var(--weather-map-max-block-size)
+    );
 }
 
 .active-module .active-storm-map-section .weather-map {
@@ -1375,7 +1382,7 @@
 
 .active-module--nhc .active-module__panel,
 .active-module--wind .active-module__panel {
-    min-height: clamp(500px, 56vw, 680px);
+    min-height: clamp(20rem, 38svh, 34rem);
 }
 
 .active-module--nhc .storm-text-section,
@@ -1420,7 +1427,7 @@
 }
 
 .active-module--surge-rain .active-module__panel {
-    min-height: clamp(450px, 52vw, 650px);
+    min-height: clamp(18rem, 34svh, 32rem);
 }
 
 .active-module--surge-rain .surge-rain-section {
@@ -1472,13 +1479,24 @@
     }
 
     .active-module .active-storm-map-section {
-        --weather-map-block-size: 28.75rem;
+        --weather-map-min-block-size: 20rem;
+        --weather-map-max-block-size: 28.75rem;
+        --weather-map-stack-offset: 23rem;
     }
 
     .active-module--nhc .active-module__panel,
     .active-module--wind .active-module__panel,
     .active-module--surge-rain .active-module__panel {
-        min-height: 420px;
+        min-height: 0;
+    }
+
+    .text-content-container {
+        min-height: 0;
+    }
+
+    .text-content {
+        max-height: none;
+        overflow-y: visible;
     }
 
 }

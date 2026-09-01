@@ -1,7 +1,7 @@
 import {
   InteractiveWeatherMap,
   formatWeatherTime,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260826-basemaps-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260831-phase9-1';
 import { SatelliteFallbackDialog } from '../../js/modules/satelliteFallbackDialog.js?v=20260822-2';
 import {
   createGibsWmtsSatelliteSource,
@@ -291,7 +291,7 @@ class CountyRadarViewer {
       container: this.mapElement,
       center: this.context.center,
       zoom: initialWeatherMapZoom(),
-      requireCtrlForWheelZoom: false,
+      requireCtrlForWheelZoom: true,
       maxFrames: 12,
       overlayOpacity: 0.8,
       ariaLabel: `Interactive radar map centered on ${contextAreaLabel(this.context)}`,
@@ -611,7 +611,7 @@ class CountySatelliteViewer {
       container: this.mapElement,
       center: this.context.center,
       zoom: initialWeatherMapZoom(),
-      requireCtrlForWheelZoom: false,
+      requireCtrlForWheelZoom: true,
       maxFrames: 12,
       overlayOpacity: 0.92,
       ariaLabel: `Interactive satellite map centered on ${contextAreaLabel(this.context)}`,

@@ -320,6 +320,41 @@ export function formatWeatherTime(value) {
   });
 }
 
+export function installCooperativeWheelZoom({
+  container,
+  map,
+  minZoom = 0,
+  maxZoom = 18,
+  windowRef = globalThis.window,
+} = {}) {
+  if (!container?.addEventListener || !map) return () => {};
+
+  let lastWheelAt = Number.NEGATIVE_INFINITY;
+  const handleWheel = (event) => {
+    if (!event.ctrlKey || event.deltaY === 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const now = windowRef?.performance?.now?.() ?? Date.now();
+    if (now - lastWheelAt < 90) return;
+    lastWheelAt = now;
+
+    const currentZoom = map.getZoom();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const nextZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom + direction));
+    if (nextZoom === currentZoom) return;
+
+    map.setZoomAround(map.mouseEventToContainerPoint(event), nextZoom);
+  };
+
+  container.addEventListener('wheel', handleWheel, {
+    capture: true,
+    passive: false,
+  });
+  return () => container.removeEventListener?.('wheel', handleWheel, true);
+}
+
 export class InteractiveWeatherMap {
   constructor({
     container,
@@ -402,9 +437,8 @@ export class InteractiveWeatherMap {
     this.scrubRequestToken = 0;
     this.playing = false;
     this.visible = true;
-    this.lastCtrlWheelAt = Number.NEGATIVE_INFINITY;
+    this.removeCooperativeWheelZoom = null;
     this.updateZoomIndicator = this.updateZoomIndicator.bind(this);
-    this.handleCtrlWheel = this.handleCtrlWheel.bind(this);
     this.handleScrubberInput = this.handleScrubberInput.bind(this);
     this.scrubber?.addEventListener('input', this.handleScrubberInput);
     this.syncScrubber(false);
@@ -444,9 +478,11 @@ export class InteractiveWeatherMap {
       .filter(Boolean);
 
     if (this.requireCtrlForWheelZoom) {
-      this.container.addEventListener('wheel', this.handleCtrlWheel, {
-        capture: true,
-        passive: false,
+      this.removeCooperativeWheelZoom = installCooperativeWheelZoom({
+        container: this.container,
+        map: this.map,
+        minZoom: this.minZoom,
+        maxZoom: this.maxZoom,
       });
     }
 
@@ -595,25 +631,6 @@ export class InteractiveWeatherMap {
     this.basemapLayer = nextLayer;
     this.basemapLayerControl?.setActiveBasemap?.(basemapId);
     return true;
-  }
-
-  handleCtrlWheel(event) {
-    if (!event.ctrlKey || !this.map) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (event.deltaY === 0) return;
-
-    const now = window.performance.now();
-    if (now - this.lastCtrlWheelAt < 90) return;
-    this.lastCtrlWheelAt = now;
-
-    const direction = event.deltaY < 0 ? 1 : -1;
-    const nextZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.map.getZoom() + direction));
-    if (nextZoom === this.map.getZoom()) return;
-
-    this.map.setZoomAround(this.map.mouseEventToContainerPoint(event), nextZoom);
   }
 
   handleScrubberInput() {
@@ -1066,9 +1083,8 @@ export class InteractiveWeatherMap {
     this.sourceToken += 1;
     this.displayToken += 1;
     this.scrubber?.removeEventListener('input', this.handleScrubberInput);
-    if (this.requireCtrlForWheelZoom) {
-      this.container?.removeEventListener('wheel', this.handleCtrlWheel, true);
-    }
+    this.removeCooperativeWheelZoom?.();
+    this.removeCooperativeWheelZoom = null;
     this.map?.off('zoom zoomend resize', this.updateZoomIndicator);
     this.weatherLayerPool.forEach(({ layer }) => {
       layer.setOpacity?.(0);

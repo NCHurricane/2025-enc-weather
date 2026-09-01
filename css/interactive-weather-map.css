@@ -2,8 +2,15 @@
 .leaflet-container .leaflet-layer.core-basemap-dark-tiles img.leaflet-tile {
     filter: brightness(0.6) contrast(1.05) sepia(0.35) saturate(1.5) hue-rotate(165deg);
 }
-  .weather-map-card {
-  --weather-map-block-size: clamp(25rem, calc(100svh - 28.125rem), 28.125rem);
+.weather-map-card {
+  --weather-map-min-block-size: 20rem;
+  --weather-map-max-block-size: 28.125rem;
+  --weather-map-stack-offset: 28.125rem;
+  --weather-map-block-size: clamp(
+    var(--weather-map-min-block-size),
+    calc(100svh - var(--weather-map-stack-offset)),
+    var(--weather-map-max-block-size)
+  );
   container-type: inline-size;
   min-width: 0;
   overflow: hidden;
@@ -1012,6 +1019,13 @@ html.satellite-imagery-modal-open body {
 @media (max-width: 600px) {
   .temperature-station-details:not([hidden]) + .weather-map-card__note {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .site-page .leaflet-container.leaflet-touch-drag,
+  .site-page .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+    touch-action: pan-y;
   }
 }
 

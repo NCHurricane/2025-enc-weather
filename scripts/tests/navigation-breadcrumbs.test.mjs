@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { breadcrumbItemsForPath } from '../../js/modules/navigation.js';
+import { NavigationModule, breadcrumbItemsForPath } from '../../js/modules/navigation.js';
+
+test('the default navigation fallback uses the current main-site wordmark', () => {
+  const navigation = NavigationModule.generateNavigation('./');
+  assert.match(navigation, /src="\.\/images\/20260826_cc_wx_logo\.svg"/);
+  assert.match(navigation, /alt="Chuck Copeland WX"/);
+  assert.match(navigation, /aria-label="Chuck Copeland WX home"/);
+  assert.doesNotMatch(navigation, /2025_banner\.png/);
+});
 
 test('the homepage has no breadcrumb trail', () => {
   assert.deepEqual(breadcrumbItemsForPath('/index.html'), []);

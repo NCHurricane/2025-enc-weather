@@ -14,6 +14,57 @@ Deployment context: live testing currently uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
 production replacement after site readiness.
 
+## Tropical SVG wordmark follow-up: 2026-08-31
+
+- The owner-authorized header update replaces the font-built Tropical and
+  Active `NCHurric` + Font Awesome hurricane + `ne` wordmark with the versioned
+  `images/20260831_nchurricane_logo_animated.svg?v=20260831-1` derivative. The
+  original SVG remains the designer-owned source. Both page bootstraps retain the
+  `NCHurricane home` link label and expose `NCHurricane` as the image alt text.
+- The latest supplied outlined artwork is preserved in the stable derivative;
+  the concurrently exported source filename remains untouched. Its cyclone group owns embedded
+  5.4-second counterclockwise spin and yellow/white flash animations matching
+  the main SVG logo's flash cadence; the embedded reduced-motion rule leaves a
+  static, fully opaque yellow cyclone.
+- The shared header now gives both SVG wordmarks the same definite responsive
+  height with proportional automatic width: `height: clamp(17px, 2vw, 26px)`.
+  Do not combine `width: auto` and `height: auto` with only maximum dimensions
+  here; that flex layout resolves both SVG images to `0x0` despite successful
+  asset loads.
+- `NavigationModule.navData.logo` now defaults to the current main-site
+  `images/20260826_cc_wx_logo.svg` with the `Chuck Copeland WX home` accessible
+  label. This is a configuration default for a consumer that does not supply a
+  logo, not an image-load error fallback. Tropical and Active continue to
+  override it with the NCHurricane wordmark before initialization. All 17
+  navigation consumers use cache key `20260831-navigation-logo-1`; unrelated
+  Phase 4 module versions remain unchanged.
+- Static/automated: the changed JavaScript passed `node --check`; the SVG passed
+  XML parsing; the focused local Tropical suite passed 9/9; the site validator
+  passed 18 HTML files, 307 JSON files, and 199 local references; the focused
+  responsive-scroll suite passed 3/3; the navigation/default-logo suite passed
+  7/7; and `git diff --check` passed with line-ending notices only. The site
+  validator now guards both the definite-height header-logo contract and the
+  current default-logo source.
+- Controlled browser: the initial Tropical and retained `EP092026` Active fixture
+  rendered the new linked logo at a 1280-pixel desktop width and `390x844`
+  without horizontal overflow or captured console warnings/errors. Two direct
+  SVG frames showed distinct spin/flash states; reduced-motion emulation returned
+  `animation-name: none`, a yellow icon, and full opacity. The logo link accepted
+  keyboard focus with its accessible label. Active without a storm query
+  correctly reached its 404 shell; the final fixture check used the owner-run
+  `8085` server with `?storm=EP092026`. The earlier temporary `8086` server was
+  stopped afterward. The equal-height correction was then verified on the main
+  and Tropical headers at `390x844` and `1280x900`: both were visible, shared
+  17-pixel mobile and 25.6-pixel desktop heights, retained proportional widths,
+  had no horizontal overflow, and produced no captured console warnings/errors.
+  The cache-bumped navigation was also checked on the homepage, Tropical, and a
+  nested county route; each loaded the expected page-specific logo and label,
+  including the county-relative asset path, without captured console errors.
+- Concurrent Phase 9 and unrelated repository edits remain user-owned and
+  untouched. This correction changes only the shared header image sizing, its
+  validator guard, and this evidence. No generated/runtime data, staging,
+  commit, push, deployment, or production state changed.
+
 The detailed August 2026 roadmap and Phase 0-3 records are preserved under [`docs/archive/tropical-map/2026-08/`](archive/tropical-map/2026-08/).
 
 ## Resume order
@@ -499,7 +550,7 @@ This local closeout is complete. Phase 6 is also complete with the retain-all ow
 
 - The Tropical overview shows basin basics: active systems, simplified track/cone, and outlook areas. Active owns granular storm layers and controls.
 - Preserve the server-owned redirects from the retired `tropical_at` and `tropical_ep` paths to canonical Atlantic and Eastern Pacific basin state; do not restore duplicate HTML compatibility pages.
-- Preserve the Tropical `NCHurric` + hurricane icon + `ne` wordmark and accessible `NCHurricane home` label.
+- Preserve the outlined Tropical/Active SVG wordmark, its counterclockwise flashing cyclone animation, reduced-motion fallback, and accessible `NCHurricane home` label.
 - Overview Satellite remains basin-only, defaults to Clean IR, and uses the configured basin sector for the click-to-load NOAA STAR animation after both tile sources fail.
 - Shared code exposes engines/utilities; page controllers own page lifecycle.
 - Popups link to readable official NHC pages, never directly to KMZ files. Unknown source-link mappings fail closed.

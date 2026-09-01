@@ -1,8 +1,8 @@
-import { WEATHER_BASEMAPS } from './interactiveWeatherMap.js?v=20260826-basemaps-1';
+import { WEATHER_BASEMAPS } from './interactiveWeatherMap.js?v=20260831-phase9-1';
 import { installTropicalCityLabels } from './tropicalCityLabels.js?v=20260824-phase5-1';
-import { TropicalMapEngine } from './tropicalMapEngine.js?v=20260826-basemaps-1';
+import { TropicalMapEngine } from './tropicalMapEngine.js?v=20260831-phase9-1';
 import { TROPICAL_REFERENCE_OVERLAYS } from './tropicalReferenceLayers.js?v=20260822-map-borders-1';
-import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260826-basemaps-1';
+import { TropicalSatelliteMap } from './tropicalSatelliteMap.js?v=20260831-phase9-1';
 
 export const TROPICAL_BASINS = Object.freeze(['atl', 'epac', 'cpac']);
 

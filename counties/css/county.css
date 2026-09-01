@@ -3,6 +3,17 @@
 /* COUNTY PAGE STYLES */
 /*--------------------*/
 
+.site-page--county .weather-map-card {
+  --weather-map-min-block-size: 20rem;
+  --weather-map-max-block-size: 26.25rem;
+  --weather-map-stack-offset: 30rem;
+}
+
+.site-page--county-multizone .weather-map-card {
+  --weather-map-max-block-size: 23.75rem;
+  --weather-map-stack-offset: 34rem;
+}
+
 /* Responsive county alert tray and detail viewer */
 .county-alert-ui,
 .county-alert-ui * {
@@ -1313,8 +1324,9 @@ canvas#meteogramChart {
   }
 
   .weather-center-forecast-panel .afd-content {
-    height: var(--afd-viewport-height, calc(var(--weather-center-content-height) - 20px));
+    height: auto;
     max-height: none;
+    overflow-y: visible;
   }
 
   .weather-center-forecast-panel #forecast {
@@ -1384,6 +1396,18 @@ canvas#meteogramChart {
   .weather-center-forecast-panel #meteogram-chart-container {
     overflow-x: auto;
     padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-page--county .weather-map-card {
+    --weather-map-max-block-size: 21.875rem;
+    --weather-map-stack-offset: 30rem;
+  }
+
+  .site-page--county-multizone .weather-map-card {
+    --weather-map-max-block-size: 20.625rem;
+    --weather-map-stack-offset: 34rem;
   }
 }
 

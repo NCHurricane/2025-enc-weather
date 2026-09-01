@@ -60,7 +60,7 @@ test('Active alert maps share Tropical borders and zoom-filtered city labels', (
 });
 
 test('every basemap consumer uses the dedicated cache version', () => {
-  assert.equal(basemapContract.version, '20260826-basemaps-1');
+  assert.equal(basemapContract.version, '20260831-phase9-1');
   for (const dependency of basemapContract.versionedAssets) {
     const source = readFileSync(new URL(`../../${dependency.file}`, import.meta.url), 'utf8');
     const basename = dependency.target.split('/').at(-1);
