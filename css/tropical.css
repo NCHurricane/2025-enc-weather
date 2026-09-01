@@ -358,4 +358,10 @@
     width: auto;
   }
 }
+
+@media (max-height: 43.75rem) {
+  .tropical-weather-center .weather-map-card {
+    --weather-map-min-block-size: 12rem;
+  }
+}
 }

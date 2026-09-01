@@ -1681,4 +1681,10 @@
         text-align: center;
     }
 }
+
+@media (max-height: 43.75rem) {
+    .active-module .active-storm-map-section {
+        --weather-map-min-block-size: 12rem;
+    }
+}
 }

@@ -2,11 +2,11 @@
 
 Updated: 2026-08-31
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. Phase 9 is implemented and locally validated in the current uncommitted tree; actual-device owner smoke, staging/production, commit, and push remain open
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. The initial Phase 9 checkpoint is committed in `1372cf9`; owner staging smoke exposed a short-visual-height mobile failure, and its bounded correction is implemented and statically validated. The owner subsequently reported that all smoke tests pass and authorized committing the complete correction set. Controlled-browser revalidation, push, and production remain open
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
-consumers atomically to `20260831-phase9-1`.
+consumers atomically to `20260831-phase9-2` for the short-height correction.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
@@ -907,9 +907,17 @@ uncommitted tree and remains outside Phase 9:
 
 #### Phase 9: Responsive height and scroll ergonomics
 
-Implementation status: explicitly authorized by the owner on 2026-08-31,
-implemented locally, and validated through static/automated, local HTTP, and
-controlled-browser gates. Actual-device touch smoke and all production gates
+Implementation status: explicitly authorized by the owner on 2026-08-31. The
+initial implementation was validated through static/automated, local HTTP, and
+controlled-browser gates and committed in `1372cf9`. Owner-supplied staging
+screenshots then exposed a short-visual-height mobile failure. Its bounded
+correction is implemented and statically validated in the current uncommitted
+tree. The owner subsequently reported, "All smoke tests pass," and authorized
+committing the complete correction set. Exact pages, devices, browsers, and
+individual interactions were not supplied, so this is retained as overall
+owner smoke evidence only. The owner also said they will go through and
+manually make corrections; those unspecified future edits are not included in
+this checkpoint. Controlled-browser revalidation and all production gates
 remain open.
 
 1. Measure the occupied vertical stack for Home, standard County, multi-zone
@@ -955,6 +963,24 @@ Implementation record:
   `scripts/tests/responsive-scroll-ergonomics.test.mjs` enforce the Phase 9
   height, touch, wheel, text-scroll, consumer-version, and removed-runtime-height
   contracts.
+- Owner-supplied mobile staging screenshots on 2026-08-31 showed the Bertie
+  Satellite and Tropical Satellite maps consuming the remaining visible page
+  height while their frame scrubbers and legends continued below the initial
+  viewport. The Tropical Overview screenshot showed the same over-tall map
+  behavior. This is recorded as a failed owner layout check, not as
+  controlled-browser evidence.
+- Root cause: on short visual viewports, the family stack calculation requested
+  a smaller map, but the existing `20rem` to `20.625rem` family minimums won the
+  `clamp()` and kept the map at 320 to 330 pixels. At viewport heights up to
+  `43.75rem`, Home, County (including multi-zone), Tropical, and Active now use
+  a `12rem` map minimum. This preserves the existing calculation and normal
+  `390x844` layout while allowing browser-chrome-shortened portrait and
+  landscape views to contract. Scrubbers remain in document flow, and their
+  44-pixel controls were not overlaid or reduced.
+- All affected layered CSS and shared-map dependency consumers were advanced
+  atomically from `20260831-phase9-1` to `20260831-phase9-2`; the ownership
+  contract, validator, and focused responsive test guard the short-height
+  breakpoint and minimum.
 
 Validation record:
 
@@ -985,6 +1011,25 @@ Validation record:
   so actual-device vertical page scrolling over maps remains owner smoke.
   External-provider freshness, owner acceptance, staging/production,
   commit, push, and deployment are not established.
+- Short-height correction validation: all changed JavaScript passed
+  `node --check`; the focused responsive/cascade/basemap tests passed 13/13;
+  the full JavaScript suite passed 99/99; the site validator passed 18 HTML
+  files, 307 JSON files, and 199 local references; and `git diff --check`
+  passed. Local HTTP returned 200 for Home, Bertie, Dare, San Diego, Tropical,
+  the corrected CSS assets, and the versioned Tropical module chain.
+- Short-height controlled-browser revalidation is blocked in this turn. The
+  in-app browser was selected while the local server was unavailable and its
+  resulting error document is prevented by the browser URL policy from
+  navigating back to the local site. Static checks and HTTP probes do not
+  substitute for that gate. Codex did not upload the corrected files or
+  independently verify staging; the supplied screenshots remain pre-correction
+  evidence. The subsequent owner smoke result is recorded separately below.
+- Owner smoke on 2026-08-31: the owner subsequently reported exactly, "All
+  smoke tests pass." Exact pages, devices, browsers, and interactions were not
+  supplied, so this closes owner smoke only at the reported overall level; it
+  does not establish the still-blocked controlled-browser gate. The owner's
+  planned manual corrections are outside this committed correction set until
+  their exact changes are made and validated.
 
 ## Automated drift prevention
 
@@ -1109,16 +1154,18 @@ The plan is complete only when:
 11. The current handoff documents record exact implementation status, validation, remaining gates, and the next authorized action.
 12. Deployment and production status are reported truthfully and separately.
 
-The local automated and controlled-browser portions of items 8 and 9 are
-complete through Phase 9. Actual-device touch smoke and owner acceptance remain
-open before Wave B can be called fully closed.
+The local automated portion of items 8 and 9 is complete through the Phase 9
+short-height correction, and owner smoke passed at the reported overall level.
+Controlled-browser revalidation remains open before Wave B can be called fully
+closed. The owner's planned manual corrections are a separate future follow-up.
 
 ## Questions and decision gates
 
-Phase 9 implementation is complete locally. The next decision gate is owner
-smoke on actual touch devices, followed by any owner-directed correction or
-acceptance. Do not infer staging, deployment, or production success from the
-local record.
+The Phase 9 short-height correction is complete locally and owner smoke passed
+at the reported overall level. The owner authorized committing the complete
+correction set. Controlled-browser revalidation remains open; push, deployment,
+and production are not authorized or established. The owner's unspecified
+manual corrections are not part of this checkpoint.
 
 Before each later phase, confirm the previous gate and the exact authorized slice. Do not treat this roadmap as blanket implementation approval.
 
@@ -1142,24 +1189,29 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-The current documentation checkpoint is `a096ddc`; local `main` and
-`origin/main` were synchronized and the working tree was clean before the
-current uncommitted County persisted-zone implementation and handoff
-reconciliation on 2026-08-26. Phases 0-8 and the ArcGIS basemap replacement are
-implemented, validated, committed, and pushed in `2f53445`.
+The current code checkpoint is `1372cf9`; the working tree was clean at that
+checkpoint before the current Phase 9 short-height correction. Phases 0-8 and
+the ArcGIS basemap replacement are implemented, validated, committed, and
+pushed in `2f53445`; the initial Phase 9 layout and Tropical SVG logo checkpoint
+is committed in `1372cf9`.
 The owner uploaded the Phase 8 checkpoint and reported that all functions passed
-on all tested devices; exact coverage was not supplied. Phase 9 is now
-implemented and locally validated in the current uncommitted tree. Its
-large-display height, family stack, document-scroll, and cooperative wheel
-contracts are enforced by the site validator and focused tests.
+on all tested devices; exact coverage was not supplied. The owner later supplied
+mobile staging screenshots showing Bertie and Tropical maps pushing their
+scrubbers and legends below the initial viewport. The correction adds a guarded
+short-height family minimum, advances all affected consumers to
+`20260831-phase9-2`, and is statically and HTTP validated. The owner subsequently
+reported that all smoke tests pass and authorized committing it. Its
+controlled-browser gate remains open; the owner's planned manual corrections
+are not part of this checkpoint.
 
 Begin the next session by preserving unrelated user-owned changes and reviewing
-the Phase 9 implementation record above. The next authorized action is not
-deployment: obtain owner smoke on actual touch devices for vertical page
-scrolling over Home/County/Tropical/Active maps and long text, then record the
-exact devices/pages/results. Keep the separate cross-county persisted-zone fix
-and its tests intact, and keep staging/production upload, scheduler repair, plus
-generated/runtime data outside the task unless explicitly authorized. Live
+the Phase 9 implementation record above. Owner smoke has passed at the reported
+overall level; do not expand that evidence beyond the owner's exact statement.
+Re-run the blocked controlled-browser short-height matrix when the browser
+surface is usable. Treat any manual owner edits as new user-owned work and do
+not absorb, stage, or rewrite them without explicit scope. Keep push,
+staging/production upload, scheduler repair, and generated/runtime data outside
+the task unless explicitly authorized. Live
 testing uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
 production replacement. Staging has the committed Phase 8/basemap files, but

@@ -967,6 +967,18 @@ for (const stylesheet of phase9Contract.heightVariantStylesheets) {
   }
 }
 
+for (const stylesheet of phase9Contract.shortViewportStylesheets) {
+  const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
+  for (const required of [
+    phase9Contract.shortViewportMedia,
+    phase9Contract.shortViewportMinimum,
+  ]) {
+    if (!css.includes(required)) {
+      errors.push(`${stylesheet}: missing Phase 9 short-viewport map-height contract ${required}`);
+    }
+  }
+}
+
 for (const [stylesheet, requiredTokens] of Object.entries(phase9Contract.documentScrollStylesheets)) {
   const css = await readFile(path.join(root, ...stylesheet.split('/')), 'utf8').catch(() => '');
   for (const required of requiredTokens) {

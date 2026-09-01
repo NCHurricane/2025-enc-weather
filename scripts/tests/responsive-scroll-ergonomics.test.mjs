@@ -89,5 +89,8 @@ test('Phase 9 height ownership uses bounded shared calculations and family stack
   assert.match(globalStyles, /--page-shell-min-block-size:\s*auto;/);
   assert.match(globalStyles, /min-height:\s*var\(--page-shell-min-block-size\);/);
   assert.match(shared, /calc\(100svh - var\(--weather-map-stack-offset\)\)/);
-  for (const css of familyStyles) assert.match(css, /--weather-map-stack-offset:/);
+  for (const css of familyStyles) {
+    assert.match(css, /--weather-map-stack-offset:/);
+    assert.match(css, /@media \(max-height: 43\.75rem\)[\s\S]*--weather-map-min-block-size:\s*12rem;/);
+  }
 });

@@ -2,7 +2,7 @@
 import {
   InteractiveWeatherMap,
   WEATHER_BASEMAPS,
-} from '../../js/modules/interactiveWeatherMap.js?v=20260831-phase9-1';
+} from '../../js/modules/interactiveWeatherMap.js?v=20260831-phase9-2';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,

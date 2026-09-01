@@ -3,7 +3,7 @@ import {
   installBasemapMenuControl,
   WEATHER_BASEMAP_FALLBACK_URL,
   WEATHER_BASEMAPS,
-} from './interactiveWeatherMap.js?v=20260831-phase9-1';
+} from './interactiveWeatherMap.js?v=20260831-phase9-2';
 import {
   installLeafletPopupShell,
   installLeafletPopupTrigger,

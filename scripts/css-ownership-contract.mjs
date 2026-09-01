@@ -176,7 +176,7 @@ const navigationVersion = '20260831-navigation-logo-1';
 const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
-const phase9Version = '20260831-phase9-1';
+const phase9Version = '20260831-phase9-2';
 const phase8Version = phase9Version;
 const basemapVersion = phase9Version;
 const activeAlertsVersion = phase9Version;
@@ -1038,6 +1038,14 @@ export const phase9Contract = Object.freeze({
     'css/tropical.css',
     'active/css/active.css',
   ]),
+  shortViewportStylesheets: Object.freeze([
+    'css/home.css',
+    'counties/css/county.css',
+    'css/tropical.css',
+    'active/css/active.css',
+  ]),
+  shortViewportMedia: '@media (max-height: 43.75rem)',
+  shortViewportMinimum: '--weather-map-min-block-size: 12rem;',
   cooperativeWheelSources: Object.freeze([
     'js/modules/interactiveWeatherMap.js',
     'js/modules/tropicalMapEngine.js',

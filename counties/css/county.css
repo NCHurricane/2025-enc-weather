@@ -1481,4 +1481,10 @@ canvas#meteogramChart {
     max-width: 100%;
   }
 }
+
+@media (max-height: 43.75rem) {
+  .site-page--county .weather-map-card {
+    --weather-map-min-block-size: 12rem;
+  }
+}
 }
