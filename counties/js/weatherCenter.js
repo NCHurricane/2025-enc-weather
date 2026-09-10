@@ -1073,6 +1073,12 @@ class CountyWeatherCenter {
 function initCountyWeatherCenter() {
   const temperatureViewer = new CountyTemperatureViewer();
   if (!temperatureViewer.init()) return;
+  // Optional presentation consumers can discover an already initialized map.
+  document.addEventListener('weather:request-conditions-map', () => {
+    if (temperatureViewer.map) document.dispatchEvent(new CustomEvent('weather:conditions-map-ready', {
+      detail: { map: temperatureViewer.map.ensureMap(), context: temperatureViewer.context, viewer: temperatureViewer },
+    }));
+  });
   new CountyForecastTabs().init();
   new CountyWeatherCenter(temperatureViewer).init();
 }

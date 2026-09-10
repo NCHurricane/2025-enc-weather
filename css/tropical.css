@@ -137,7 +137,7 @@
 .tropical-source-link,
 .tropical-action {
   display: inline-flex;
-  min-height: var(--control-target-min, 44px);
+  min-height: var(--control-target-min, 24px);
   box-sizing: border-box;
   align-items: center;
   justify-content: center;

@@ -19,6 +19,14 @@ import {
 
 const root = process.cwd();
 const excludedDirectories = new Set(['.git', 'node_modules', 'logs', 'output']);
+// Map-first UI belongs to V2; ignored local copies are not V1 site inputs.
+const excludedProjectPaths = new Set([
+  'css/map-ui.css',
+  'docs/archive/map-first-ui',
+  'test/home-map-ui',
+  'test/county-map-ui',
+  'test/map-ui',
+]);
 const errors = [];
 const counts = { html: 0, json: 0, references: 0 };
 const htmlByRelativePath = new Map();
@@ -28,6 +36,7 @@ async function walk(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (entry.isDirectory() && excludedDirectories.has(entry.name)) continue;
     const absolute = path.join(directory, entry.name);
+    if (excludedProjectPaths.has(path.relative(root, absolute).replaceAll('\\', '/'))) continue;
     if (entry.isDirectory()) files.push(...await walk(absolute));
     else files.push(absolute);
   }
@@ -610,7 +619,8 @@ for (const stylesheet of phase5Contract.ownerStylesheets) {
 for (const [stylesheet, consumers] of Object.entries(phase5Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
-  const expectedVersion = phase5Contract.stylesheetVersion;
+  const expectedVersion = phase5Contract.stylesheetVersionOverrides?.[stylesheet]
+    || phase5Contract.stylesheetVersion;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
@@ -647,8 +657,11 @@ for (const sourceContract of phase5Contract.sourceContracts) {
   }
 }
 
-const phase6VersionedAssetKeys = new Set(
-  phase6Contract.versionedAssets.map(dependency => `${dependency.file}\0${dependency.target}`),
+const phase6VersionedAssetVersions = new Map(
+  phase6Contract.versionedAssets.map(dependency => [
+    `${dependency.file}\0${dependency.target}`,
+    dependency.version || phase6Contract.version,
+  ]),
 );
 const basemapVersionedAssetVersions = new Map(
   basemapContract.versionedAssets.map(dependency => [
@@ -664,9 +677,8 @@ for (const dependency of phase5Contract.versionedAssets) {
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   const dependencyKey = `${dependency.file}\0${dependency.target}`;
   const expectedVersion = basemapVersionedAssetVersions.get(dependencyKey)
-    ?? (phase6VersionedAssetKeys.has(dependencyKey)
-      ? phase6Contract.version
-      : phase5Contract.version);
+    ?? phase6VersionedAssetVersions.get(dependencyKey)
+    ?? phase5Contract.version;
   if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the current shared-map cache version`);
   }
@@ -734,7 +746,8 @@ for (const sourceContract of phase6Contract.sourceContracts) {
 for (const [stylesheet, consumers] of Object.entries(phase6Contract.stylesheets)) {
   const expectedConsumers = new Set(consumers);
   const actualConsumers = new Set();
-  const expectedVersion = phase6Contract.stylesheetVersion;
+  const expectedVersion = phase6Contract.stylesheetVersionOverrides?.[stylesheet]
+    || phase6Contract.stylesheetVersion;
   for (const [relative, html] of phase2HtmlByRelativePath) {
     const references = stylesheetHrefs(html).filter(
       reference => repositoryReference(relative, reference) === stylesheet,
@@ -765,6 +778,7 @@ for (const dependency of phase6Contract.versionedAssets) {
     .filter(reference => repositoryReference(dependency.file, reference) === dependency.target);
   const dependencyKey = `${dependency.file}\0${dependency.target}`;
   const expectedVersion = basemapVersionedAssetVersions.get(dependencyKey)
+    ?? dependency.version
     ?? phase6Contract.version;
   if (references.length !== 1 || referenceVersion(references[0]) !== expectedVersion) {
     errors.push(`${dependency.file}: ${dependency.target} must use the Phase 6 cache version`);
@@ -808,7 +822,10 @@ for (const [stylesheet, consumers] of Object.entries(phase7Contract.stylesheets)
     if (references.length > 0) actualConsumers.add(relative);
     if (expectedConsumers.has(relative)
         && (references.length !== 1
-          || referenceVersion(references[0]) !== phase7Contract.stylesheetVersion)) {
+          || referenceVersion(references[0]) !== (
+            phase7Contract.stylesheetVersionOverrides?.[stylesheet]
+            || phase7Contract.stylesheetVersion
+          ))) {
       errors.push(`${relative}: ${stylesheet} must use the Phase 7 cache version`);
     }
   }
@@ -875,10 +892,12 @@ for (const [relative, html] of htmlByRelativePath) {
 
   for (const reference of stylesheets) {
     const target = repositoryReference(relative, reference);
+    const expectedVersion = phase8Contract.stylesheetVersionOverrides?.[target]
+      || phase8Contract.version;
     if ((target === phase8Contract.orderStylesheet
         || target === phase8Contract.vendorStylesheet
         || Object.hasOwn(phase8Contract.stylesheetLayers, target))
-        && referenceVersion(reference) !== phase8Contract.version) {
+        && referenceVersion(reference) !== expectedVersion) {
       errors.push(`${relative}: ${target} must use the Phase 8 cache version`);
     }
   }

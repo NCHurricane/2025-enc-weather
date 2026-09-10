@@ -94,7 +94,7 @@
 
 .field--map-product .field__control {
   min-width: 6.25rem;
-  min-height: var(--control-target-min, 2.75rem);
+  min-height: var(--control-target-min, 24px);
   box-sizing: border-box;
   padding: 0.4375rem 2.5rem 0.4375rem 0.75rem;
   border: 1px solid var(--component-menu-border-color);
@@ -360,9 +360,9 @@ html.satellite-imagery-modal-open body {
 
 .map-timeline__play {
   display: inline-grid;
-  width: var(--control-target-min, 2.75rem);
-  height: var(--control-target-min, 2.75rem);
-  min-width: var(--control-target-min, 2.75rem);
+  width: var(--control-target-min, 24px);
+  height: var(--control-target-min, 24px);
+  min-width: var(--control-target-min, 24px);
   place-items: center;
   padding: 0;
   border: 1px solid rgba(151, 180, 202, 0.58);
@@ -394,7 +394,7 @@ html.satellite-imagery-modal-open body {
 
 .map-timeline input[type="range"] {
   width: 100%;
-  min-height: var(--control-target-min, 2.75rem);
+  min-height: var(--control-target-min, 24px);
   margin: 0;
   accent-color: var(--color-accent, #fff200);
   cursor: pointer;
@@ -556,7 +556,7 @@ html.satellite-imagery-modal-open body {
   top: 0.875rem;
   left: 50%;
   width: min(90%, 28rem);
-  min-height: var(--control-target-min, 2.75rem);
+  min-height: var(--control-target-min, 24px);
   flex-direction: row;
   padding: 0.65rem 0.9rem;
   transform: translateX(-50%);
@@ -577,7 +577,7 @@ html.satellite-imagery-modal-open body {
 
 .map-menu > summary {
   display: inline-flex;
-  min-height: var(--control-target-min, 2.75rem);
+  min-height: var(--control-target-min, 24px);
   box-sizing: border-box;
   align-items: center;
   gap: 0.5rem;
@@ -626,7 +626,7 @@ html.satellite-imagery-modal-open body {
 .map-menu__options label {
   display: flex;
   min-width: 0;
-  min-height: var(--control-target-min, 2.75rem);
+  min-height: var(--control-target-min, 24px);
   box-sizing: border-box;
   align-items: center;
   gap: 0.4rem;
@@ -659,8 +659,8 @@ html.satellite-imagery-modal-open body {
 }
 
 .map-basemap-control .map-menu > summary {
-  width: var(--control-target-min, 2.75rem);
-  min-height: var(--control-target-min, 2.75rem);
+  width: var(--control-target-min, 24px);
+  min-height: var(--control-target-min, 24px);
   justify-content: center;
   padding: 0;
   border-color: rgba(31, 52, 67, 0.45);
@@ -823,8 +823,8 @@ html.satellite-imagery-modal-open body {
   top: 0.25rem;
   right: 0.25rem;
   display: grid;
-  inline-size: var(--control-target-min, 2.75rem);
-  block-size: var(--control-target-min, 2.75rem);
+  inline-size: var(--control-target-min, 24px);
+  block-size: var(--control-target-min, 24px);
   box-sizing: border-box;
   place-items: center;
   padding: 0;
@@ -869,7 +869,7 @@ html.satellite-imagery-modal-open body {
 
 .weather-map-popup__content a {
   display: inline-flex;
-  min-block-size: var(--control-target-min, 2.75rem);
+  min-block-size: var(--control-target-min, 24px);
   align-items: center;
 }
 
@@ -967,8 +967,8 @@ html.satellite-imagery-modal-open body {
   top: 0;
   right: 0;
   display: grid;
-  width: var(--control-target-min, 2.75rem);
-  height: var(--control-target-min, 2.75rem);
+  width: var(--control-target-min, 24px);
+  height: var(--control-target-min, 24px);
   box-sizing: border-box;
   padding: 0;
   border: 1px solid rgba(177, 201, 220, 0.34);
@@ -1065,11 +1065,11 @@ html.satellite-imagery-modal-open body {
 }
 
 .weather-map__canvas .leaflet-control-zoom a {
-  width: var(--control-target-min, 2.75rem);
-  height: var(--control-target-min, 2.75rem);
+  width: var(--control-target-min, 24px);
+  height: var(--control-target-min, 24px);
   color: #111;
   font-size: 1.375rem;
-  line-height: var(--control-target-min, 2.75rem);
+  line-height: var(--control-target-min, 24px);
 }
 
 .weather-map__canvas

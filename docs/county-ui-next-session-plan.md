@@ -1,6 +1,74 @@
 # County UI: Current Handoff
 
-Updated: 2026-08-26
+## Map-first UI separated into V2 — 2026-09-09
+
+The owner requested that the archived Home/Bertie/Dare map-first UI, viewport-aware
+radar, and national alerts become a separate V2 project. Its local project path is
+`K:\Web Design\NCHurricane V2`; start with that project's `README.md` and
+`docs/v2-project.md` only when the owner explicitly resumes V2 work.
+
+This V1 repository excludes the prototype source, stylesheet, dedicated tests,
+roadmap, and archive through `.gitignore`. Retained local copies are ignored,
+not required repo files. The CSS ownership contract no longer requires the three
+prototype stylesheets; all other manual/shared changes are preserved. No main-site
+UI rollback, generated-data refresh, or deployment is part of the separation.
+
+The earlier prototype phase approvals, review queues, file paths, and continuation
+prompts below are historical. Do not require ignored V2 material for V1 work or
+resume prototype features/publishing/scheduling from this handoff.
+
+Separation evidence: all 36 retained prototype/archive files are ignored and none
+is tracked. V1 passed changed-JS syntax, 11 CSS/responsive tests, and site validation
+with every V2 file physically absent (18 HTML, 60 JSON, 199 references); the normal
+working-tree validator also skips ignored V2 inputs (18 HTML, 341 JSON, 199
+references). The new V2 project passed 20 focused Node checks and site validation
+at its final location (22 HTML, 66 JSON, 210 references); its prepared copy passed
+20 deterministic PHP fixture checks. All 387 copied files matched their prepared
+hashes, and all 393 existing V1 files outside the five declared targets matched
+their starting hashes. Runtime weather/secrets/ignored outputs were excluded
+from V2. No browser, fresh-provider, production, or new owner-smoke claim is made.
+The only Git operation was initialization of V2's empty local repository; neither
+project has been staged, committed, pushed, or deployed by this separation.
+
+## Historical Dare prototype: national UI-2 alerts — 2026-09-06
+
+The owner accepted the viewport-aware radar follow-up ("Awesome. That works
+perfectly"; devices/cases unspecified), then authorized the next alert phase at
+national scale. UI-2 is now implemented locally in `/test/county-map-ui/dare/`.
+The historical implementation, validation, limitations, and review record are
+preserved with V2 in `docs/map-first-ui-next-session-plan.md` and its archive.
+
+A separate bounded CLI publisher supplies national NWS summaries, full bulletins,
+issued polygons, and explicitly labeled official affected-area boundaries. Dare
+loads map shapes for the visible area and retains every alert in its national
+list, including missing/partial geometry. Alert access persists at all zooms;
+turn Alerts On to expose the scoped list buttons. Desktop details remain nonmodal; mobile alerts use the
+centered 95% dialog with internal scrolling and focus restoration.
+
+Preserve the owner's 31rem menu, grids, labels, shared stylesheet edits, chart
+controls, accepted 201-site NEXRAD/TDWR choices, zone lifecycle, and unrelated
+dirty work. Shared map support adds only an optional existing-map announcement;
+Home/Bertie/live adoption is unchanged. Asset references are updated consistently.
+County alert/HWO and generated weather data are unchanged. Only isolated ignored
+`test/output/national-alerts` was published locally; no scheduler was configured.
+
+The September 6 owner-requested follow-up consolidates Alerts above Products
+in the expanded dock and inside the compact Products drawer. Scope buttons open
+list-only details with matching headings; the on/off button controls shading.
+Browser cache refresh is automatic every 120 seconds, with no Refresh button.
+The latest desktop refinement makes Alerts independently collapsible, places
+Alerts On/Off first below its title, and hides the three scope buttons when off.
+Status/count notices sit above the active map timestamp with room below the dock.
+Alert bulletins no longer have Back to alerts; reopen a list through its scope.
+All Dare details dismiss on outside click as well as X/Escape; map drags remain
+usable without dismissal. Mobile layout polish is explicitly deferred by the owner.
+The dedicated handoff records current validation and the unchanged publisher gate.
+
+Owner review of UI-2 remains open. UI-3 through UI-5, Git publication, live
+adoption, deployment, production cache publication, and scheduling remain gated.
+The dated records below and historical Phase 9 plan are retained as history.
+
+Updated: 2026-09-04
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: the owner-accepted Phase 5 checkpoint is `af8577a`. The all-county UI migration, viewport-aware/statewide Conditions work, shared city-label workflow, shared CSS ownership follow-up, Hazardous Weather Outlook integration, nested county navigation, and sitemap CSS Phases 1-5 are implemented in the committed history described below. The bounded CI portability repair is committed in `7a32866`, owner-accepted sitemap CSS Phase 6 is committed in `5448d61`, and owner-accepted Phase 7 is committed in `dbd7c8c`. Phase 8 and the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`; the documentation checkpoint is `a096ddc`. The cross-county persisted-zone defect is fixed and validated in the current uncommitted working tree. Owner-managed staging/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. The staging deployment at `http://s194842513.onlinehome.us/test/` serves the committed Phase 8/basemap checkpoint and current Dare, NC, and Atlantic packages; California Conditions is present but stale. `chuckcopelandwx.com` is the future production URL and has not yet replaced the current website. There is no additional authorized county product phase. Do not make another push, deploy, or change generated/runtime data without explicit authorization.
 
@@ -9,6 +77,61 @@ fix keeps weather-tab icons hidden on mobile despite Font Awesome's unlayered
 display rule. Local Home and Bertie browser checks pass at `390x844`, desktop
 icons remain visible at `1280x900`, and the atomic CSS cache key is `20260831`.
 Phase 9 has not started.
+
+## Current authorized prototype follow-up: 2026-09-04
+
+The owner explicitly authorized two isolated map-first county test pages after
+the shared Home UI extraction: Bertie for single-zone behavior and Dare for
+multi-zone behavior. This authorization supersedes the historical phase-gate
+notes above only for this prototype slice. Live county adoption is still gated.
+
+- Test routes: `/test/county-map-ui/bertie/` and
+  `/test/county-map-ui/dare/?zone=mainland` (also `northern` and `hatteras`).
+- Both no-index harnesses use `css/map-ui.css` and one county adapter. Shared
+  dialog builders, focus handling, and select-value overlays now live in
+  `test/map-ui/components.js`, also imported by the Home test page. County view,
+  condition, forecast, and basemap grids have four columns; Dare zones have
+  three. Layout differences remain in the county adapter.
+- Original county DOM controls/listeners, data paths, map engines, zone
+  normalization/localStorage, alert/HWO dialogs, station details, forecast
+  products, meteogram parameters/time ranges, legends, and animation remain
+  in use. The outer test URL mirrors the county controller's `replaceState`
+  zone policy. Header navigation exits the harness.
+- Forecast content scrolls within the available viewport. Alert/HWO access
+  sits below the settings trigger; source timestamps sit above animation
+  controls. The prototype explicitly exposes forecast content formerly
+  controlled by accordion/sibling CSS and reports the legacy no-chart state.
+- Cache keys: shared CSS `20260904-map-ui-base-1`, shared test components
+  `20260904-map-ui-components-1`, Home adapter `20260904-map-ui-prototype-16`,
+  county adapter `20260904-county-map-ui-3`.
+- Static/automated: five changed JavaScript/MJS syntax checks passed; the
+  Home/shared-UI, responsive, and county-zone suites passed 14/14; the site
+  validator passed 21 HTML files, 307 JSON files, and 209 local references;
+  `git diff --check` passed with existing line-ending notices only.
+- Local PHP/controlled browser: Bertie and Dare were exercised at 1280x900
+  and 390x844 without horizontal document overflow. Checks covered four main
+  views, forecast selectors/content, desktop/mobile station details, keyboard
+  tab-state synchronization, Settings/info focus, HWO dismissal/focus return,
+  radar station/product labels, basemap selection, satellite legends and
+  12-frame playback/pause/manual stepping. Hatteras direct entry, Northern
+  and Mainland switches, refresh, valid Back/Forward restoration, and invalid
+  `coastal` normalization passed. Northern current/forecast/alert requests
+  returned 200 from `data/northern/`; superseded map requests were aborted.
+  The Home shared-helper regression opened Settings and information correctly.
+- Limitations: local observation/forecast caches include old data. Bertie
+  meteogram reports no data for the tested hourly ranges; the prototype shows
+  an explicit unavailable message, but fresh-data chart drawing remains open.
+  That legacy warning is distinct from UI errors; final Dare and Home console
+  checks were clean. No synthetic active alerts or updated weather data were
+  produced. Populated multi-alert, provider-failure, fresh-chart, and owner
+  device smoke remain open before promotion.
+- Preservation: live pages, the older `counties/bertie/index_test.html`,
+  production controllers, generated data, and unrelated dirty edits are
+  untouched. Nothing staged, committed, pushed, deployed, or deleted. A local
+  PHP preview was started on 127.0.0.1:8085 after the prior server was unavailable.
+
+See `test/county-map-ui/README.md` for reuse and owner-smoke guidance. The
+remaining sections retain their dated historical evidence.
 
 The complete August 2026 migration and validation ledger is preserved at [`docs/archive/county-ui/county-ui-migration-ledger-2026-08.md`](archive/county-ui/county-ui-migration-ledger-2026-08.md).
 

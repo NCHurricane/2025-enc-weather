@@ -93,6 +93,19 @@ test/tropical-map/*
 !test/tropical-map/phase2-harness.css
 !test/tropical-map/phase2-harness.js
 
+# Map-first UI belongs to the separate NCHurricane V2 project.
+# Retained local copies and archives must not enter this repository.
+/css/map-ui.css
+/docs/map-first-ui-next-session-plan.md
+/docs/archive/map-first-ui/
+/scripts/tests/home-map-ui-prototype.test.mjs
+/scripts/tests/radar-awareness.test.mjs
+/scripts/tests/national-alert-state.test.mjs
+/scripts/tests/national-alerts-test.php
+/test/home-map-ui/
+/test/county-map-ui/
+/test/map-ui/
+
 # Environment files with secrets
 test/.env
 .env

@@ -73,7 +73,7 @@
     --ease-standard: ease;
 
     /* Interaction and stacking */
-    --control-target-min: 44px;
+    --control-target-min: 24px;
     --z-content: 0;
     --z-map-control: 900;
     --z-header: 1000;

@@ -177,6 +177,7 @@ const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
 const phase9Version = '20260831-phase9-2';
+const homeMapDrawerVersion = '20260904-home-map-drawer-1';
 const phase8Version = phase9Version;
 const basemapVersion = phase9Version;
 const activeAlertsVersion = phase9Version;
@@ -262,7 +263,7 @@ export const phase2Contract = Object.freeze({
     Object.entries(phase2Stylesheets).map(([file, consumers]) => [
       file,
       Object.freeze({
-        version: phase8Version,
+        version: file === 'css/home.css' ? homeMapDrawerVersion : phase8Version,
         consumers: Object.freeze(consumers),
       }),
     ]),
@@ -568,6 +569,9 @@ export const phase4Contract = Object.freeze({
 export const phase5Contract = Object.freeze({
   version: phase5Version,
   stylesheetVersion: phase8Version,
+  stylesheetVersionOverrides: Object.freeze({
+    'css/home.css': homeMapDrawerVersion,
+  }),
   owner: 'css/interactive-weather-map.css',
   cardPages: Object.freeze([
     'index.html',
@@ -670,12 +674,16 @@ export const phase5Contract = Object.freeze({
     ]),
   }),
   versionedAssets: Object.freeze([
-    Object.freeze({ file: 'index.html', target: 'js/modules/homeMapOverlays.js' }),
+    Object.freeze({
+      file: 'index.html',
+      target: 'js/modules/homeMapOverlays.js',
+      version: homeMapDrawerVersion,
+    }),
     Object.freeze({ file: 'index.html', target: 'counties/js/weatherMaps.js' }),
-    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js' }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' }),
     ...countyEntryPages.flatMap(file => [
       Object.freeze({ file, target: 'counties/js/weatherMaps.js' }),
-      Object.freeze({ file, target: 'counties/js/weatherCenter.js' }),
+      Object.freeze({ file, target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' }),
     ]),
     Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/activeStormMap.js' }),
@@ -731,11 +739,11 @@ export const phase5Contract = Object.freeze({
 export const basemapContract = Object.freeze({
   version: basemapVersion,
   versionedAssets: Object.freeze([
-    Object.freeze({ file: 'index.html', target: 'counties/js/weatherMaps.js' }),
-    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js' }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherMaps.js', version: '20260906-radar-1' }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' }),
     ...countyEntryPages.flatMap(file => [
-      Object.freeze({ file, target: 'counties/js/weatherMaps.js' }),
-      Object.freeze({ file, target: 'counties/js/weatherCenter.js' }),
+      Object.freeze({ file, target: 'counties/js/weatherMaps.js', version: '20260906-radar-1' }),
+      Object.freeze({ file, target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' }),
     ]),
     Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/activeStormMap.js' }),
@@ -759,6 +767,9 @@ export const basemapContract = Object.freeze({
 export const phase6Contract = Object.freeze({
   version: phase6Version,
   stylesheetVersion: phase8Version,
+  stylesheetVersionOverrides: Object.freeze({
+    'css/home.css': homeMapDrawerVersion,
+  }),
   owner: 'css/interactive-weather-map.css',
   ownerStylesheets: Object.freeze([
     'css/interactive-weather-map.css',
@@ -884,9 +895,13 @@ export const phase6Contract = Object.freeze({
     }),
   ]),
   versionedAssets: Object.freeze([
-    Object.freeze({ file: 'index.html', target: 'js/modules/homeMapOverlays.js' }),
-    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js' }),
-    ...countyEntryPages.map(file => Object.freeze({ file, target: 'counties/js/weatherCenter.js' })),
+    Object.freeze({
+      file: 'index.html',
+      target: 'js/modules/homeMapOverlays.js',
+      version: homeMapDrawerVersion,
+    }),
+    Object.freeze({ file: 'index.html', target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' }),
+    ...countyEntryPages.map(file => Object.freeze({ file, target: 'counties/js/weatherCenter.js', version: '20260906-ui2-national-1' })),
     Object.freeze({ file: 'tropical.html', target: 'js/modules/tropicalOverview.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/activeStormMap.js' }),
     Object.freeze({ file: 'active/index.html', target: 'active/js/ww-maps.js' }),
@@ -906,6 +921,9 @@ export const phase6Contract = Object.freeze({
 export const phase7Contract = Object.freeze({
   version: phase7Version,
   stylesheetVersion: phase8Version,
+  stylesheetVersionOverrides: Object.freeze({
+    'css/home.css': homeMapDrawerVersion,
+  }),
   sharedOwner: 'css/interactive-weather-map.css',
   countyOwner: 'counties/css/county.css',
   homeOwner: 'css/home.css',
@@ -943,6 +961,9 @@ export const phase7Contract = Object.freeze({
 
 export const phase8Contract = Object.freeze({
   version: phase8Version,
+  stylesheetVersionOverrides: Object.freeze({
+    'css/home.css': homeMapDrawerVersion,
+  }),
   layerOrder: Object.freeze([
     'vendor',
     'tokens',

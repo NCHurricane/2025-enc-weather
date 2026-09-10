@@ -94,3 +94,23 @@ test('Phase 9 height ownership uses bounded shared calculations and family stack
     assert.match(css, /@media \(max-height: 43\.75rem\)[\s\S]*--weather-map-min-block-size:\s*12rem;/);
   }
 });
+
+test('the mobile Home alert key uses an accessible in-map drawer without changing desktop placement', () => {
+  const source = readProjectFile('js/modules/homeMapOverlays.js');
+  const home = readProjectFile('css/home.css');
+  const page = readProjectFile('index.html');
+
+  assert.match(source, /aria-controls', 'home-map-key-panel'/);
+  assert.match(source, /drawerToggle\.setAttribute\('aria-expanded'/);
+  assert.match(source, /panel\.toggleAttribute\('inert'/);
+  assert.match(source, /event\.key !== 'Escape'/);
+  assert.match(source, /const nextPosition = isMobile \? 'topright' : 'bottomright'/);
+  assert.match(source, /control\.getPosition\(\) !== nextPosition/);
+  assert.match(source, /control\.setPosition\(nextPosition\)/);
+  assert.match(home, /\.home-map-key\.is-mobile-drawer \.home-map-key-panel[\s\S]*transform:\s*translateX/);
+  assert.match(home, /\.home-map-key\.is-mobile-drawer\.is-open \.home-map-key-panel/);
+  assert.match(home, /\.home-map-key-toggle[\s\S]*min-height:\s*44px/);
+  assert.match(home, /prefers-reduced-motion:\s*reduce/);
+  assert.match(page, /css\/home\.css\?v=20260904-home-map-drawer-1/);
+  assert.match(page, /js\/modules\/homeMapOverlays\.js\?v=20260904-home-map-drawer-1/);
+});

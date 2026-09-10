@@ -138,16 +138,61 @@ function createMapKey(map, alertsByZone, failedZoneCount, alertLayer) {
   });
   const events = [...eventZones.entries()];
   events.sort(([left], [right]) => (warningPriorities[left] ?? 999) - (warningPriorities[right] ?? 999));
-  const control = window.L.control({ position: 'bottomright' });
+  const mobileLayoutQuery = window.matchMedia('(max-width: 600px)');
+  const control = window.L.control({
+    position: mobileLayoutQuery.matches ? 'topright' : 'bottomright',
+  });
+  let controlContainer;
+  let drawerToggle;
+  let panel;
+  let closeButton;
   control.onAdd = () => {
     const container = window.L.DomUtil.create('section', 'home-map-key leaflet-control');
-    const panel = document.createElement('div');
+    controlContainer = container;
+    container.setAttribute('aria-label', 'Map alerts and county boundary key');
+
+    drawerToggle = document.createElement('button');
+    drawerToggle.type = 'button';
+    drawerToggle.className = 'home-map-key-toggle';
+    drawerToggle.setAttribute('aria-controls', 'home-map-key-panel');
+    drawerToggle.setAttribute('aria-expanded', 'false');
+    drawerToggle.setAttribute(
+      'aria-label',
+      events.length
+        ? `Open map key for ${events.length} active alert ${events.length === 1 ? 'type' : 'types'}`
+        : 'Open map alerts and county boundary key',
+    );
+    drawerToggle.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Alerts</span>';
+    if (events.length) {
+      const badge = document.createElement('span');
+      badge.className = 'home-map-key-toggle__count';
+      badge.textContent = String(events.length);
+      badge.setAttribute('aria-hidden', 'true');
+      drawerToggle.append(badge);
+    }
+
+    panel = document.createElement('div');
+    panel.id = 'home-map-key-panel';
     panel.className = 'home-map-key-panel';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-labelledby', 'home-map-key-heading');
+
+    const panelHeader = document.createElement('div');
+    panelHeader.className = 'home-map-key-panel__header';
 
     const heading = document.createElement('strong');
+    heading.id = 'home-map-key-heading';
     heading.className = 'home-map-key-heading';
     heading.textContent = 'Alerts & advisories';
-    panel.append(heading);
+    panelHeader.append(heading);
+
+    closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'home-map-key-close';
+    closeButton.setAttribute('aria-label', 'Close map alerts and county boundary key');
+    closeButton.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+    panelHeader.append(closeButton);
+    panel.append(panelHeader);
 
     if (events.length) {
       const list = document.createElement('div');
@@ -200,28 +245,61 @@ function createMapKey(map, alertsByZone, failedZoneCount, alertLayer) {
     countyKey.className = 'home-map-key-county';
     countyKey.innerHTML = '<span aria-hidden="true"></span><strong>Home Counties</strong>';
     panel.append(countyKey);
-    container.append(panel);
+    container.append(drawerToggle, panel);
+    drawerToggle.addEventListener('click', () => setDrawerOpen(!drawerOpen));
+    closeButton.addEventListener('click', () => setDrawerOpen(false, { restoreFocus: true }));
     window.L.DomEvent.disableClickPropagation(container);
     window.L.DomEvent.disableScrollPropagation(container);
     return container;
   };
   control.addTo(map);
 
-  const controlContainer = control.getContainer();
-  const leafletCorner = controlContainer?.parentElement;
-  const mapShell = map.getContainer().closest('[data-weather-map]');
-  const mobileLayoutQuery = window.matchMedia('(max-width: 600px)');
-  const syncControlPlacement = () => {
-    if (!controlContainer || !leafletCorner || !mapShell) return;
-    controlContainer.classList.toggle('is-below-map', mobileLayoutQuery.matches);
-    if (mobileLayoutQuery.matches) {
-      mapShell.after(controlContainer);
-    } else if (controlContainer.parentElement !== leafletCorner) {
-      leafletCorner.append(controlContainer);
+  let drawerOpen = false;
+  const setDrawerOpen = (open, { restoreFocus = false } = {}) => {
+    if (!controlContainer || !drawerToggle || !panel) return;
+    drawerOpen = mobileLayoutQuery.matches && open;
+    controlContainer.classList.toggle('is-open', drawerOpen);
+    drawerToggle.setAttribute('aria-expanded', String(drawerOpen));
+    panel.setAttribute('aria-hidden', String(mobileLayoutQuery.matches && !drawerOpen));
+    panel.toggleAttribute('inert', mobileLayoutQuery.matches && !drawerOpen);
+    if (drawerOpen) {
+      window.requestAnimationFrame(() => closeButton?.focus({ preventScroll: true }));
+    } else if (restoreFocus && mobileLayoutQuery.matches) {
+      drawerToggle.focus({ preventScroll: true });
     }
   };
-  mobileLayoutQuery.addEventListener?.('change', syncControlPlacement);
-  syncControlPlacement();
+  const syncControlLayout = () => {
+    if (!controlContainer || !drawerToggle || !panel || !closeButton) return;
+    const isMobile = mobileLayoutQuery.matches;
+    const nextPosition = isMobile ? 'topright' : 'bottomright';
+    if (control.getPosition() !== nextPosition) control.setPosition(nextPosition);
+    controlContainer.classList.toggle('is-mobile-drawer', isMobile);
+    drawerToggle.hidden = !isMobile;
+    closeButton.hidden = !isMobile;
+    setDrawerOpen(false);
+    if (!isMobile) {
+      panel.removeAttribute('aria-hidden');
+      panel.removeAttribute('inert');
+    }
+  };
+  const handleOutsidePointer = (event) => {
+    if (!drawerOpen || controlContainer?.contains(event.target)) return;
+    setDrawerOpen(false);
+  };
+  const handleEscape = (event) => {
+    if (!drawerOpen || event.key !== 'Escape') return;
+    event.preventDefault();
+    setDrawerOpen(false, { restoreFocus: true });
+  };
+  document.addEventListener('pointerdown', handleOutsidePointer);
+  document.addEventListener('keydown', handleEscape);
+  mobileLayoutQuery.addEventListener?.('change', syncControlLayout);
+  map.once?.('unload', () => {
+    document.removeEventListener('pointerdown', handleOutsidePointer);
+    document.removeEventListener('keydown', handleEscape);
+    mobileLayoutQuery.removeEventListener?.('change', syncControlLayout);
+  });
+  syncControlLayout();
 }
 
 async function installHomeOverlays(map) {

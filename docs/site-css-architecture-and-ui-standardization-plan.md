@@ -1,8 +1,20 @@
 # Sitemap-Wide CSS Architecture and UI Standardization Plan
 
-Updated: 2026-08-31
+## Map-first prototype separated into V2 — 2026-09-09
+
+The owner requested that the archived map-first Home/Bertie/Dare UI and workflow
+be excluded from this repository and become the separate local project
+`K:\Web Design\NCHurricane V2`. Its README and `docs/v2-project.md` own the source,
+manual edits, roadmap, and validation history. V1 ignores its retained prototype
+files/archive/tests and removes only their six CSS-contract entries. V1 work must
+not depend on those ignored files. Prototype development and live adoption remain
+paused until a new owner request. The older prototype approvals and startup
+prompts below are historical. Existing main-site CSS/short-height work and the
+mobile Home alert drawer remain preserved; this is not a rollback.
+
+Updated: 2026-09-04
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. The initial Phase 9 checkpoint is committed in `1372cf9`; owner staging smoke exposed a short-visual-height mobile failure, and its bounded correction is implemented and statically validated. The owner subsequently reported that all smoke tests pass and authorized committing the complete correction set. Controlled-browser revalidation, push, and production remain open
+Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. The initial Phase 9 checkpoint is committed in `1372cf9`; its owner-accepted short-visual-height correction is committed and pushed in `7094744`. A subsequent owner-directed mobile Home map alert drawer and isolated map-first Home UI prototype are implemented and locally validated in the current uncommitted tree. The full short-height controlled-browser matrix and the current follow-up's owner review, commit, staging, and production gates remain open
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
@@ -911,14 +923,13 @@ Implementation status: explicitly authorized by the owner on 2026-08-31. The
 initial implementation was validated through static/automated, local HTTP, and
 controlled-browser gates and committed in `1372cf9`. Owner-supplied staging
 screenshots then exposed a short-visual-height mobile failure. Its bounded
-correction is implemented and statically validated in the current uncommitted
-tree. The owner subsequently reported, "All smoke tests pass," and authorized
-committing the complete correction set. Exact pages, devices, browsers, and
-individual interactions were not supplied, so this is retained as overall
-owner smoke evidence only. The owner also said they will go through and
-manually make corrections; those unspecified future edits are not included in
-this checkpoint. Controlled-browser revalidation and all production gates
-remain open.
+correction was statically and locally validated, owner-accepted, and committed
+in `7094744`. Exact pages, devices, browsers, and individual interactions were
+not supplied with the owner's "All smoke tests pass" report, so this remains
+overall owner smoke evidence only. The owner's subsequent manual CSS edits are
+user-owned work and are not retroactively part of that checkpoint. Full
+short-height controlled-browser revalidation and all production gates remain
+open.
 
 1. Measure the occupied vertical stack for Home, standard County, multi-zone
    County, Tropical, and Active at `3840x2160`, representative smaller desktop,
@@ -1030,6 +1041,192 @@ Validation record:
   does not establish the still-blocked controlled-browser gate. The owner's
   planned manual corrections are outside this committed correction set until
   their exact changes are made and validated.
+
+#### Post-Phase 9 follow-up: mobile Home map alert drawer
+
+Implementation status: explicitly requested by the owner on 2026-09-04 and
+implemented in the current uncommitted tree.
+
+- At widths through 600 pixels, the Home Conditions alert/county key remains
+  inside the Leaflet map as a compact top-right `Alerts` trigger instead of
+  being moved into an always-expanded block below the map.
+- The trigger opens a right-side in-map drawer. Its existing alert-type rows,
+  counts, zone-highlighting behavior, unavailable-source message, and Home
+  Counties boundary key are preserved. The desktop key remains continuously
+  visible in its existing bottom-right position.
+- The drawer exposes expanded/hidden state, makes closed content inert, moves
+  focus to its 44-pixel close button, restores focus after Close or Escape,
+  closes on outside pointer input, and removes its transition when reduced
+  motion is requested.
+- `home.css` and `homeMapOverlays.js` consumers advance together to
+  `20260904-home-map-drawer-1`. The ownership contract and validator retain
+  the earlier Phase 2 and Phase 5-8 cache requirements through explicit
+  per-phase overrides rather than rewriting historical asset versions.
+- Preservation boundary: the owner's pre-existing manual edits in
+  `active/css/active.css`, `css/home.css`, `css/interactive-weather-map.css`,
+  `css/styles.css`, and `css/tropical.css` remain user-owned and were not
+  reverted or broadened. This follow-up adds only the Home drawer rules to the
+  overlapping `css/home.css` file and does not change stations, alerts, map
+  cameras, observations, providers, or generated/runtime data.
+
+Validation record:
+
+- Static/automated: all changed JavaScript passed `node --check`; the complete
+  test suite passed 100/100; `node scripts/validate-site.mjs` validated 18 HTML
+  files, 307 JSON files, and 199 local references; `git diff --check` passed.
+- Local HTTP: Home plus the versioned Home CSS and map-overlay JavaScript each
+  returned 200, and the served page referenced both new cache keys.
+- Controlled browser: at `390x844`, the key started collapsed with no document
+  overflow, opened as an in-map drawer, focused Close, and dismissed through
+  Close, Escape, and outside click; Close and Escape restored focus. At
+  `1280x900`, the trigger and close button remained hidden and the original
+  bottom-right key remained visible. Crossing the breakpoint in both directions
+  rebuilt the Leaflet control without losing its interaction handlers. The
+  exercised local state had no current alerts, so live active-alert badge/count
+  and highlighting remain owner/staging smoke rather than controlled-browser
+  evidence.
+- No files were staged, committed, pushed, deployed, generated, or deleted for
+  this follow-up. Production and owner staging smoke remain open.
+
+#### Map-first Home UI prototype
+
+Implementation status: explicitly requested by the owner on 2026-09-04 and
+implemented as an isolated test page at `test/home-map-ui/index.html`.
+
+- The no-index test harness loads the current homepage in a same-origin frame
+  and applies prototype-only CSS and JavaScript. It does not duplicate or
+  replace the live Home document, controllers, sources, or runtime data.
+- The map fills the usable viewport below the current site header. A compact
+  overlay identifies the active mode/product and opens one modal right-side
+  settings panel. The original Conditions, Radar, and Satellite tabs are moved
+  into that panel with their existing event handlers.
+- The panel includes all seven Conditions fields; all five Radar station
+  choices and their regional/station-specific products; all six Satellite
+  products; the four existing basemap choices; and the generated Radar and
+  Satellite legends. These are the real controls used by the existing Home
+  controllers, not look-alike prototype inputs.
+- Animation playback and manual scrubbing remain on the map as frequent-use
+  controls. The alert/count control remains independently visible so hazard
+  access is not buried in Settings. Current station details, county alert
+  popups, and the existing Satellite fallback dialog remain functional.
+- A separate mode-aware information dialog explains the current Conditions,
+  Radar, or Satellite view and its sources. Both prototype dialogs use native
+  modal semantics, Close/Escape/backdrop dismissal, focus entry/return, 44-pixel
+  prototype controls, constrained internal scrolling, and reduced-motion
+  fallbacks.
+- The Settings drawer leaves the map fully visible while open: its backdrop is
+  transparent and applies no blur. The separate information dialog retains its
+  dimmed backdrop to distinguish modal explanatory content from navigation.
+- The visible Settings panel is content-sized rather than full-height. Logical
+  inset and size properties, `100dvh`, and safe-area insets cap it to the usable
+  viewport; `minmax(0, 1fr)` plus a zero-minimum internal scroller absorbs any
+  extra option groups on shorter screens without shrinking the full dialog's
+  outside-click coverage.
+- Settings keeps the primary Conditions/Radar/Satellite tabs in a three-column
+  grid at every viewport width. The seven Conditions fields use four columns
+  and wrap to a second row; separate responsive `clamp()` type scales keep both
+  groups legible without reintroducing horizontal overflow.
+- On mobile, decorative Font Awesome icons are hidden from the primary weather
+  tabs while the actionable Close icon remains visible. Basemap selection uses
+  four equal pressed-state buttons instead of visible radio controls. The two
+  prototype-only notice blocks and redundant footer Done action were removed;
+  the header Close, Escape, and backdrop dismissal paths remain available.
+- As a candidate sitewide compact-control standard, the prototype uses a
+  44-pixel mobile interaction target for tabs, basemap buttons, selectors,
+  drawer controls, range inputs, and animation playback. The play button keeps
+  that target while rendering a 32-pixel visual surface; the mobile timeline
+  stays on one row and omits only the redundant visible `Frame` label. Native
+  selector text remains 16 pixels to avoid focus zoom on mobile browsers.
+- Mobile buttons with constrained labels use the existing `data-short-label`
+  contract: Conditions/Satellite become Cond/Sat, the seven Conditions fields
+  use their existing abbreviations, and Dark Gray/Light Gray become Dark/Light.
+  Full text and explicit accessible names remain available, and wider screens
+  continue to render the unabbreviated labels.
+- Radar and Satellite selectors now render their closed-state values with the
+  same responsive compact type token as the condition and basemap buttons. The
+  native selects retain 16-pixel text for mobile focus behavior, including the
+  native option picker. A one-rem block gap now separates the final selector
+  from its Legend heading.
+- Shared components now live in `css/map-ui.css` in the `maps` cascade layer,
+  using page-neutral `map-ui`, `map-settings`, and `map-info` classes alongside
+  the existing tabset, subtabs, field, legend, and timeline classes. The owner's
+  corrected native-option text color (`#b9cad6`) is preserved.
+- The Home adapter remains in the `prototypes` layer and owns the outer harness,
+  Home map layout, station-detail placement, and 3/4/4 weather/conditions/basemap
+  grids. Future test pages can reuse the component sheet and supply their own
+  layout and grid rules. Instance-specific dialog IDs remain accessible JS hooks.
+- Only the Home test harness loads the shared base and adapter, in that order.
+  Cache keys are `20260904-map-ui-base-1` and `20260904-map-ui-prototype-15`.
+  Live pages do not load the new sheet; county and Tropical adoption remain
+  subsequent prototype work.
+
+Validation record:
+
+- Static/automated: the prototype JavaScript and its focused test passed
+  `node --check`; the focused prototype/responsive tests passed 9/9; the site
+  validator passed with 19 HTML files, 307 JSON files, and 203 local references; and
+  `git diff --check` passed with line-ending notices only.
+- Local HTTP/browser: the PHP-served prototype loaded the current Home maps and
+  data. At mobile and desktop sizes, Conditions, Radar, and Satellite switched
+  through Settings; Conditions changed to Humidity; the regional Radar options
+  changed to Reflectivity/Precipitation Type and KMHX exposed Reflectivity,
+  Velocity, and Storm Total; all six Satellite products were present; Radar and
+  Satellite legends rendered inside the panel; Dark Gray selected on the real
+  active map; and the Satellite timeline retained 12/12 frames. The selector
+  overlay matched the compact button type at both tested widths (10.4 pixels at
+  366 pixels and 11.52 pixels at 1280 pixels), while the mobile native select
+  remained 16 pixels. Radar and Satellite each measured a 16-pixel selector-to-
+  Legend gap, dynamic KMHX labels stayed synchronized, and horizontal overflow
+  remained zero.
+- Popup/accessibility checks: Settings and map information opened by pointer
+  and keyboard, focused Close, dismissed through Close or Escape, and restored
+  trigger focus. The information dialog changed with the active mode. A real
+  Conditions station detail and keyboard-opened Bertie County popup both
+  remained functional; the station detail stayed within the mobile map width.
+  No tested viewport introduced horizontal document overflow.
+- Shared-base extraction recheck: controlled browsers at 1280x900 and 390x844
+  rendered the extracted styles with no horizontal overflow. Settings retained
+  its transparent backdrop and content-sized panel; the 3/4/4 grids, mobile
+  short labels, 44-pixel controls/play target, 16-pixel native selector text,
+  corrected option color, and selector-to-Legend spacing were preserved.
+  Conditions, Radar, and Satellite switched successfully; Satellite displayed
+  its legend and 12/12 timeline. Escape restored Settings trigger focus and the
+  information dialog opened, focused Close, closed, and restored its trigger.
+  The final Chrome checks captured no console warnings or errors. This is a
+  component-extraction regression check, not a new provider-freshness or full
+  map-lifecycle certification.
+- Owner review: the owner accepted the map-first direction on 2026-09-04 and
+  requested that Settings not dim or blur the map; the prototype now reflects
+  that decision. The local alert state was empty, so populated alert-count and
+  highlight behavior still require owner/staging smoke. This remains an
+  isolated prototype rather than authorization to replace the live Home page
+  or extend the shell to other page families.
+- Nothing in this prototype slice was staged, committed, pushed, deployed,
+  generated, or deleted. The owner's unrelated manual CSS edits remain
+  untouched.
+
+#### County map-first prototypes: 2026-09-04
+
+The owner authorized `/test/county-map-ui/bertie/` and
+`/test/county-map-ui/dare/` as the next single-zone and multi-zone templates.
+Both use the existing `css/map-ui.css` base and a shared county adapter for
+four-column county views/conditions/forecast/basemaps and three-column Dare
+zones. Common dialog/select builders moved to `test/map-ui/components.js` and
+are reused by Home; Home's cache key is now `20260904-map-ui-prototype-16`.
+County assets use `20260904-county-map-ui-3`. No live consumer was added.
+
+Original county controllers and data paths remain in the iframe, including
+alerts/HWO, station details, forecasts, meteograms, animation, and zone state.
+Forecast content has a bounded scroller; map timestamps and controls remain
+separated. The county adapter corrects accordion/sibling-dependent visibility
+after control relocation. Full scope and validation are recorded in
+`docs/county-ui-next-session-plan.md` and `test/county-map-ui/README.md`.
+
+The focused static suites pass 14/14, the validator passes 21 HTML/307 JSON/209
+references, and desktop/mobile browser checks pass for both templates. The
+local hourly cache cannot supply the tested meteogram ranges, so fresh-chart
+and populated-alert smoke remain open. Live promotion, owner acceptance,
+staging/commit, and deployment remain separate gates.
 
 ## Automated drift prevention
 
@@ -1157,15 +1354,21 @@ The plan is complete only when:
 The local automated portion of items 8 and 9 is complete through the Phase 9
 short-height correction, and owner smoke passed at the reported overall level.
 Controlled-browser revalidation remains open before Wave B can be called fully
-closed. The owner's planned manual corrections are a separate future follow-up.
+closed. The owner's current manual CSS corrections remain separate user-owned
+work; the mobile Home alert drawer and isolated map-first Home prototype are
+the only newly authorized follow-ups.
 
 ## Questions and decision gates
 
-The Phase 9 short-height correction is complete locally and owner smoke passed
-at the reported overall level. The owner authorized committing the complete
-correction set. Controlled-browser revalidation remains open; push, deployment,
-and production are not authorized or established. The owner's unspecified
-manual corrections are not part of this checkpoint.
+The Phase 9 short-height correction is committed and pushed in `7094744`, and
+owner smoke passed at the reported overall level. The complete short-height
+controlled-browser matrix remains open. The mobile Home alert drawer is
+implemented and locally validated but is uncommitted. The isolated map-first
+Home prototype is also implemented and locally validated at
+`test/home-map-ui/index.html`; it remains subject to owner design review and is
+not authorized for promotion. Staging, deployment, and production are not
+authorized or established. The owner's other manual CSS corrections remain
+user-owned and outside these follow-ups.
 
 Before each later phase, confirm the previous gate and the exact authorized slice. Do not treat this roadmap as blanket implementation approval.
 
@@ -1189,29 +1392,36 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-The current code checkpoint is `1372cf9`; the working tree was clean at that
-checkpoint before the current Phase 9 short-height correction. Phases 0-8 and
-the ArcGIS basemap replacement are implemented, validated, committed, and
-pushed in `2f53445`; the initial Phase 9 layout and Tropical SVG logo checkpoint
-is committed in `1372cf9`.
+The current code checkpoint is `7094744`, which matches `origin/main`. Phases
+0-8 and the ArcGIS basemap replacement are implemented, validated, committed,
+and pushed in `2f53445`; the initial Phase 9 layout and Tropical SVG logo
+checkpoint is committed in `1372cf9`; and the short-height correction is
+committed and pushed in `7094744`.
 The owner uploaded the Phase 8 checkpoint and reported that all functions passed
 on all tested devices; exact coverage was not supplied. The owner later supplied
 mobile staging screenshots showing Bertie and Tropical maps pushing their
 scrubbers and legends below the initial viewport. The correction adds a guarded
 short-height family minimum, advances all affected consumers to
-`20260831-phase9-2`, and is statically and HTTP validated. The owner subsequently
-reported that all smoke tests pass and authorized committing it. Its
-controlled-browser gate remains open; the owner's planned manual corrections
-are not part of this checkpoint.
+`20260831-phase9-2`, and is committed in `7094744`. The owner subsequently
+reported that all smoke tests pass. Its full controlled-browser matrix remains
+open.
 
 Begin the next session by preserving unrelated user-owned changes and reviewing
-the Phase 9 implementation record above. Owner smoke has passed at the reported
-overall level; do not expand that evidence beyond the owner's exact statement.
-Re-run the blocked controlled-browser short-height matrix when the browser
-surface is usable. Treat any manual owner edits as new user-owned work and do
-not absorb, stage, or rewrite them without explicit scope. Keep push,
-staging/production upload, scheduler repair, and generated/runtime data outside
-the task unless explicitly authorized. Live
+the Phase 9, mobile Home alert drawer, and map-first Home prototype records above.
+The working tree contains
+the owner's manual edits in `active/css/active.css`, `css/home.css`,
+`css/interactive-weather-map.css`, `css/styles.css`, and `css/tropical.css`, plus
+the uncommitted drawer implementation, the isolated prototype under
+`test/home-map-ui/`, and their contract/test/documentation changes.
+Do not absorb, stage, or rewrite the owner's unrelated hunks without explicit
+scope. The drawer has passed static, local HTTP, and representative mobile and
+desktop controlled-browser checks; its live active-alert state and staging
+smoke remain open. The prototype uses the current homepage in a same-origin
+no-index harness and is available locally at
+`http://127.0.0.1:8085/test/home-map-ui/`; do not promote it without a new owner
+decision. Re-run the broader short-height matrix separately if needed. Keep
+commit, push, staging/production upload, scheduler repair, and
+generated/runtime data outside the task unless explicitly authorized. Live
 testing uses
 `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
 production replacement. Staging has the committed Phase 8/basemap files, but

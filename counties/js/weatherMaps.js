@@ -350,6 +350,9 @@ class CountyRadarViewer {
   updateProductOptions() {
     const national = isRegionalRadarStation(this.stationSelect.value);
     const previous = this.productSelect.value;
+    // Prototype station catalogs can declare supported products. Unannotated
+    // options retain each page's existing local/regional product contract.
+    const supported = this.stationSelect.selectedOptions[0]?.dataset.radarProducts?.split(' ');
     const products = national
       ? [
           { value: 'reflectivity', label: 'Reflectivity' },
@@ -357,7 +360,7 @@ class CountyRadarViewer {
             ? [{ value: 'precip_type', label: 'Precipitation Type' }]
             : []),
         ]
-      : this.localProducts;
+      : this.localProducts.filter(product => !supported || supported.includes(product.value));
 
     this.productSelect.replaceChildren(
       ...products.map(({ value, label }) => {
@@ -436,6 +439,9 @@ class CountyRadarViewer {
           'in.',
       },
     }[product];
+    if (this.stationSelect.selectedOptions[0]?.dataset.radarType === 'tdwr') {
+      productConfig.layerSuffix = { reflectivity: 'bref1', velocity: 'bvel' }[product];
+    }
     const wmsUrl = `https://opengeo.ncep.noaa.gov/geoserver/${stationKey}/ows`;
     const layer = `${stationKey}_${productConfig.layerSuffix}`;
     return {
@@ -485,6 +491,18 @@ class CountyRadarViewer {
     this.map?.setScrubberVisible(false);
     this.fallbackMode = true;
     this.mapElement.hidden = true;
+    if (this.stationSelect.selectedOptions[0]?.dataset.radarType === 'tdwr') {
+      // NOAA's standard GIF directory does not provide these TDWR products.
+      // Hide the previous source instead of requesting a nonexistent fallback.
+      this.fallbackPlaying = false;
+      this.fallback.hidden = true;
+      this.fallbackImage.removeAttribute('src');
+      setPlayButton(this.playButton, false, 'radar');
+      setBusy(this.loading, this.error, false);
+      this.timestamp.textContent = `${this.stationSelect.value} imagery unavailable`;
+      showError(this.error, 'TDWR imagery is unavailable. Choose National or another nearby station.');
+      return;
+    }
     this.fallback.hidden = false;
     setPlayButton(this.playButton, this.fallbackPlaying, 'radar');
     setBusy(this.loading, this.error, true);
