@@ -195,7 +195,7 @@
   box-sizing: border-box;
   align-content: start;
   gap: 14px;
-  padding: 18px;
+  padding: clamp(0.75rem, 0.5rem + 1vw, 1.125rem);
   background: #07111b;
 }
 
@@ -328,10 +328,6 @@
     min-width: 0;
     align-items: center;
     gap: 6px;
-  }
-
-  .tropical-product-panel {
-    padding: 12px;
   }
 
   .official-graphic {

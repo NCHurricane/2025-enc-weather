@@ -263,7 +263,7 @@
 .overview-v2 .ov-info-line[data-key='direction'] .ov-label,
 .overview-v2 .ov-info-line[data-key='speed'] .ov-label
 {
-    font-size: clamp(0.9rem, 2vw, 0.8rem);
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -272,7 +272,7 @@
 /* SPECIAL STYLES FOR DATE, "ISSUED"                               */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='issued'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -294,7 +294,7 @@
 /* SPECIAL STYLES FOR "LOCATION"                               */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='location'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -316,7 +316,7 @@
 /* SPECIAL STYLES FOR "MAX WIND"                                   */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='max-wind'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -338,7 +338,7 @@
 /* SPECIAL STYLES FOR "MIN PRESSURE"                                   */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='min-pressure'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -360,7 +360,7 @@
 /* SPECIAL STYLES FOR "DIRECTION"                                   */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='direction'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -382,7 +382,7 @@
 /* SPECIAL STYLES FOR "SPEED"                                   */
 /*-----------------------------------------------------------------*/
 .overview-v2 .ov-info-line[data-key='speed'] .ov-value {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: bold;
     text-transform: uppercase;
@@ -404,7 +404,7 @@
 /* SPECIAL STYLES FOR "CENTER LOCATION"                            */
 /*-----------------------------------------------------------------*/
 .ov-center-section {
-    font-size: clamp(1.1rem, 2vw, 0.9rem);
+    font-size: 1.1rem;
     font-weight: bold;
     text-transform: uppercase;
     color: var(--color-text-light);
@@ -1062,7 +1062,7 @@
 
 .active-module__panel {
     min-width: 0;
-    padding: clamp(12px, 2vw, 20px);
+    padding: clamp(0.5rem, 0.125rem + 1.5vw, 1.25rem);
     background: #071b2e;
 }
 
@@ -1419,10 +1419,10 @@
 }
 
 .active-module__title {
+    --section-heading-size: clamp(0.9rem, 1.2vw, 1.05rem);
     margin: 0;
     color: #fff;
     font-family: var(--font-heading, "Montserrat", sans-serif);
-    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
     font-weight: 700;
 }
 
@@ -1459,7 +1459,8 @@
         margin-top: 22px;
     }
 
-    .active-module__panel {
+    /* The map retains its compact inset when its toolbar reflows. */
+    .active-module__panel--map {
         padding: 8px;
     }
 

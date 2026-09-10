@@ -1,5 +1,16 @@
 # County UI: Current Handoff
 
+## Phase 10 typography/padding slice — 2026-09-09
+
+The owner authorized the CSS audit recommendations. The first bounded Phase 10
+slice is implemented locally on clean starting checkpoint `04f8502`; see the
+[current CSS/UI record](site-css-architecture-and-ui-standardization-plan.md#phase-10-first-slice-typography-tokens-and-fluid-padding--2026-09-09)
+for changes and evidence. Shared typography is preserved, token ownership is
+clearer, and About/Active/Tropical padding becomes fluid. County CSS, weather
+data, and page behavior are unchanged. This slice is included in the owner-requested
+CSS Git checkpoint; owner smoke, 200% zoom, and production checks remain separate. Older uncommitted
+closeout/Phase 10-not-started statements below describe earlier checkpoints.
+
 ## Original-site CSS/UI owner acceptance — 2026-09-09
 
 The owner reported exactly, "Ok, from the dev tools all look good." They asked

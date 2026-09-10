@@ -16,8 +16,8 @@
   font-family: var(--font-heading);
   font-size: var(--page-title-size);
   font-weight: var(--page-title-weight);
-  letter-spacing: var(--page-title-tracking);
-  line-height: var(--page-title-leading);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   overflow-wrap: break-word;
   text-shadow: var(--page-title-shadow);
   text-wrap: balance;
@@ -43,7 +43,7 @@
 .section-heading {
   font-size: var(--section-heading-size);
   font-weight: 750;
-  line-height: var(--section-heading-leading);
+  line-height: 1.25;
 }
 
 .card-heading {
@@ -687,7 +687,7 @@
   color: var(--component-subtab-inactive-color);
   cursor: pointer;
   font-family: var(--font-heading);
-  font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+  font-size: var(--component-subtab-font-size);
   font-weight: 650;
   line-height: var(--component-subtab-line-height);
   text-align: center;
@@ -818,6 +818,7 @@
 
 @container (max-width: 680px) {
   .tabset {
+    /* Compact layout overrides the desktop defaults in styles.css. */
     --component-primary-tab-height: 44px;
     --component-primary-tab-font-size: 0.7rem;
     --component-primary-tab-line-height: 1.1;

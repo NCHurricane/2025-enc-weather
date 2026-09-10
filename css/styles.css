@@ -82,18 +82,17 @@
     --z-skip-link: 10000;
     --z-consent: 11000;
 
-    /* Shared typography and component tokens */
+    /* Shared typography: page variants override these tokens in their owner stylesheet. */
     --page-title-color: #fff;
     --page-title-size: clamp(1.5rem, 4vw, 3rem);
     --page-title-weight: 700;
-    --page-title-tracking: -0.025em;
-    --page-title-leading: 1.05;
     --page-title-shadow: none;
     --section-heading-size: clamp(1.15rem, 2.3vw, 1.65rem);
-    --section-heading-leading: 1.25;
     --card-heading-size: 1rem;
     --text-helper-color: #c7d7e3;
     --text-meta-color: #afc3d2;
+
+    /* Shared tabs. components.css sets compact primary-tab values below 680px container width. */
     --component-tab-active-color: #fff;
     --component-tab-inactive-color: #c7d6e1;
     --component-subtab-inactive-color: #bfcfdb;
@@ -104,9 +103,11 @@
     --component-primary-tab-line-height: 1.2;
     --component-primary-tab-padding: 11px 13px;
     --component-subtab-height: 44px;
-    --component-subtab-font-size: 0.75rem;
+    --component-subtab-font-size: clamp(0.65rem, 1.5vw, 0.75rem);
     --component-subtab-line-height: 1.1;
     --component-subtab-padding: 4px 5px;
+
+    /* Shared map menus: native selects and custom option panels. */
     --component-menu-background: rgba(7, 27, 46, 0.98);
     --component-menu-option-background: #071b2e;
     --component-menu-hover-background: #102a43;

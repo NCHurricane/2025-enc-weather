@@ -178,6 +178,15 @@ const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';
 const phase9Version = '20260831-phase9-2';
 const homeMapDrawerVersion = '20260904-home-map-drawer-1';
+const typographySpacingVersion = '20260910-css-tokens-1';
+const stylesheetVersionOverrides = Object.freeze({
+  'css/home.css': homeMapDrawerVersion,
+  'css/styles.css': typographySpacingVersion,
+  'css/components.css': typographySpacingVersion,
+  'css/info.css': typographySpacingVersion,
+  'css/tropical.css': typographySpacingVersion,
+  'active/css/active.css': typographySpacingVersion,
+});
 const phase8Version = phase9Version;
 const basemapVersion = phase9Version;
 const activeAlertsVersion = phase9Version;
@@ -263,7 +272,7 @@ export const phase2Contract = Object.freeze({
     Object.entries(phase2Stylesheets).map(([file, consumers]) => [
       file,
       Object.freeze({
-        version: file === 'css/home.css' ? homeMapDrawerVersion : phase8Version,
+        version: stylesheetVersionOverrides[file] || phase8Version,
         consumers: Object.freeze(consumers),
       }),
     ]),
@@ -322,8 +331,6 @@ export const phase2Contract = Object.freeze({
     '--page-title-color',
     '--page-title-size',
     '--page-title-weight',
-    '--page-title-tracking',
-    '--page-title-leading',
     '--page-title-shadow',
     '--section-heading-size',
     '--card-heading-size',
@@ -331,6 +338,9 @@ export const phase2Contract = Object.freeze({
     '--text-meta-color',
   ]),
   retiredTokens: Object.freeze([
+    '--page-title-tracking',
+    '--page-title-leading',
+    '--section-heading-leading',
     '--margin-section',
     '--padding-section',
     '--site-main-width',
@@ -569,9 +579,7 @@ export const phase4Contract = Object.freeze({
 export const phase5Contract = Object.freeze({
   version: phase5Version,
   stylesheetVersion: phase8Version,
-  stylesheetVersionOverrides: Object.freeze({
-    'css/home.css': homeMapDrawerVersion,
-  }),
+  stylesheetVersionOverrides,
   owner: 'css/interactive-weather-map.css',
   cardPages: Object.freeze([
     'index.html',
@@ -767,9 +775,7 @@ export const basemapContract = Object.freeze({
 export const phase6Contract = Object.freeze({
   version: phase6Version,
   stylesheetVersion: phase8Version,
-  stylesheetVersionOverrides: Object.freeze({
-    'css/home.css': homeMapDrawerVersion,
-  }),
+  stylesheetVersionOverrides,
   owner: 'css/interactive-weather-map.css',
   ownerStylesheets: Object.freeze([
     'css/interactive-weather-map.css',
@@ -921,9 +927,7 @@ export const phase6Contract = Object.freeze({
 export const phase7Contract = Object.freeze({
   version: phase7Version,
   stylesheetVersion: phase8Version,
-  stylesheetVersionOverrides: Object.freeze({
-    'css/home.css': homeMapDrawerVersion,
-  }),
+  stylesheetVersionOverrides,
   sharedOwner: 'css/interactive-weather-map.css',
   countyOwner: 'counties/css/county.css',
   homeOwner: 'css/home.css',
@@ -961,9 +965,7 @@ export const phase7Contract = Object.freeze({
 
 export const phase8Contract = Object.freeze({
   version: phase8Version,
-  stylesheetVersionOverrides: Object.freeze({
-    'css/home.css': homeMapDrawerVersion,
-  }),
+  stylesheetVersionOverrides,
   layerOrder: Object.freeze([
     'vendor',
     'tokens',

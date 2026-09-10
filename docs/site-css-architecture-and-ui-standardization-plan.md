@@ -14,13 +14,93 @@ mobile Home alert drawer remain preserved; this is not a rollback.
 
 Updated: 2026-09-09
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phases 0-9 are implemented and the owner DevTools pass is recorded. Both tracked local closeout items are resolved on 2026-09-09: CSS-CLOSE-01 is repaired and the broader short-height browser checks pass. The repair, navigation reference updates, regression tests, and this evidence are uncommitted on V1 checkpoint `0448038`. Phase 10 remains planned for the owner's forthcoming layout refinements. Actual-device, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
+Status: Phases 0-9 and their two local closeout repairs are committed in `04f8502`. The owner authorized the reviewed typography-token and fluid-padding changes as the first bounded Phase 10 slice on 2026-09-09. That slice is implemented locally and included in the CSS checkpoint described below. Further layout requests remain pending. Actual-device, text-zoom, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
 consumers atomically to `20260831-phase9-2` for the short-height correction.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
+
+## Phase 10 first slice: typography tokens and fluid padding — 2026-09-09
+
+Git checkpoint: the owner requested "Ok, let's commit and checkoint". This record
+accompanies `Simplify shared CSS tokens and smooth responsive spacing`, based on
+`04f8502`, covering the five stylesheets, ownership contract, 17 HTML reference
+updates, and three handoffs. The 11 focused tests, 80 application JS/MJS syntax
+checks, 70 PHP lints, site validator, and reference-only HTML comparison passed
+again before commit. Browser evidence below comes from the implementation run;
+owner smoke and 200% zoom remain open. No push or deployment is part of this
+checkpoint. Resolve its commit ID from Git history when resuming.
+
+The owner approved the preceding CSS audit with "Ok,m make those changes".
+The starting tree was clean at `04f8502`. This slice changes five stylesheets:
+`css/styles.css`, `css/components.css`, `css/info.css`, `css/tropical.css`, and
+`active/css/active.css`.
+
+- The shared typography/tab/menu block now has 29 consumed tokens. The subtab
+  font-size token owns the existing clamp; page-title tracking/leading and
+  section-heading leading are constants in their shared component rules.
+- Information-page section headings and Active module headings express their
+  existing size variants through `--section-heading-size`. Compact primary-tab
+  overrides are documented beside both defaults and the 680px container rule.
+- Eight reversed Active clamps become their existing effective fixed sizes:
+  `.9rem` for labels and `1.1rem` for values/center text. This preserves rendered
+  typography instead of inventing a new font scale.
+- About header padding is fluid from 18 to 48px, Active content panels from
+  8 to 20px, and Tropical product panels from 12 to 18px at the default root
+  font size. Their fixed mobile padding overrides are removed. Active Map
+  deliberately retains its existing desktop zero padding and mobile 8px inset
+  when the toolbar reflows. Structural and short-height breakpoints remain.
+- All 40 references across 17 HTML consumers use `20260910-css-tokens-1` for
+  those five assets. The ownership contract shares per-file version overrides;
+  other assets and every HTML behavior/content/metadata remain unchanged.
+
+Static evidence: 11 focused CSS ownership/cascade/responsive tests pass; syntax
+checks pass for 80 tracked application JS/MJS and 70 tracked PHP files. Site
+validation passes 18 HTML files, 341 JSON files, and 199 local references.
+The reference-only HTML comparison, token-consumer audit, and diff checks pass.
+
+Controlled-browser evidence: desktop/mobile comparisons at 1280x900 and 390x844
+found no font-size, weight, leading, tracking, color, or shadow differences in
+matched sampled elements across Home, Bertie, Dare, San Diego, Tropical, About,
+Privacy, and the Active issued fixture. The 57-case responsive sweep includes 390x650,
+844x390, intermediate widths, and both sides of the relevant padding thresholds.
+No measured document overflow or collapsed visible map was found. About desktop
+and mobile, Tropical Graphics, and Active Summary/Map/popup were visually checked.
+The About header measures 29.165/29.2/29.235px padding at 719/720/721px, confirming
+the old breakpoint jump is removed. Active content padding measures
+12.185/12.2/12.215px and Tropical product padding 14.79/14.8/14.81px at
+679/680/681px. The explicit map inset exception is preserved.
+
+Interaction checks passed: Home Alerts and Menu Escape restore their own opener;
+Home condition and Tropical graphic subtabs support ArrowRight with focus and
+selection together; Tropical Graphics/Text panels open; Satellite playback
+advances through its 12 frames, pause clears `aria-pressed`, and Home on the
+scrubber selects frame zero. Rapid basin switching, Back/Forward, and refresh
+retain a valid selected basin (the observed history returned Atlantic, then
+Central Pacific on Forward/refresh). Dare Hatteras selection survives reload.
+The Active Map tab and Erin popup work in the short mobile viewport.
+
+Runtime evidence uses the existing owner PHP server at 127.0.0.1:8085 and a
+temporary loopback fixture router at 8015. The Active response is 200 with the
+`issued` fixture header and updated CSS version. Sampled network events include
+expected missing Active fixture text/preview files (404), with visible product
+unavailability; those are not live-provider results. Some network buffers were
+truncated. Captured console warning/error logs in the page-family sweep were
+empty. Current caches include stale source times; no freshness claim is made.
+
+Browser zoom shortcuts had no effect in the in-app browser; 200% browser/text
+zoom remains unverified. Actual-device touch, populated Home alerts, owner
+acceptance of this slice, and production smoke remain separate owner checks.
+Weather data, fixtures, navigation behavior, map engines, and ignored V2 files
+are preserved. The implementation/validation run did not stage, commit, push,
+deploy, change schedulers, generate weather data, or delete repository files.
+The later owner-authorized Git checkpoint is recorded above.
+The task-created browser tab was closed and its viewport reset; Home's condition
+and Dare's zone were restored to Temperature/Mainland. The temporary Active
+fixture process was stopped and its two temporary logs removed. The owner's
+8085 server still returns 200.
 
 ## Resolved local closeout findings — 2026-09-09
 
@@ -1348,13 +1428,14 @@ staging/commit, and deployment remain separate gates.
 
 #### Phase 10: Original-site layout refinements
 
-Status: planned on 2026-09-09 at the owner's request; not started. This follows
-the original CSS/UI Phases 0-9. It concerns V1 and does not resume the separate
-map-first V2 workflow.
+Status: first bounded slice authorized and implemented locally on 2026-09-09:
+the typography-token and fluid-padding changes recorded above. Owner smoke for
+this slice is pending. This follows the original CSS/UI Phases 0-9 and concerns
+V1; it does not resume the separate map-first V2 workflow.
 
-The owner has a few desired layout changes but has not yet supplied their exact
-pages, elements, or preferred behavior. Keep the change list pending rather than
-inventing a redesign or carrying over V2 proposals.
+The original additional layout preferences still lack their exact pages,
+elements, and desired behavior. Keep that backlog pending; the CSS audit approval
+authorizes only the first slice above, not an unspecified redesign or V2 proposals.
 
 1. Record each requested change with its page, element, current layout, desired
    result, and relevant desktop/mobile context.
@@ -1365,9 +1446,9 @@ inventing a redesign or carrying over V2 proposals.
    page families; record owner acceptance separately.
 
 Existing technical closeout findings remain in the closeout record above. They
-are not silently reclassified as optional layout preferences. This phase entry
-authorizes planning only; implementation starts when the owner supplies and
-requests the concrete changes. Git publication and deployment remain separate.
+are not silently reclassified as optional layout preferences. Further slices
+start when the owner supplies and requests concrete changes. Git publication
+and deployment remain separate.
 
 ## Automated drift prevention
 
@@ -1498,7 +1579,8 @@ Phases 0-9 are implemented and the owner DevTools acceptance is recorded. The
 two tracked local closeout items, CSS-CLOSE-01 and the broader short-height
 browser matrix, are resolved by the repair and September 9 verification above.
 This does not expand owner device coverage or establish provider/production
-readiness. New layout preferences belong to planned Phase 10.
+readiness. Phase 10's first typography/padding slice is implemented locally;
+further layout preferences remain pending.
 The Home drawer is part of V1 checkpoint `0448038`; map-first prototypes belong
 to the separate V2 project and are not V1 continuation work.
 
@@ -1506,9 +1588,10 @@ to the separate V2 project and are not V1 continuation work.
 
 The original-site baseline is owner-accepted at the September 9 DevTools level.
 Both tracked local closeout findings are resolved; retain separate device,
-populated-alert, provider, and production evidence limits. Phase 10 is reserved for
-the owner's forthcoming layout list and has not started. Existing V1/manual work
-is retained in checkpoint `0448038`; future dirty work remains user-owned. V2
+populated-alert, provider, and production evidence limits. Phase 10's first
+typography/padding slice is implemented locally; its owner smoke and text-zoom
+checks remain open. Earlier V1 work is committed in `04f8502`; the new slice is
+included in the CSS checkpoint described above. Preserve later working changes. V2
 implementation, Git publication, deployment, scheduler changes, and weather-data
 mutation are outside this continuation unless separately requested.
 
@@ -1517,7 +1600,7 @@ Before each later phase, confirm the previous gate and the exact authorized slic
 ## New-session startup prompt
 
 ```text
-Continue Phase 10 planning after the original-site local CSS/UI closeout in:
+Continue after Phase 10's first typography-token/fluid-padding slice in:
 
 K:\Web Design\NCHurricane 2025
 
@@ -1534,12 +1617,12 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-At the September 9 update, HEAD was `0448038`, which includes the retained V1
-Home drawer and V2 separation. Verify fresh Git state; do not infer remote or
+At the latest September 9 update, HEAD was `04f8502`, including the V1 Home
+drawer, V2 separation, and local closeout repairs. Verify fresh Git state; do not infer remote or
 deployment state from this checkpoint. Phases 0-9 are implemented. The owner
 reported exactly, "Ok, from the dev tools all look good." Pages, devices,
 viewports, and individual interactions were not specified, so preserve this as
-owner evidence only. Further layout preferences belong to planned Phase 10.
+owner evidence only. It does not establish acceptance of the new Phase 10 slice.
 
 Read the resolved closeout record before changing code. CSS-CLOSE-01 is repaired:
 navigation only handles Escape for its own open menu/submenu and respects an
@@ -1548,12 +1631,13 @@ focused tests passed 23/23, the tracked V1 suite plus new tests passed 51/51,
 syntax/PHP lint and site validation passed, and 158 browser viewport cases
 completed without horizontal document overflow or collapsed visible maps.
 Home drawer, mobile Menu, and desktop submenu focus checks passed. Preserve
-the uncommitted repair and documentation; do not repeat these two closed items
+the committed repair and its evidence; do not repeat these two closed items
 without a new change or failure that justifies revalidation.
 
-For Phase 10, first obtain the owner's specific pages, elements, and desired
-layout changes; no concrete layout implementation is authorized by the empty
-backlog. Preserve V1 behavior, existing manual work, and generated weather data.
+Read the current Phase 10 first-slice/checkpoint record above and preserve its
+CSS, version references, contract, and documentation. Owner smoke and 200% zoom
+remain separate. Obtain specific pages/elements/results before starting further
+layout slices. Preserve V1 behavior, manual work, and generated weather data.
 Do not resume or require ignored map-first files; that workflow now belongs to
 K:\Web Design\NCHurricane V2 and remains paused. Old prototype approvals and
 continuation prompts in dated records are historical only.
