@@ -95,6 +95,15 @@ test('Phase 9 height ownership uses bounded shared calculations and family stack
   }
 });
 
+test('shared footer keeps all seven social links in one responsive row', () => {
+  const globalStyles = readProjectFile('css/styles.css');
+
+  assert.match(globalStyles, /\.footer \.social-media\s*\{[\s\S]*display:\s*grid;/);
+  assert.match(globalStyles, /grid-template-columns:\s*repeat\(7,\s*minmax\(var\(--control-target-min\),\s*2\.75rem\)\);/);
+  assert.match(globalStyles, /\.footer \.social-media a\s*\{[\s\S]*display:\s*inline-flex;[\s\S]*min-width:\s*0;[\s\S]*min-height:\s*44px;/);
+  assert.doesNotMatch(globalStyles, /\.footer \.social-media a\s*\{[^}]*margin:/);
+});
+
 test('the mobile Home alert key uses an accessible in-map drawer without changing desktop placement', () => {
   const source = readProjectFile('js/modules/homeMapOverlays.js');
   const home = readProjectFile('css/home.css');

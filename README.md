@@ -635,6 +635,43 @@ DASHBOARD_LOG_RETAIN_BYTES=2097152
 
 ### Initial Data Population
 
+**Windows PowerShell: refresh the local site once**
+
+From the repository root, run:
+
+```powershell
+# Preview the job list without running PHP or changing data.
+.\scripts\update-local-data.ps1 -Preview
+
+# Refresh all nine counties, Tropical/Active, and NC/FL/CA conditions.
+.\scripts\update-local-data.ps1
+
+# Optional: refresh just one area, or also pre-download hazard basemap tiles.
+.\scripts\update-local-data.ps1 -Scope Counties
+.\scripts\update-local-data.ps1 -Scope Tropical -WarmHazardTiles
+```
+
+If Windows PowerShell blocks `.ps1` files, use this process-only invocation
+(it does not change the saved execution policy):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\update-local-data.ps1
+```
+
+The script supports Windows PowerShell 5.1 and PowerShell 7. It defaults to
+`C:\php\php.exe` and Git for Windows' trusted CA bundle; override `-PhpPath`
+and `-CaBundlePath` if your installation differs. Jobs run sequentially, with
+output saved to `active/logs/local-data-refresh-*.log`. Statewide requests can
+take several minutes. A failed storm-list refresh skips dependent tropical
+jobs; independent jobs continue. Exit code `1` indicates failed/skipped jobs.
+Exit code `0` means commands completed; publisher logs and source timestamps
+still need review for partial provider failures or stale observations.
+
+Running it replaces local generated weather files, including the tracked Bertie
+examples and `active/cache/nhc_current_storms.json`. It uses the existing station
+catalogs; browser-loaded radar/satellite feeds remain on demand. It does not
+install a schedule, purge caches, deploy, or perform Git operations.
+
 **Important**: The site requires JSON data files to function. On first load, you'll see errors until cache files are generated.
 
 **Option 1: Manual Cache Generation**

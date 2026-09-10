@@ -179,9 +179,10 @@ const phase7Version = '20260824-phase7-1';
 const phase9Version = '20260831-phase9-2';
 const homeMapDrawerVersion = '20260904-home-map-drawer-1';
 const typographySpacingVersion = '20260910-css-tokens-1';
+const footerSocialVersion = '20260910-footer-social-1';
 const stylesheetVersionOverrides = Object.freeze({
   'css/home.css': homeMapDrawerVersion,
-  'css/styles.css': typographySpacingVersion,
+  'css/styles.css': footerSocialVersion,
   'css/components.css': typographySpacingVersion,
   'css/info.css': typographySpacingVersion,
   'css/tropical.css': typographySpacingVersion,

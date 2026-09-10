@@ -14,13 +14,39 @@ mobile Home alert drawer remain preserved; this is not a rollback.
 
 Updated: 2026-09-09
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phases 0-9 and their two local closeout repairs are committed in `04f8502`. The owner authorized the reviewed typography-token and fluid-padding changes as the first bounded Phase 10 slice on 2026-09-09. That slice is implemented locally and included in the CSS checkpoint described below. Further layout requests remain pending. Actual-device, text-zoom, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
+Status: Phases 0-9 and their two local closeout repairs are committed in `04f8502`. The typography-token and fluid-padding slice is committed in `4ed519c`. The footer social-row correction is implemented locally as the second bounded Phase 10 slice. Further layout requests remain pending. Actual-device, text-zoom, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
 consumers atomically to `20260831-phase9-2` for the short-height correction.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
+
+## Phase 10 footer social row — 2026-09-09
+
+The owner supplied a screenshot showing the seven footer social links wrapping
+to multiple rows and requested that they always remain on one row. The shared
+footer owner in `css/styles.css` now uses a seven-column grid with a bounded
+36.75rem width. Each link keeps a 44px height; columns remain 44px where space
+allows and can contract evenly to the existing 24px control minimum on narrow
+screens. Per-link horizontal margins are removed, while the existing desktop
+and mobile icon sizes remain unchanged. All 17 `styles.css` consumers use
+`20260910-footer-social-1`. Other footer content, social destinations, page
+behavior, weather data, and the owner's unrelated README/local-data work are
+preserved.
+
+Static evidence: the 12 focused CSS ownership/cascade/responsive tests pass;
+the changed ownership-contract script passes `node --check`; site validation
+passes 18 HTML files, 352 JSON files, and 199 local references; the 17 changed
+HTML files differ from `HEAD` only by the intended `styles.css` version update.
+
+Controlled-browser evidence: all 17 consumers were measured at 320, 390, 712,
+and 1280px widths through the owner-run PHP server. The 14 pages with social
+links kept all seven links in one 44px-high row with no horizontal overflow;
+About, Accessibility, and Privacy intentionally have no social-link group. A
+390px runtime pass across all consumers found no console warning/error or
+failed sampled network request. Owner smoke, actual-device, staging/commit,
+push, deployment, external-provider freshness, and production remain separate.
 
 ## Phase 10 first slice: typography tokens and fluid padding — 2026-09-09
 
@@ -1428,10 +1454,10 @@ staging/commit, and deployment remain separate gates.
 
 #### Phase 10: Original-site layout refinements
 
-Status: first bounded slice authorized and implemented locally on 2026-09-09:
-the typography-token and fluid-padding changes recorded above. Owner smoke for
-this slice is pending. This follows the original CSS/UI Phases 0-9 and concerns
-V1; it does not resume the separate map-first V2 workflow.
+Status: two bounded slices are complete: the committed typography-token and
+fluid-padding changes, followed by the local footer social-row correction.
+Owner smoke remains pending. This follows the original CSS/UI Phases 0-9 and
+concerns V1; it does not resume the separate map-first V2 workflow.
 
 The original additional layout preferences still lack their exact pages,
 elements, and desired behavior. Keep that backlog pending; the CSS audit approval

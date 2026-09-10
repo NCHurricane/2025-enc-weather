@@ -1,18 +1,18 @@
 {
-    "generated": "2026-09-06T18:37:22Z",
+    "generated": "2026-09-10T03:07:36Z",
     "zone": "NCZ030",
     "alerts": [],
     "outlook": {
         "status": "ok",
         "type": "Hazardous Weather Outlook",
-        "id": "f25fe12e-5496-409a-8a1b-102bfd95f97a",
+        "id": "66478661-6e78-4c34-8465-405e8f218b4a",
         "office": "AKQ",
         "officeName": "Wakefield",
         "zone": "NCZ030",
-        "issued": "2026-09-06T09:05:00+00:00",
-        "validUntil": "2026-09-07T09:15:00+00:00",
+        "issued": "2026-09-09T18:58:00+00:00",
+        "validUntil": "2026-09-10T19:00:00+00:00",
         "areaDesc": null,
-        "text": "This Hazardous Weather Outlook is for southeast Maryland, northeast \nNorth Carolina, central Virginia, east central Virginia, eastern \nVirginia, north central Virginia, south central Virginia and \nsoutheast Virginia.\n\n.DAY ONE...Today and tonight.\n\nNo hazardous weather is expected at this time.\n\n.DAYS TWO THROUGH SEVEN...Monday through Saturday.\n\nNo hazardous weather is expected at this time.\n\n.SPOTTER INFORMATION STATEMENT...\n\nSpotter activation is not expected at this time.",
-        "sourceUrl": "https://api.weather.gov/products/f25fe12e-5496-409a-8a1b-102bfd95f97a"
+        "text": "This Hazardous Weather Outlook is for southeast Maryland, northeast \nNorth Carolina, central Virginia, east central Virginia, eastern \nVirginia, north central Virginia, south central Virginia and \nsoutheast Virginia.\n\n.DAY ONE...This afternoon and tonight.\n\nNo hazardous weather is expected at this time.\n\n.DAYS TWO THROUGH SEVEN...Thursday through Tuesday.\n\nNo hazardous weather is expected at this time.\n\n.SPOTTER INFORMATION STATEMENT...\n\nSpotter activation is not expected at this time.",
+        "sourceUrl": "https://api.weather.gov/products/66478661-6e78-4c34-8465-405e8f218b4a"
     }
 }

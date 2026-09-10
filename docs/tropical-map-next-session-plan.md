@@ -1,5 +1,12 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
+## Phase 10 footer social row — 2026-09-09
+
+The shared V1 footer now keeps all seven social icons in one responsive row.
+The current CSS/UI plan owns implementation and validation evidence.
+Tropical/Active products, maps, fixtures, and weather data are unchanged. Owner
+smoke remains open.
+
 ## Phase 10 typography/padding slice — 2026-09-09
 
 The owner authorized the CSS audit recommendations. The first bounded Phase 10
