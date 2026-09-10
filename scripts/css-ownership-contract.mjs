@@ -172,7 +172,7 @@ const phase2Pages = [
 
 const phase3Version = '20260824-phase3-1';
 const phase4Version = '20260824-phase4-1';
-const navigationVersion = '20260831-navigation-logo-1';
+const navigationVersion = '20260909-navigation-escape-1';
 const phase5Version = '20260824-phase5-1';
 const phase6Version = '20260824-phase6-1';
 const phase7Version = '20260824-phase7-1';

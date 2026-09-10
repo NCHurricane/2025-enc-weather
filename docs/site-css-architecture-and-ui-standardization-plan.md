@@ -12,9 +12,9 @@ paused until a new owner request. The older prototype approvals and startup
 prompts below are historical. Existing main-site CSS/short-height work and the
 mobile Home alert drawer remain preserved; this is not a rollback.
 
-Updated: 2026-09-04
+Updated: 2026-09-09
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phase 0 approved; Phases 1-3 and the owner-directed legacy-page cleanup committed in `edc6a50`; owner-accepted Phase 4 committed in `1f6b0b1`; owner-accepted Phase 5 committed in `af8577a`; CI portability repair committed in `7a32866`; owner-accepted Phase 6 committed in `5448d61`; owner-accepted Phase 7 committed in `dbd7c8c`; Phase 8 implemented, validated, committed, and pushed in `2f53445`. The initial Phase 9 checkpoint is committed in `1372cf9`; its owner-accepted short-visual-height correction is committed and pushed in `7094744`. A subsequent owner-directed mobile Home map alert drawer and isolated map-first Home UI prototype are implemented and locally validated in the current uncommitted tree. The full short-height controlled-browser matrix and the current follow-up's owner review, commit, staging, and production gates remain open
+Status: Phases 0-9 are implemented and the owner DevTools pass is recorded. Both tracked local closeout items are resolved on 2026-09-09: CSS-CLOSE-01 is repaired and the broader short-height browser checks pass. The repair, navigation reference updates, regression tests, and this evidence are uncommitted on V1 checkpoint `0448038`. Phase 10 remains planned for the owner's forthcoming layout refinements. Actual-device, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
@@ -22,7 +22,125 @@ consumers atomically to `20260831-phase9-2` for the short-height correction.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
 
-## Current implementation status
+## Resolved local closeout findings — 2026-09-09
+
+The owner requested resolution of the two recorded local closeout items. Both
+are now resolved; the earlier discovery and owner report below remain dated
+evidence, not current blockers.
+
+### CSS-CLOSE-01: Escape focus ownership — resolved
+
+`js/modules/navigation.js` now ignores Escape when another control has already
+handled it or when navigation has no open menu/submenu. An open mobile menu
+still closes and focuses Menu; an open desktop submenu closes and focuses its
+visible opener. Closing Home Alerts with Escape now retains its own return
+focus. All 17 navigation consumers and the ownership contract use
+`20260909-navigation-escape-1`; unrelated asset versions remain unchanged.
+
+Five behavioral regressions in `scripts/tests/navigation-escape.test.mjs`
+exercise closed navigation, already-handled Escape, mobile menu/submenu closure,
+desktop submenu focus, and unrelated keys. Controlled-browser checks confirmed
+Home Alerts and mobile Menu focus at `390x650`, plus the desktop Counties submenu
+at `1280x900`. No CSS/layout or weather behavior was changed for this repair.
+
+### Short-height controlled-browser verification — completed
+
+- 158 page/state/viewport cases covered all 15 public page routes and the
+  dependency-only `404.html` and `counties/bertie/index_test.html`. All had no
+  horizontal document overflow; visible maps remained nonzero in size.
+- Every page received `1280x900` and `390x844` checks. The representative Home,
+  Bertie, Dare, San Diego, Tropical, Active, and About families also received
+  `390x650`, `844x390`, `1280x600`, `3840x2160`, `320x650`, `360x650`, `430x844`,
+  `768x650`, `1024x650`, and `1440x900`. The six remaining counties also received
+  short portrait and landscape checks.
+- Additional six-size sweeps exercised Home/Bertie/Tropical Satellite, Dare
+  Hatteras Radar, and Active issued Alerts. Short-mobile maps, controls, and
+  legends were visually inspected. Ordinary scrolling over Dare's landscape
+  map moved the document from 0 to 390 pixels and exposed its timeline and
+  legend. Home and Tropical playback, pause, and manual frame selection worked.
+- Dare Northern/Hatteras selection and refresh retained the requested zone;
+  rapid Tropical basin changes, Back/Forward, and refresh retained basin state.
+  The Active storm popup fit within the narrow map (284-pixel popup at 390-pixel
+  viewport width) and its close control worked.
+- Home/County/Tropical used the existing owner-run PHP server at
+  `http://127.0.0.1:8085/`. Active used the existing immutable `AL052025` issued
+  fixture through a temporary loopback PHP router on port 8015; no current-storm
+  feed or generated weather package was edited. Active Summary, Map, and Alerts
+  were exercised; unavailable fixture text products were not treated as live
+  source failures.
+- Captured browser console warning/error logs were empty. Sampled CDP network
+  events had no HTTP errors or uncanceled request failures; expected canceled
+  requests occurred during navigation/basin switching. Some older events were
+  evicted from the bounded buffer, so this is sampled network evidence, not a
+  complete provider audit. Home/County observation caches were stale; no source
+  freshness or populated Home-alert result is claimed.
+
+### Automated, runtime, and preservation evidence
+
+The focused suite passed 23/23; the complete tracked V1 JavaScript suite plus
+the new navigation tests passed 51/51. Syntax checks passed for all 80 tracked
+JavaScript/MJS files and the new test; all 70 tracked PHP files passed lint.
+Site validation passed 18 HTML files, 341 JSON files, and 199 local references.
+Local Home and the exact Active fixture returned 200 with the corrected
+navigation version; the Active response carried the expected fixture header.
+
+Existing documentation edits and the V2 separation were preserved. The change
+owns only navigation Escape behavior, its version references, the regression
+test, and current handoff evidence. Phase 10 has not started. Actual-device touch,
+populated Home alerts, broad provider availability/freshness, and production
+verification remain separate evidence. No files were staged, committed, pushed,
+or deployed; no scheduler, weather cache, or production data changed. The
+temporary browser viewport was reset, the task-created fixture server was
+stopped, and its two temporary logs were removed. The owner's 8085 server remains
+running. No repository file was deleted.
+
+## Earlier owner acceptance and closeout discovery — 2026-09-09
+
+The owner reported exactly, "Ok, from the dev tools all look good." They also
+requested that their remaining layout changes belong to a later phase. Record
+this as owner acceptance of the reviewed original-site CSS/UI at the reported
+DevTools level. The URL, browser, pages, viewport sizes, individual interactions,
+and actual-device touch coverage were not specified. Do not expand this report
+into an independent browser matrix, populated-alert verification, or deployment
+evidence. The later layout preferences do not reopen the accepted design scope.
+
+Verification before the repair above:
+
+- Static/automated: the focused responsive-scroll, CSS Phase 7 ownership,
+  CSS Phase 8 cascade, and basemap suites passed 16/16. The site validator
+  passed 18 HTML files, 341 JSON files, and 199 local references.
+- Local HTTP: the owner-run PHP homepage at `http://127.0.0.1:8085/` returned
+  200 and referenced the Phase 9 styles and original Home drawer assets.
+- Controlled-browser spot check: Home at `390x650` had no horizontal document
+  overflow and a visible `357x202` Conditions map. The drawer opened and focused
+  Close; clicking Close restored focus to its trigger. Escape closed the drawer
+  but focused the header Menu button instead of the drawer trigger, reproduced
+  twice. The exercised tab had no captured console warnings/errors. Complete
+  network/provider coverage and the wider responsive matrix were not rerun.
+- Finding CSS-CLOSE-01 as originally recorded: repair the Home drawer Escape focus return and
+  verify it together with the navigation menu's own Escape behavior. The drawer
+  calls `preventDefault()` and restores its trigger, but the document Escape
+  handler in `js/modules/navigation.js` also unconditionally focuses the
+  hamburger. This is a keyboard behavior finding, separate from unspecified
+  owner layout preferences; no application repair is part of this documentation
+  update. The older September 4 focus-pass record remains dated evidence.
+- Remaining evidence: full short-height controlled-browser revalidation,
+  specifically identified actual-device touch coverage, populated Home alerts,
+  source freshness, and staging/production verification remain unestablished by
+  this turn. Owner acceptance and technical verification remain separate.
+
+Phase 10 below holds the requested future V1 layout refinements. Its exact
+changes have not been supplied and implementation has not started. V2 remains
+separate and paused. This update changes only the plan and its County/Tropical
+handoff pointers; application files, weather data, existing manual work, and
+ignored V2 material are preserved. No staging, commit, push, deployment,
+scheduling, cache publication, or deletion was performed by this update.
+
+## Historical implementation and validation records
+
+The dated entries below preserve their original checkpoint evidence. For current
+owner acceptance, remaining findings, and continuation scope, use the September 9
+closeout record above and the current startup prompt at the end of this plan.
 
 The owner approved the Phase 0 ownership ledger and authorized Phase 1 on
 2026-08-24. Phase 1 is complete in the local working tree:
@@ -1228,6 +1346,29 @@ local hourly cache cannot supply the tested meteogram ranges, so fresh-chart
 and populated-alert smoke remain open. Live promotion, owner acceptance,
 staging/commit, and deployment remain separate gates.
 
+#### Phase 10: Original-site layout refinements
+
+Status: planned on 2026-09-09 at the owner's request; not started. This follows
+the original CSS/UI Phases 0-9. It concerns V1 and does not resume the separate
+map-first V2 workflow.
+
+The owner has a few desired layout changes but has not yet supplied their exact
+pages, elements, or preferred behavior. Keep the change list pending rather than
+inventing a redesign or carrying over V2 proposals.
+
+1. Record each requested change with its page, element, current layout, desired
+   result, and relevant desktop/mobile context.
+2. Agree on a bounded implementation slice, preserving the accepted component
+   ownership, accessibility, page lifecycle, and weather/data contracts.
+3. Apply only that slice and update affected asset references consistently.
+4. Run focused static checks and desktop/mobile browser checks for the affected
+   page families; record owner acceptance separately.
+
+Existing technical closeout findings remain in the closeout record above. They
+are not silently reclassified as optional layout preferences. This phase entry
+authorizes planning only; implementation starts when the owner supplies and
+requests the concrete changes. Git publication and deployment remain separate.
+
 ## Automated drift prevention
 
 Extend `scripts/validate-site.mjs` and its machine contract to check, at minimum:
@@ -1302,9 +1443,11 @@ Dependency-only pages receive the smallest checks needed to prove compatibility 
 
 Record exactly which pages, devices, widths, and interactions the owner checks. Do not convert owner smoke into controlled-browser evidence or vice versa.
 
-The 2026-08-26 owner report establishes a functional pass at the reported
-all-device level. Exact coverage was not supplied, and the accompanying height
-and nested-scroll findings keep Wave B visual/layout acceptance open.
+The 2026-08-26 report and its layout findings are historical evidence. On
+2026-09-09 the owner reported a DevTools pass and deferred further layout
+preferences to Phase 10. Owner acceptance is recorded at that reported level;
+the separate technical closeout finding and missing verification are listed in
+the current closeout record above.
 
 ### External providers and production
 
@@ -1351,31 +1494,30 @@ The plan is complete only when:
 11. The current handoff documents record exact implementation status, validation, remaining gates, and the next authorized action.
 12. Deployment and production status are reported truthfully and separately.
 
-The local automated portion of items 8 and 9 is complete through the Phase 9
-short-height correction, and owner smoke passed at the reported overall level.
-Controlled-browser revalidation remains open before Wave B can be called fully
-closed. The owner's current manual CSS corrections remain separate user-owned
-work; the mobile Home alert drawer and isolated map-first Home prototype are
-the only newly authorized follow-ups.
+Phases 0-9 are implemented and the owner DevTools acceptance is recorded. The
+two tracked local closeout items, CSS-CLOSE-01 and the broader short-height
+browser matrix, are resolved by the repair and September 9 verification above.
+This does not expand owner device coverage or establish provider/production
+readiness. New layout preferences belong to planned Phase 10.
+The Home drawer is part of V1 checkpoint `0448038`; map-first prototypes belong
+to the separate V2 project and are not V1 continuation work.
 
 ## Questions and decision gates
 
-The Phase 9 short-height correction is committed and pushed in `7094744`, and
-owner smoke passed at the reported overall level. The complete short-height
-controlled-browser matrix remains open. The mobile Home alert drawer is
-implemented and locally validated but is uncommitted. The isolated map-first
-Home prototype is also implemented and locally validated at
-`test/home-map-ui/index.html`; it remains subject to owner design review and is
-not authorized for promotion. Staging, deployment, and production are not
-authorized or established. The owner's other manual CSS corrections remain
-user-owned and outside these follow-ups.
+The original-site baseline is owner-accepted at the September 9 DevTools level.
+Both tracked local closeout findings are resolved; retain separate device,
+populated-alert, provider, and production evidence limits. Phase 10 is reserved for
+the owner's forthcoming layout list and has not started. Existing V1/manual work
+is retained in checkpoint `0448038`; future dirty work remains user-owned. V2
+implementation, Git publication, deployment, scheduler changes, and weather-data
+mutation are outside this continuation unless separately requested.
 
 Before each later phase, confirm the previous gate and the exact authorized slice. Do not treat this roadmap as blanket implementation approval.
 
 ## New-session startup prompt
 
 ```text
-Continue the sitemap-wide CSS architecture and UI standardization work in:
+Continue Phase 10 planning after the original-site local CSS/UI closeout in:
 
 K:\Web Design\NCHurricane 2025
 
@@ -1392,41 +1534,35 @@ Before changing files:
 6. Do not stage, commit, push, deploy, change production data, or delete
    generated/runtime files without explicit authorization.
 
-The current code checkpoint is `7094744`, which matches `origin/main`. Phases
-0-8 and the ArcGIS basemap replacement are implemented, validated, committed,
-and pushed in `2f53445`; the initial Phase 9 layout and Tropical SVG logo
-checkpoint is committed in `1372cf9`; and the short-height correction is
-committed and pushed in `7094744`.
-The owner uploaded the Phase 8 checkpoint and reported that all functions passed
-on all tested devices; exact coverage was not supplied. The owner later supplied
-mobile staging screenshots showing Bertie and Tropical maps pushing their
-scrubbers and legends below the initial viewport. The correction adds a guarded
-short-height family minimum, advances all affected consumers to
-`20260831-phase9-2`, and is committed in `7094744`. The owner subsequently
-reported that all smoke tests pass. Its full controlled-browser matrix remains
-open.
+At the September 9 update, HEAD was `0448038`, which includes the retained V1
+Home drawer and V2 separation. Verify fresh Git state; do not infer remote or
+deployment state from this checkpoint. Phases 0-9 are implemented. The owner
+reported exactly, "Ok, from the dev tools all look good." Pages, devices,
+viewports, and individual interactions were not specified, so preserve this as
+owner evidence only. Further layout preferences belong to planned Phase 10.
 
-Begin the next session by preserving unrelated user-owned changes and reviewing
-the Phase 9, mobile Home alert drawer, and map-first Home prototype records above.
-The working tree contains
-the owner's manual edits in `active/css/active.css`, `css/home.css`,
-`css/interactive-weather-map.css`, `css/styles.css`, and `css/tropical.css`, plus
-the uncommitted drawer implementation, the isolated prototype under
-`test/home-map-ui/`, and their contract/test/documentation changes.
-Do not absorb, stage, or rewrite the owner's unrelated hunks without explicit
-scope. The drawer has passed static, local HTTP, and representative mobile and
-desktop controlled-browser checks; its live active-alert state and staging
-smoke remain open. The prototype uses the current homepage in a same-origin
-no-index harness and is available locally at
-`http://127.0.0.1:8085/test/home-map-ui/`; do not promote it without a new owner
-decision. Re-run the broader short-height matrix separately if needed. Keep
-commit, push, staging/production upload, scheduler repair, and
-generated/runtime data outside the task unless explicitly authorized. Live
-testing uses
-`http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future
-production replacement. Staging has the committed Phase 8/basemap files, but
-the current zone fix is not yet uploaded and California Conditions is stale;
-re-smoke the former after upload and inspect the latter's cron/log separately.
+Read the resolved closeout record before changing code. CSS-CLOSE-01 is repaired:
+navigation only handles Escape for its own open menu/submenu and respects an
+already-handled event. All 17 consumers use 20260909-navigation-escape-1. The
+focused tests passed 23/23, the tracked V1 suite plus new tests passed 51/51,
+syntax/PHP lint and site validation passed, and 158 browser viewport cases
+completed without horizontal document overflow or collapsed visible maps.
+Home drawer, mobile Menu, and desktop submenu focus checks passed. Preserve
+the uncommitted repair and documentation; do not repeat these two closed items
+without a new change or failure that justifies revalidation.
+
+For Phase 10, first obtain the owner's specific pages, elements, and desired
+layout changes; no concrete layout implementation is authorized by the empty
+backlog. Preserve V1 behavior, existing manual work, and generated weather data.
+Do not resume or require ignored map-first files; that workflow now belongs to
+K:\Web Design\NCHurricane V2 and remains paused. Old prototype approvals and
+continuation prompts in dated records are historical only.
+
+Actual-device touch, populated Home alerts, source freshness, and deployment
+remain separate evidence. The old staging/California observations are dated
+August evidence and must be refreshed before claiming their current status.
+Do not stage, commit, push, upload, change schedulers, publish caches, or delete
+files unless the owner separately requests those actions.
 
 Durable decisions:
 

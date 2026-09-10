@@ -1,5 +1,25 @@
 # County UI: Current Handoff
 
+## Original-site CSS/UI owner acceptance — 2026-09-09
+
+The owner reported exactly, "Ok, from the dev tools all look good." They asked
+to defer remaining layout preferences to a later phase. The
+[CSS/UI plan](site-css-architecture-and-ui-standardization-plan.md) records this
+as owner DevTools acceptance, adds planned Phase 10 for the forthcoming V1 layout
+list, and retains the separate technical closeout findings. Exact pages,
+devices, viewports, interactions, and actual-device touch were not specified.
+
+Phases 0-9 are implemented; `0448038` now includes the V1 Home drawer and V2
+separation. Older statements below that Phase 9 has not started, or that the
+retained V1 changes are uncommitted, describe historical checkpoints. Use the
+CSS/UI plan's September 9 record for current status. Its two local closeout
+items are now resolved: the Home drawer Escape-focus repair passes regression
+and browser checks, and 158 responsive browser cases pass across all page
+families. Navigation references use `20260909-navigation-escape-1`; the repair
+and evidence are uncommitted. Phase 10 has not started. Actual-device, populated
+Home-alert, provider, and production evidence remain separate; no new County
+product or V2 phase is authorized by this update.
+
 ## Map-first UI separated into V2 — 2026-09-09
 
 The owner requested that the archived Home/Bertie/Dare map-first UI, viewport-aware

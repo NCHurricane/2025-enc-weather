@@ -239,12 +239,16 @@ export const NavigationModule = {
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const menuWasOpen = nav?.classList.contains('is-open');
+      const submenuToggle = nav?.querySelector('[data-submenu].is-open > [data-submenu-toggle]');
+      if (!menuWasOpen && !submenuToggle) return;
+      event.preventDefault();
       nav?.classList.remove('is-open');
       hamburger?.setAttribute('aria-expanded', 'false');
       hamburger?.classList.remove('is-open');
       this.closeSubmenus();
-      hamburger?.focus();
+      (menuWasOpen ? hamburger : submenuToggle)?.focus();
     });
 
     // Handle window resize

@@ -1,5 +1,24 @@
 # Tropical Overview and Active-Storm Maps: Current Handoff
 
+## Original-site CSS/UI owner acceptance — 2026-09-09
+
+The owner reported exactly, "Ok, from the dev tools all look good." They deferred
+further layout preferences to planned Phase 10 of the
+[site-wide CSS/UI plan](site-css-architecture-and-ui-standardization-plan.md).
+This is owner DevTools evidence; exact pages, devices, viewport sizes,
+interactions, and actual-device touch coverage were not specified.
+
+CSS Phases 0-9 are implemented. The current V1 checkpoint is `0448038`; the
+map-first workflow is separate V2 work and remains paused. The CSS/UI plan's
+September 9 record owns current closeout status: the Home drawer Escape-focus
+repair and the 158-case responsive browser verification resolve both tracked
+local findings. Navigation consumers use `20260909-navigation-escape-1`; the
+repair and evidence are uncommitted. Active checks used the immutable issued
+`AL052025` fixture, without changing current-storm or weather data. The older
+pre-Phase 9 and uncommitted-status paragraphs below are dated history. No new
+Tropical product phase, presentation removal, or Phase 10 implementation starts
+with this documentation update; production/source checks remain separate.
+
 Updated: 2026-08-31
 Repository: `K:\Web Design\NCHurricane 2025`
 Status: Tropical product Phases 0 through 6 are complete locally. Phase 4 compatibility routes and navigation were committed in `2a60674`; on 2026-08-24 the owner separately authorized removal of the two static compatibility pages while retaining their server-owned 301 redirects to canonical basin state. A large Phase 5 active-storm shell and detailed-map implementation was committed in `7d125fa`, then changed by later shell/map-consistency and closeout work through `385b52f`. Deterministic AL/EP/CP fixtures, the bounded Active router, exact identity rejection, issued/not-issued/partial states, page-level popup coverage, the current CP map/satellite regression, SVG path interaction, and desktop/mobile validation all pass. The duplicate static Active skip link and redundant `active-map-status-row` presentation plus their direct CSS/JavaScript wiring are removed and guarded. The owner reported that the Active map looks great with no errors. Live `AL052026` issued-warning smoke on 2026-08-31 exposed a TCV publisher/frontend schema regression; after the repair was uploaded, the owner reported exactly, "Ok, it is working on the server." That closes TCV tab visibility at the reported overall level; the current shared-border/city follow-up remains local and is not deployed. The planned archive-support phase is removed by owner decision: the public Active workflow remains current-storm-only, with no archive loader, selector, or archive state. Tropical product Phase 6 audited presentation parity; after correcting the brief request to remove the duplicate Summary five-day preview, the owner chose to retain every current presentation. No Tropical product Phase 6 application-source removal remains. Separately, sitemap CSS Phase 4 is committed in `1f6b0b1`; shared-map CSS Phase 5 is committed in `af8577a` and owner-accepted at the reported overall level; the CI portability repair is committed in `7a32866`; owner-accepted sitemap CSS Phase 6 is committed in `5448d61`; owner-accepted Phase 7 is committed in `dbd7c8c`; and Phase 8 plus the ArcGIS basemap replacement are implemented, validated, committed, and pushed in `2f53445`. Owner-managed server/device smoke passed functionally at the reported overall level; Wave B layout closeout remains open for responsive height and mobile-scroll findings. This document does not authorize another push, deployment, destructive file cleanup, another Tropical presentation removal, or a new Tropical product phase.
