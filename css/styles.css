@@ -84,7 +84,7 @@
 
     /* Shared typography: page variants override these tokens in their owner stylesheet. */
     --page-title-color: #fff;
-    --page-title-size: clamp(1.5rem, 4vw, 3rem);
+    --page-title-size: clamp(1.1rem, 4vw, 3rem);
     --page-title-weight: 700;
     --page-title-shadow: none;
     --section-heading-size: clamp(1.15rem, 2.3vw, 1.65rem);
@@ -992,7 +992,7 @@ button {
     padding: 20px;
     margin: 0 auto;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: clamp(0.7rem, 2.5vw, 0.9rem);
     box-shadow: var(--shadow-standard);
 }
 
@@ -1010,13 +1010,13 @@ button {
     width: min(100%, 36.75rem);
     grid-template-columns: repeat(7, minmax(var(--control-target-min), 2.75rem));
     justify-content: space-between;
-    margin: 0 auto 25px;
+    margin: 0 auto;
 }
 
 .footer .social-media a {
     display: inline-flex;
     min-width: 0;
-    font-size: 2rem;
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
     min-height: 44px;
     align-items: center;
     justify-content: center;
@@ -1032,9 +1032,8 @@ button {
 .footer-links {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    margin: 0 0 20px;
+    gap: 8px;
+    margin: 0 auto;
 }
 
 .footer-links a {
@@ -1310,10 +1309,6 @@ button {
 
     .afd-content {
         font-size: 0.8rem;
-    }
-
-    .footer .social-media a {
-        font-size: 1.4rem;
     }
 
     .disclaimer {

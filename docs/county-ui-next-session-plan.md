@@ -1,10 +1,58 @@
 # County UI: Current Handoff
 
+## Planned Phase 11: County forecast structure — recorded 2026-09-09
+
+The owner identified the next County UI phase. This is the first work the next
+session should review; recording it does not authorize implementation, staging,
+commit, push, deployment, or generated-data changes.
+
+Apply the phase consistently to all nine County pages while preserving their
+existing data sources and page-specific behavior:
+
+1. Remove `Forecast` from the first Weather Center tabset, leaving Conditions,
+   Radar, and Satellite there. Add a separate forecast card/tabset below the
+   Weather Center for forecast products and their subtabs.
+2. Combine the current `7-Day` and `Detailed` forecast panels into one Forecast
+   tab. Each period card should include its matching detailed forecast in a
+   collapsed, keyboard-accessible disclosure. Prefer native `details`/`summary`
+   semantics unless browser testing identifies a concrete conflict. Render the
+   combined card and detail from the same fetched period list rather than the
+   current second forecast request.
+3. Keep the zone selectors for Dare, Hyde, and San Diego on one row at mobile
+   widths. Preserve minimum control height, readable labels, active/disabled
+   states, URL and localStorage normalization, and no horizontal page overflow.
+4. Move the Hazardous Weather Outlook entry from the Alerts area into the new
+   forecast section because it is a forecast product. Keep active alerts in the
+   Alerts area, and preserve the outlook's official source, stale state,
+   metadata, dialog dismissal, focus restoration, and unavailable behavior.
+
+Current ownership to inspect before editing:
+
+- County markup is duplicated across the nine `counties/*/index.html` pages.
+- `counties/js/weatherCenter.js` owns the primary Weather Center tabs and
+  forecast-subtab keyboard behavior.
+- `counties/js/countyApp.js` and `counties/js/countyApp.multizone.js` render the
+  7-day and detailed forecast markup.
+- `counties/js/countyAlerts.js` currently appends the HWO trigger/dialog to the
+  alert container and assumes an existing alert-status row.
+- `counties/css/county.css` owns the forecast panels, HWO presentation, and the
+  mobile zone-selector layout. Its current mobile rule gives each selector
+  button full width, which causes the stacking reported by the owner.
+
+Before implementation, capture the proposed desktop/mobile forecast-card
+structure and confirm the final forecast tab labels. Validation must include a
+standard County, Dare or Hyde, and San Diego at desktop and 390x844/320px mobile;
+keyboard tab/disclosure navigation; zone switch, refresh, and Back/Forward;
+populated/empty/stale HWO and active-alert combinations; console/network checks;
+and horizontal overflow. Do not alter stations, zones, providers, forecasts,
+meteograms, discussions, alert/HWO payloads, caches, or generated weather data.
+
 ## Phase 10 footer social row — 2026-09-09
 
 The shared V1 footer now keeps all seven social icons in one responsive row.
 The current CSS/UI plan owns implementation and validation evidence. County
-content, maps, and weather data are unchanged. Owner smoke remains open.
+content, maps, and weather data are unchanged. The owner reported, "Ok, that
+looks good"; the exact device and viewport were not specified.
 
 ## Phase 10 typography/padding slice — 2026-09-09
 

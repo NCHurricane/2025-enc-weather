@@ -14,13 +14,26 @@ mobile Home alert drawer remain preserved; this is not a rollback.
 
 Updated: 2026-09-09
 Repository: `K:\Web Design\NCHurricane 2025`  
-Status: Phases 0-9 and their two local closeout repairs are committed in `04f8502`. The typography-token and fluid-padding slice is committed in `4ed519c`. The footer social-row correction is implemented locally as the second bounded Phase 10 slice. Further layout requests remain pending. Actual-device, text-zoom, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
+Status: Phases 0-9 and their two local closeout repairs are committed in `04f8502`. The typography-token and fluid-padding slice is committed in `4ed519c`; the footer social-row correction is committed in `25a74fc`. The owner accepted the footer result and supplied the four-item County forecast/layout scope now recorded as planned Phase 11 in the County handoff. Actual-device, text-zoom, populated-alert, provider-freshness, and production evidence remain separate; no deployment is established.
 
 The pre-Phase 9 Tropical active-system chip and mobile weather-tab corrections
 remain intact. Phase 9 advances all layered CSS and shared-map dependency
 consumers atomically to `20260831-phase9-2` for the short-height correction.
 
 Authorization boundary: this document is a roadmap, not authorization to begin a phase, stage, commit, push, deploy, change production data, alter scheduler state, or delete generated/runtime files.
+
+## Planned Phase 11: County forecast structure — recorded 2026-09-09
+
+The next requested V1 layout work applies to all County pages: separate Forecast
+from the Conditions/Radar/Satellite Weather Center into a new forecast tabset
+below it; combine 7-Day and Detailed so each period card owns a collapsed detail
+disclosure; keep Dare, Hyde, and San Diego zone selectors on one mobile row; and
+move Hazardous Weather Outlook access from Alerts into the forecast section.
+
+The [County UI handoff](county-ui-next-session-plan.md#planned-phase-11-county-forecast-structure--recorded-2026-09-09)
+owns the current code map, preservation boundary, open presentation decision,
+and validation requirements. This record establishes next-session scope only;
+implementation remains gated.
 
 ## Phase 10 footer social row — 2026-09-09
 
@@ -45,8 +58,9 @@ and 1280px widths through the owner-run PHP server. The 14 pages with social
 links kept all seven links in one 44px-high row with no horizontal overflow;
 About, Accessibility, and Privacy intentionally have no social-link group. A
 390px runtime pass across all consumers found no console warning/error or
-failed sampled network request. Owner smoke, actual-device, staging/commit,
-push, deployment, external-provider freshness, and production remain separate.
+failed sampled network request. The owner then reported, "Ok, that looks good";
+the exact device and viewport were not specified. Actual-device, push,
+deployment, external-provider freshness, and production remain separate.
 
 ## Phase 10 first slice: typography tokens and fluid padding — 2026-09-09
 

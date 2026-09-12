@@ -1,18 +1,32 @@
 {
-    "generated": "2026-09-10T03:07:36Z",
+    "generated": "2026-09-12T21:46:46Z",
     "zone": "NCZ030",
-    "alerts": [],
+    "alerts": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.27ea98779f5e31ccb290e036bdb75931b76dd2e5.001.1",
+            "type": "Special Weather Statement",
+            "severity": "Moderate",
+            "urgency": "Expected",
+            "status": "Actual",
+            "headline": "Special Weather Statement issued September 12 at 5:34PM EDT by NWS Wakefield VA",
+            "description": "<p>At 534 PM EDT, Doppler radar was tracking strong thunderstorms along<br>a line extending from Halifax to 8 miles southwest of Scotland Neck.<br>Movement was northeast at 25 mph.</p><p>HAZARD...Wind gusts up to 40 mph and heavy rain.</p><p>SOURCE...Radar indicated.</p><p>IMPACT...Gusty winds could knock down tree limbs and blow around<br>unsecured objects. Reduced visibility and minor flooding<br>possible.</p><p>Strong thunderstorms will be near...<br>Garysburg around 540 PM EDT.<br>Seaboard around 600 PM EDT.</p><p>Other locations impacted by these storms include Eagletown, Mud<br>Castle, Kelford, Potecasi, Lasker, Bryants Corner, Jackson,<br>Bryantown, Boones Crossroads, and Pleasant Grove.</p>",
+            "instruction": "<p>If outdoors, consider seeking shelter inside a building.</p><p>Heavy rainfall is also occurring with these storms and may lead to<br>localized flooding. Do not drive your vehicle through flooded<br>roadways.</p>",
+            "onset": "2026-09-12T17:34:00-04:00",
+            "expires": "2026-09-12T18:15:00-04:00",
+            "areaDesc": "Northampton; Bertie; Greensville; Southampton"
+        }
+    ],
     "outlook": {
         "status": "ok",
         "type": "Hazardous Weather Outlook",
-        "id": "66478661-6e78-4c34-8465-405e8f218b4a",
+        "id": "50040f54-01a7-46f4-9192-a412099b213c",
         "office": "AKQ",
         "officeName": "Wakefield",
         "zone": "NCZ030",
-        "issued": "2026-09-09T18:58:00+00:00",
-        "validUntil": "2026-09-10T19:00:00+00:00",
-        "areaDesc": null,
-        "text": "This Hazardous Weather Outlook is for southeast Maryland, northeast \nNorth Carolina, central Virginia, east central Virginia, eastern \nVirginia, north central Virginia, south central Virginia and \nsoutheast Virginia.\n\n.DAY ONE...This afternoon and tonight.\n\nNo hazardous weather is expected at this time.\n\n.DAYS TWO THROUGH SEVEN...Thursday through Tuesday.\n\nNo hazardous weather is expected at this time.\n\n.SPOTTER INFORMATION STATEMENT...\n\nSpotter activation is not expected at this time.",
-        "sourceUrl": "https://api.weather.gov/products/66478661-6e78-4c34-8465-405e8f218b4a"
+        "issued": "2026-09-12T08:27:00+00:00",
+        "validUntil": "2026-09-13T08:30:00+00:00",
+        "areaDesc": "Bertie",
+        "text": "This Hazardous Weather Outlook is for southeast Maryland, northeast \nNorth Carolina, central Virginia, eastern Virginia, south central \nVirginia and southeast Virginia.\n\n.DAY ONE...Today and tonight.\n\nShowers and storms will be capable of producing heavy rainfall and\nlocalized flash flooding from late this afternoon into tonight. \n\n.DAYS TWO THROUGH SEVEN...Sunday through Friday.\n\nHazardous weather is not expected at this time.\n\n.SPOTTER INFORMATION STATEMENT...\n\nSpotter activation is not expected at this time.",
+        "sourceUrl": "https://api.weather.gov/products/50040f54-01a7-46f4-9192-a412099b213c"
     }
 }

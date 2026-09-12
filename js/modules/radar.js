@@ -10,7 +10,7 @@
 // - Velocity Loop
 //
 // Stations handled:
-// - Regional (SOUTHEAST)
+// - National
 // - Local (e.g., KAKQ, KMHX, KILM, KRAH.)
 // =============================
 
