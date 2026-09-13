@@ -1,6 +1,242 @@
 # County UI: Current Handoff
 
+## Phase 11 forecast tab labels — 2026-09-12
+
+All nine live County templates now use `7-Day`, `Meteogram`, `Discussion`, and
+`Hazardous Weather`. Their `data-short-label` values are `7-Day`, `Meteo`, `Disc`,
+and `Haz Wx`. Scoped County CSS displays these short labels when the Forecast
+card is at most 600px wide. Full accessible names, including Hazardous Weather
+Outlook, remain explicit; tab IDs, keyboard behavior, and HWO freshness rules
+are unchanged. The retained Bertie test keeps its original labels.
+
+Changed files: the nine templates, County CSS, its reference in the retained
+test template, the stylesheet-version contract, existing forecast-test label
+expectations, and this handoff. CSS version: `20260912-forecast-labels-1`.
+
+Validation: 11 focused forecast/CSS tests, both changed MJS syntax checks, site
+validation (18 HTML, 352 JSON, 199 references), and `git diff --check` pass.
+Controlled Bertie checks at 1280x900, 390x844, and 320x844 confirm the labels,
+active colors, full accessible names, keyboard selection, and no overflow.
+Dare and San Diego pass 320px checks, including hidden HWO on San Diego; the
+retained Bertie labels remain unchanged. The sampled network capture returned
+the new CSS with HTTP 200 and no failures; console checks were clear. Temporary
+viewport overrides and the test tab were removed. Existing work and generated
+weather data are preserved; nothing was staged, committed, pushed, or deployed.
+Actual-device/200% zoom owner smoke and production remain open.
+
+## Phase 11 compact desktop parameter layout — 2026-09-12
+
+The owner clarified that Meteogram parameter controls should form a narrow,
+centered group like the hour buttons. At widths of 601px and above, the
+parameter container now uses flex layout, content-sized items, and 4px gaps;
+button padding, font size, and weight match the hour controls. The earlier
+200px grid override was removed. The owner's mobile grid, minimum sizing,
+border/background removal, and spacing edits were preserved.
+
+This slice changes `counties/css/county.css`, its references in all ten
+consuming County/test templates, the stylesheet-version contract, and this
+handoff. The CSS version is `20260912-meteogram-layout-2`; JavaScript asset
+versions are unchanged.
+
+Validation: both focused CSS ownership tests, contract syntax, site validation
+(18 HTML, 352 JSON, 199 references), and `git diff --check` pass. Controlled
+desktop checks on all nine County pages plus the retained Bertie test confirm
+centered groups, exactly 4px gaps, matching hour-button padding/font size, and
+no horizontal overflow. Mobile checks at 390px and 320px retain the grid;
+600px/601px checks confirm the intended breakpoint without overflow. Keyboard
+parameter selection and the regression console pass. Existing Phase 11 work
+and generated weather data are preserved; nothing was staged, committed,
+pushed, or deployed. Actual-device/200% zoom owner smoke and production remain
+open. The local preview is refreshed to Meteogram.
+
+## Phase 11 Meteogram parameter buttons — 2026-09-12
+
+All 50 `.meteogram-param-item` controls across the nine County pages and the
+retained Bertie test page now contain native toggle buttons instead of
+checkbox/label pairs. `aria-pressed` exposes each selection; the same yellow
+active styling, hover, and keyboard focus treatment as the Meteogram time-range
+buttons is reused. Several parameters can be selected together. If the final
+parameter is deselected, the existing Temperature fallback now visibly selects
+Temp as well, keeping the controls consistent with the chart.
+
+Both shared and San Diego meteogram controllers read button state. Repeated
+chart initialization replaces owned parameter/time-range handlers so tab/zone
+reloads do not accumulate callbacks or toggle a button twice. Data sources,
+chart datasets, time-range choices, and the test page's other legacy behavior
+are preserved. Concurrent CSS sizing/alignment edits were retained: parameters
+currently use a 24px minimum and render at 32px high. Precip has enough width to
+remain on one line at 320px.
+
+Changed files: the ten templates, `counties/css/county.css`, both meteogram
+modules, County entry-wrapper asset references, the asset contract, and the
+zone-reference test. Changed CSS/meteogram/entry assets use
+`20260912-meteogram-buttons-1`; HWO, Weather Center, and data-loader versions
+remain unchanged from their preceding slices.
+
+Validation: all 76 existing Node tests, 83 JavaScript/MJS syntax checks, site
+validation (18 HTML, 352 JSON, 199 references), and final `git diff --check`
+pass. No PHP changed. All nine pages pass final desktop 1280x900 and mobile
+390x844/320x844 layout checks (27 cases): five buttons, no parameter checkboxes,
+readable labels, and no horizontal overflow. Keyboard multi-selection,
+Temperature fallback, chart legend changes, reopening Meteogram on Bertie,
+Dare, Hyde, and San Diego, a San Diego zone reload, and retained Bertie test
+controls pass. The local Bertie hourly package returned HTTP 200; the sampled
+network capture and regression console reported no failures/warnings/errors.
+
+Existing Phase 11 work and generated weather data were preserved. Nothing was
+staged, committed, pushed, or deployed. Actual-device/200% zoom owner smoke and
+external-provider/production verification remain open. The local preview was
+refreshed to Meteogram for review.
+
+## Phase 11 HWO inline-tab follow-up — 2026-09-12
+
+The owner replaced the earlier HWO button/dialog decision: HWO is now the fourth
+tab in `.subtabs--forecast`, with its own section inside
+`.weather-center-forecast-content`, similar to Discussion. This is implemented
+across all nine original V1 County pages. The complete label remains readable
+on desktop and mobile, including 320px, and hidden HWO leaves three equal tabs.
+
+Only nonempty HWO with `status: ok` is displayed. A supplied `validUntil` must
+also be valid and unexpired; stale, expired, missing, not-applicable, and
+unavailable products have no tab or retained inline content. Expiry is checked
+while the page stays open and when it becomes visible again. Issued/valid-until
+times, NWS office, zone, applicable area, escaped source text, and validated
+official link remain in the inline panel. The nine live pages create no HWO
+dialog or scroll lock. Active-alert dialogs are unchanged, and the retained
+Bertie test page still uses its original HWO dialog, including stale behavior.
+
+Forecast tab navigation skips hidden tabs. If the selected HWO disappears,
+Forecast becomes active; focus returns there when it was within HWO. Zone
+loading clears the previous product immediately. Existing forecast rows,
+disclosures, Meteogram, Discussion, and zone-selection behavior remain intact.
+
+Changed owners: the nine County templates; `countyForecast.js`, `countyAlerts.js`,
+both County app controllers, and `county.css`. County entry wrappers, the
+retained test template, and contract/test expectations received matching asset
+references. These changed assets use `20260912-phase11-hwo-2`; Weather Center,
+data loaders, and meteogram asset versions remain `20260912-phase11-1`.
+
+Validation: all 76 Node tests, 83 JavaScript/MJS syntax checks, site validation
+(18 HTML, 352 JSON, 199 local references), and `git diff --check` pass. No PHP
+changed in this follow-up. Controlled-browser checks pass all nine pages at
+1280x900, 390x844, and 320x844 (27 cases), with fitting tab labels, no horizontal
+overflow, and no live-page HWO dialogs. Browser-only fixtures verify stale,
+expired, missing, unavailable, and not-applicable HWO; active alerts remain
+visible. Live expiry clears an open HWO and restores focus from its source link
+to Forecast. A Dare zone switch clears old content during loading, hides a stale
+replacement, skips HWO during keyboard navigation, and recovers with real data.
+Native disclosures, Meteogram/Discussion, active-alert dialogs, and the retained
+Bertie HWO dialog were checked. No console warnings/errors occurred in this
+follow-up regression tab; local HWO package HTTP/identity checks passed.
+
+This follow-up preserved the existing uncommitted Phase 11 work and generated
+weather data. Browser response fixtures were cleared and real data restored.
+Nothing was staged, committed, pushed, or deployed. Actual-device owner smoke,
+actual 200% browser zoom, external-provider freshness, and production remain
+separate open gates. The local PHP preview remains available on port 8085.
+
+## Initial Phase 11 implementation — 2026-09-12
+
+Historical implementation evidence. The HWO tab follow-up above supersedes this
+entry's standalone button/dialog and stale-display behavior on the nine pages.
+
+The owner approved the proposal and all recommendations, including the bounded
+Alerts failure correction. Implementation started from clean `446fc43` on
+`main`. The later owner instruction to show forecast periods as rows at every
+viewport supersedes the proposed three/two/one-column layout. Implementation
+and local validation are complete; staging, commit, push, deployment, generated
+data changes, and the next phase remain unauthorized.
+
+### Result and ownership
+
+- All nine original V1 County pages now have Conditions / Radar / Satellite in
+  Weather Center, followed by an independent Forecasts card with Forecast /
+  Meteogram / Discussion tabs. Each period occupies one full-width row at every
+  viewport. Matching details are collapsed native `details`/`summary` elements;
+  several periods can remain expanded. Both views use the same fetched period
+  list, eliminating the duplicate forecast request.
+- HWO is a separate, fully labeled button in the forecast header, outside the
+  tablist. Active alerts remain in Alerts. Existing metadata, official-link
+  validation, stale warning, centered internally scrolling dialog, dismissal,
+  scroll unlocking, and opener-focus restoration remain intact. Missing,
+  not-applicable, and unavailable HWO have no trigger. A zone change immediately
+  clears the previous outlook, including its dialog.
+- Dare, Hyde, and San Diego selectors remain one row, including at 320px.
+  Labels wrap inside buttons; controls retain a minimum 44px height.
+- `weatherCenter.js` remains shared by Home and Counties and owns weather/map
+  tabs. New `counties/js/countyForecast.js` owns County forecast markup and
+  scoped keyboard tab behavior. `countyApp.js` and `countyApp.multizone.js`
+  retain fetching and lifecycle ownership, with generation checks preventing
+  superseded forecast/alert responses from overwriting the current zone.
+- `countyAlerts.js` accepts the independent HWO mount and retains the legacy
+  alert-row path. `countyData.js` and `countyData.multizone.js` reject malformed
+  alert packages; network/HTTP/JSON failures show "Alerts temporarily
+  unavailable." A valid empty alert list alone produces "No active alerts."
+- `county.css` owns the scoped forecast rows, full mobile HWO label,
+  disclosures, and selector layout. The owner's temporary commented CSS was
+  replaced with an explicit single-column rule for the new card. The retained
+  Bertie test page keeps its original seven-column desktop/two-column mobile
+  summary layout and separate Detailed tab. Discussion visibility follows its
+  active forecast panel rather than the old accordion's hidden content rule.
+
+Changed file groups: all nine `counties/*/index.html` pages; the shared modules
+above; County entry wrappers and loader/meteogram import references; County CSS;
+the CSS ownership contract/site validator and focused tests. Home and
+`counties/bertie/index_test.html` template changes are asset references only.
+Changed assets use `20260912-phase11-1`; unrelated asset versions are unchanged.
+New coverage is in `scripts/tests/county-forecast.test.mjs`.
+
+### Validation evidence
+
+- Static/automated: all 74 Node tests pass; 83 JavaScript/MJS syntax checks and
+  70 tracked PHP lints pass; HWO PHP product tests pass 20 assertions. The site
+  validator passes 18 HTML files, 352 JSON files, and 199 local references.
+  `git diff --check` and focused asset/removed-hook searches pass.
+- Controlled browser, local PHP at `http://127.0.0.1:8085/`: all nine pages pass
+  the final row layout at actual 1280x900, 390x844, and 320x844 viewports (27
+  cases). Each has 14 rendered periods, one forecast column, no horizontal
+  document overflow, fitting HWO controls when present, and 44px disclosures.
+  All multi-zone selectors stay on one row with fitting labels and 44px height.
+- Bertie, Dare, Hyde, and San Diego pass keyboard tab navigation and collapsed
+  period disclosure checks at desktop/mobile widths. Multiple disclosures stay
+  open across forecast tab changes. Discussion content is visible without
+  overflow at all three sizes (12 cases); Bertie's Meteogram chart draws.
+- All Dare, Hyde, and San Diego zones were switched at mobile width; URL,
+  selected zone, refreshed period content, closed new disclosures, and reload
+  persistence pass. San Diego-to-Dare invalid-zone normalization plus
+  Back/Forward pass. HWO Close/Escape/backdrop dismissal, metadata, official
+  source link, focus restoration, internal overflow, and scroll unlocking pass
+  across desktop and narrow mobile checks.
+- Browser-only response fixtures verify HTTP/JSON/package alert failures,
+  legitimate empty alerts, stale HWO, absent/not-applicable/unavailable HWO,
+  two-alert dialog selection, and forecast failure independent of HWO. A failed
+  Dare zone load clears old HWO during loading, shows Alerts unavailable, and
+  recovers on a subsequent valid zone. Fixtures did not alter weather files.
+- Network evidence confirms one Bertie forecast request and successful local
+  forecast/alert packages. County Radar play/pause/scrub and Satellite product,
+  frame, and legend controls were exercised. Home's Conditions/Radar/Satellite
+  tabs pass at 1280px and 390px; the retained Bertie test's old forecast and
+  Detailed/Discussion panels pass. The clean final regression tab recorded no
+  console warnings/errors; intentional fixture failures were checked separately.
+
+### Preservation and remaining gates
+
+Stations, zone definitions/order, provider choices, current-condition sources,
+San Diego exceptions, map engines, backgrounds, chart data, discussion/HWO/alert
+payloads, generated weather output, caches, logs, and ignored V2 artifacts were
+preserved. No files were staged, committed, pushed, or deployed. No generated
+weather data was modified or used as a disposable fixture.
+
+Owner smoke on actual devices and actual 200% browser zoom remain open. The
+controlled browser's zoom shortcut did not establish a changed zoom level, so
+the viewport checks are not claimed as zoom evidence. External-provider
+freshness and production behavior were not certified; local cache content can
+be old. The local PHP preview remains available on port 8085 for review.
+
 ## Planned Phase 11: County forecast structure — recorded 2026-09-09
+
+Historical planning record; the implementation and validation entry above is
+the current status and supersedes this record's pre-approval gate.
 
 The owner identified the next County UI phase. This is the first work the next
 session should review; recording it does not authorize implementation, staging,

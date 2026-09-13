@@ -38,7 +38,8 @@ test('Phase 7 removes cross-family County CSS dependencies and versions changed 
 
   for (const countyPage of phase7Contract.stylesheets['counties/css/county.css']) {
     const html = readProjectFile(countyPage);
-    assert.match(html, new RegExp(`county\\.css\\?v=${phase7Contract.stylesheetVersion}`));
+    const countyVersion = phase7Contract.stylesheetVersionOverrides['counties/css/county.css'] || phase7Contract.stylesheetVersion;
+    assert.match(html, new RegExp(`county\\.css\\?v=${countyVersion}`));
     assert.match(
       html,
       new RegExp(`interactive-weather-map\\.css\\?v=${phase7Contract.stylesheetVersion}`),

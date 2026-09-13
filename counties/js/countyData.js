@@ -432,6 +432,9 @@ export async function getAlerts() {
   const r = await fetch('./data/alerts.json', { cache: 'no-store' });
   if (!r.ok) throw new Error('Failed to load alerts.json');
   const j = await r.json();
+  if (!j || !Array.isArray(j.alerts) || j.alerts.some(alert => !alert || typeof alert !== 'object' || Array.isArray(alert))) {
+    throw new Error('Invalid alerts package');
+  }
   return {
     status: 'ok',
     list: Array.isArray(j.alerts) ? j.alerts : [],

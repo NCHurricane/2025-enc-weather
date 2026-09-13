@@ -934,75 +934,6 @@ class CountyTemperatureViewer {
   }
 }
 
-class CountyForecastTabs {
-  constructor() {
-    this.buttons = Array.from(document.querySelectorAll('[data-forecast-tab]'));
-    this.panels = Array.from(document.querySelectorAll('[data-forecast-panel]'));
-  }
-
-  init() {
-    if (!this.buttons.length || !this.panels.length) return false;
-
-    this.buttons.forEach((button, index) => {
-      button.addEventListener('click', () => this.activate(button.dataset.forecastTab));
-      button.addEventListener('keydown', (event) => this.handleKeydown(event, index));
-    });
-    this.activate('seven-day');
-    return true;
-  }
-
-  handleKeydown(event, currentIndex) {
-    const keyOffsets = { ArrowLeft: -1, ArrowRight: 1 };
-    let nextIndex = null;
-
-    if (event.key in keyOffsets) {
-      nextIndex = (currentIndex + keyOffsets[event.key] + this.buttons.length) % this.buttons.length;
-    } else if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = this.buttons.length - 1;
-    }
-
-    if (nextIndex === null) return;
-    event.preventDefault();
-    const nextButton = this.buttons[nextIndex];
-    this.activate(nextButton.dataset.forecastTab);
-    nextButton.focus();
-  }
-
-  activate(name) {
-    if (!this.buttons.some((button) => button.dataset.forecastTab === name)) return;
-
-    this.buttons.forEach((button) => {
-      const active = button.dataset.forecastTab === name;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-selected', String(active));
-      button.tabIndex = active ? 0 : -1;
-    });
-
-    this.panels.forEach((panel) => {
-      panel.hidden = panel.dataset.forecastPanel !== name;
-    });
-
-    const controlledToggles = {
-      detailed: 'detailed-toggle',
-      meteogram: 'meteogram-toggle',
-      discussion: 'afd-toggle',
-    };
-
-    for (const [panelName, toggleId] of Object.entries(controlledToggles)) {
-      const toggle = document.getElementById(toggleId);
-      if (!toggle) continue;
-      const active = panelName === name;
-      if (toggle.checked !== active) {
-        toggle.checked = active;
-        toggle.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    }
-
-  }
-}
-
 class CountyWeatherCenter {
   constructor(temperatureViewer) {
     this.temperatureViewer = temperatureViewer;
@@ -1079,7 +1010,6 @@ function initCountyWeatherCenter() {
       detail: { map: temperatureViewer.map.ensureMap(), context: temperatureViewer.context, viewer: temperatureViewer },
     }));
   });
-  new CountyForecastTabs().init();
   new CountyWeatherCenter(temperatureViewer).init();
 }
 

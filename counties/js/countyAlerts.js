@@ -83,15 +83,27 @@ function bindOutlookDialog(container) {
   });
 }
 
-export function renderCountyOutlook({ container, outlook, formatTime }) {
+export function isCurrentCountyOutlook(outlook, now = Date.now()) {
+  if (outlook?.status !== 'ok' || !String(outlook.text || '').trim()) return false;
+  if (!outlook.validUntil) return true;
+  const expires = Date.parse(outlook.validUntil);
+  return Number.isFinite(expires) && expires > now;
+}
+
+export function renderCountyOutlook({ container, outlook, formatTime, inline = false }) {
   if (!container) return false;
+
+  if (inline) {
+    container.replaceChildren();
+    if (!isCurrentCountyOutlook(outlook)) return false;
+  }
 
   if (!outlook || !['ok', 'stale'].includes(outlook.status) || !outlook.text) {
     return false;
   }
 
-  const alertElement = container.firstElementChild;
-  if (!alertElement) return false;
+  const alertElement = inline ? null : container.firstElementChild;
+  if (!inline && !alertElement) return false;
 
   const issued = formatOutlookTime(outlook.issued, formatTime);
   const validUntil = formatOutlookTime(outlook.validUntil, formatTime);
@@ -117,6 +129,19 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
     )
     .join('');
 
+  const product = `
+    ${metadata ? `<dl class="county-hwo-metadata" aria-label="Hazardous Weather Outlook details">${metadata}</dl>` : ''}
+    <pre class="county-hwo-text">${escapeHTML(outlook.text)}</pre>
+    ${sourceUrl
+      ? `<a class="county-hwo-source" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">View the official NWS product <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>`
+      : ''}`;
+
+  if (inline) {
+    container.innerHTML = `<h3 class="card-heading">Hazardous Weather Outlook</h3>${product}`;
+    return true;
+  }
+
+  // Compatibility for the retained Bertie test page's original alert row/dialog.
   const row = document.createElement('div');
   row.className = 'county-alert-row';
   const primary = document.createElement('div');
@@ -132,6 +157,7 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
         type="button"
         class="county-hwo-trigger"
         data-county-hwo-open
+        aria-label="Hazardous Weather Outlook"
         aria-haspopup="dialog"
         aria-controls="county-hwo-dialog"
       >
@@ -171,11 +197,7 @@ export function renderCountyOutlook({ container, outlook, formatTime }) {
               ${outlook.status === 'stale'
                 ? '<p class="county-hwo-stale"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>The latest refresh failed. This is the last available NWS outlook and may be stale.</span></p>'
                 : ''}
-              ${metadata ? `<dl class="county-hwo-metadata" aria-label="Hazardous Weather Outlook details">${metadata}</dl>` : ''}
-              <pre class="county-hwo-text">${escapeHTML(outlook.text)}</pre>
-              ${sourceUrl
-                ? `<a class="county-hwo-source" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">View the official NWS product <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>`
-                : ''}
+              ${product}
             </article>
           </div>
         </div>

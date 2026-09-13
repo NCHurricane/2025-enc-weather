@@ -13,7 +13,8 @@ import {
     closeCountyAlertDialog,
     renderCountyAlerts,
     renderCountyOutlook,
-} from './countyAlerts.js?v=20260824-phase4-1';
+} from './countyAlerts.js?v=20260912-phase11-hwo-2';
+import { initCountyForecastTabs, renderCountyForecast, renderCountyForecastOutlook } from './countyForecast.js?v=20260912-phase11-hwo-2';
 
 // Alert Colors and Priorities
 const warningColors = {
@@ -249,6 +250,7 @@ let stationUrls = {};
 // Injected per-county API
 let API = {};
 let meteogramListenerBound = false;
+let loadGeneration = 0;
 
 const SEL = {
     wrap: '#current-container',
@@ -604,109 +606,36 @@ async function renderCurrent() {
     }
 }
 
-async function renderForecast() {
-    try {
-        const fc = await (API.getForecast ? API.getForecast() : Promise.resolve(null));
-        const periods = Array.isArray(fc?.periods) ? fc.periods : [];
+async function renderForecast(generation) {
+    await renderCountyForecast({
+        getForecast: API.getForecast,
+        container: document.querySelector(SEL.forecast.container),
+        detailedContainer: document.querySelector(SEL.forecast.detailed),
+        isCurrent: () => generation === loadGeneration,
+    });
+}
 
-        if (!periods.length) {
-            setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>');
-            setHTML(
-                SEL.forecast.detailed,
-                '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
-            );
-            return;
-        }
-
-        const cards = periods
-            .map((p) => {
-                const temp = p?.temperature;
-                const isDaytime = p?.isDaytime;
-                const tempColor = isDaytime ? '#d50000' : '#1976d2';
-                const tempDisplay =
-                    temp != null
-                        ? `<span class="value" style="color: ${tempColor};">${Math.round(temp)}°</span>`
-                        : `<span class="value">N/A</span>`;
-                const dayName = p?.name || 'N/A';
-                const shortForecast = p?.shortForecast || 'N/A';
-                const iconSrc = p?.icon || '';
-                const iconAlt = shortForecast;
-                return `
-                    <div class="forecast-item">
-                        <div class="forecast-cell forecast-day">${dayName}</div>
-                        <div class="forecast-cell forecast-icon">${iconSrc ? `<img src="${iconSrc}" alt="${iconAlt}" loading="lazy" decoding="async">` : ''}</div>
-                        <div class="forecast-cell forecast-temp">${tempDisplay}</div>
-                    </div>
-                `;
-            })
-            .join('');
-
-        setHTML(SEL.forecast.container, cards);
-        await renderDetailedForecast();
-    } catch (e) {
-        console.warn('[countyApp] forecast load failed', e);
-        setHTML(SEL.forecast.container, '<p>Forecast temporarily unavailable.</p>');
-        setHTML(
-            SEL.forecast.detailed,
-            '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
-        );
+function renderOutlook(outlook) {
+    const forecastRoot = document.querySelector('[data-county-forecast]');
+    if (forecastRoot) {
+        renderCountyForecastOutlook({ root: forecastRoot, outlook, formatTime: fmtTimeLocal });
+    } else {
+        renderCountyOutlook({ container: document.querySelector(SEL.alerts.container), outlook, formatTime: fmtTimeLocal });
     }
 }
 
-async function renderDetailedForecast() {
-    try {
-        const fc = await (API.getForecast ? API.getForecast() : Promise.resolve(null));
-        const periods = Array.isArray(fc?.periods) ? fc.periods : [];
-
-        if (!periods.length) {
-            setHTML(
-                SEL.forecast.detailed,
-                '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
-            );
-            return;
-        }
-
-        const detailedItems = periods
-            .map((p) => {
-                const isDaytime = p?.isDaytime;
-                const dayColor = isDaytime ? '#d50000' : '#1976d2';
-                const dayName = p?.name || 'N/A';
-                const detailedText =
-                    p?.detailedForecast || p?.shortForecast || 'No forecast details available.';
-                const iconSrc = p?.icon || '';
-                const iconAlt = p?.shortForecast || 'Weather icon';
-                const dayDisplay = `<span class="value" style="color: ${dayColor};">${dayName}</span>`;
-                return `
-                    <div class="detailed-item">
-                        <div class="detailed-row">
-                            <div class="detailed-col-day"><div class="detailed-day">${dayDisplay}</div></div>
-                            <div class="detailed-col-icon"><div class="detailed-icon">${iconSrc
-                        ? `<img src="${iconSrc}" alt="${iconAlt}" loading="lazy" decoding="async">`
-                        : '<span class="value">No Icon</span>'
-                    }</div></div>
-                            <div class="detailed-col-forecast"><div class="detailed-forecast">${detailedText}</div></div>
-                        </div>
-                    </div>
-                `;
-            })
-            .join('');
-
-        setHTML(SEL.forecast.detailed, detailedItems);
-    } catch (e) {
-        console.warn('[countyApp] detailed forecast load failed', e);
-        setHTML(
-            SEL.forecast.detailed,
-            '<div class="detailed-item">Detailed forecast temporarily unavailable.</div>'
-        );
-    }
+function showAlertsUnavailable() {
+    setHTML(SEL.alerts.container, '<p class="county-alert-status" role="status">Alerts temporarily unavailable.</p>');
+    renderOutlook(null);
 }
 
-async function renderAlerts() {
+async function renderAlerts(generation) {
     closeCountyAlertDialog();
     try {
         const a = await (API.getAlerts ? API.getAlerts() : Promise.resolve(null));
+        if (generation !== loadGeneration) return;
         if (!a || a.status !== 'ok') {
-            setHTML(SEL.alerts.container, '');
+            showAlertsUnavailable();
             return;
         }
         let list = Array.isArray(a.list) ? a.list : [];
@@ -724,7 +653,7 @@ async function renderAlerts() {
                 </div>
             `
             );
-            renderCountyOutlook({ container, outlook: a.outlook, formatTime: fmtTimeLocal });
+            renderOutlook(a.outlook);
             return;
         }
 
@@ -743,9 +672,11 @@ async function renderAlerts() {
                 priority: warningPriorities[a.event || a.type || a.headline] || 999,
             }))
         );
-        renderCountyOutlook({ container, outlook: a.outlook, formatTime: fmtTimeLocal });
+        renderOutlook(a.outlook);
     } catch (e) {
+        if (generation !== loadGeneration) return;
         console.warn('[countyApp] alerts load failed', e);
+        showAlertsUnavailable();
     }
 }
 
@@ -791,6 +722,12 @@ function setupDeferredMeteogram() {
 }
 
 async function loadAll() {
+    const generation = ++loadGeneration;
+    closeCountyAlertDialog();
+    renderOutlook(null);
+    setHTML(SEL.alerts.container, '<p class="county-alert-status" role="status">Loading alerts…</p>');
+    setHTML(SEL.forecast.container, '<p role="status">Loading forecast…</p>');
+    setHTML(SEL.forecast.detailed, '');
     try {
         if (API.init) {
             await API.init();
@@ -804,17 +741,21 @@ async function loadAll() {
     setupRefreshButton();
 
     await renderCurrent();
-    await renderForecast();
+    if (generation !== loadGeneration) return;
+    await renderForecast(generation);
+    if (generation !== loadGeneration) return;
 
     setupDeferredMeteogram();
 
-    await renderAlerts();
+    await renderAlerts(generation);
+    if (generation !== loadGeneration) return;
     await renderAFD();
 }
 
 export async function initializePage(deps) {
     try {
         API = deps || {};
+        initCountyForecastTabs(document.querySelector('[data-county-forecast]') || document.getElementById('weather-panel-forecast'));
         await loadAll();
     } catch (e) {
         console.error('[countyApp] initialize failed', e);

@@ -1077,20 +1077,20 @@ button {
 
 .back-to-top {
     position: fixed;
-    bottom: 5%;
-    right: 2%;
+    bottom: 20px;
+    right: 20px;
     display: block;
     text-align: center;
     text-decoration: none;
-    font-size: 2rem;
+    font-size: clamp(0.6rem, 2.5vw, 0.8rem);
     font-weight: 900;
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--color-danger);
-    padding: 25px;
-    border-radius: 20px;
+    background: rgba(246, 255, 0, 0.9);
+    color: var(--color-black);
+    padding: 5px;
+    border-radius: 5px;
     z-index: var(--z-header);
     transition: opacity var(--duration-standard) var(--ease-standard);
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .back-to-top[hidden] {
@@ -1268,12 +1268,6 @@ button {
     .site-nav__menu .site-nav__submenu .site-nav__item--has-submenu.is-open > .site-nav__submenu-toggle:focus-visible {
         color: var(--color-text);
     }
-
-    .back-to-top {
-        font-size: 2rem;
-        padding: 25px;
-        border-radius: 20px;
-    }
 }
 
 @media (max-width: 600px) {
@@ -1317,12 +1311,6 @@ button {
 
     .copyright {
         font-size: 0.5rem;
-    }
-
-    .back-to-top {
-        font-size: 2rem;
-        padding: 15px;
-        border-radius: 10px;
     }
 }
 }

@@ -126,15 +126,15 @@ test('multi-zone entrypoints carry the zone-normalization cache key', () => {
   for (const county of ['dare', 'hyde', 'san-diego']) {
     const html = readFileSync(new URL(`../../counties/${county}/index.html`, import.meta.url), 'utf8');
     const wrapper = readFileSync(new URL(`../../counties/${county}/js/countyApp.js`, import.meta.url), 'utf8');
-    assert.match(html, /countyApp\.js\?v=20260824-phase4-1&amp;zone=20260826-zone-normalization-1/);
-    assert.match(wrapper, /countyData\.multizone\.js\?v=20260826-zone-normalization-1/);
-    assert.match(wrapper, /meteogram\.js\?v=20260826-zone-normalization-1/);
+    assert.match(html, /countyApp\.js\?v=20260912-meteogram-buttons-1&amp;zone=20260826-zone-normalization-1/);
+    assert.match(wrapper, /countyData\.multizone\.js\?v=20260912-phase11-1/);
+    assert.match(wrapper, /meteogram\.js\?v=20260912-meteogram-buttons-1/);
   }
 
   const sharedMeteogram = readFileSync(new URL('../../counties/js/meteogram.js', import.meta.url), 'utf8');
   const loader = readFileSync(new URL('../../counties/js/countyData.loader.js', import.meta.url), 'utf8');
   const sanDiegoMeteogram = readFileSync(new URL('../../counties/san-diego/js/meteogram.js', import.meta.url), 'utf8');
-  assert.match(sharedMeteogram, /countyData\.loader\.js\?v=20260826-zone-normalization-1/);
-  assert.match(loader, /countyData\.multizone\.js\?v=20260826-zone-normalization-1/);
-  assert.match(sanDiegoMeteogram, /countyData\.multizone\.js\?v=20260826-zone-normalization-1/);
+  assert.match(sharedMeteogram, /countyData\.loader\.js\?v=20260912-phase11-1/);
+  assert.match(loader, /countyData\.multizone\.js\?v=20260912-phase11-1/);
+  assert.match(sanDiegoMeteogram, /countyData\.multizone\.js\?v=20260912-phase11-1/);
 });

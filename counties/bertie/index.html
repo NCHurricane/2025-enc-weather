@@ -45,7 +45,7 @@
       <link rel="stylesheet" href="../../css/styles.css?v=20260910-footer-social-1" />
       <link rel="stylesheet" href="../../css/components.css?v=20260910-css-tokens-1" />
       <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260831-phase9-2" />
-      <link rel="stylesheet" href="../css/county.css?v=20260831-phase9-2" />
+      <link rel="stylesheet" href="../css/county.css?v=20260912-forecast-labels-1" />
 
       <style>
          @layer pages {
@@ -97,13 +97,13 @@
             <h1 class="page-title page-title--weather page-title--county">Bertie County</h1>
          </header>
 
-         <section class="alert-container weather-center-alerts" aria-label="Current alerts and Hazardous Weather Outlook">
+         <section class="alert-container weather-center-alerts" aria-label="Current alerts">
             <div id="alerts"></div>
          </section>
 
          <div class="weather-center-layout">
             <section class="weather-map-card" aria-label="Bertie County Weather Center">
-               <div class="tabset tabset--weather" role="tablist" aria-label="Weather Center section">
+               <div class="tabset tabset--weather tabset--county-weather" role="tablist" aria-label="Weather Center section">
                   <button id="weather-tab-temp" class="tabset__tab is-active" type="button" role="tab"
                      aria-selected="true" aria-controls="weather-panel-temp" data-weather-tab="temp">
                      <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
@@ -120,12 +120,6 @@
                      tabindex="-1">
                      <i class="fa-solid fa-satellite" aria-hidden="true"></i>
                      <span>Satellite</span>
-                  </button>
-                  <button id="weather-tab-forecast" class="tabset__tab" type="button" role="tab"
-                     aria-selected="false" aria-controls="weather-panel-forecast" data-weather-tab="forecast"
-                     tabindex="-1">
-                     <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
-                     <span>Forecast</span>
                   </button>
                </div>
 
@@ -190,7 +184,7 @@
                            role="dialog" aria-modal="false" aria-label="Selected station details"
                            aria-live="polite" hidden></aside>
                         <p class="weather-map-card__note">
-                           Select a station marker for details. Scroll to zoom, or use the map controls.
+                           Select a station marker for details. CTRL+Scroll to zoom, or use the map controls.
                         </p>
                      </div>
                   </div>
@@ -334,111 +328,105 @@
                   </div>
                </section>
 
-               <section id="weather-panel-forecast" class="tabset__panel weather-center-forecast"
-                  role="tabpanel" aria-labelledby="weather-tab-forecast" data-weather-panel="forecast" hidden>
-                  <div class="subtabs subtabs--forecast" role="tablist" aria-label="Forecast section">
-                     <button id="forecast-tab-seven-day" class="subtabs__tab is-active" type="button"
-                        role="tab" aria-selected="true" aria-controls="forecast-panel-seven-day"
-                        data-forecast-tab="seven-day">7-Day</button>
-                     <button id="forecast-tab-detailed" class="subtabs__tab" type="button" role="tab"
-                        aria-selected="false" aria-controls="forecast-panel-detailed" data-forecast-tab="detailed"
-                        tabindex="-1">Detailed</button>
-                     <button id="forecast-tab-meteogram" class="subtabs__tab" type="button" role="tab"
-                        aria-selected="false" aria-controls="forecast-panel-meteogram" data-forecast-tab="meteogram"
-                        tabindex="-1">Meteogram</button>
-                     <button id="forecast-tab-discussion" class="subtabs__tab" type="button" role="tab"
-                        aria-selected="false" aria-controls="forecast-panel-discussion" data-forecast-tab="discussion"
-                        tabindex="-1">Discussion</button>
-                  </div>
 
-                  <div class="weather-center-forecast-content">
-                     <section id="forecast-panel-seven-day"
-                        class="forecast-container weather-center-forecast-panel" role="tabpanel"
-                        aria-labelledby="forecast-tab-seven-day" data-forecast-panel="seven-day">
-                        <h2 id="forecast-heading" class="section-heading weather-center-forecast-source-title">
-                           <i class="fa-solid fa-temperature-full fa-xl fontawesome-icon" aria-hidden="true"></i>
-                           Current Forecast
-                        </h2>
-                        <div id="forecast" role="region" aria-labelledby="forecast-heading" aria-live="polite"></div>
-                     </section>
-
-                     <section id="forecast-panel-detailed" class="detailed-container weather-center-forecast-panel"
-                        role="tabpanel" aria-labelledby="forecast-tab-detailed" data-forecast-panel="detailed" hidden>
-                        <input type="checkbox" id="detailed-toggle" class="detailed-toggle" />
-                        <label for="detailed-toggle" class="detailed-title" id="detailed-heading">
-                           <i class="fa-solid fa-calendar fa-xl fontawesome-icon" aria-hidden="true"></i>
-                           Detailed Forecast
-                        </label>
-                        <div class="detailed-tabs">
-                           <div id="detailed-forecast" role="region" aria-live="polite"></div>
-                        </div>
-                     </section>
-
-                     <section id="forecast-panel-meteogram" class="meteogram-container weather-center-forecast-panel"
-                        role="tabpanel" aria-labelledby="forecast-tab-meteogram" data-forecast-panel="meteogram" hidden>
-                        <input type="checkbox" id="meteogram-toggle" class="meteogram-toggle" />
-                        <label for="meteogram-toggle" class="meteogram-title" id="meteogram-heading">
-                           <i class="fa-solid fa-chart-line fa-xl fontawesome-icon" aria-hidden="true"></i>
-                           Forecast Meteograms
-                        </label>
-                        <div class="meteogram-tabs">
-                           <input type="radio" name="meteogramTime" id="meteogram-now" checked />
-                           <input type="radio" name="meteogramTime" id="meteogram-24" />
-                           <input type="radio" name="meteogramTime" id="meteogram-48" />
-                           <input type="radio" name="meteogramTime" id="meteogram-72" />
-                           <input type="radio" name="meteogramTime" id="meteogram-96" />
-
-                           <div class="meteogram-tab-labels" role="tablist">
-                              <label for="meteogram-now" class="meteogram-tab" role="tab" aria-selected="true">24H</label>
-                              <label for="meteogram-24" class="meteogram-tab" role="tab">48H</label>
-                              <label for="meteogram-48" class="meteogram-tab" role="tab">72H</label>
-                              <label for="meteogram-72" class="meteogram-tab" role="tab">96H</label>
-                              <label for="meteogram-96" class="meteogram-tab" role="tab">120H</label>
-                           </div>
-
-                           <div class="meteogram-tab-content">
-                              <div class="meteogram-param-container">
-                                 <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-temperature" class="meteogram-param-checkbox" checked />
-                                    <label for="param-temperature">Temp</label>
-                                 </div>
-                                 <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-dewpoint" class="meteogram-param-checkbox" />
-                                    <label for="param-dewpoint">DP</label>
-                                 </div>
-                                 <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-humidity" class="meteogram-param-checkbox" />
-                                    <label for="param-humidity">Hum</label>
-                                 </div>
-                                 <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-wind" class="meteogram-param-checkbox" />
-                                    <label for="param-wind">Wind</label>
-                                 </div>
-                                 <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
-                                    <label for="param-precipitation">Precip</label>
-                                 </div>
-                              </div>
-                              <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
-                                 <canvas id="meteogramChart"></canvas>
-                              </div>
-                           </div>
-                        </div>
-                     </section>
-
-                     <section id="forecast-panel-discussion" class="afd-container weather-center-forecast-panel"
-                        role="tabpanel" aria-labelledby="forecast-tab-discussion" data-forecast-panel="discussion" hidden>
-                        <input type="checkbox" id="afd-toggle" class="afd-toggle" />
-                        <label for="afd-toggle" class="afd-title" id="afd-heading">
-                           <i class="fa-solid fa-file-lines fa-xl fontawesome-icon" aria-hidden="true"></i>
-                           Area Forecast Discussion
-                        </label>
-                        <div class="afd-content" id="afd-content"></div>
-                     </section>
-                  </div>
-               </section>
             </section>
          </div>
+         <section id="county-forecast" class="content-card county-forecast"
+            aria-labelledby="forecast-heading" data-county-forecast>
+            <header class="county-forecast__header">
+               <h2 id="forecast-heading" class="section-heading county-forecast__heading">Forecasts</h2>
+            </header>
+            <div class="subtabs subtabs--forecast" role="tablist" aria-label="Forecast section">
+               <button id="forecast-tab-seven-day" class="subtabs__tab is-active" type="button"
+                  role="tab" aria-selected="true" aria-controls="forecast-panel-seven-day"
+                  data-forecast-tab="seven-day" data-short-label="7-Day" aria-label="7-Day">7-Day</button>
+               <button id="forecast-tab-meteogram" class="subtabs__tab" type="button" role="tab"
+                  aria-selected="false" aria-controls="forecast-panel-meteogram" data-forecast-tab="meteogram"
+                  tabindex="-1" data-short-label="Meteo" aria-label="Meteogram">Meteogram</button>
+               <button id="forecast-tab-discussion" class="subtabs__tab" type="button" role="tab"
+                  aria-selected="false" aria-controls="forecast-panel-discussion" data-forecast-tab="discussion"
+                  tabindex="-1" data-short-label="Disc" aria-label="Discussion">Discussion</button>
+               <button id="forecast-tab-outlook" class="subtabs__tab" type="button" role="tab"
+                  aria-selected="false" aria-controls="forecast-panel-outlook" data-forecast-tab="outlook"
+                  tabindex="-1" data-short-label="Haz Wx" aria-label="Hazardous Weather Outlook"
+                  hidden>Hazardous Weather</button>
+            </div>
+
+            <div class="weather-center-forecast-content">
+               <section id="forecast-panel-seven-day"
+                  class="forecast-container weather-center-forecast-panel" role="tabpanel"
+                  tabindex="0" aria-labelledby="forecast-tab-seven-day" data-forecast-panel="seven-day">
+                  <div id="forecast" role="region" aria-labelledby="forecast-heading" aria-live="polite"></div>
+               </section>
+
+               <section id="forecast-panel-meteogram" class="meteogram-container weather-center-forecast-panel"
+                  role="tabpanel" tabindex="0" aria-labelledby="forecast-tab-meteogram" data-forecast-panel="meteogram" hidden>
+                  <input type="checkbox" id="meteogram-toggle" class="meteogram-toggle" />
+                  <label for="meteogram-toggle" class="meteogram-title" id="meteogram-heading">
+                     <i class="fa-solid fa-chart-line fa-xl fontawesome-icon" aria-hidden="true"></i>
+                     Forecast Meteograms
+                  </label>
+                  <div class="meteogram-tabs">
+                     <input type="radio" name="meteogramTime" id="meteogram-now" checked />
+                     <input type="radio" name="meteogramTime" id="meteogram-24" />
+                     <input type="radio" name="meteogramTime" id="meteogram-48" />
+                     <input type="radio" name="meteogramTime" id="meteogram-72" />
+                     <input type="radio" name="meteogramTime" id="meteogram-96" />
+
+                     <div class="meteogram-tab-labels" role="tablist">
+                        <label for="meteogram-now" class="meteogram-tab" role="tab" aria-selected="true">24H</label>
+                        <label for="meteogram-24" class="meteogram-tab" role="tab">48H</label>
+                        <label for="meteogram-48" class="meteogram-tab" role="tab">72H</label>
+                        <label for="meteogram-72" class="meteogram-tab" role="tab">96H</label>
+                        <label for="meteogram-96" class="meteogram-tab" role="tab">120H</label>
+                     </div>
+
+                     <div class="meteogram-tab-content">
+                        <div class="meteogram-param-container" role="group" aria-label="Meteogram parameters">
+                           <div class="meteogram-param-item">
+                              <button type="button" id="param-temperature" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Temperature" aria-pressed="true">Temp</button>
+                           </div>
+                           <div class="meteogram-param-item">
+                              <button type="button" id="param-dewpoint" class="meteogram-tab meteogram-param-button"
+                                 aria-label="DP (Dew point)" aria-pressed="false">DP</button>
+                           </div>
+                           <div class="meteogram-param-item">
+                              <button type="button" id="param-humidity" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Humidity" aria-pressed="false">Hum</button>
+                           </div>
+                           <div class="meteogram-param-item">
+                              <button type="button" id="param-wind" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Wind" aria-pressed="false">Wind</button>
+                           </div>
+                           <div class="meteogram-param-item">
+                              <button type="button" id="param-precipitation" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Precipitation chance" aria-pressed="false">Precip</button>
+                           </div>
+                        </div>
+                        <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
+                           <canvas id="meteogramChart"></canvas>
+                        </div>
+                     </div>
+                  </div>
+               </section>
+
+               <section id="forecast-panel-discussion" class="afd-container weather-center-forecast-panel"
+                  role="tabpanel" tabindex="0" aria-labelledby="forecast-tab-discussion" data-forecast-panel="discussion" hidden>
+                  <input type="checkbox" id="afd-toggle" class="afd-toggle" />
+                  <label for="afd-toggle" class="afd-title" id="afd-heading">
+                     <i class="fa-solid fa-file-lines fa-xl fontawesome-icon" aria-hidden="true"></i>
+                     Area Forecast Discussion
+                  </label>
+                  <div class="afd-content" id="afd-content"></div>
+               </section>
+
+               <section id="forecast-panel-outlook" class="weather-center-forecast-panel"
+                  role="tabpanel" tabindex="0" aria-labelledby="forecast-tab-outlook" data-forecast-panel="outlook" hidden>
+                  <div class="county-forecast__outlook" data-county-outlook></div>
+               </section>
+            </div>
+         </section>
       </main>
 
       <!-- Footer -->
@@ -487,9 +475,9 @@
 
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <script src="js/countyApp.js?v=20260824-phase4-1" type="module"></script>
+      <script src="js/countyApp.js?v=20260912-meteogram-buttons-1" type="module"></script>
       <script src="../js/weatherMaps.js?v=20260906-radar-1" type="module"></script>
-      <script src="../js/weatherCenter.js?v=20260906-ui2-national-1" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260912-phase11-1" type="module"></script>
 
       <script type="module">
         import { NavigationModule } from '../../js/modules/navigation.js?v=20260909-navigation-escape-1';
@@ -505,7 +493,7 @@
       </script>
 
       <a href="#" class="back-to-top" data-back-to-top aria-label="Back to top" hidden>
-         <i class="fa-solid fa-up-long"></i>
+         BACK TO TOP
       </a>
    </body>
 

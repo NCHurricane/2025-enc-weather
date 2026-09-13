@@ -45,7 +45,7 @@
       <link rel="stylesheet" href="../../css/styles.css?v=20260910-footer-social-1" />
       <link rel="stylesheet" href="../../css/components.css?v=20260910-css-tokens-1" />
       <link rel="stylesheet" href="../../css/interactive-weather-map.css?v=20260831-phase9-2" />
-      <link rel="stylesheet" href="../css/county.css?v=20260831-phase9-2" />
+      <link rel="stylesheet" href="../css/county.css?v=20260912-forecast-labels-1" />
 
       <style>
          @layer pages {
@@ -398,26 +398,26 @@
                            </div>
 
                            <div class="meteogram-tab-content">
-                              <div class="meteogram-param-container">
+                              <div class="meteogram-param-container" role="group" aria-label="Meteogram parameters">
                                  <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-temperature" class="meteogram-param-checkbox" checked />
-                                    <label for="param-temperature">Temp</label>
+                                    <button type="button" id="param-temperature" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Temperature" aria-pressed="true">Temp</button>
                                  </div>
                                  <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-dewpoint" class="meteogram-param-checkbox" />
-                                    <label for="param-dewpoint">DP</label>
+                                    <button type="button" id="param-dewpoint" class="meteogram-tab meteogram-param-button"
+                                 aria-label="DP (Dew point)" aria-pressed="false">DP</button>
                                  </div>
                                  <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-humidity" class="meteogram-param-checkbox" />
-                                    <label for="param-humidity">Hum</label>
+                                    <button type="button" id="param-humidity" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Humidity" aria-pressed="false">Hum</button>
                                  </div>
                                  <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-wind" class="meteogram-param-checkbox" />
-                                    <label for="param-wind">Wind</label>
+                                    <button type="button" id="param-wind" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Wind" aria-pressed="false">Wind</button>
                                  </div>
                                  <div class="meteogram-param-item">
-                                    <input type="checkbox" id="param-precipitation" class="meteogram-param-checkbox" />
-                                    <label for="param-precipitation">Precip</label>
+                                    <button type="button" id="param-precipitation" class="meteogram-tab meteogram-param-button"
+                                 aria-label="Precipitation chance" aria-pressed="false">Precip</button>
                                  </div>
                               </div>
                               <div id="meteogram-chart-container" class="meteogram-content" role="tabpanel">
@@ -488,9 +488,9 @@
 
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <script src="js/countyApp.js?v=20260824-phase4-1" type="module"></script>
+      <script src="js/countyApp.js?v=20260912-meteogram-buttons-1" type="module"></script>
       <script src="../js/weatherMaps.js?v=20260906-radar-1" type="module"></script>
-      <script src="../js/weatherCenter.js?v=20260906-ui2-national-1" type="module"></script>
+      <script src="../js/weatherCenter.js?v=20260912-phase11-1" type="module"></script>
 
       <script type="module">
         import { NavigationModule } from '../../js/modules/navigation.js?v=20260909-navigation-escape-1';
@@ -506,7 +506,7 @@
       </script>
 
       <a href="#" class="back-to-top" data-back-to-top aria-label="Back to top" hidden>
-         <i class="fa-solid fa-up-long"></i>
+         BACK TO TOP
       </a>
    </body>
 

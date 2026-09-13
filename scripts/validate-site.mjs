@@ -114,7 +114,7 @@ for (const file of files) {
     }
   }
   if (isCountyWeatherMap
-      && !activeHtml.includes('Select a station marker for details. Scroll to zoom, or use the map controls.')) {
+      && !activeHtml.includes('Select a station marker for details. CTRL+Scroll to zoom, or use the map controls.')) {
     errors.push(`${relative}: county Conditions map instructions are missing`);
   }
   if (relative === 'tropical.html') {
@@ -441,7 +441,7 @@ for (const dependency of phase3Contract.scriptDependencies) {
   const references = [...source.matchAll(/(?:\bfrom\s+|\bsrc\s*=\s*)['"]([^'"]+)['"]/gi)]
     .map(match => match[1])
     .filter(reference => repositoryReference(dependency.consumer, reference) === dependency.target);
-  if (references.length !== 1 || referenceVersion(references[0]) !== phase3Contract.assetVersion) {
+  if (references.length !== 1 || referenceVersion(references[0]) !== (dependency.version || phase3Contract.assetVersion)) {
     errors.push(`${dependency.consumer}: ${dependency.target} must use the Phase 3 cache version`);
   }
 }

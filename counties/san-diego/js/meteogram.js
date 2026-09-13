@@ -11,7 +11,7 @@
 // - Responsive design for various screen sizes
 // ==============================
 
-import { getHourlyData } from '../../js/countyData.multizone.js?v=20260826-zone-normalization-1';
+import { getHourlyData } from '../../js/countyData.multizone.js?v=20260912-phase11-1';
 
 function degreesToCardinal(deg) {
   if (deg == null) return 'N/A';
@@ -393,11 +393,16 @@ function setupMeteogramControls(processedData) {
     const paramIds = ['temperature', 'dewpoint', 'humidity', 'wind', 'precipitation'];
 
     for (const param of paramIds) {
-      const checkbox = document.getElementById(`param-${param}`);
-      if (checkbox?.checked) params.push(param);
+      const button = document.getElementById(`param-${param}`);
+      if (button?.getAttribute('aria-pressed') === 'true') params.push(param);
     }
 
-    return params.length > 0 ? params : ['temperature'];
+    if (!params.length) {
+      // Preserve the chart's Temperature fallback and make it visible in the controls.
+      document.getElementById('param-temperature')?.setAttribute('aria-pressed', 'true');
+      return ['temperature'];
+    }
+    return params;
   }
 
   function updateChart() {
@@ -406,14 +411,18 @@ function setupMeteogramControls(processedData) {
     createMeteogramChart(timeframe, processedData, selectedParams);
   }
 
-  const checkboxes = document.querySelectorAll('.meteogram-param-checkbox');
-  checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', updateChart);
+  const buttons = document.querySelectorAll('.meteogram-param-button');
+  buttons.forEach((button) => {
+    // Replace the handler when a tab or zone reloads the chart's source data.
+    button.onclick = () => {
+      button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+      updateChart();
+    };
   });
 
   const timeframeRadios = document.querySelectorAll('input[name="meteogramTime"]');
   timeframeRadios.forEach((radio) => {
-    radio.addEventListener('change', updateChart);
+    radio.onchange = updateChart;
   });
 
   updateChart();

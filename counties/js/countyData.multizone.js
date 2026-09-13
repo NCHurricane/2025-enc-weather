@@ -448,6 +448,9 @@ export async function getAlerts() {
     }
 
     const data = await response.json();
+    if (!data || !Array.isArray(data.alerts) || data.alerts.some(alert => !alert || typeof alert !== 'object' || Array.isArray(alert))) {
+      throw new Error('Invalid alerts package');
+    }
     console.log(`[countyData] Loaded ${data.alerts?.length || 0} alerts`);
 
     return {
@@ -457,7 +460,7 @@ export async function getAlerts() {
     };
   } catch (error) {
     console.error("[countyData] Error fetching alerts:", error);
-    return { status: "ok", list: [] };
+    return { status: "unavailable", list: [], outlook: null };
   }
 }
 
