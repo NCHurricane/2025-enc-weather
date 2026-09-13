@@ -1,5 +1,158 @@
 # County UI: Current Handoff
 
+## Phase 11 local closeout — 2026-09-12
+
+**Local status: complete. Owner actual-device/200% zoom acceptance remains open.**
+This section and the continuation prompt at the end are the current V1 handoff.
+All earlier implementation, planning, repository-boundary, prototype, staging,
+and "next course" entries are dated historical evidence. Their references to
+uncommitted work, older asset versions, unstarted phases, or current remote
+packages do not describe today's checkout or authorize work.
+
+### Verified checkpoint and preservation boundary
+
+The requested Git recheck found `HEAD`, `main`, and the local `origin/main`
+tracking ref at `d7c9f2d` ("Changes to styling and layout"), with a clean working
+tree and no newer commits. No fetch or remote/deployment verification was run.
+That commit includes the initial Phase 11 implementation and all September 12
+HWO, parameter-button/layout, and forecast-label follow-ups below. Their
+"nothing committed" statements describe those earlier work sessions only.
+
+This closeout adds one bounded mobile CSS correction, its ten template asset
+references, the stylesheet-version contract, and this handoff. These new edits
+are uncommitted. The owner's existing CSS tuning, JavaScript, Home, county
+sources/stations/zones, San Diego exceptions, legacy Bertie forecast structure,
+and generated weather data remain preserved. Nothing was staged, committed,
+pushed, deployed, generated, or deleted; caches, logs, scheduler state, and
+ignored V2 material were not modified.
+
+### Approved behavior and the one local correction
+
+- Weather Center retains Conditions / Radar / Satellite; Forecasts is a separate
+  card below it. Every forecast period remains a full-width row with matching,
+  initially collapsed native `details`/`summary` content.
+- Full/short forecast labels remain `7-Day` / `7-Day`, `Meteogram` / `Meteo`,
+  `Discussion` / `Disc`, and `Hazardous Weather` / `Haz Wx`. Short labels apply
+  to Forecast-card content widths at most 600px; full accessible names remain,
+  including `Hazardous Weather Outlook`.
+- Live-page HWO remains inline only while current, clears on zone loading and
+  expiry, and retains metadata and validated official links. Active alerts
+  remain in Alerts. The retained Bertie test keeps its legacy HWO dialog and
+  separate forecast/Detailed structure.
+- Desktop Meteogram parameters remain a compact centered group with 4px gaps.
+  The committed mobile layout also computes to flex; older "mobile grid"
+  descriptions are historical. Its padding, typography, colors, hour-button
+  wrapping, and spacing were retained. At 320px the committed `Precip` label
+  wrapped, making all five parameter buttons 46px tall. The bounded correction
+  gives mobile parameter items an intrinsic minimum width and keeps their text
+  on one line, restoring five fitting 32px buttons. It applies only at viewport
+  widths up to 600px and leaves the 601px-and-wider rules untouched.
+- The owner's committed disclosure summary target is 24px, not the historical
+  44px measurement. It remains keyboard operable; no sizing was reverted.
+  Dare, Hyde, and San Diego zone selectors remain one row at 320px, with heights
+  of 48px, 44px, and 48px respectively in the final checks.
+
+Changed source owners: `counties/css/county.css`; all nine live County
+`index.html` files and `counties/bertie/index_test.html` (CSS reference only);
+`scripts/css-ownership-contract.mjs`; this document. All ten County CSS
+consumers now use `20260912-phase11-closeout-1`. Unchanged module versions are
+`20260912-phase11-hwo-2` for HWO/forecast/app controllers,
+`20260912-meteogram-buttons-1` for meteogram modules/entry wrappers, and
+`20260912-phase11-1` for Weather Center/data loaders. Shared CSS and Home asset
+references retain the owner's committed versions.
+
+### Validation evidence and reuse
+
+- **Static/automated, fresh:** 16/16 tests pass from
+  `county-forecast.test.mjs`, `county-zone-normalization.test.mjs`, and
+  `css-phase7-ownership.test.mjs`; `node --check` passes the changed stylesheet
+  contract; site validation passes 18 HTML, 352 JSON, and 199 references.
+  The focused reference search finds the new County CSS version in exactly ten
+  templates and its contract, with no old live reference. `git diff --check`
+  passes; Git reports line-ending notices only. No PHP or weather JSON changed.
+- **Static/automated, reused:** the September 12 parameter/HWO entries record
+  all 76 Node tests and 83 JavaScript/MJS syntax checks passing; the initial
+  implementation records 70 tracked PHP lints and 20 HWO PHP assertions.
+  Unchanged code retains those gates. They were not all rerun for this CSS-only
+  correction; the CI baseline remains required if changes later reach Git.
+- **Fixture/runtime/API:** the 16-test run rechecks forecast single-fetch,
+  matching/escaped details, failure and superseded-response handling, HWO
+  freshness/expiry/metadata/link validation, and alert failure versus valid
+  empty states. Prior browser-only HWO absent/stale/expired/unavailable,
+  live-expiry focus restoration, zone-loading clearance, and alert-dialog
+  fixtures are reused from the HWO follow-up, whose runtime code is unchanged.
+  No new response fixture or generated weather file was needed.
+- **Local HTTP:** reused the existing PHP preview at
+  `http://127.0.0.1:8085/`. Bertie forecast/alerts/hourly, Hyde config/mainland
+  alerts, and versioned County CSS return 200. Bertie forecast has 14 periods;
+  forecast/hourly generation is `2026-09-12T17:47:34-04:00`. Its local HWO is
+  `ok`, AKQ/NCZ030, issued `2026-09-12T04:27:00-04:00`, valid until
+  `2026-09-13T04:30:00-04:00`. Hyde Mainland HWO is `ok`, MHX/NCZ081, issued
+  `2026-09-12T16:00:00-04:00`, valid until `2026-09-13T16:00:00-04:00`.
+  These are local package observations, not fresh upstream certification.
+- **Controlled browser, fresh:** final saved CSS passes visible parameter checks
+  on all nine live pages and retained Bertie test at 320x844: five fitting,
+  single-line 32px buttons and zero horizontal document overflow. All three
+  multi-zone selectors remain one row. Bertie passes 1280x900, 390x844, and
+  the parameter rule's 600/601px viewport boundary, with centered controls,
+  exactly 4px gaps, fitting labels, and no overflow; Space selects a parameter
+  and updates `aria-pressed`. The legacy test retains its original tabs,
+  separate Detailed mount, and two-column narrow forecast layout.
+- **Controlled browser, committed-style reconciliation:** Bertie desktop/mobile
+  has 14 full-width periods; Enter/Space opens two native disclosures and both
+  stay open after changing forecast tabs. Full accessible tab names and the
+  short visible labels pass. The label container-query boundary is bracketed
+  by Forecast content widths 599.125px (short labels at a 636px viewport) and
+  600.09375px (full labels at 637px). Hyde at 320px shows current inline HWO
+  with MHX/NCZ081, issued/valid-until/area metadata and the validated official
+  product link. The small subsequent CSS patch affects only parameter items.
+- **Controlled browser, reused:** the initial Phase 11 and September 12
+  follow-ups retain the broader all-nine desktop/390px/320px row/tab checks,
+  zone switches/reload/Back/Forward, invalid-zone normalization, hidden-HWO
+  keyboard behavior, active-alert dialogs, parameter fallback/reinitialization,
+  Radar/Satellite controls, Home shared-module regression, and legacy Bertie
+  behavior. None of their JavaScript or map owners changed in this closeout.
+- **Console/network:** regression consoles have no captured warnings/errors.
+  A fresh final Bertie reload/Meteogram sample captured 76 responses without
+  truncation, HTTP errors, or failed requests; new CSS and local
+  forecast/alerts/hourly packages returned 200. An earlier long-run capture
+  truncated, so it is not claimed as complete network coverage. The temporary
+  CSS probe was removed by reload; viewport overrides and both test tabs were
+  closed/reset. The existing PHP preview remains running.
+- **Owner:** no new actual-device or actual 200% browser/text-zoom result was
+  supplied. Prior owner DevTools/general acceptance does not close this gate.
+  Viewport emulation is not zoom or touch evidence.
+- **External provider:** no new upstream freshness/availability certification.
+  Local Conditions displayed old observation times and zero fresh sites in
+  the sampled cache; successful local rendering does not establish fresh data.
+- **Deployment/production:** not attempted or verified. Historical staging,
+  California cache, scheduler, and future production statements below remain
+  dated evidence, not current remote status or authorization.
+
+### Short owner checklist and next bounded V1 recommendation
+
+On an actual phone and an actual desktop browser set to **200% zoom in its
+browser menu**, record device/browser, page/zone, zoom, and pass/fail:
+
+1. Bertie: scroll Weather Center through Forecasts; check full-width rows,
+   readable tabs, no horizontal overflow, and multiple independent Details
+   disclosures. Use keyboard arrows/Home/End and Enter/Space on desktop.
+2. Bertie and San Diego: toggle multiple Meteogram parameters, check the visible
+   selected state/chart legend and Temperature fallback; confirm `Precip` fits
+   and the accepted hour-control wrapping remains usable.
+3. Dare, Hyde, San Diego: switch zones, refresh, and use Back/Forward; confirm
+   selector fit, matching refreshed content, and immediate removal of old HWO.
+4. Where current HWO/alerts exist, check inline metadata/source access and
+   separate alert-dialog Close/Escape/focus return. Check normal touch scrolling
+   over maps/text products. Report absent HWO/alerts as unexercised, not passed.
+
+**Recommended next bounded V1 step, for owner approval:** perform this Phase 11
+actual-device/200% zoom acceptance pass, then triage only concrete reported
+findings. No next feature phase is proposed or begun. V2, broad responsive
+retuning, staging/commit/push, upload, data refresh, and scheduler work remain
+outside this authorization. Read this closeout first even if an older roadmap
+still labels Phase 11 "planned" or "uncommitted."
+
 ## Phase 11 forecast tab labels — 2026-09-12
 
 All nine live County templates now use `7-Day`, `Meteogram`, `Discussion`, and
@@ -399,7 +552,7 @@ display rule. Local Home and Bertie browser checks pass at `390x844`, desktop
 icons remain visible at `1280x900`, and the atomic CSS cache key is `20260831`.
 Phase 9 has not started.
 
-## Current authorized prototype follow-up: 2026-09-04
+## Historical authorized prototype follow-up: 2026-09-04
 
 The owner explicitly authorized two isolated map-first county test pages after
 the shared Home UI extraction: Bertie for single-zone behavior and Dare for
@@ -465,7 +618,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 5. Use the archived ledger only for historical evidence; it is not authorization to resume a completed phase.
 6. Do not start another county product/source/UI phase unless the user explicitly requests it.
 
-## Current repository boundary
+## Historical repository boundaries
 
 - This pre-Phase 9 regression slice began from clean `6018db8`. Concurrent
   user-owned County edits removed the desktop/mobile minimum heights from
@@ -523,8 +676,8 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - The `alerts` array remains the only authority for active-alert counts, alert selectors/dialogs, homepage warning color, and warning overlays.
 - HWO is a separate official NWS product selected by exact office and active forecast zone. It must never inflate or replace alert semantics.
 - HWO publication remains bounded, lock-aware, identity-checked, atomic, and last-known-good preserving.
-- Current or still-valid HWO appears beside the alert element. If no displayable HWO exists, no HWO wrapper remains and the alert element uses the full row.
-- Alert and HWO controls use the shared centered modal. Desktop uses the accepted constrained width; tablet/mobile retain the scoped 95% width, internal scrolling, no horizontal selector overflow, focus restoration, Escape/Close/backdrop dismissal, and scroll-lock cleanup.
+- On the nine live Phase 11 pages, only current HWO appears in the inline Forecasts tab. Hidden/expired products leave no retained inline content. The Bertie test retains its legacy alert-adjacent HWO trigger.
+- Active alerts retain the shared centered modal, scoped 95% tablet/mobile width, internal scrolling, no horizontal selector overflow, focus restoration, Escape/Close/backdrop dismissal, and scroll-lock cleanup. HWO uses this modal only on the retained Bertie test.
 - Shared source bulletins must be described truthfully. Do not fabricate event-specific text.
 
 ### Conditions markers and labels
@@ -784,7 +937,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
 - Local HTTP/browser: the versioned stylesheet and navigation module returned `200`. Dare at `1280x900` and `390x844` showed the intended trail with no horizontal overflow; the mobile header left a visible gap before the heading, and the menu opened below the full two-row header, closed with Escape, and restored hamburger focus. Home navigation removed the breadcrumb, and browser Back restored the Dare URL and trail. Tropical, Active, and Accessibility representative pages also had correct trails, no horizontal overflow, and no captured console errors or warnings at both viewport sizes.
 - Owner smoke, deployment, and production behavior remain open. The breadcrumb follow-up did not change county zones, data, alerts/HWO, Conditions, maps, forecasts, generated/runtime files, or provider contracts.
 
-## Open gates and known limitations
+## Historical open gates and known limitations
 
 ### Shared non-tropical SVG wordmark follow-up: 2026-08-24
 
@@ -832,7 +985,7 @@ The complete August 2026 migration and validation ledger is preserved at [`docs/
   open, as does the future full replacement at `chuckcopelandwx.com`.
 - Provider availability, missing-station cache warnings, and meteogram `No data for timeframe: 0` warnings are time-dependent/runtime findings. Reproduce before treating them as current defects.
 
-## Best next course: staging zone re-smoke, California publisher diagnosis, and deferred layout follow-up
+## Historical next course: staging zone re-smoke, California publisher diagnosis, and deferred layout follow-up
 
 There is no open county feature phase in this plan. The next bounded county task should be:
 
@@ -878,7 +1031,7 @@ Diego's local exceptions.
 6. Keep any upload, scheduler change, cache publication, and generated/runtime
    data mutation outside local diagnosis unless separately authorized.
 
-## Validation categories for the next county slice
+## Validation categories (historical deployment observations)
 
 Report independently:
 
@@ -901,9 +1054,11 @@ The archive retains completed phases, superseded dimensions/zoom/source decision
 ## Ready-to-paste continuation prompt
 
 ```text
-Continue the NCHurricane county/shared-map closeout in K:\Web Design\NCHurricane 2025.
+Continue the original V1 County UI work in K:\Web Design\NCHurricane 2025.
 
-Read AGENTS.md and docs/county-ui-next-session-plan.md completely, then run `git status --short --branch` and `git log -8 --oneline`. Preserve every existing working-tree change. Do not stage, commit, push, deploy, edit generated/runtime data, or begin a new county product phase unless I explicitly authorize it.
+First read AGENTS.md and the current Phase 11 local-closeout section of docs/county-ui-next-session-plan.md, then inspect Git status and recent commits. The last verified committed checkpoint is d7c9f2d ("Changes to styling and layout"). The September 12 closeout adds an uncommitted mobile Meteogram label-fit correction, ten matching County CSS references using 20260912-phase11-closeout-1, its stylesheet contract, and the reconciled handoff. Recheck and preserve any newer work and all owner CSS tuning.
 
-The current documentation checkpoint is `a096ddc`; Phase 8 and the ArcGIS basemap replacement are committed and pushed in `2f53445`. The current uncommitted working tree fixes cross-county persisted-zone normalization before any data request and includes focused single-zone/NC multi-zone/San Diego tests plus clean desktop/mobile reload and Back/Forward browser evidence. Preserve that slice and its cache keys. Live testing currently uses `http://s194842513.onlinehome.us/test/`; `chuckcopelandwx.com` is the future production URL after readiness. Staging serves the committed Phase 8/basemap checkpoint, current Dare/NC packages, and a fresh Atlantic overview, but it does not yet include the zone fix and California Conditions remains stale at an August 22 embedded generation time. After the owner commits/uploads the zone slice, re-smoke it on staging and separately inspect the California publisher cron/log. Wave B layout closeout remains open for excessive large-display height, controls pushed below the viewport by alerts/zone selectors, and mobile page-scroll capture over maps/text products. A final responsive-tuning phase is proposed but not authorized. Treat the archived migration ledger as historical evidence only.
+Phase 11 local validation is complete. Preserve the separate Weather Center/Forecasts cards, full-width forecast rows/native details, full/short accessible tabs at the 600px card boundary, current-only inline HWO, parameter toggle buttons/compact desktop group, one-row multi-zone selectors, Home behavior, and retained Bertie legacy structure. Reuse the recorded passing evidence; do not repeat the full matrix without a relevant change or new failure.
+
+The recommended next bounded V1 step awaits approval: actual-device and actual 200% zoom owner acceptance using the short checklist in the handoff, followed by triage of concrete reported findings. Keep owner, local, provider, and production evidence separate. Reuse http://127.0.0.1:8085/ if available. Do not invent or begin another phase, resume V2, stage, commit, push, deploy, or alter generated weather data, caches, logs, or scheduler state. Older implementation/prototype/staging entries are dated history, not current status or authorization.
 ```

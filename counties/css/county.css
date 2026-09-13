@@ -1269,6 +1269,16 @@ canvas#meteogramChart {
   }
 }
 
+@media (max-width: 600px) {
+  .weather-center-forecast-panel .meteogram-param-item {
+    min-width: max-content;
+  }
+
+  .weather-center-forecast-panel .meteogram-param-button {
+    white-space: nowrap;
+  }
+}
+
 .weather-center-forecast-panel #meteogram-chart-container {
   border: 1px solid rgba(164, 190, 211, 0.5);
   border-radius: 9px;
