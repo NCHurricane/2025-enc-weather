@@ -2,7 +2,7 @@
 
 ## Phase 11 local closeout — 2026-09-12
 
-**Local status: complete. Owner actual-device/200% zoom acceptance remains open.**
+**Local validation and owner checklist acceptance: complete.**
 This section and the continuation prompt at the end are the current V1 handoff.
 All earlier implementation, planning, repository-boundary, prototype, staging,
 and "next course" entries are dated historical evidence. Their references to
@@ -11,20 +11,26 @@ packages do not describe today's checkout or authorize work.
 
 ### Verified checkpoint and preservation boundary
 
-The requested Git recheck found `HEAD`, `main`, and the local `origin/main`
+The initial local-closeout Git recheck found `HEAD`, `main`, and the local `origin/main`
 tracking ref at `d7c9f2d` ("Changes to styling and layout"), with a clean working
 tree and no newer commits. No fetch or remote/deployment verification was run.
 That commit includes the initial Phase 11 implementation and all September 12
 HWO, parameter-button/layout, and forecast-label follow-ups below. Their
 "nothing committed" statements describe those earlier work sessions only.
 
-This closeout adds one bounded mobile CSS correction, its ten template asset
-references, the stylesheet-version contract, and this handoff. These new edits
-are uncommitted. The owner's existing CSS tuning, JavaScript, Home, county
-sources/stations/zones, San Diego exceptions, legacy Bertie forecast structure,
-and generated weather data remain preserved. Nothing was staged, committed,
-pushed, deployed, generated, or deleted; caches, logs, scheduler state, and
-ignored V2 material were not modified.
+At the owner-acceptance follow-up, `HEAD`, `main`, and local `origin/main` all
+match the newer `cf628f9` ("More layout updates"), with a clean starting tree.
+That commit includes the mobile CSS correction, all ten template references,
+stylesheet-version contract, and local-closeout handoff. Earlier uncommitted
+statements are historical; no fetch or deployment verification was performed.
+
+This owner-evidence update changes only this handoff and is uncommitted. The
+owner's CSS tuning, JavaScript, Home, county sources/stations/zones, San Diego
+exceptions, legacy Bertie forecast structure, and generated weather data remain
+preserved. Nothing was staged, committed, pushed, deployed, generated, or deleted
+by this update; caches, logs, scheduler state, and ignored V2 material were not
+modified. Documentation diff/whitespace checks pass; existing code/runtime/browser
+validation is reused because no implementation changed.
 
 ### Approved behavior and the one local correction
 
@@ -119,9 +125,13 @@ references retain the owner's committed versions.
   truncated, so it is not claimed as complete network coverage. The temporary
   CSS probe was removed by reload; viewport overrides and both test tabs were
   closed/reset. The existing PHP preview remains running.
-- **Owner:** no new actual-device or actual 200% browser/text-zoom result was
-  supplied. Prior owner DevTools/general acceptance does not close this gate.
-  Viewport emulation is not zoom or touch evidence.
+- **Owner, follow-up:** after receiving the testing checklist, the owner reported
+  exactly, "All tests passed on Chrome, Edge, and Firefox". This closes Phase 11
+  owner checklist acceptance at that reported overall level. The checklist
+  included actual-device and actual 200% zoom checks; individual device/browser
+  versions, per-case zoom results, and available HWO/alert cases were not
+  itemized, so no more specific matrix is inferred. This is owner evidence,
+  separate from the controlled-browser, provider, and production records.
 - **External provider:** no new upstream freshness/availability certification.
   Local Conditions displayed old observation times and zero fresh sites in
   the sampled cache; successful local rendering does not establish fresh data.
@@ -129,10 +139,13 @@ references retain the owner's committed versions.
   California cache, scheduler, and future production statements below remain
   dated evidence, not current remote status or authorization.
 
-### Short owner checklist and next bounded V1 recommendation
+### Completed owner checklist and next V1 boundary
 
-On an actual phone and an actual desktop browser set to **200% zoom in its
-browser menu**, record device/browser, page/zone, zoom, and pass/fail:
+The checklist below is retained for regression reuse. Owner acceptance is now
+recorded above for Chrome, Edge, and Firefox; no repeat run is required without
+a relevant change or new finding. For a future run, use an actual phone and an
+actual desktop browser set to **200% zoom in its browser menu**, recording
+device/browser, page/zone, zoom, and pass/fail:
 
 1. Bertie: scroll Weather Center through Forecasts; check full-width rows,
    readable tabs, no horizontal overflow, and multiple independent Details
@@ -146,12 +159,14 @@ browser menu**, record device/browser, page/zone, zoom, and pass/fail:
    separate alert-dialog Close/Escape/focus return. Check normal touch scrolling
    over maps/text products. Report absent HWO/alerts as unexercised, not passed.
 
-**Recommended next bounded V1 step, for owner approval:** perform this Phase 11
-actual-device/200% zoom acceptance pass, then triage only concrete reported
-findings. No next feature phase is proposed or begun. V2, broad responsive
-retuning, staging/commit/push, upload, data refresh, and scheduler work remain
-outside this authorization. Read this closeout first even if an older roadmap
-still labels Phase 11 "planned" or "uncommitted."
+**Phase 11 local and owner closeout is complete; no owner failures were reported.**
+The previously recommended owner pass has been completed. Await the owner's
+choice and approval of the next bounded V1 task. No next feature phase is
+proposed or begun. V2, broad responsive retuning, staging/commit/push, upload,
+data refresh, and scheduler work remain outside this authorization. Provider
+freshness and production verification remain separate open gates. Read this
+closeout first even if an older roadmap still labels Phase 11 "planned" or
+"uncommitted."
 
 ## Phase 11 forecast tab labels — 2026-09-12
 
@@ -1056,9 +1071,9 @@ The archive retains completed phases, superseded dimensions/zoom/source decision
 ```text
 Continue the original V1 County UI work in K:\Web Design\NCHurricane 2025.
 
-First read AGENTS.md and the current Phase 11 local-closeout section of docs/county-ui-next-session-plan.md, then inspect Git status and recent commits. The last verified committed checkpoint is d7c9f2d ("Changes to styling and layout"). The September 12 closeout adds an uncommitted mobile Meteogram label-fit correction, ten matching County CSS references using 20260912-phase11-closeout-1, its stylesheet contract, and the reconciled handoff. Recheck and preserve any newer work and all owner CSS tuning.
+First read AGENTS.md and the current Phase 11 local-closeout section of docs/county-ui-next-session-plan.md, then inspect Git status and recent commits. The latest verified committed checkpoint is cf628f9 ("More layout updates"), which includes the mobile Meteogram label-fit correction, ten matching County CSS references using 20260912-phase11-closeout-1, its stylesheet contract, and the local-closeout handoff. The subsequent owner-acceptance handoff update is uncommitted. Recheck and preserve any newer work and all owner CSS tuning.
 
-Phase 11 local validation is complete. Preserve the separate Weather Center/Forecasts cards, full-width forecast rows/native details, full/short accessible tabs at the 600px card boundary, current-only inline HWO, parameter toggle buttons/compact desktop group, one-row multi-zone selectors, Home behavior, and retained Bertie legacy structure. Reuse the recorded passing evidence; do not repeat the full matrix without a relevant change or new failure.
+Phase 11 local validation and owner checklist acceptance are complete. The owner reported, "All tests passed on Chrome, Edge, and Firefox"; retain this as owner evidence at that overall level. Preserve the separate Weather Center/Forecasts cards, full-width forecast rows/native details, full/short accessible tabs at the 600px card boundary, current-only inline HWO, parameter toggle buttons/compact desktop group, one-row multi-zone selectors, Home behavior, and retained Bertie legacy structure. Reuse the recorded passing evidence; do not repeat the full matrix without a relevant change or new failure.
 
-The recommended next bounded V1 step awaits approval: actual-device and actual 200% zoom owner acceptance using the short checklist in the handoff, followed by triage of concrete reported findings. Keep owner, local, provider, and production evidence separate. Reuse http://127.0.0.1:8085/ if available. Do not invent or begin another phase, resume V2, stage, commit, push, deploy, or alter generated weather data, caches, logs, or scheduler state. Older implementation/prototype/staging entries are dated history, not current status or authorization.
+The recommended owner acceptance pass is complete, with no failures reported. Await the owner's choice and approval of the next bounded V1 task; provider freshness and production verification remain separate open gates. Keep owner, local, provider, and production evidence separate. Reuse http://127.0.0.1:8085/ if available. Do not invent or begin another phase, resume V2, stage, commit, push, deploy, or alter generated weather data, caches, logs, or scheduler state. Older implementation/prototype/staging entries are dated history, not current status or authorization.
 ```
